@@ -1,4 +1,4 @@
-package org.veupathdb.service.edawss.service;
+package org.veupathdb.service.edass.service;
 
 import org.gusdb.fgputil.accountdb.UserProfile;
 
@@ -9,12 +9,12 @@ import java.util.Random;
 
 import org.veupathdb.lib.container.jaxrs.providers.UserProvider;
 import org.veupathdb.lib.container.jaxrs.server.annotations.Authenticated;
-import org.veupathdb.service.edawss.generated.model.HelloPostRequest;
-import org.veupathdb.service.edawss.generated.model.HelloPostResponseImpl;
-import org.veupathdb.service.edawss.generated.model.HelloResponse.GreetingType;
-import org.veupathdb.service.edawss.generated.model.HelloResponseImpl;
-import org.veupathdb.service.edawss.generated.model.ServerErrorImpl;
-import org.veupathdb.service.edawss.generated.resources.Hello;
+import org.veupathdb.service.edass.generated.model.HelloPostRequest;
+import org.veupathdb.service.edass.generated.model.HelloPostResponseImpl;
+import org.veupathdb.service.edass.generated.model.HelloResponse.GreetingType;
+import org.veupathdb.service.edass.generated.model.HelloResponseImpl;
+import org.veupathdb.service.edass.generated.model.ServerErrorImpl;
+import org.veupathdb.service.edass.generated.resources.Hello;
 
 public class HelloWorld implements Hello {
 

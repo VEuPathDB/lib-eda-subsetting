@@ -1,8 +1,8 @@
-package org.veupathdb.service.edawss;
+package org.veupathdb.service.edass;
 
 import org.veupathdb.lib.container.jaxrs.config.Options;
 import org.veupathdb.lib.container.jaxrs.server.ContainerResources;
-import org.veupathdb.service.edawss.service.HelloWorld;
+import org.veupathdb.service.edass.service.HelloWorld;
 
 /**
  * Service Resource Registration.

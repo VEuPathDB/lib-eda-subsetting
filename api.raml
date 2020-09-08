@@ -24,32 +24,41 @@ securitySchemes:
 
 
 #
-# Example Endpoints
+# Endpoints
 #
 
-/hello:
-  displayName: Hello World
+/studies:
+  displayName: Available Studies
   get:
     responses:
       200:
         body:
           application/json:
-            type: lib.HelloResponse
-  post:
-    securedBy: header-auth
-    body:
-      application/json:
-        type: lib.HelloPostRequest
-    responses:
-      200:
-        body:
-          application/json:
-            type: lib.HelloPostResponse
-      401:
-        body:
-          application/json:
-            type: error.UnauthorizedError
-      500:
-        body:
-          application/json:
-            type: error.ServerError
+            type: lib.StudiesGetResponse
+
+  /studies/{study-id}:
+    uriParameters:
+      study-id:
+        description: ID of the study of interest
+        type: string
+    get:
+      responses:
+        200:
+          body:
+            application/json:
+              type: lib.StudyIdGetResponse
+
+    /studies/{study-id}/{entity-id}:
+      uriParameters:
+        study-id:
+          description: ID of the study of interest
+          type: string
+        entity-id:
+          description: ID of the entity of interest
+          type: string
+      get:
+        responses:
+          200:
+            body:
+              application/json:
+                type: lib.EntityIdGetResponse

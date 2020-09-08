@@ -1,0 +1,100 @@
+#%RAML 1.0 Library
+
+types:
+  # Type name determines the name of the Java class that will be generated.
+  StudiesGetResponse:
+    additionalProperties: false
+    properties:
+      studies:
+        type: StudyOverview[]
+
+  StudyIdGetResponse:
+    additionalProperties: false
+    properties:
+      study:
+        type: StudyDetail
+
+  EntityIdGetResponse:
+    additionalProperties: false
+    properties:
+      study:
+        type: EntityVariable[]
+
+  StudyOverview:
+    type: object
+    properties:
+      id:
+        required: true
+        type: string
+      name:
+        required: true
+        type: string
+
+  StudyDetail:
+    type: object
+    properties:
+      id:
+        required: true
+        type: string
+      name:
+        required: true
+        type: string
+      entityTree:
+        required: true
+        type: object
+      entityVariables:
+        required: true
+        type: EntityVariable[]
+
+  EntityVariable:
+    type: object
+    properties:
+      id:
+        required: true
+        type: string
+      name:
+        required: true
+        type: string
+      description:
+        required: true
+        type: string
+      type:
+        required: true
+        type: string
+
+  EntityVariable:
+    type: object
+    discriminator: type
+    properties:
+      id: string
+      name: string
+      description: string
+      parentId?: string
+      type: string # need to validate that this is string, number, date
+          
+  StringEntityVariable:
+    type: EntityVariable
+    discriminatorValue: string
+    
+  NumberEntityVariable:
+    type: EntityVariable
+    discriminatorValue: number
+    properties:
+      numberValueSpec:
+        type: object
+        properties:
+          isContinuous: boolean
+          precision: integer
+
+  DateEntityVariable:
+    type: EntityVariable
+    discriminatorValue: date
+    properties:
+      dateValueSpec:
+        type: object
+        properties:
+          isContinuous: boolean
+      
+
+  
+

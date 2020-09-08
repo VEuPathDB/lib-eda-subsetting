@@ -36,4 +36,60 @@ types:
     type: object
     properties:
       something?: string
+  StudiesGetResponse:
+    type: object
+    additionalProperties: false
+    properties:
+      studies: StudyOverview[]
+  StudyIdGetResponse:
+    type: object
+    additionalProperties: false
+    properties:
+      study: StudyDetail
+  EntityIdGetResponse:
+    type: object
+    additionalProperties: false
+    properties:
+      study: EntityVariable[]
+  StudyOverview:
+    type: object
+    properties:
+      id: string
+      name: string
+  StudyDetail:
+    type: object
+    properties:
+      id: string
+      name: string
+      entityTree: object
+      entityVariables: EntityVariable[]
+  EntityVariable:
+    type: object
+    discriminator: type
+    properties:
+      id: string
+      name: string
+      description: string
+      parentId?: string
+      type: string
+  StringEntityVariable:
+    type: EntityVariable
+    discriminatorValue: string
+  NumberEntityVariable:
+    type: EntityVariable
+    discriminatorValue: number
+    properties:
+      numberValueSpec:
+        type: object
+        properties:
+          isContinuous: boolean
+          precision: integer
+  DateEntityVariable:
+    type: EntityVariable
+    discriminatorValue: date
+    properties:
+      dateValueSpec:
+        type: object
+        properties:
+          isContinuous: boolean
 

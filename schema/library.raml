@@ -9,33 +9,6 @@
 ################################################################################
 
 types:
-  HelloResponse:
-    type: object
-    additionalProperties: false
-    properties:
-      greeting:
-        type: string
-        enum:
-          - Hello World
-      anotherType: AnotherType
-  HelloPostRequest:
-    type: object
-    additionalProperties: false
-    properties:
-      greet:
-        description: Who do you want to say hello to?
-        type: string
-  HelloPostResponse:
-    type: object
-    additionalProperties: false
-    properties:
-      message:
-        description: Generated greeting
-        type: string
-  AnotherType:
-    type: object
-    properties:
-      something?: string
   StudiesGetResponse:
     type: object
     additionalProperties: false
@@ -50,7 +23,7 @@ types:
     type: object
     additionalProperties: false
     properties:
-      study: EntityVariable[]
+      study: VariablesTreeElement[]
   EntityIdPostRequest:
     type: object
     additionalProperties: false
@@ -69,7 +42,7 @@ types:
       id: string
       name: string
       entityTree: Entity
-      entityVariables: EntityVariable[]
+      variablesTree: VariablesTreeElement[]
   Entity:
     type: object
     properties:
@@ -77,20 +50,23 @@ types:
       name: string
       description: string
       children?: Entity[]
-  EntityVariable:
+  VariablesTreeElement:
     type: object
     discriminator: type
     properties:
       id: string
       name: string
       description: string
-      parentId?: string
+      children?: VariablesTreeElement[]
       type: string
-  StringEntityVariable:
-    type: EntityVariable
+  VariablesCategory:
+    type: VariablesTreeElement
+    discriminatorValue: category
+  StringVariable:
+    type: VariablesTreeElement
     discriminatorValue: string
-  NumberEntityVariable:
-    type: EntityVariable
+  NumberVariable:
+    type: VariablesTreeElement
     discriminatorValue: number
     properties:
       numberValueSpec:
@@ -98,8 +74,8 @@ types:
         properties:
           isContinuous: boolean
           precision: integer
-  DateEntityVariable:
-    type: EntityVariable
+  DateVariable:
+    type: VariablesTreeElement
     discriminatorValue: date
     properties:
       dateValueSpec:
@@ -140,4 +116,31 @@ types:
     properties:
       min: string
       max: string
+  HelloResponse:
+    type: object
+    additionalProperties: false
+    properties:
+      greeting:
+        type: string
+        enum:
+          - Hello World
+      anotherType: AnotherType
+  HelloPostRequest:
+    type: object
+    additionalProperties: false
+    properties:
+      greet:
+        description: Who do you want to say hello to?
+        type: string
+  HelloPostResponse:
+    type: object
+    additionalProperties: false
+    properties:
+      message:
+        description: Generated greeting
+        type: string
+  AnotherType:
+    type: object
+    properties:
+      something?: string
 

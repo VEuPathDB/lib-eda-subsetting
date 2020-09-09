@@ -18,7 +18,7 @@ types:
     additionalProperties: false
     properties:
       study:
-        type: EntityVariable[]
+        type: VariablesTreeElement[]
 
   EntityIdPostRequest:
     additionalProperties: false
@@ -43,9 +43,9 @@ types:
       id: string
       name: string
       entityTree: Entity
-      entityVariables:
+      variablesTree:
         required: true
-        type: EntityVariable[]
+        type: VariablesTreeElement[]
 
   Entity:
     type: object
@@ -55,22 +55,26 @@ types:
       description: string
       children?: Entity[]
 
-  EntityVariable:
+  VariablesTreeElement:
     type: object
     discriminator: type
     properties:
       id: string
       name: string
       description: string
-      parentId?: string
-      type: string # need to validate that this is string, number, date
+      children?: VariablesTreeElement[]
+      type: string # need to validate that this is category, string, number, date
           
-  StringEntityVariable:
-    type: EntityVariable
+  VariablesCategory:
+    type: VariablesTreeElement
+    discriminatorValue: category
+ 
+  StringVariable:
+    type: VariablesTreeElement
     discriminatorValue: string
     
-  NumberEntityVariable:
-    type: EntityVariable
+  NumberVariable:
+    type: VariablesTreeElement
     discriminatorValue: number
     properties:
       numberValueSpec:
@@ -79,8 +83,8 @@ types:
           isContinuous: boolean
           precision: integer
 
-  DateEntityVariable:
-    type: EntityVariable
+  DateVariable:
+    type: VariablesTreeElement
     discriminatorValue: date
     properties:
       dateValueSpec:

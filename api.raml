@@ -50,13 +50,12 @@ securitySchemes:
 
     /{entity-id}:
       uriParameters:
-        study-id:
-          description: ID of the study of interest
-          type: string
         entity-id:
           description: ID of the entity of interest
           type: string
       get:
+        description: |
+          In the response, `variablesTree` will be a subclass of [VariablesTreeElement](#type:lib.VariablesTreeElement)
         responses:
           200:
             body:

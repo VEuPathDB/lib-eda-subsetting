@@ -2,7 +2,7 @@ package org.veupathdb.service.edass;
 
 import org.veupathdb.lib.container.jaxrs.config.Options;
 import org.veupathdb.lib.container.jaxrs.server.ContainerResources;
-import org.veupathdb.service.edass.service.HelloWorld;
+import org.veupathdb.service.edass.service.Studies;
 
 /**
  * Service Resource Registration.
@@ -23,7 +23,7 @@ public class Resources extends ContainerResources {
   @Override
   protected Object[] resources() {
     return new Object[] {
-      HelloWorld.class,
+      Studies.class,
     };
   }
 }

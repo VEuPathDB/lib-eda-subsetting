@@ -51,6 +51,13 @@ types:
     additionalProperties: false
     properties:
       study: EntityVariable[]
+  EntityIdPostRequest:
+    type: object
+    additionalProperties: false
+    properties:
+      outputEntityId: string
+      outputVariableIds?: string[]
+      filters: Filter[]
   StudyOverview:
     type: object
     properties:
@@ -61,8 +68,15 @@ types:
     properties:
       id: string
       name: string
-      entityTree: object
+      entityTree: Entity
       entityVariables: EntityVariable[]
+  Entity:
+    type: object
+    properties:
+      id: string
+      name: string
+      description: string
+      children?: Entity[]
   EntityVariable:
     type: object
     discriminator: type
@@ -92,4 +106,38 @@ types:
         type: object
         properties:
           isContinuous: boolean
+  Filter:
+    type: object
+    discriminator: type
+    properties:
+      entityId: string
+      variableId: string
+      type: string
+  StringSetFilter:
+    type: Filter
+    discriminatorValue: stringSet
+    properties:
+      stringSet: string[]
+  NumberSetFilter:
+    type: Filter
+    discriminatorValue: numberSet
+    properties:
+      numberSet: number[]
+  DateSetFilter:
+    type: Filter
+    discriminatorValue: dateSet
+    properties:
+      dateSet: string[] # how to constrain this to a date?
+  NumberRangeFilter:
+    type: Filter
+    discriminatorValue: numberRange
+    properties:
+      min: number
+      max: number
+  DateRangeFilter:
+    type: Filter
+    discriminatorValue: dateRange
+    properties:
+      min: string
+      max: string
 

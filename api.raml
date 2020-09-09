@@ -62,3 +62,23 @@ securitySchemes:
             body:
               application/json:
                 type: lib.EntityIdGetResponse
+
+      post:
+        securedBy: header-auth
+        body:
+          application/json:
+            type: lib.EntityIdPostRequest
+        responses:
+          200:
+            body:
+              text/plain:
+              
+          401:
+            body:
+              application/json:
+                type: error.UnauthorizedError
+          500:
+            body:
+              application/json:
+                type: error.ServerError
+

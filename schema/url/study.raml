@@ -5,20 +5,17 @@ types:
   StudiesGetResponse:
     additionalProperties: false
     properties:
-      studies:
-        type: StudyOverview[]
+      studies: StudyOverview[]
 
   StudyIdGetResponse:
     additionalProperties: false
     properties:
-      study:
-        type: StudyDetail
+      study: StudyDetail
 
   EntityIdGetResponse:
     additionalProperties: false
     properties:
-      study:
-        type: VariablesTreeElement[]
+      entity: Entity
 
   EntityIdPostRequest:
     additionalProperties: false
@@ -42,10 +39,7 @@ types:
     properties:
       id: string
       name: string
-      entityTree: Entity
-      variablesTree:
-        required: true
-        type: VariablesTreeElement[]
+      rootEntity: Entity
 
   Entity:
     type: object
@@ -54,6 +48,7 @@ types:
       name: string
       description: string
       children?: Entity[]
+      variablesTree: VariablesTreeElement[]
 
   VariablesTreeElement:
     type: object

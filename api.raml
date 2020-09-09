@@ -64,6 +64,8 @@ securitySchemes:
 
       post:
         securedBy: header-auth
+        description: |
+          In the request, `filters` must be a subclass of [Filter](#type:lib.Filter)
         body:
           application/json:
             type: lib.EntityIdPostRequest

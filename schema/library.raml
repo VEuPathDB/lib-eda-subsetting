@@ -9,6 +9,33 @@
 ################################################################################
 
 types:
+  HelloResponse:
+    type: object
+    additionalProperties: false
+    properties:
+      greeting:
+        type: string
+        enum:
+          - Hello World
+      anotherType: AnotherType
+  HelloPostRequest:
+    type: object
+    additionalProperties: false
+    properties:
+      greet:
+        description: Who do you want to say hello to?
+        type: string
+  HelloPostResponse:
+    type: object
+    additionalProperties: false
+    properties:
+      message:
+        description: Generated greeting
+        type: string
+  AnotherType:
+    type: object
+    properties:
+      something?: string
   StudiesGetResponse:
     type: object
     additionalProperties: false
@@ -23,7 +50,7 @@ types:
     type: object
     additionalProperties: false
     properties:
-      study: VariablesTreeElement[]
+      entity: Entity
   EntityIdPostRequest:
     type: object
     additionalProperties: false
@@ -41,8 +68,7 @@ types:
     properties:
       id: string
       name: string
-      entityTree: Entity
-      variablesTree: VariablesTreeElement[]
+      rootEntity: Entity
   Entity:
     type: object
     properties:
@@ -50,6 +76,7 @@ types:
       name: string
       description: string
       children?: Entity[]
+      variablesTree: VariablesTreeElement[]
   VariablesTreeElement:
     type: object
     discriminator: type
@@ -116,31 +143,4 @@ types:
     properties:
       min: string
       max: string
-  HelloResponse:
-    type: object
-    additionalProperties: false
-    properties:
-      greeting:
-        type: string
-        enum:
-          - Hello World
-      anotherType: AnotherType
-  HelloPostRequest:
-    type: object
-    additionalProperties: false
-    properties:
-      greet:
-        description: Who do you want to say hello to?
-        type: string
-  HelloPostResponse:
-    type: object
-    additionalProperties: false
-    properties:
-      message:
-        description: Generated greeting
-        type: string
-  AnotherType:
-    type: object
-    properties:
-      something?: string
 

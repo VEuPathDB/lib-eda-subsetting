@@ -34,16 +34,9 @@ public class Studies implements org.veupathdb.service.edass.generated.resources.
   @Override
   public PostStudiesByStudyIdAndEntityIdResponse postStudiesByStudyIdAndEntityId(String studyId,
       String entityId, EntityIdPostRequest request) {
-    
     DataSource datasource = DbManager.applicationDatabase().getDataSource();
-    /*
-     * validateStudyId(datasource, studyId)
-     * entityTree = getEntityTree(datasource, studyId) // each entity includes its variables tree
-     * subsetReport = new subsetReport(entityTree, request.getFilters(), request.getOutputVariableIds());
-     * subsetReport.validate(datasource);  
-     * subsetReport.report(datasource);
-     */
-    return null;
+   
+   return null;
   }
 
 }

@@ -6,16 +6,16 @@ import javax.ws.rs.InternalServerErrorException;
 
 import org.gusdb.fgputil.functional.TreeNode;
 
-public class SubsetEntityTreeNode extends TreeNode<SubsetEntity> {
+public class EntityTreeNode extends TreeNode<Entity> {
 
-  public SubsetEntityTreeNode(SubsetEntity subsetEntity) {
+  public EntityTreeNode(Entity subsetEntity) {
     super(subsetEntity);
   }
 
   /*
    * Validate new child before adding
    */
-  public TreeNode<SubsetEntity> addChild(SubsetEntity child) {
+  public TreeNode<Entity> addChild(Entity child) {
     String errPrefix = "In entity " + getContents().getEntityId() + ", adding a child with the same ID as ";
 
     if (child.getEntityId().equals(getContents().getEntityId()))
@@ -34,11 +34,11 @@ public class SubsetEntityTreeNode extends TreeNode<SubsetEntity> {
    */
   void addSqlJoinStrings(List<String> sqlJoinStrings) {
         
-    for (TreeNode<SubsetEntity> child: getChildNodes()) {
+    for (TreeNode<Entity> child: getChildNodes()) {
       
       sqlJoinStrings.add(getContents().getSqlJoinString(child.getContents()));
       
-      ((SubsetEntityTreeNode)child).addSqlJoinStrings(sqlJoinStrings);
+      ((EntityTreeNode)child).addSqlJoinStrings(sqlJoinStrings);
     }
   }
 }

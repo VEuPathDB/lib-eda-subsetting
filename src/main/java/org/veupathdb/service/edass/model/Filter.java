@@ -1,10 +1,10 @@
 package org.veupathdb.service.edass.model;
 
-public abstract class SubsetFilter {
+public abstract class Filter {
   protected String entityPrimaryKeyColumunName;
   protected String entityTableName;
 
-  public SubsetFilter(String entityPrimaryKeyColumunName, String entityTableName) {
+  public Filter(String entityPrimaryKeyColumunName, String entityTableName) {
     this.entityPrimaryKeyColumunName = entityPrimaryKeyColumunName;
     this.entityTableName = entityTableName;
   }

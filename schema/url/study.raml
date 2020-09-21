@@ -5,26 +5,26 @@ types:
   StudiesGetResponse:
     additionalProperties: false
     properties:
-      studies: StudyOverview[]
+      studies: API_StudyOverview[]
 
   StudyIdGetResponse:
     additionalProperties: false
     properties:
-      study: StudyDetail
+      study: API_StudyDetail
 
   EntityIdGetResponse:
     additionalProperties: false
     properties:
-      entity: Entity
+      entity: API_Entity
 
   EntityIdPostRequest:
     additionalProperties: false
     properties:
       outputEntityId: string
       outputVariableIds?: string[]
-      filters: Filter[]
+      filters: API_Filter[]
 
-  StudyOverview:
+  API_StudyOverview:
     type: object
     properties:
       id:
@@ -34,42 +34,42 @@ types:
         required: true
         type: string
 
-  StudyDetail:
+  API_StudyDetail:
     type: object
     properties:
       id: string
       name: string
-      rootEntity: Entity
+      rootEntity: API_Entity
 
-  Entity:
+  API_Entity:
     type: object
     properties:
       id: string
       name: string
       description: string
-      children?: Entity[]
-      variablesTree: VariablesTreeElement[]
+      children?: API_Entity[]
+      variablesTree: API_VariablesTreeElement[]
 
-  VariablesTreeElement:
+  API_VariablesTreeElement:
     type: object
     discriminator: type
     properties:
       id: string
       name: string
       description: string
-      children?: VariablesTreeElement[]
+      children?: API_VariablesTreeElement[]
       type: string # need to validate that this is category, string, number, date
           
-  VariablesCategory:
-    type: VariablesTreeElement
+  API_VariablesCategory:
+    type: API_VariablesTreeElement
     discriminatorValue: category
  
-  StringVariable:
-    type: VariablesTreeElement
+  API_StringVariable:
+    type: API_VariablesTreeElement
     discriminatorValue: string
     
-  NumberVariable:
-    type: VariablesTreeElement
+  API_NumberVariable:
+    type: API_VariablesTreeElement
     discriminatorValue: number
     properties:
       numberValueSpec:
@@ -78,8 +78,8 @@ types:
           isContinuous: boolean
           precision: integer
 
-  DateVariable:
-    type: VariablesTreeElement
+  API_DateVariable:
+    type: API_VariablesTreeElement
     discriminatorValue: date
     properties:
       dateValueSpec:
@@ -87,7 +87,7 @@ types:
         properties:
           isContinuous: boolean
 
-  Filter:
+  API_Filter:
     type: object
     discriminator: type
     properties:
@@ -95,33 +95,33 @@ types:
       variableId: string
       type: string # need to validate that this is stringSet, numberSet, dateSet, numberRange, dateRange
           
-  StringSetFilter:
-    type: Filter
+  API_StringSetFilter:
+    type: API_Filter
     discriminatorValue: stringSet
     properties:
       stringSet: string[]
 
-  NumberSetFilter:
-    type: Filter
+  API_NumberSetFilter:
+    type: API_Filter
     discriminatorValue: numberSet
     properties:
       numberSet: number[]
 
-  DateSetFilter:
-    type: Filter
+  API_DateSetFilter:
+    type: API_Filter
     discriminatorValue: dateSet
     properties:
       dateSet: string[]   # how to constrain this to a date?
 
-  NumberRangeFilter:
-    type: Filter
+  API_NumberRangeFilter:
+    type: API_Filter
     discriminatorValue: numberRange
     properties:
       min: number
       max: number
 
-  DateRangeFilter:
-    type: Filter
+  API_DateRangeFilter:
+    type: API_Filter
     discriminatorValue: dateRange
     properties:
       min: string

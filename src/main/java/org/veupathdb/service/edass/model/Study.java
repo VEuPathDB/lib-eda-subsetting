@@ -12,20 +12,19 @@ import javax.sql.DataSource;
 import javax.ws.rs.InternalServerErrorException;
 
 import org.gusdb.fgputil.functional.TreeNode;
-import org.veupathdb.lib.container.jaxrs.utils.db.DbManager;
-import org.veupathdb.service.edass.generated.model.DateRangeFilter;
-import org.veupathdb.service.edass.generated.model.DateSetFilter;
-import org.veupathdb.service.edass.generated.model.Filter;
-import org.veupathdb.service.edass.generated.model.NumberRangeFilter;
-import org.veupathdb.service.edass.generated.model.NumberSetFilter;
-import org.veupathdb.service.edass.generated.model.StringSetFilter;
+import org.veupathdb.service.edass.generated.model.APIDateRangeFilter;
+import org.veupathdb.service.edass.generated.model.APIDateSetFilter;
+import org.veupathdb.service.edass.generated.model.APIFilter;
+import org.veupathdb.service.edass.generated.model.APINumberRangeFilter;
+import org.veupathdb.service.edass.generated.model.APINumberSetFilter;
+import org.veupathdb.service.edass.generated.model.APIStringSetFilter;
 
-public class SubsetStudy {
+public class Study {
   private String studyId;;
-  private TreeNode<SubsetEntity> fullStudyEntitiesTree;
-  private Map<String, SubsetEntity> entityIdMap = new HashMap<String, SubsetEntity>();
+  private TreeNode<Entity> fullStudyEntitiesTree;
+  private Map<String, Entity> entityIdMap = new HashMap<String, Entity>();
   
-  public SubsetStudy(String studyId) {
+  public Study(String studyId) {
     this.studyId = studyId;
   }
   
@@ -36,14 +35,13 @@ public class SubsetStudy {
   }
 
   public void produceSubset(DataSource datasource, String outputEntityId, Set<String> outputVariables,
-      Set<Filter> filters) {
+      Set<APIFilter> filters) {
     
-    Set<SubsetFilter> subsetFilters = constructSubsetFilters(filters);
-    Predicate<SubsetEntity> isActive = new Predicate<SubsetEntity>();
+    Set<Filter> subsetFilters = constructSubsetFilters(filters);
     
-    Predicate<SubsetEntity> p1 = c -> c.getName().startsWith("I") && 
-        c.getPopulation() > 10000000;
-    TreeNode<SubsetEntity> prunedEntityTree = trimToActiveAndPivotNodes(fullStudyEntitiesTree, Predicate<T> isActive);
+    // TODO
+    Predicate<Entity> isActive = e -> true;
+    TreeNode<Entity> prunedEntityTree = trimToActiveAndPivotNodes(fullStudyEntitiesTree, isActive);
     /*
      * subsetReport = new subsetReport(entityTree, request.getFilters(), request.getOutputVariableIds());
      * subsetReport.validate(datasource);  
@@ -125,39 +123,37 @@ public class SubsetStudy {
    * get the full entity tree for this study from the datasource.
    * while we are at it, fill in the entity id map
    */
-  private TreeNode<SubsetEntity> getFullEntityTree(DataSource datasource, 
-      String studyId, Map<String, SubsetEntity> entityIdMap) {
+  private TreeNode<Entity> getFullEntityTree(DataSource datasource, 
+      String studyId, Map<String, Entity> entityIdMap) {
     // TODO
     return null;
   }
   
-  private Set<SubsetFilter> constructSubsetFilters(Set<Filter> filters) {
-   Set<SubsetFilter> subsetFilters = new HashSet<SubsetFilter>();
+  private Set<Filter> constructSubsetFilters(Set<APIFilter> filters) {
+   Set<Filter> subsetFilters = new HashSet<Filter>();
    
-    for (Filter filter : filters) {
+    for (APIFilter filter : filters) {
       
-      SubsetEntity subsetEntity = entityIdMap.get(filter.getEntityId());
-      String pkCol = subsetEntity.getEntityPrimaryKeyColumnName();
-      String table = subsetEntity.getEntityTallTableName();
+      Entity Entity = entityIdMap.get(filter.getEntityId());
+      String pkCol = Entity.getEntityPrimaryKeyColumnName();
+      String table = Entity.getEntityTallTableName();
       
-      SubsetFilter newFilter;
-      if (filter instanceof DateRangeFilter)
-        newFilter = new SubsetDateRangeFilter((DateRangeFilter)filter, pkCol, table);   
-      else if (filter instanceof DateSetFilter)
-        newFilter = new SubsetDateSetFilter((DateSetFilter)filter, pkCol, table);
-      else if (filter instanceof NumberRangeFilter)
-        newFilter = new SubsetNumberRangeFilter((NumberRangeFilter)filter, pkCol, table);   
-      else if (filter instanceof NumberSetFilter)
-        newFilter = new SubsetNumberSetFilter((NumberSetFilter)filter, pkCol, table);
-      else if (filter instanceof StringSetFilter)
-        newFilter = new SubsetStringSetFilter((StringSetFilter)filter, pkCol, table);
+      Filter newFilter;
+      if (filter instanceof APIDateRangeFilter)
+        newFilter = new DateRangeFilter((APIDateRangeFilter)filter, pkCol, table);   
+      else if (filter instanceof APIDateSetFilter)
+        newFilter = new DateSetFilter((APIDateSetFilter)filter, pkCol, table);
+      else if (filter instanceof APINumberRangeFilter)
+        newFilter = new NumberRangeFilter((APINumberRangeFilter)filter, pkCol, table);   
+      else if (filter instanceof APINumberSetFilter)
+        newFilter = new NumberSetFilter((APINumberSetFilter)filter, pkCol, table);
+      else if (filter instanceof APIStringSetFilter)
+        newFilter = new StringSetFilter((APIStringSetFilter)filter, pkCol, table);
       else 
         throw new InternalServerErrorException("Input filter not an expected subclass of Filter");
 
       subsetFilters.add(newFilter);   
     }
     return subsetFilters;
-  }
-  
-  public class 
+  } 
 }

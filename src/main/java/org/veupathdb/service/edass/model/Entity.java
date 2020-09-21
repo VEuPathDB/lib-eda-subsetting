@@ -10,8 +10,8 @@ import java.util.stream.Collectors;
  * @author Steve
  *
  */
-public class SubsetEntity {
-  private Set<SubsetFilter> filters;
+public class Entity {
+  private Set<Filter> filters;
   private String entityId;
   private String entityName;
   private String entityTallTableName;
@@ -22,8 +22,8 @@ public class SubsetEntity {
   
   private static final String nl = System.lineSeparator();
 
-  public SubsetEntity(String entityName, String entityId, String entityTallTableName, String entityAncestorTableName,
-      String entityPrimaryKeyColumnName, Set<SubsetFilter> filters) {
+  public Entity(String entityName, String entityId, String entityTallTableName, String entityAncestorTableName,
+      String entityPrimaryKeyColumnName, Set<Filter> filters) {
     this.filters = filters;
     this.entityTallTableName = entityTallTableName;
     this.entityAncestorTableName = entityAncestorTableName;
@@ -46,7 +46,7 @@ public class SubsetEntity {
   }
   
   // this join is formed using the name from the WITH clause, which is the entity name
-  String getSqlJoinString(SubsetEntity entity) {
+  String getSqlJoinString(Entity entity) {
     return entity.getEntityName() + "." + entity.getEntityPrimaryKeyColumnName() +
      " = " + getEntityName() + "." + getEntityPrimaryKeyColumnName();
  }

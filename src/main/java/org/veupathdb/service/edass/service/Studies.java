@@ -7,14 +7,14 @@ import javax.sql.DataSource;
 import org.veupathdb.lib.container.jaxrs.utils.db.DbManager;
 import org.veupathdb.service.edass.generated.model.EntityIdPostRequest;
 import org.veupathdb.service.edass.generated.model.StudiesGetResponseImpl;
-import org.veupathdb.service.edass.generated.model.StudyOverview;
+import org.veupathdb.service.edass.generated.model.APIStudyOverview;
 
 public class Studies implements org.veupathdb.service.edass.generated.resources.Studies {
 
   @Override
   public GetStudiesResponse getStudies() {
     var out = new StudiesGetResponseImpl();
-    out.setStudies(new ArrayList<StudyOverview>());
+    out.setStudies(new ArrayList<APIStudyOverview>());
     return GetStudiesResponse.respond200WithApplicationJson(out);
   }
 

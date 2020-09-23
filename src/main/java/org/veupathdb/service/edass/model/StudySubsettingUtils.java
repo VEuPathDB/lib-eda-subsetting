@@ -39,11 +39,47 @@ public class StudySubsettingUtils {
         e.getEntityId().equals(outputEntity.getEntityId());
     TreeNode<Entity> prunedEntityTree = pruneToActiveAndPivotNodes(study.getEntityTree(), isActive);
     
-    String sql = generateSql(outputVariableNames, outputEntity, filters, prunedEntityTree, entityIdsInFilters);
+    String sql = outputVariableNames.isEmpty()?
+        generateHistogramSql(outputEntity, filters, prunedEntityTree, entityIdsInFilters)
+        : generateSubsetSql(outputVariableNames, outputEntity, filters, prunedEntityTree, entityIdsInFilters);
 
+    // TODO run sql and produce stream output
   }
-  
-  private static String generateSql(Set<String> outputVariableNames, Entity outputEntity, Set<Filter> filters, TreeNode<Entity> prunedEntityTree, Set<String> entityIdsInFilters) {
+
+  /**
+   * Generate SQL to produce a histogram for a single variable, for the specified subset.
+   * @param outputVariableNames
+   * @param outputEntity
+   * @param filters
+   * @param prunedEntityTree
+   * @param entityIdsInFilters
+   * @return
+   */
+  static String generateHistogramSql(Entity outputEntity, Set<Filter> filters, TreeNode<Entity> prunedEntityTree, Set<String> entityIdsInFilters) {
+    // TODO: add the sql wrapper for histogram
+    Set<String> outputVariableNames = new HashSet<String>();
+    outputVariableNames.add(outputEntity.getEntityPrimaryKeyColumnName());
+    
+    return generateWithClauses(prunedEntityTree, filters, entityIdsInFilters) + nl
+        + generateSelectClause(outputVariableNames, outputEntity) + nl
+        + generateFromClause(prunedEntityTree) + nl
+        + generateJoinsClause(prunedEntityTree);
+  }
+  /*
+  static String generateHistogramSelectClause(String baseSelectClause, ) {
+    
+  }
+*/
+  /**
+   * Generate SQL to produce a multi-column output (the requested variables), for the specified subset.
+   * @param outputVariableNames
+   * @param outputEntity
+   * @param filters
+   * @param prunedEntityTree
+   * @param entityIdsInFilters
+   * @return
+   */
+  static String generateSubsetSql(Set<String> outputVariableNames, Entity outputEntity, Set<Filter> filters, TreeNode<Entity> prunedEntityTree, Set<String> entityIdsInFilters) {
 
     return generateWithClauses(prunedEntityTree, filters, entityIdsInFilters) + nl
         + generateSelectClause(outputVariableNames, outputEntity) + nl
@@ -51,7 +87,7 @@ public class StudySubsettingUtils {
         + generateJoinsClause(prunedEntityTree);
   }
 
-  private static String generateSelectClause(Set<String> outputVariableNames, Entity outputEntity) {
+  static String generateSelectClause(Set<String> outputVariableNames, Entity outputEntity) {
     
     // init list with pk columns
     List<String> colNames = new ArrayList<String>(outputEntity.getAncestorFullPkColNames());
@@ -66,16 +102,17 @@ public class StudySubsettingUtils {
   }
   
   private static String generateFromClause(TreeNode<Entity> prunedEntityTree) {
-    //TODO
-    return null;
+    List<String> fromClauses = prunedEntityTree.flatten().stream().map(e -> e.getEntityTallTableName() + " " + e.getEntityName()).collect(Collectors.toList());
+    return "FROM " + String.join(", ", fromClauses);
   }
 
-  private static String generateWithClauses(TreeNode<Entity> prunedEntityTree, Set<Filter> filters, Set<String> entityIdsInFilters) {
-    //TODO List<String> withClauses = prunedEntityTree.
-    return null;
+  static String generateWithClauses(TreeNode<Entity> prunedEntityTree, Set<Filter> filters, Set<String> entityIdsInFilters) {
+    List<String> withClauses = prunedEntityTree.flatten().stream().map(e -> generateWithClause(e, filters)).collect(Collectors.toList());
+    return "WITH" + nl
+        + String.join("," + nl, withClauses);
   }
   
-  private static String generateWithClause(Entity entity, Set<Filter> filters) {
+  static String generateWithClause(Entity entity, Set<Filter> filters) {
 
     // default WITH body assumes no filters. we use the ancestor table because it is small
     String withBody = "SELECT " + entity.getEntityPrimaryKeyColumnName() + " FROM " +
@@ -84,14 +121,14 @@ public class StudySubsettingUtils {
     Set<Filter> filtersOnThisEnity = filters.stream().filter(f -> f.getEntityId().equals(entity.getEntityId())).collect(Collectors.toSet());
 
     if (!filtersOnThisEnity.isEmpty()) {
-      Set<String> filterSqls = filters.stream().filter(f -> f.getEntityId().equals(entity.getEntityId())).map(f -> f.getSql()).collect(Collectors.toSet());
+      Set<String> filterSqls = filters.stream().filter(f -> f.getEntityId().equals(entity.getEntityId())).map(f -> f.getAndClausesSql()).collect(Collectors.toSet());
       withBody = String.join(nl + "INTERSECT" + nl, filterSqls);
     }
 
-    return "WITH " + entity.getEntityName() + " as (" + nl + withBody + nl + ")";
+    return entity.getEntityName() + " as (" + nl + withBody + nl + ")";
   }
   
-  private static String generateJoinsClause(TreeNode<Entity> prunedEntityTree) {
+  static String generateJoinsClause(TreeNode<Entity> prunedEntityTree) {
     List<String> sqlJoinStrings = new ArrayList<String>();
     addSqlJoinStrings(prunedEntityTree, sqlJoinStrings);
     return "WHERE " + String.join(nl + "AND ", sqlJoinStrings);    
@@ -101,7 +138,7 @@ public class StudySubsettingUtils {
    * Add to the input list the sql join of a parent entity with each of its children, plus, recursively, its
    * children's sql joins
    */
-  private static void addSqlJoinStrings(TreeNode<Entity> parent, List<String> sqlJoinStrings) {
+  static void addSqlJoinStrings(TreeNode<Entity> parent, List<String> sqlJoinStrings) {
     for (TreeNode<Entity> child : parent.getChildNodes()) {
       sqlJoinStrings.add(getSqlJoinString(parent.getContents(), child.getContents()));
       addSqlJoinStrings(child, sqlJoinStrings);
@@ -109,7 +146,7 @@ public class StudySubsettingUtils {
   }
 
   // this join is formed using the name from the WITH clause, which is the entity name
-  private static String getSqlJoinString(Entity parentEntity, Entity childEntity) {
+  static String getSqlJoinString(Entity parentEntity, Entity childEntity) {
     return parentEntity.getEntityName() + "." + parentEntity.getEntityPrimaryKeyColumnName() + " = " +
         childEntity.getEntityName() + "." + childEntity.getEntityPrimaryKeyColumnName();
   }
@@ -118,7 +155,7 @@ public class StudySubsettingUtils {
    * Given a study and a set of API filters, construct and return a set of filters, each being the appropriate
    * filter subclass
    */
-  private static Set<Filter> constructFiltersFromAPIFilters(Study study, Set<APIFilter> filters) {
+  static Set<Filter> constructFiltersFromAPIFilters(Study study, Set<APIFilter> filters) {
     Set<Filter> subsetFilters = new HashSet<Filter>();
 
     for (APIFilter filter : filters) {

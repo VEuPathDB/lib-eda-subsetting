@@ -24,7 +24,7 @@ import org.veupathdb.service.edass.generated.model.APIStringSetFilter;
  * @author Steve
  *
  */
-public class StudySubsetting {
+public class StudySubsettingUtils {
 
   private static final String nl = System.lineSeparator();
 

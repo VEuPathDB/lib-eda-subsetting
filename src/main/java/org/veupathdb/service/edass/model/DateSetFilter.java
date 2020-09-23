@@ -6,8 +6,8 @@ public class DateSetFilter extends Filter {
 
   private APIDateSetFilter inputFilter;
    
-  public DateSetFilter(APIDateSetFilter inputFilter, String entityPrimaryKeyColumunName, String entityTableName) {
-    super(entityPrimaryKeyColumunName, entityTableName);
+  public DateSetFilter(APIDateSetFilter inputFilter, String entityId, String entityPrimaryKeyColumunName, String entityTableName) {
+    super(entityId, entityPrimaryKeyColumunName, entityTableName);
     this.inputFilter = inputFilter;
   }
 

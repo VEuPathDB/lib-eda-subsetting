@@ -6,8 +6,8 @@ public class NumberSetFilter extends Filter {
 
   private APINumberSetFilter inputFilter;
   
-  public NumberSetFilter(APINumberSetFilter inputFilter, String entityPrimaryKeyColumunName, String entityTableName) {
-    super(entityPrimaryKeyColumunName, entityTableName);
+  public NumberSetFilter(APINumberSetFilter inputFilter, String entityId, String entityPrimaryKeyColumunName, String entityTableName) {
+    super(entityId, entityPrimaryKeyColumunName, entityTableName);
     this.inputFilter = inputFilter;
   }
 

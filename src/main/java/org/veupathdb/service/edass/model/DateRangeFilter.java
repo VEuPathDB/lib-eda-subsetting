@@ -6,8 +6,8 @@ public class DateRangeFilter extends Filter {
 
   private APIDateRangeFilter inputFilter;
   
-  public DateRangeFilter(APIDateRangeFilter inputFilter, String entityPrimaryKeyColumunName, String entityTableName) {
-    super(entityPrimaryKeyColumunName, entityTableName);
+  public DateRangeFilter(APIDateRangeFilter inputFilter, String entityId, String entityPrimaryKeyColumunName, String entityTableName) {
+    super(entityId, entityPrimaryKeyColumunName, entityTableName);
     this.inputFilter = inputFilter;
   }
 

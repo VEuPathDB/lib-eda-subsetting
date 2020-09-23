@@ -6,8 +6,8 @@ public class NumberRangeFilter extends Filter {
 
   private APINumberRangeFilter inputFilter;
   
-  public NumberRangeFilter(APINumberRangeFilter inputFilter, String entityPrimaryKeyColumunName, String entityTableName) {
-    super(entityPrimaryKeyColumunName, entityTableName);
+  public NumberRangeFilter(APINumberRangeFilter inputFilter, String entityId, String entityPrimaryKeyColumunName, String entityTableName) {
+    super(entityId, entityPrimaryKeyColumunName, entityTableName);
     this.inputFilter = inputFilter;
   }
 

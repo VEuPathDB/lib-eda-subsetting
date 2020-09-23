@@ -3,7 +3,9 @@
  */
 package org.veupathdb.service.edass.model;
 
-import java.util.Set;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 import java.util.stream.Collectors;
 
 /**
@@ -11,45 +13,21 @@ import java.util.stream.Collectors;
  *
  */
 public class Entity {
-  private Set<Filter> filters;
   private String entityId;
   private String entityName;
   private String entityTallTableName;
   private String entityAncestorTableName;
   private String entityPrimaryKeyColumnName;
+  private List<String> ancestorPkColNames = new ArrayList<String>();
+  private List<String> ancestorFullPkColNames; // entityName.pkColName
   
-  
-  
-  private static final String nl = System.lineSeparator();
-
   public Entity(String entityName, String entityId, String entityTallTableName, String entityAncestorTableName,
-      String entityPrimaryKeyColumnName, Set<Filter> filters) {
-    this.filters = filters;
+      String entityPrimaryKeyColumnName) {
     this.entityTallTableName = entityTallTableName;
     this.entityAncestorTableName = entityAncestorTableName;
     this.entityPrimaryKeyColumnName = entityPrimaryKeyColumnName;
+    this.ancestorFullPkColNames = ancestorPkColNames.stream().map(pk -> entityName + "." + pk).collect(Collectors.toList());
   }
-
-  String getWithClauseSql() {
-    
-    // default WITH body assumes no filters.  we use the ancestor table because it is small
-    String withBody = "SELECT " + getEntityPrimaryKeyColumnName() + " FROM " + entityAncestorTableName;
-
-    if (!filters.isEmpty()) {
-      Set<String> filterSqls = filters.stream().map(f -> f.getSql()).collect(Collectors.toSet());
-      withBody = String.join(nl + "INTERSECT" + nl, filterSqls);
-    }   
-    
-    return "WITH " + entityName + " as (" + nl
-        + withBody + nl
-        + ")";
-  }
-  
-  // this join is formed using the name from the WITH clause, which is the entity name
-  String getSqlJoinString(Entity entity) {
-    return entity.getEntityName() + "." + entity.getEntityPrimaryKeyColumnName() +
-     " = " + getEntityName() + "." + getEntityPrimaryKeyColumnName();
- }
 
   String getEntityId() {
     return entityId;
@@ -66,4 +44,17 @@ public class Entity {
   String getEntityPrimaryKeyColumnName() {
     return entityPrimaryKeyColumnName;
   }
+  
+  public String getEntityAncestorTableName() {
+    return entityAncestorTableName;
+  }
+  
+  public List<String> getAncestorPkColNames() {
+    return Collections.unmodifiableList(ancestorPkColNames);
+  }
+  
+  public List<String> getAncestorFullPkColNames() {
+    return Collections.unmodifiableList(ancestorFullPkColNames);
+  }
+
 }

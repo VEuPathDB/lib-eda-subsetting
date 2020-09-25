@@ -17,11 +17,23 @@ types:
     properties:
       entity: API_Entity
 
-  EntityIdPostRequest:
+  EntityHistogramPostRequest:
     additionalProperties: false
     properties:
       outputEntityId: string
-      outputVariableIds?: string[]
+      histogramVariableId: string
+      filters: API_Filter[]
+
+  EntityHistogramPostResponse:
+    additionalProperties: false
+    properties:
+      counts: integer[]
+
+  EntityTabularPostRequest:
+    additionalProperties: false
+    properties:
+      outputEntityId: string
+      outputVariableIds: string[]
       filters: API_Filter[]
 
   API_StudyOverview:

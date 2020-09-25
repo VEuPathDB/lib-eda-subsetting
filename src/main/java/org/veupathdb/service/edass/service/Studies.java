@@ -5,7 +5,8 @@ import java.util.ArrayList;
 import javax.sql.DataSource;
 
 import org.veupathdb.lib.container.jaxrs.utils.db.DbManager;
-import org.veupathdb.service.edass.generated.model.EntityIdPostRequest;
+import org.veupathdb.service.edass.generated.model.EntityHistogramPostRequest;
+import org.veupathdb.service.edass.generated.model.EntityTabularPostRequest;
 import org.veupathdb.service.edass.generated.model.StudiesGetResponseImpl;
 import org.veupathdb.service.edass.generated.model.APIStudyOverview;
 
@@ -31,9 +32,17 @@ public class Studies implements org.veupathdb.service.edass.generated.resources.
     return null;
   }
 
+    @Override
+  public PostStudiesHistogramByStudyIdAndEntityIdResponse postStudiesHistogramByStudyIdAndEntityId(String studyId,
+      String entityId, EntityHistogramPostRequest request) {
+    DataSource datasource = DbManager.applicationDatabase().getDataSource();
+   
+   return null;
+  }
+
   @Override
-  public PostStudiesByStudyIdAndEntityIdResponse postStudiesByStudyIdAndEntityId(String studyId,
-      String entityId, EntityIdPostRequest request) {
+  public PostStudiesTabularByStudyIdAndEntityIdResponse postStudiesTabularByStudyIdAndEntityId(String studyId,
+      String entityId, EntityTabularPostRequest request) {
     DataSource datasource = DbManager.applicationDatabase().getDataSource();
    
    return null;

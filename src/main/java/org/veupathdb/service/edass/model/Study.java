@@ -15,7 +15,7 @@ public class Study {
   private String studyId;;
   private TreeNode<Entity> entityTree;
   private Map<String, Entity> entityIdMap = new HashMap<String, Entity>();
-  private Set<Variable> variables;
+  private Map<String, Variable> variablesMap;  // name -> Variable
   private Map<String, Entity> variableIdToEntityMap = new HashMap<String, Entity>();
   
   public Study(String studyId) {
@@ -26,7 +26,7 @@ public class Study {
     validateStudyId(datasource, studyId);
     entityTree = loadEntityTree(datasource, studyId, entityIdMap);
     // TODO give each entity its list of ancestor pkCols
-    variables = loadVariables(datasource, studyId);
+    variablesMap = loadVariables(datasource, studyId);
   }
   
   /** 
@@ -50,7 +50,7 @@ public class Study {
     return null;
   }
   
-  private Set<Variable> loadVariables(DataSource datasource, String studyId) {
+  private Map<String, Variable> loadVariables(DataSource datasource, String studyId) {
     return null;
   }
 

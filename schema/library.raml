@@ -24,12 +24,24 @@ types:
     additionalProperties: false
     properties:
       entity: API_Entity
-  EntityIdPostRequest:
+  EntityHistogramPostRequest:
     type: object
     additionalProperties: false
     properties:
       outputEntityId: string
-      outputVariableIds?: string[]
+      histogramVariableId: string
+      filters: API_Filter[]
+  EntityHistogramPostResponse:
+    type: object
+    additionalProperties: false
+    properties:
+      counts: integer[]
+  EntityTabularPostRequest:
+    type: object
+    additionalProperties: false
+    properties:
+      outputEntityId: string
+      outputVariableIds: string[]
       filters: API_Filter[]
   API_StudyOverview:
     type: object

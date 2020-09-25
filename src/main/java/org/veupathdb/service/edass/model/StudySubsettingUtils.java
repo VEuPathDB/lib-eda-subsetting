@@ -17,6 +17,7 @@ import org.veupathdb.service.edass.generated.model.APIFilter;
 import org.veupathdb.service.edass.generated.model.APINumberRangeFilter;
 import org.veupathdb.service.edass.generated.model.APINumberSetFilter;
 import org.veupathdb.service.edass.generated.model.APIStringSetFilter;
+import org.veupathdb.service.edass.model.Variable.VariableType;
 
 /**
  * A class to perform subsetting operations on a study entity
@@ -28,7 +29,7 @@ public class StudySubsettingUtils {
 
   private static final String nl = System.lineSeparator();
 
-  public static void produceSubset(DataSource datasource, Study study, Entity outputEntity,
+  public static void produceTabularSubset(DataSource datasource, Study study, Entity outputEntity,
       Set<String> outputVariableNames, Set<APIFilter> apiFilters) {
 
     Set<Filter> filters = constructFiltersFromAPIFilters(study, apiFilters);
@@ -39,11 +40,45 @@ public class StudySubsettingUtils {
         e.getEntityId().equals(outputEntity.getEntityId());
     TreeNode<Entity> prunedEntityTree = pruneToActiveAndPivotNodes(study.getEntityTree(), isActive);
     
-    String sql = outputVariableNames.isEmpty()?
-        generateHistogramSql(outputEntity, filters, prunedEntityTree, entityIdsInFilters)
-        : generateSubsetSql(outputVariableNames, outputEntity, filters, prunedEntityTree, entityIdsInFilters);
+    // TODO validate outputVariables
+    String sql = generateTabularSql(outputVariableNames, outputEntity, filters, prunedEntityTree, entityIdsInFilters);
 
     // TODO run sql and produce stream output
+  }
+  
+  public static void produceHistogramSubset(DataSource datasource, Study study, Entity outputEntity,
+      Variable histogramVariable, Set<APIFilter> apiFilters) {
+
+    Set<Filter> filters = constructFiltersFromAPIFilters(study, apiFilters);
+
+    Set<String> entityIdsInFilters = filters.stream().map(f -> f.getEntityId()).collect(Collectors.toSet());
+
+    Predicate<Entity> isActive = e -> entityIdsInFilters.contains(e.getEntityId()) ||
+        e.getEntityId().equals(outputEntity.getEntityId());
+    TreeNode<Entity> prunedEntityTree = pruneToActiveAndPivotNodes(study.getEntityTree(), isActive);
+    
+    String sql = generateHistogramSql(outputEntity, histogramVariable, filters, prunedEntityTree, entityIdsInFilters);
+    // TODO run sql and produce stream output
+  }
+
+
+  /**
+   * Generate SQL to produce a multi-column tabular output (the requested variables), for the specified subset.
+   * @param outputVariableNames
+   * @param outputEntity
+   * @param filters
+   * @param prunedEntityTree
+   * @param entityIdsInFilters
+   * @return
+   */
+  static String generateTabularSql(Set<String> outputVariableNames, Entity outputEntity, Set<Filter> filters, TreeNode<Entity> prunedEntityTree, Set<String> entityIdsInFilters) {
+
+    return generateWithClauses(prunedEntityTree, filters, entityIdsInFilters) + nl
+        + generateTabularSelectClause(outputEntity) + nl
+        + generateFromClause(outputEntity) + nl
+        + generateTabularWhereClause(outputVariableNames, outputEntity) + nl
+        + generateInClause(prunedEntityTree, outputEntity) + nl
+        + generateTabularOrderByClause(outputEntity) + nl;
   }
 
   /**
@@ -55,57 +90,19 @@ public class StudySubsettingUtils {
    * @param entityIdsInFilters
    * @return
    */
-  static String generateHistogramSql(Entity outputEntity, Set<Filter> filters, TreeNode<Entity> prunedEntityTree, Set<String> entityIdsInFilters) {
+  static String generateHistogramSql(Entity outputEntity, Variable histogramVariable, Set<Filter> filters, TreeNode<Entity> prunedEntityTree, Set<String> entityIdsInFilters) {
     // TODO: add the sql wrapper for histogram
     Set<String> outputVariableNames = new HashSet<String>();
     outputVariableNames.add(outputEntity.getEntityPrimaryKeyColumnName());
     
     return generateWithClauses(prunedEntityTree, filters, entityIdsInFilters) + nl
-        + generateSelectClause(outputVariableNames, outputEntity) + nl
-        + generateFromClause(prunedEntityTree) + nl
-        + generateJoinsClause(prunedEntityTree);
-  }
-  /*
-  static String generateHistogramSelectClause(String baseSelectClause, ) {
-    
-  }
-*/
-  /**
-   * Generate SQL to produce a multi-column output (the requested variables), for the specified subset.
-   * @param outputVariableNames
-   * @param outputEntity
-   * @param filters
-   * @param prunedEntityTree
-   * @param entityIdsInFilters
-   * @return
-   */
-  static String generateSubsetSql(Set<String> outputVariableNames, Entity outputEntity, Set<Filter> filters, TreeNode<Entity> prunedEntityTree, Set<String> entityIdsInFilters) {
-
-    return generateWithClauses(prunedEntityTree, filters, entityIdsInFilters) + nl
-        + generateSelectClause(outputVariableNames, outputEntity) + nl
-        + generateFromClause(prunedEntityTree) + nl
-        + generateJoinsClause(prunedEntityTree);
-  }
-
-  static String generateSelectClause(Set<String> outputVariableNames, Entity outputEntity) {
-    
-    // init list with pk columns
-    List<String> colNames = new ArrayList<String>(outputEntity.getAncestorFullPkColNames());
-    
-    // add in variables columns
-    String outputEntityName = outputEntity.getEntityName();
-    List<String> varCols = outputVariableNames.stream().map(v -> outputEntityName + "." + v).collect(Collectors.toList());
-    colNames.addAll(varCols);
-
-    String cols = String.join(", ", colNames);
-    return "SELECT " + cols;
-  }
+        + generateHistogramSelectClause(outputVariableNames, outputEntity) + nl
+        + generateFromClause(outputEntity) + nl
+        + generateHistogramWhereClause(outputVariableNames, outputEntity) + nl
+        + generateInClause(prunedEntityTree, outputEntity) + nl        
+        + generateHistogramGroupByClause(histogramVariable) + nl;
+   }
   
-  private static String generateFromClause(TreeNode<Entity> prunedEntityTree) {
-    List<String> fromClauses = prunedEntityTree.flatten().stream().map(e -> e.getEntityTallTableName() + " " + e.getEntityName()).collect(Collectors.toList());
-    return "FROM " + String.join(", ", fromClauses);
-  }
-
   static String generateWithClauses(TreeNode<Entity> prunedEntityTree, Set<Filter> filters, Set<String> entityIdsInFilters) {
     List<String> withClauses = prunedEntityTree.flatten().stream().map(e -> generateWithClause(e, filters)).collect(Collectors.toList());
     return "WITH" + nl
@@ -128,7 +125,51 @@ public class StudySubsettingUtils {
     return entity.getEntityName() + " as (" + nl + withBody + nl + ")";
   }
   
-  static String generateJoinsClause(TreeNode<Entity> prunedEntityTree) {
+  static String generateTabularSelectClause(Entity outputEntity) {
+    // init list with pk columns, and add in the variable value columns
+    List<String> colNames = new ArrayList<String>(outputEntity.getAncestorFullPkColNames());
+    for (VariableType varType : VariableType.values()) colNames.add(varType.getTallTableColumnName());
+
+    String cols = String.join(", ", colNames);
+    return "SELECT " + cols;
+  }
+    
+  static String generateHistogramSelectClause(Set<String> outputVariableNames, Entity outputEntity) {
+    // select count(participant_id), number_value
+
+    // init list with pk columns
+    List<String> colNames = new ArrayList<String>(outputEntity.getAncestorFullPkColNames());
+    
+    // add in variables columns
+    String outputEntityName = outputEntity.getEntityName();
+    List<String> varCols = outputVariableNames.stream().map(v -> outputEntityName + "." + v).collect(Collectors.toList());
+    colNames.addAll(varCols);
+
+    String cols = String.join(", ", colNames);
+    return "SELECT " + cols;
+  }
+  
+  static String generateFromClause(Entity outputEntity) {
+    return "FROM " + outputEntity.getEntityTallTableName();
+  }
+    
+  static String generateInClause(TreeNode<Entity> prunedEntityTree, Entity outputEntity) {
+    return generateInClauseSelectClause(outputEntity) + nl
+    + generateInClauseFromClause(prunedEntityTree) + nl
+    + generateInClauseJoinsClause(prunedEntityTree);
+
+  }
+  
+  static String generateInClauseSelectClause(Entity outputEntity) {
+    return "SELECT " + outputEntity.getEntityName() + "." + outputEntity.getEntityPrimaryKeyColumnName();
+  }
+  
+  static String generateInClauseFromClause(TreeNode<Entity> prunedEntityTree) {
+    List<String> fromClauses = prunedEntityTree.flatten().stream().map(e -> e.getEntityTallTableName() + " " + e.getEntityName()).collect(Collectors.toList());
+    return "FROM " + String.join(", ", fromClauses);
+  }
+
+  static String generateInClauseJoinsClause(TreeNode<Entity> prunedEntityTree) {
     List<String> sqlJoinStrings = new ArrayList<String>();
     addSqlJoinStrings(prunedEntityTree, sqlJoinStrings);
     return "WHERE " + String.join(nl + "AND ", sqlJoinStrings);    
@@ -149,6 +190,14 @@ public class StudySubsettingUtils {
   static String getSqlJoinString(Entity parentEntity, Entity childEntity) {
     return parentEntity.getEntityName() + "." + parentEntity.getEntityPrimaryKeyColumnName() + " = " +
         childEntity.getEntityName() + "." + childEntity.getEntityPrimaryKeyColumnName();
+  }
+  
+  static String generateTabularOrderByClause(Entity outputEntity) {
+    return "ORDER BY " + outputEntity.getEntityPrimaryKeyColumnName();
+  }
+  
+  static String generateHistogramGroupByClause(Variable outputVariable) {
+    return "GROUP BY " + outputVariable.getVariableType().getTallTableColumnName();
   }
   
   /*

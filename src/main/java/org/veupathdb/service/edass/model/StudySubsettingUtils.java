@@ -76,7 +76,7 @@ public class StudySubsettingUtils {
     return generateWithClauses(prunedEntityTree, filters, entityIdsInFilters) + nl
         + generateTabularSelectClause(outputEntity) + nl
         + generateFromClause(outputEntity) + nl
-        + generateTabularWhereClause(outputVariableNames, outputEntity) + nl
+        + generateTabularWhereClause(outputVariableNames) + nl
         + generateInClause(prunedEntityTree, outputEntity) + nl
         + generateTabularOrderByClause(outputEntity) + nl;
   }
@@ -91,14 +91,14 @@ public class StudySubsettingUtils {
    * @return
    */
   static String generateHistogramSql(Entity outputEntity, Variable histogramVariable, Set<Filter> filters, TreeNode<Entity> prunedEntityTree, Set<String> entityIdsInFilters) {
-    // TODO: add the sql wrapper for histogram
+    
     Set<String> outputVariableNames = new HashSet<String>();
     outputVariableNames.add(outputEntity.getEntityPrimaryKeyColumnName());
     
     return generateWithClauses(prunedEntityTree, filters, entityIdsInFilters) + nl
-        + generateHistogramSelectClause(outputVariableNames, outputEntity) + nl
+        + generateHistogramSelectClause(histogramVariable) + nl
         + generateFromClause(outputEntity) + nl
-        + generateHistogramWhereClause(outputVariableNames, outputEntity) + nl
+        + generateHistogramWhereClause(histogramVariable) + nl
         + generateInClause(prunedEntityTree, outputEntity) + nl        
         + generateHistogramGroupByClause(histogramVariable) + nl;
    }
@@ -134,45 +134,46 @@ public class StudySubsettingUtils {
     return "SELECT " + cols;
   }
     
-  static String generateHistogramSelectClause(Set<String> outputVariableNames, Entity outputEntity) {
-    // select count(participant_id), number_value
-
-    // init list with pk columns
-    List<String> colNames = new ArrayList<String>(outputEntity.getAncestorFullPkColNames());
-    
-    // add in variables columns
-    String outputEntityName = outputEntity.getEntityName();
-    List<String> varCols = outputVariableNames.stream().map(v -> outputEntityName + "." + v).collect(Collectors.toList());
-    colNames.addAll(varCols);
-
-    String cols = String.join(", ", colNames);
-    return "SELECT " + cols;
+  static String generateHistogramSelectClause(Variable histogramVariable) {
+    return "SELECT count(" + histogramVariable.getName() + "), " + histogramVariable.getVariableType().getTallTableColumnName();
   }
   
   static String generateFromClause(Entity outputEntity) {
     return "FROM " + outputEntity.getEntityTallTableName();
   }
-    
+  
+  static String generateTabularWhereClause(Set<String> outputVariableNames) {
+    return "WHERE (" + nl + "  "
+        + String.join(nl + "  ", outputVariableNames)
+        + ")";
+  }
+  
+  static String generateHistogramWhereClause(Variable outputVariable) {
+    return "WHERE ontology_term_name = '" + outputVariable.getName() + "'";
+  }
+
   static String generateInClause(TreeNode<Entity> prunedEntityTree, Entity outputEntity) {
-    return generateInClauseSelectClause(outputEntity) + nl
+    return "AND " + outputEntity.getEntityName() + " IN (" 
+    + generateInClauseSelectClause(outputEntity) + nl
     + generateInClauseFromClause(prunedEntityTree) + nl
-    + generateInClauseJoinsClause(prunedEntityTree);
+    + generateInClauseJoinsClause(prunedEntityTree) + nl
+    + ")";
 
   }
   
   static String generateInClauseSelectClause(Entity outputEntity) {
-    return "SELECT " + outputEntity.getEntityName() + "." + outputEntity.getEntityPrimaryKeyColumnName();
+    return "  SELECT " + outputEntity.getEntityName() + "." + outputEntity.getEntityPrimaryKeyColumnName();
   }
   
   static String generateInClauseFromClause(TreeNode<Entity> prunedEntityTree) {
     List<String> fromClauses = prunedEntityTree.flatten().stream().map(e -> e.getEntityTallTableName() + " " + e.getEntityName()).collect(Collectors.toList());
-    return "FROM " + String.join(", ", fromClauses);
+    return "  FROM " + String.join(", ", fromClauses);
   }
 
   static String generateInClauseJoinsClause(TreeNode<Entity> prunedEntityTree) {
     List<String> sqlJoinStrings = new ArrayList<String>();
     addSqlJoinStrings(prunedEntityTree, sqlJoinStrings);
-    return "WHERE " + String.join(nl + "AND ", sqlJoinStrings);    
+    return "  WHERE " + String.join(nl + "  AND ", sqlJoinStrings);    
   }
   
   /*

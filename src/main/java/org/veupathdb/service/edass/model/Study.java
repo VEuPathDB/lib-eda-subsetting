@@ -1,5 +1,6 @@
 package org.veupathdb.service.edass.model;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -12,11 +13,11 @@ import org.veupathdb.service.edass.generated.model.APIFilter;
 
 
 public class Study {
-  private String studyId;;
+  private String studyId;
   private TreeNode<Entity> entityTree;
   private Map<String, Entity> entityIdMap = new HashMap<String, Entity>();
   private Map<String, Variable> variablesMap;  // name -> Variable
-  private Map<String, Entity> variableIdToEntityMap = new HashMap<String, Entity>();
+  private Map<String, Entity> variableIdToEntityMap;
   
   public Study(String studyId) {
     this.studyId = studyId;
@@ -24,9 +25,9 @@ public class Study {
   
   public void initializeStudy(DataSource datasource) {
     validateStudyId(datasource, studyId);
-    entityTree = loadEntityTree(datasource, studyId, entityIdMap);
-    // TODO give each entity its list of ancestor pkCols
-    variablesMap = loadVariables(datasource, studyId);
+    TreeNode<Entity> entityTree = loadEntityTree(datasource);
+    Set<Variable> variables = loadVariables(datasource);
+    initEntitiesAndVariables(entityTree, variables);
   }
   
   /** 
@@ -50,7 +51,7 @@ public class Study {
     return null;
   }
   
-  private Map<String, Variable> loadVariables(DataSource datasource, String studyId) {
+  private Set<Variable> loadVariables(DataSource datasource) {
     return null;
   }
 
@@ -60,14 +61,34 @@ public class Study {
   
   /*
    * get the full entity tree for this study from the datasource.
-   * while we are at it, fill in the entity id map
    */
-  private TreeNode<Entity> loadEntityTree(DataSource datasource, 
-      String studyId, Map<String, Entity> entityIdMap) {
+  private TreeNode<Entity> loadEntityTree(DataSource datasource) {
     // TODO
     return null;
   }
   
+  /**
+   * Build internal (convenience) state from the raw entity tree and variables set
+   * @param rootEntityNode
+   * @param vars
+   */
+  void initEntitiesAndVariables(TreeNode<Entity> rootEntityNode, Set<Variable> vars) {
+    entityTree = rootEntityNode;
+    
+    // build entity ID map
+    entityIdMap = new HashMap<String, Entity>();
+    rootEntityNode.flatten().stream().map(e -> entityIdMap.put(e.getEntityId(), e));
+
+    // give each entity a set of its ancestor entities.
+    populateEntityAncestors(rootEntityNode);
+    
+    variablesMap = new HashMap<String, Variable>();
+    vars.stream().map(v -> variablesMap.put(v.getName(), v));
+
+    variableIdToEntityMap = new HashMap<String, Entity>();
+    vars.stream().map(v -> variableIdToEntityMap.put(v.getName(), entityIdMap.get(v.getEntityId())));
+   }
+
   /*
    * Confirm that a proposed child does not conflict with existing children.
    * Throw runtime exception if invalid
@@ -83,12 +104,24 @@ public class Study {
       throw new InternalServerErrorException(errPrefix + "another child: " + child.getEntityId());
   }  
 
-  
   public Entity getEntity(String entityId) {
     return entityIdMap.get(entityId);
   }
- 
+   
   public TreeNode<Entity> getEntityTree() {
     return entityTree.clone();
+  }
+  
+  private static void populateEntityAncestors(TreeNode<Entity> rootEntityNode) {
+    populateEntityAncestors(rootEntityNode, new ArrayList<>());
+  }
+  
+  private static void populateEntityAncestors(TreeNode<Entity> entityNode, List<Entity> ancestorEntities) {
+    Entity entity = entityNode.getContents();
+    entity.setAncestorEntities(ancestorEntities);
+    ancestorEntities.add(entity);
+    for (TreeNode<Entity> childNode : entityNode.getChildNodes()) {
+      populateEntityAncestors(childNode, ancestorEntities);
+    }
   }
 }

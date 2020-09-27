@@ -3,7 +3,6 @@
  */
 package org.veupathdb.service.edass.model;
 
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -16,15 +15,16 @@ public class Entity {
   private String entityId;
   private String entityName;
   private String entityTallTableName;
-  private String entityAncestorTableName;
+  private String entityAncestorsTableName;
   private String entityPrimaryKeyColumnName;
-  private List<String> ancestorPkColNames = new ArrayList<String>();
+  private List<Entity> ancestorEntities;
+  private List<String> ancestorPkColNames;
   private List<String> ancestorFullPkColNames; // entityName.pkColName
   
-  public Entity(String entityName, String entityId, String entityTallTableName, String entityAncestorTableName,
+  public Entity(String entityName, String entityId, String entityTallTableName, String entityAncestorsTableName,
       String entityPrimaryKeyColumnName) {
     this.entityTallTableName = entityTallTableName;
-    this.entityAncestorTableName = entityAncestorTableName;
+    this.entityAncestorsTableName = entityAncestorsTableName;
     this.entityPrimaryKeyColumnName = entityPrimaryKeyColumnName;
     this.ancestorFullPkColNames = ancestorPkColNames.stream().map(pk -> entityName + "." + pk).collect(Collectors.toList());
   }
@@ -45,8 +45,8 @@ public class Entity {
     return entityPrimaryKeyColumnName;
   }
   
-  public String getEntityAncestorTableName() {
-    return entityAncestorTableName;
+  public String getEntityParentTableName() {
+    return entityAncestorsTableName;
   }
   
   public List<String> getAncestorPkColNames() {
@@ -56,5 +56,16 @@ public class Entity {
   public List<String> getAncestorFullPkColNames() {
     return Collections.unmodifiableList(ancestorFullPkColNames);
   }
+  
+  public void setAncestorEntities(List<Entity> ancestorEntities) {
+    this.ancestorEntities = ancestorEntities;
+    this.ancestorPkColNames = 
+        ancestorEntities.stream().map(entry -> entry.getEntityPrimaryKeyColumnName()).collect(Collectors.toList());
+    this.ancestorFullPkColNames = 
+        ancestorEntities.stream().map(entry -> entry.getEntityName() + "." + entry.getEntityPrimaryKeyColumnName()).collect(Collectors.toList());
+  }
 
+  public List<Entity> getAncestorEntities() {
+    return Collections.unmodifiableList(ancestorEntities);
+  }
 }

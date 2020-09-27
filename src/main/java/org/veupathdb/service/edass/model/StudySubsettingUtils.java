@@ -113,7 +113,7 @@ public class StudySubsettingUtils {
 
     // default WITH body assumes no filters. we use the ancestor table because it is small
     String withBody = "SELECT " + entity.getEntityPrimaryKeyColumnName() + " FROM " +
-        entity.getEntityAncestorTableName();
+        entity.getEntityParentTableName();
     
     Set<Filter> filtersOnThisEnity = filters.stream().filter(f -> f.getEntityId().equals(entity.getEntityId())).collect(Collectors.toSet());
 

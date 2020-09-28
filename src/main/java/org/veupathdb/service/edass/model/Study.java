@@ -78,8 +78,9 @@ public class Study {
     validateEntityTreeIds(rootEntityNode);
     
     // build entity ID map
-    entityIdMap = new HashMap<String, Entity>();
-    rootEntityNode.flatten().stream().map(e -> entityIdMap.put(e.getEntityId(), e));
+    entityIdMap = new HashMap<String, Entity>(); 
+    for (TreeNode<Entity> treeNode : rootEntityNode.findAll(n -> true)) 
+      entityIdMap.put(treeNode.getContents().getEntityId(), treeNode.getContents());
 
     // give each entity a set of its ancestor entities.
     populateEntityAncestors(rootEntityNode);

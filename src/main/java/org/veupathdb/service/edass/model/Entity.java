@@ -26,7 +26,6 @@ public class Entity {
     this.entityTallTableName = entityTallTableName;
     this.entityAncestorsTableName = entityAncestorsTableName;
     this.entityPrimaryKeyColumnName = entityPrimaryKeyColumnName;
-    this.ancestorFullPkColNames = ancestorPkColNames.stream().map(pk -> entityName + "." + pk).collect(Collectors.toList());
   }
 
   String getEntityId() {

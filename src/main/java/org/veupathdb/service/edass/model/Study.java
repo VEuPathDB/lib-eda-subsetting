@@ -6,6 +6,8 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.stream.Collectors;
+
 import javax.sql.DataSource;
 import javax.ws.rs.InternalServerErrorException;
 
@@ -78,11 +80,7 @@ public class Study {
     validateEntityTreeIds(rootEntityNode);
     
     // build entity ID map
-    entityIdMap = new HashMap<String, Entity>(); 
-   for (TreeNode<Entity> treeNode : rootEntityNode.findAll(n -> true)) 
-      entityIdMap.put(treeNode.getContents().getEntityId(), treeNode.getContents());
-
- //   rootEntityNode.flatten().stream().map(e -> entityIdMap.put(e.getEntityId(), e));
+    entityIdMap = rootEntityNode.flatten().stream().collect(Collectors.toMap(e -> e.getEntityId(), e -> e)); 
 
     // give each entity a set of its ancestor entities.
     populateEntityAncestors(rootEntityNode);

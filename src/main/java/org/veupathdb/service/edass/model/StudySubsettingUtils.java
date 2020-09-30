@@ -34,33 +34,56 @@ public class StudySubsettingUtils {
 
     Set<Filter> filters = constructFiltersFromAPIFilters(study, apiFilters);
 
-    Set<String> entityIdsInFilters = filters.stream().map(f -> f.getEntityId()).collect(Collectors.toSet());
-
-    Predicate<Entity> isActive = e -> entityIdsInFilters.contains(e.getEntityId()) ||
-        e.getEntityId().equals(outputEntity.getEntityId());
-    TreeNode<Entity> prunedEntityTree = pruneToActiveAndPivotNodes(study.getEntityTree(), isActive);
+    validateOutputVariables(study, outputEntity, outputVariableNames);
     
-    // TODO validate outputVariables
+    Set<String> entityIdsInFilters = getEntityIdsInFilters(filters);
+
+    TreeNode<Entity> prunedEntityTree = pruneTree(study.getEntityTree(), filters, outputEntity);
+    
     String sql = generateTabularSql(outputVariableNames, outputEntity, filters, prunedEntityTree, entityIdsInFilters);
 
     // TODO run sql and produce stream output
+  }
+  
+  /* confirm that output variables belong to the output entity */
+  static void validateOutputVariables(Study study, Entity outputEntity, Set<String> outputVariableNames) {
+    String outputEntityId = outputEntity.getEntityId();
+    for (String varName : outputVariableNames) 
+      if (!study.getVariable(varName).getEntityId().equals(outputEntityId))
+        throw new InternalServerErrorException();    
   }
   
   public static void produceHistogramSubset(DataSource datasource, Study study, Entity outputEntity,
       Variable histogramVariable, Set<APIFilter> apiFilters) {
 
     Set<Filter> filters = constructFiltersFromAPIFilters(study, apiFilters);
+    
+    Set<String> entityIdsInFilters = getEntityIdsInFilters(filters);
 
-    Set<String> entityIdsInFilters = filters.stream().map(f -> f.getEntityId()).collect(Collectors.toSet());
-
-    Predicate<Entity> isActive = e -> entityIdsInFilters.contains(e.getEntityId()) ||
-        e.getEntityId().equals(outputEntity.getEntityId());
-    TreeNode<Entity> prunedEntityTree = pruneToActiveAndPivotNodes(study.getEntityTree(), isActive);
+    TreeNode<Entity> prunedEntityTree = pruneTree(study.getEntityTree(), filters, outputEntity);
     
     String sql = generateHistogramSql(outputEntity, histogramVariable, filters, prunedEntityTree, entityIdsInFilters);
     // TODO run sql and produce stream output
   }
 
+  /**
+   * Prune tree to include only active nodes, based on filters and output entity
+   * @param tree
+   * @param filters
+   * @return
+   */
+  static TreeNode<Entity> pruneTree(TreeNode<Entity> tree, Set<Filter> filters, Entity outputEntity) {
+
+    Set<String> entityIdsInFilters = getEntityIdsInFilters(filters);
+
+    Predicate<Entity> isActive = e -> entityIdsInFilters.contains(e.getEntityId()) ||
+        e.getEntityId().equals(outputEntity.getEntityId());
+    return pruneToActiveAndPivotNodes(tree, isActive);
+  }
+  
+  static Set<String> getEntityIdsInFilters(Set<Filter> filters) {
+    return filters.stream().map(f -> f.getEntityId()).collect(Collectors.toSet());
+  }
 
   /**
    * Generate SQL to produce a multi-column tabular output (the requested variables), for the specified subset.
@@ -209,7 +232,6 @@ public class StudySubsettingUtils {
     Set<Filter> subsetFilters = new HashSet<Filter>();
 
     for (APIFilter filter : filters) {
-
       Entity entity = study.getEntity(filter.getEntityId());
       String id = entity.getEntityId();
       String pkCol = entity.getEntityPrimaryKeyColumnName();

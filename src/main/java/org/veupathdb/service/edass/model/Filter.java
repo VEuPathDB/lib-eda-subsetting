@@ -9,6 +9,7 @@ public abstract class Filter {
   protected static final String nl = System.lineSeparator();
 
   public Filter(String entityId, String entityPrimaryKeyColumunName, String entityTableName, String variableName) {
+    this.entityId = entityId;
     this.entityPrimaryKeyColumunName = entityPrimaryKeyColumunName;
     this.entityTableName = entityTableName;
     this.variableName = variableName;

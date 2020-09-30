@@ -23,6 +23,8 @@ public class Entity {
   
   public Entity(String entityName, String entityId, String entityTallTableName, String entityAncestorsTableName,
       String entityPrimaryKeyColumnName) {
+    this.entityId = entityId;
+    this.entityName = entityName;
     this.entityTallTableName = entityTallTableName;
     this.entityAncestorsTableName = entityAncestorsTableName;
     this.entityPrimaryKeyColumnName = entityPrimaryKeyColumnName;
@@ -66,5 +68,9 @@ public class Entity {
 
   public List<Entity> getAncestorEntities() {
     return Collections.unmodifiableList(ancestorEntities);
+  }
+  
+  public String toString() {
+    return "id: " + getEntityId() + " name: " + getEntityName() + " (" + super.toString() + ")";
   }
 }

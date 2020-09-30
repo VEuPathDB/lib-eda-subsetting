@@ -16,7 +16,7 @@ import org.veupathdb.service.edass.generated.model.APIFilter;
 public class Study {
   private String studyId;
   private TreeNode<Entity> entityTree;
-  private Map<String, Entity> entityIdMap = new HashMap<String, Entity>();
+  private Map<String, Entity> entityIdMap;
   private Map<String, Variable> variablesMap;  // name -> Variable
   private Map<String, Entity> variableIdToEntityMap;
   
@@ -79,8 +79,10 @@ public class Study {
     
     // build entity ID map
     entityIdMap = new HashMap<String, Entity>(); 
-    for (TreeNode<Entity> treeNode : rootEntityNode.findAll(n -> true)) 
+   for (TreeNode<Entity> treeNode : rootEntityNode.findAll(n -> true)) 
       entityIdMap.put(treeNode.getContents().getEntityId(), treeNode.getContents());
+
+ //   rootEntityNode.flatten().stream().map(e -> entityIdMap.put(e.getEntityId(), e));
 
     // give each entity a set of its ancestor entities.
     populateEntityAncestors(rootEntityNode);
@@ -98,6 +100,10 @@ public class Study {
    
   public TreeNode<Entity> getEntityTree() {
     return entityTree.clone();
+  }
+  
+  public Variable getVariable(String variableName) {
+    return variablesMap.get(variableName);
   }
   
   private static void populateEntityAncestors(TreeNode<Entity> rootEntityNode) {

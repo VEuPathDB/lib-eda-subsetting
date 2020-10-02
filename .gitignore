@@ -7,6 +7,8 @@
 /tmp/
 /.settings/
 generated/
+.classpath
+.project
 
 *.tmp
 *.bak
@@ -20,3 +22,6 @@ local.properties
 !gradle-wrapper.jar
 /run.sh
 *.env
+
+*~
+.*~

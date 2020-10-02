@@ -236,19 +236,25 @@ public class StudySubsettingUtils {
       String id = entity.getEntityId();
       String pkCol = entity.getEntityPrimaryKeyColumnName();
       String table = entity.getEntityTallTableName();
+      String varId = filter.getVariableId();
 
       Filter newFilter;
-      if (filter instanceof APIDateRangeFilter)
-        newFilter = new DateRangeFilter((APIDateRangeFilter) filter, id, pkCol, table);
-      else if (filter instanceof APIDateSetFilter)
-        newFilter = new DateSetFilter((APIDateSetFilter) filter, id, pkCol, table);
-      else if (filter instanceof APINumberRangeFilter)
-        newFilter = new NumberRangeFilter((APINumberRangeFilter) filter, id, pkCol, table);
-      else if (filter instanceof APINumberSetFilter)
-        newFilter = new NumberSetFilter((APINumberSetFilter) filter, id, pkCol, table);
-      else if (filter instanceof APIStringSetFilter)
-        newFilter = new StringSetFilter((APIStringSetFilter) filter, id, pkCol, table);
-      else
+      if (filter instanceof APIDateRangeFilter) {
+        APIDateRangeFilter f = (APIDateRangeFilter)filter;
+        newFilter = new DateRangeFilter(id, pkCol, table, varId, f.getMin(), f.getMax());
+      } else if (filter instanceof APIDateSetFilter) {
+        APIDateSetFilter f = (APIDateSetFilter)filter;
+        newFilter = new DateSetFilter(id, pkCol, table, varId, f.getDateSet());
+      } else if (filter instanceof APINumberRangeFilter) {
+        APINumberRangeFilter f = (APINumberRangeFilter)filter;
+        newFilter = new NumberRangeFilter(id, pkCol, table, varId, f.getMin(), f.getMax());
+      } else if (filter instanceof APINumberSetFilter) {
+        APINumberSetFilter f = (APINumberSetFilter)filter;
+        newFilter = new NumberSetFilter(id, pkCol, table, varId, f.getNumberSet());
+      } else if (filter instanceof APIStringSetFilter) {
+        APIStringSetFilter f = (APIStringSetFilter)filter;
+        newFilter = new StringSetFilter(id, pkCol, table, varId, f.getStringSet());
+      } else
         throw new InternalServerErrorException("Input filter not an expected subclass of Filter");
 
       subsetFilters.add(newFilter);

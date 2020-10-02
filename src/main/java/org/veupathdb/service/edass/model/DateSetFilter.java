@@ -1,19 +1,19 @@
 package org.veupathdb.service.edass.model;
 
-import org.veupathdb.service.edass.generated.model.APIDateSetFilter;
+import java.util.List;
 
 public class DateSetFilter extends Filter {
 
-  private APIDateSetFilter inputFilter;
+  private List<String> dateSet;
    
-  public DateSetFilter(APIDateSetFilter inputFilter, String entityId, String entityPrimaryKeyColumunName, String entityTableName) {
-    super(entityId, entityPrimaryKeyColumunName, entityTableName, inputFilter.getVariableId());
-    this.inputFilter = inputFilter;
+  public DateSetFilter(String entityId, String entityPrimaryKeyColumunName, String entityTableName, String variableId, List<String> dateSet) {
+    super(entityId, entityPrimaryKeyColumunName, entityTableName, variableId);
+    this.dateSet = dateSet;
   }
 
   @Override
   public String getAndClausesSql() {
-    return "AND date_value IN (" + String.join(", ", inputFilter.getDateSet()) + " )" + nl;
+    return "AND date_value IN (" + String.join(", ", dateSet) + " )" + nl;
   }
 
 }

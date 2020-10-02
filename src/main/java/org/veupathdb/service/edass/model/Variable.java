@@ -5,6 +5,7 @@ public class Variable {
   private String id;
   private String entityId;
   private VariableType type;
+  private Resolution resolution;
   
   public enum VariableType {
     STRING ("string_value"),  
@@ -22,12 +23,18 @@ public class Variable {
     }    
   }
   
-  public Variable(String name, String id, String entityId, VariableType type) {
+  public enum Resolution {
+    CONTINUOUS,
+    CATEGORICAL;
+  }
+  
+  public Variable(String name, String id, String entityId, VariableType type, Resolution resolution) {
 
     this.name = name;
     this.id = id;
     this.entityId = entityId;
     this.type = type;
+    this.resolution = resolution;
   }
 
   public String getName() {
@@ -45,4 +52,9 @@ public class Variable {
   public VariableType getVariableType() {
     return type;
   }
+
+  public Resolution getResolution() {
+    return resolution;
+  }
+  
 }

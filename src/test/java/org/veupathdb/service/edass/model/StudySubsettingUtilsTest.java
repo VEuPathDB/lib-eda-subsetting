@@ -10,11 +10,12 @@ import org.veupathdb.service.edass.generated.model.APIFilter;
 import org.veupathdb.service.edass.generated.model.APIFilterImpl;
 import org.veupathdb.service.edass.generated.model.APINumberRangeFilter;
 import org.veupathdb.service.edass.generated.model.APINumberRangeFilterImpl;
-import org.veupathdb.service.edass.generated.model.APIStringSetFilter;
-import org.veupathdb.service.edass.generated.model.APIStringSetFilterImpl;
+import org.veupathdb.service.edass.model.Variable.Resolution;
 import org.veupathdb.service.edass.model.Variable.VariableType;
 
 import static org.junit.jupiter.api.Assertions.*;
+
+import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -25,31 +26,51 @@ import org.gusdb.fgputil.functional.TreeNode;
 
 public class StudySubsettingUtilsTest {
   
-  private static Study testStudy;
-  private static Entity household = new Entity("Household", "1", "Hshld_tall", "Hshld_ancestors",
-      "household_id");
-  private static Entity householdObs = new Entity("HouseholdObs", "4", "HouseObs_tall", "HouseObs_ancestors",
-      "household_obs_id");
-  private static Entity participant = new Entity("Participant", "2", "Part_tall", "Part_ancestors",
-      "participant_id");
-  private static Entity observation = new Entity("Observation", "3", "Obs_tall", "Obs_ancestors",
-      "observation_id");
-  private static Entity sample = new Entity("Sample", "5", "Sample_tall", "Sample_ancestors",
-      "sample_id");
-  private static Entity treatment = new Entity("Treatment", "6", "Treatment_tall", "Treatment_ancestors",
-      "treatment_id");
-
+  // reusable study objects
+  private static Study testStudy; 
+  
+  private static Entity household;
+  private static Entity householdObs;
+  private static Entity participant;
+  private static Entity observation;
+  private static Entity sample;
+  private static Entity treatment;
+  
+  private static Variable roof;
+  private static Variable shoesize;
+  private static Variable weight;
+  
+  private static Filter obsWeightFilter;
+  private static Filter houseRoofFilter;
+  
   @BeforeAll
   public static void setUp() {
-      testStudy = createTestStudy();
+    testStudy = createTestStudy();
+    createStaticFilters();
   }
 
   static Study createTestStudy() {
     Study study = new Study("555555"); 
+    createTestEntities();
     TreeNode<Entity> entityTree = constructEntityTree();
     Set<Variable> variables = constructVariables();
     study.initEntitiesAndVariables(entityTree, variables);
     return study;
+  }
+  
+  static void createTestEntities() {
+    household = new Entity("Household", "1", "Hshld_tall", "Hshld_ancestors",
+        "household_id");
+    householdObs = new Entity("HouseholdObs", "4", "HouseObs_tall", "HouseObs_ancestors",
+        "household_obs_id");
+    participant = new Entity("Participant", "2", "Part_tall", "Part_ancestors",
+        "participant_id");
+    observation = new Entity("Observation", "3", "Obs_tall", "Obs_ancestors",
+        "observation_id");
+    sample = new Entity("Sample", "5", "Sample_tall", "Sample_ancestors",
+        "sample_id");
+    treatment = new Entity("Treatment", "6", "Treatment_tall", "Treatment_ancestors",
+        "treatment_id");
   }
   
   static TreeNode<Entity> constructEntityTree() {
@@ -75,9 +96,27 @@ public class StudySubsettingUtilsTest {
   
   static Set<Variable> constructVariables() {
     Set<Variable> vars = new HashSet<Variable>();
-    Variable v = new Variable("roof", "10", "1", VariableType.STRING);
-    vars.add(v);
+    roof = new Variable("roof", "10", household.getEntityId(), VariableType.STRING, Resolution.CATEGORICAL);
+    shoesize = new Variable("shoesize", "11", participant.getEntityId(), VariableType.NUMBER, Resolution.CATEGORICAL);    
+    weight = new Variable("weight", "12", observation.getEntityId(), VariableType.NUMBER, Resolution.CONTINUOUS);    
+    vars.add(roof);
+    vars.add(shoesize);
+    vars.add(weight);
     return vars;
+  }
+  
+  static void createStaticFilters() {
+    
+    // create observation weight filter
+    obsWeightFilter = new NumberRangeFilter(observation.getEntityId(),
+        observation.getEntityPrimaryKeyColumnName(), observation.getEntityTallTableName(), 
+        weight.getId(), 10, 20);
+
+    // create household roof filter
+    List<String> roofs = Arrays.asList(new String[]{"metal", "tile"});
+    houseRoofFilter = new StringSetFilter(household.getEntityId(),
+        household.getEntityPrimaryKeyColumnName(), household.getEntityTallTableName(),
+        roof.getId(), roofs);
   }
   
   /*
@@ -90,14 +129,20 @@ public class StudySubsettingUtilsTest {
   @Test
   @DisplayName("Test valid construction of filters from API filters")
   void testConstructFilters() {
+    
     Set<APIFilter> afs = new HashSet<APIFilter>();
+    
     APIDateRangeFilter dateFilter = new APIDateRangeFilterImpl();
-    dateFilter.setEntityId("5");
+    dateFilter.setEntityId(participant.getEntityId());
+    
     afs.add(dateFilter);
+    
     APINumberRangeFilter numberFilter = new APINumberRangeFilterImpl();
-    numberFilter.setEntityId("3");
+    numberFilter.setEntityId(treatment.getEntityId());
     afs.add(numberFilter);
+    
     StudySubsettingUtils.constructFiltersFromAPIFilters(testStudy, afs);
+    
     assertEquals(2, afs.size());
   }
 
@@ -113,12 +158,12 @@ public class StudySubsettingUtilsTest {
         
         // a legit filter
         APIDateRangeFilter dateFilter = new APIDateRangeFilterImpl();
-        dateFilter.setEntityId("5");
+        dateFilter.setEntityId(household.getEntityId());
         afs.add(dateFilter);
         
         // illegit... can't be the superclass
         APIFilter nakedFilter = new APIFilterImpl();
-        nakedFilter.setEntityId("3");
+        nakedFilter.setEntityId(sample.getEntityId());
         afs.add(nakedFilter);
 
         StudySubsettingUtils.constructFiltersFromAPIFilters(testStudy, afs);
@@ -127,41 +172,28 @@ public class StudySubsettingUtilsTest {
   }
   
   @Test
+  @DisplayName("Test getting set of entity IDs from set of filters ")
   void testGetEntityIdsInFilters() {
    
-    // create observation filter
-    APIStringSetFilter apiFilter = new APIStringSetFilterImpl();
-    Filter obsFilter = new StringSetFilter(apiFilter, observation.getEntityId(),
-        observation.getEntityPrimaryKeyColumnName(), observation.getEntityTallTableName());
-    
-    // create household filter
-    apiFilter = new APIStringSetFilterImpl();
-    Filter houseFilter = new StringSetFilter(apiFilter, household.getEntityId(),
-        household.getEntityPrimaryKeyColumnName(), household.getEntityTallTableName());
-    
     // add it to a set
     Set<Filter> filters = new HashSet<Filter>();
-    filters.add(obsFilter);
-    filters.add(houseFilter);
+    filters.add(obsWeightFilter);
+    filters.add(houseRoofFilter);
     
     Set<String> entityIdsInFilters = StudySubsettingUtils.getEntityIdsInFilters(filters);
 
-    assertEquals(2, entityIdsInFilters.size(), "ID set is correct size");
-    assertTrue(entityIdsInFilters.contains(observation.getEntityId()), "ID set contains observ.");
-    assertTrue(entityIdsInFilters.contains(household.getEntityId()), "ID set contains household.");
+    assertEquals(2, entityIdsInFilters.size(), "ID set has incorrect size");
+    assertTrue(entityIdsInFilters.contains(observation.getEntityId()), "ID set does not contain observ.");
+    assertTrue(entityIdsInFilters.contains(household.getEntityId()), "ID set does not contain household.");
   }
   
   @Test
+  @DisplayName("Test pruning an entity tree using 1 filter below")
   void testPruning1() {
     
-    // construct filter from API filter
-    APIStringSetFilter apiFilter = new APIStringSetFilterImpl();
-    Filter obsFilter = new StringSetFilter(apiFilter, observation.getEntityId(),
-        observation.getEntityPrimaryKeyColumnName(), observation.getEntityTallTableName());
-    
-    // add it to a set
+    // create filter set with obs filter
     Set<Filter> filters = new HashSet<Filter>();
-    filters.add(obsFilter);
+    filters.add(obsWeightFilter);
     
     // set output entity
     Entity outputEntity = household;
@@ -177,16 +209,54 @@ public class StudySubsettingUtilsTest {
     assertTrue(compareEntityTrees(prunedTree, expectedTree));
   }
   
-/*
   @Test
-  void testPruning() {
-    Set<Filter> filters = new HashSet<Filter>();
+  @DisplayName("Test pruning an entity tree using 1 filter above")
+  void testPruning2() {
     
-    Entity outputEntity = participant;
+    // add household roof filter to set
+    Set<Filter> filters = new HashSet<Filter>();
+    filters.add(houseRoofFilter);
+    
+    // set output entity
+    Entity outputEntity = observation;
+    
+    // prune tree
+    TreeNode<Entity> prunedTree = StudySubsettingUtils.pruneTree(testStudy.getEntityTree(), filters, outputEntity);
+    
+     // construct expected tree
+    TreeNode<Entity> expectedTree = new TreeNode<Entity>(household);
+    expectedTree.addChild(observation);
 
-    StudySubsettingUtils.pruneTree(testStudy.getEntityTree(), filters, outputEntity);
+    // compare
+    assertTrue(compareEntityTrees(prunedTree, expectedTree));
   }
- */
+  
+  @Test
+  @DisplayName("Test pruning an entity tree with a pivot")
+  void testPruning3() {
+    
+    Set<Filter> filters = new HashSet<Filter>();
+    filters.add(obsWeightFilter);
+    
+    // set output entity
+    Entity outputEntity = householdObs;
+    
+    // prune tree
+    TreeNode<Entity> prunedTree = StudySubsettingUtils.pruneTree(testStudy.getEntityTree(), filters, outputEntity);
+    
+     // construct expected tree
+    TreeNode<Entity> expectedTree = new TreeNode<Entity>(household);
+    expectedTree.addChild(householdObs);
+    expectedTree.addChild(observation);
+
+    /*
+    System.out.println("Expected Tree: " + expectedTree);
+    System.out.println("Pruned Tree: " + prunedTree);
+    */
+    
+    // compare
+    assertTrue(compareEntityTrees(prunedTree, expectedTree));
+  }
   
   static boolean compareEntityTrees(TreeNode<Entity> t1, TreeNode<Entity> t2) {
     if ((t1 == null && t2 != null) || (t1 != null && t2 == null)) return false;
@@ -205,6 +275,10 @@ public class StudySubsettingUtilsTest {
     
     return true;
   }
-
-
+/*
+  @Test
+  void testWithClause() {
+    generateWithClauses(prunedEntityTree, filters, entityIdsInFilters);
+  }
+*/
 }

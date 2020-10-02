@@ -1,19 +1,19 @@
 package org.veupathdb.service.edass.model;
 
-import org.veupathdb.service.edass.generated.model.APIStringSetFilter;
+import java.util.List;
 
 public class StringSetFilter extends Filter {
 
-  private APIStringSetFilter inputFilter;
+  private List<String> stringSet;
   
-  public StringSetFilter(APIStringSetFilter inputFilter, String entityId, String entityPrimaryKeyColumunName, String entityTableName) {
-    super(entityId, entityPrimaryKeyColumunName, entityTableName, inputFilter.getVariableId());
-    this.inputFilter = inputFilter;
+  public StringSetFilter(String entityId, String entityPrimaryKeyColumunName, String entityTableName, String variableId, List<String> stringSet) {
+    super(entityId, entityPrimaryKeyColumunName, entityTableName, variableId);
+    this.stringSet = stringSet;
   }
 
   @Override
   public String getAndClausesSql() {
-    return "AND string_value IN (" + String.join(", ", inputFilter.getStringSet()) + " )" + nl;
+    return "AND string_value IN (" + String.join(", ", stringSet) + " )" + nl;
   }
 
 }

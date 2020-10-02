@@ -3,20 +3,18 @@ package org.veupathdb.service.edass.model;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import org.veupathdb.service.edass.generated.model.APINumberSetFilter;
-
 public class NumberSetFilter extends Filter {
 
-  private APINumberSetFilter inputFilter;
+  private List<Number> numberSet;
   
-  public NumberSetFilter(APINumberSetFilter inputFilter, String entityId, String entityPrimaryKeyColumunName, String entityTableName) {
-    super(entityId, entityPrimaryKeyColumunName, entityTableName, inputFilter.getVariableId());
-    this.inputFilter = inputFilter;
+  public NumberSetFilter(String entityId, String entityPrimaryKeyColumunName, String entityTableName, String variableId, List<Number> numberSet) {
+    super(entityId, entityPrimaryKeyColumunName, entityTableName, variableId);
+    this.numberSet = numberSet;
   }
 
   @Override
   public String getAndClausesSql() {
-    List<String> vals = inputFilter.getNumberSet().stream().map(n -> String.valueOf(n)).collect(Collectors.toList());
+    List<String> vals = numberSet.stream().map(n -> String.valueOf(n)).collect(Collectors.toList());
     return "AND number_value IN (" + String.join(", ", vals) + " )" + nl;
   }
 

@@ -1,18 +1,18 @@
 package org.veupathdb.service.edass.model;
 
-import org.veupathdb.service.edass.generated.model.APIDateRangeFilter;
-
 public class DateRangeFilter extends Filter {
 
-  private APIDateRangeFilter inputFilter;
+  private String min;
+  private String max;
   
-  public DateRangeFilter(APIDateRangeFilter inputFilter, String entityId, String entityPrimaryKeyColumunName, String entityTableName) {
-    super(entityId, entityPrimaryKeyColumunName, entityTableName, inputFilter.getVariableId());
-    this.inputFilter = inputFilter;
+  public DateRangeFilter(String entityId, String entityPrimaryKeyColumunName, String entityTableName, String variableId, String min, String max) {
+    super(entityId, entityPrimaryKeyColumunName, entityTableName, variableId);
+    this.min = min;
+    this.max = max;
   }
 
   @Override
   public String getAndClausesSql() {
-    return "AND date_value >= " + inputFilter.getMin() + " AND date_value <= " + inputFilter.getMin() + nl;
+    return "AND date_value >= " + min + " AND date_value <= " + max + nl;
   }
 }

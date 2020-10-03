@@ -1,13 +1,32 @@
 package org.veupathdb.service.edass.service;
 
 import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.Set;
 
 import javax.sql.DataSource;
+import javax.ws.rs.BadRequestException;
+import javax.ws.rs.InternalServerErrorException;
+import javax.ws.rs.NotFoundException;
 
 import org.veupathdb.lib.container.jaxrs.utils.db.DbManager;
 import org.veupathdb.service.edass.generated.model.EntityHistogramPostRequest;
 import org.veupathdb.service.edass.generated.model.EntityTabularPostRequest;
 import org.veupathdb.service.edass.generated.model.StudiesGetResponseImpl;
+import org.veupathdb.service.edass.model.DateRangeFilter;
+import org.veupathdb.service.edass.model.DateSetFilter;
+import org.veupathdb.service.edass.model.Entity;
+import org.veupathdb.service.edass.model.Filter;
+import org.veupathdb.service.edass.model.NumberRangeFilter;
+import org.veupathdb.service.edass.model.NumberSetFilter;
+import org.veupathdb.service.edass.model.StringSetFilter;
+import org.veupathdb.service.edass.model.Study;
+import org.veupathdb.service.edass.generated.model.APIDateRangeFilter;
+import org.veupathdb.service.edass.generated.model.APIDateSetFilter;
+import org.veupathdb.service.edass.generated.model.APIFilter;
+import org.veupathdb.service.edass.generated.model.APINumberRangeFilter;
+import org.veupathdb.service.edass.generated.model.APINumberSetFilter;
+import org.veupathdb.service.edass.generated.model.APIStringSetFilter;
 import org.veupathdb.service.edass.generated.model.APIStudyOverview;
 
 public class Studies implements org.veupathdb.service.edass.generated.resources.Studies {
@@ -35,17 +54,67 @@ public class Studies implements org.veupathdb.service.edass.generated.resources.
     @Override
   public PostStudiesHistogramByStudyIdAndEntityIdResponse postStudiesHistogramByStudyIdAndEntityId(String studyId,
       String entityId, EntityHistogramPostRequest request) {
+      
     DataSource datasource = DbManager.applicationDatabase().getDataSource();
-   
+    
+    if (!Study.validateStudyId(datasource, studyId))
+      throw new NotFoundException("Study ID " + studyId + " is not found.");
+
    return null;
   }
 
   @Override
   public PostStudiesTabularByStudyIdAndEntityIdResponse postStudiesTabularByStudyIdAndEntityId(String studyId,
       String entityId, EntityTabularPostRequest request) {
+    
     DataSource datasource = DbManager.applicationDatabase().getDataSource();
+    
+    if (!Study.validateStudyId(datasource, studyId))
+      throw new NotFoundException("Study ID " + studyId + " is not found.");
    
    return null;
   }
+  
+  /*
+   * Given a study and a set of API filters, construct and return a set of filters, each being the appropriate
+   * filter subclass
+   */
+  static Set<Filter> constructFiltersFromAPIFilters(Study study, Set<APIFilter> filters) {
+    Set<Filter> subsetFilters = new HashSet<Filter>();
+
+    for (APIFilter apiFilter : filters) {
+      Entity entity = study.getEntity(apiFilter.getEntityId());
+      String id = entity.getEntityId();
+      String pkCol = entity.getEntityPrimaryKeyColumnName();
+      String table = entity.getEntityTallTableName();
+      String varId = apiFilter.getVariableId();
+      
+      if (study.getVariable(varId) == null) 
+        throw new BadRequestException("Variable '" + varId + "' is not found");
+
+      Filter newFilter;
+      if (apiFilter instanceof APIDateRangeFilter) {
+        APIDateRangeFilter f = (APIDateRangeFilter)apiFilter;
+        newFilter = new DateRangeFilter(id, pkCol, table, varId, f.getMin(), f.getMax());
+      } else if (apiFilter instanceof APIDateSetFilter) {
+        APIDateSetFilter f = (APIDateSetFilter)apiFilter;
+        newFilter = new DateSetFilter(id, pkCol, table, varId, f.getDateSet());
+      } else if (apiFilter instanceof APINumberRangeFilter) {
+        APINumberRangeFilter f = (APINumberRangeFilter)apiFilter;
+        newFilter = new NumberRangeFilter(id, pkCol, table, varId, f.getMin(), f.getMax());
+      } else if (apiFilter instanceof APINumberSetFilter) {
+        APINumberSetFilter f = (APINumberSetFilter)apiFilter;
+        newFilter = new NumberSetFilter(id, pkCol, table, varId, f.getNumberSet());
+      } else if (apiFilter instanceof APIStringSetFilter) {
+        APIStringSetFilter f = (APIStringSetFilter)apiFilter;
+        newFilter = new StringSetFilter(id, pkCol, table, varId, f.getStringSet());
+      } else
+        throw new InternalServerErrorException("Input filter not an expected subclass of Filter");
+
+      subsetFilters.add(newFilter);
+    }
+    return subsetFilters;
+  }
+
 
 }

@@ -30,9 +30,7 @@ public class StudySubsettingUtils {
   private static final String nl = System.lineSeparator();
 
   public static void produceTabularSubset(DataSource datasource, Study study, Entity outputEntity,
-      Set<String> outputVariableNames, Set<APIFilter> apiFilters) {
-
-    Set<Filter> filters = constructFiltersFromAPIFilters(study, apiFilters);
+      Set<String> outputVariableNames, Set<Filter> filters) {
 
     validateOutputVariables(study, outputEntity, outputVariableNames);
     
@@ -54,10 +52,8 @@ public class StudySubsettingUtils {
   }
   
   public static void produceHistogramSubset(DataSource datasource, Study study, Entity outputEntity,
-      Variable histogramVariable, Set<APIFilter> apiFilters) {
+      Variable histogramVariable, Set<Filter> filters) {
 
-    Set<Filter> filters = constructFiltersFromAPIFilters(study, apiFilters);
-    
     Set<String> entityIdsInFilters = getEntityIdsInFilters(filters);
 
     TreeNode<Entity> prunedEntityTree = pruneTree(study.getEntityTree(), filters, outputEntity);
@@ -224,43 +220,6 @@ public class StudySubsettingUtils {
     return "GROUP BY " + outputVariable.getVariableType().getTallTableColumnName();
   }
   
-  /*
-   * Given a study and a set of API filters, construct and return a set of filters, each being the appropriate
-   * filter subclass
-   */
-  static Set<Filter> constructFiltersFromAPIFilters(Study study, Set<APIFilter> filters) {
-    Set<Filter> subsetFilters = new HashSet<Filter>();
-
-    for (APIFilter filter : filters) {
-      Entity entity = study.getEntity(filter.getEntityId());
-      String id = entity.getEntityId();
-      String pkCol = entity.getEntityPrimaryKeyColumnName();
-      String table = entity.getEntityTallTableName();
-      String varId = filter.getVariableId();
-
-      Filter newFilter;
-      if (filter instanceof APIDateRangeFilter) {
-        APIDateRangeFilter f = (APIDateRangeFilter)filter;
-        newFilter = new DateRangeFilter(id, pkCol, table, varId, f.getMin(), f.getMax());
-      } else if (filter instanceof APIDateSetFilter) {
-        APIDateSetFilter f = (APIDateSetFilter)filter;
-        newFilter = new DateSetFilter(id, pkCol, table, varId, f.getDateSet());
-      } else if (filter instanceof APINumberRangeFilter) {
-        APINumberRangeFilter f = (APINumberRangeFilter)filter;
-        newFilter = new NumberRangeFilter(id, pkCol, table, varId, f.getMin(), f.getMax());
-      } else if (filter instanceof APINumberSetFilter) {
-        APINumberSetFilter f = (APINumberSetFilter)filter;
-        newFilter = new NumberSetFilter(id, pkCol, table, varId, f.getNumberSet());
-      } else if (filter instanceof APIStringSetFilter) {
-        APIStringSetFilter f = (APIStringSetFilter)filter;
-        newFilter = new StringSetFilter(id, pkCol, table, varId, f.getStringSet());
-      } else
-        throw new InternalServerErrorException("Input filter not an expected subclass of Filter");
-
-      subsetFilters.add(newFilter);
-    }
-    return subsetFilters;
-  }
 
   /*
    * PRUNE THE COMPLETE TREE TO JUST THE "ACTIVE" ENTITIES WE WANT FOR OUR JOINS

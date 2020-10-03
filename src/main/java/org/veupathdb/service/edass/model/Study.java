@@ -19,18 +19,22 @@ public class Study {
   private String studyId;
   private TreeNode<Entity> entityTree;
   private Map<String, Entity> entityIdMap;
-  private Map<String, Variable> variablesMap;  // name -> Variable
+  private Map<String, Variable> variablesMap;  // id -> Variable
   private Map<String, Entity> variableIdToEntityMap;
   
-  public Study(String studyId) {
+  public Study(String studyId, TreeNode<Entity> entityTree, Set<Variable> variables) {
     this.studyId = studyId;
+    this.entityTree = entityTree;
+    initEntitiesAndVariables(entityTree, variables);
   }
   
-  public void initializeStudy(DataSource datasource) {
-    validateStudyId(datasource, studyId);
+  /* 
+   * Expects a pre-validated study ID
+   */
+  public static Study loadStudy(DataSource datasource, String studyId) {
     TreeNode<Entity> entityTree = loadEntityTree(datasource);
     Set<Variable> variables = loadVariables(datasource);
-    initEntitiesAndVariables(entityTree, variables);
+    return new Study(studyId, entityTree, variables);
   }
   
   /** 
@@ -54,18 +58,21 @@ public class Study {
     return null;
   }
   
-  private Set<Variable> loadVariables(DataSource datasource) {
+  private static Set<Variable> loadVariables(DataSource datasource) {
     return null;
   }
 
-  private void validateStudyId(DataSource datasource, String studyId) {
-    
+  /*
+   * return true if valid study id
+   */
+  public static boolean validateStudyId(DataSource datasource, String studyId) {
+    return false;
   }
   
   /*
    * get the full entity tree for this study from the datasource.
    */
-  private TreeNode<Entity> loadEntityTree(DataSource datasource) {
+  private static TreeNode<Entity> loadEntityTree(DataSource datasource) {
     // TODO
     return null;
   }
@@ -86,10 +93,11 @@ public class Study {
     populateEntityAncestors(rootEntityNode);
     
     variablesMap = new HashMap<String, Variable>();
-    vars.stream().map(v -> variablesMap.put(v.getName(), v));
+    for (Variable var : vars) variablesMap.put(var.getId(), var);
 
     variableIdToEntityMap = new HashMap<String, Entity>();
-    vars.stream().map(v -> variableIdToEntityMap.put(v.getName(), entityIdMap.get(v.getEntityId())));
+    for (Variable var : vars)
+      variableIdToEntityMap.put(var.getId(), entityIdMap.get(var.getEntityId()));
    }
 
   public Entity getEntity(String entityId) {
@@ -100,8 +108,8 @@ public class Study {
     return entityTree.clone();
   }
   
-  public Variable getVariable(String variableName) {
-    return variablesMap.get(variableName);
+  public Variable getVariable(String variableId) {
+    return variablesMap.get(variableId);
   }
   
   private static void populateEntityAncestors(TreeNode<Entity> rootEntityNode) {

@@ -30,7 +30,7 @@ public class Entity {
     this.entityPrimaryKeyColumnName = entityPrimaryKeyColumnName;
   }
 
-  String getEntityId() {
+  public String getEntityId() {
     return entityId;
   }
 
@@ -38,11 +38,11 @@ public class Entity {
     return entityName;
   }
 
-  String getEntityTallTableName() {
+  public String getEntityTallTableName() {
     return entityTallTableName;
   }
 
-  String getEntityPrimaryKeyColumnName() {
+  public String getEntityPrimaryKeyColumnName() {
     return entityPrimaryKeyColumnName;
   }
   

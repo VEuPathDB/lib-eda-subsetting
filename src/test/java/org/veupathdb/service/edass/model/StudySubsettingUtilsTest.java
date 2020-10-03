@@ -4,18 +4,15 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.function.Executable;
+import static org.junit.jupiter.api.Assertions.*;
+
 import org.veupathdb.service.edass.generated.model.APIDateRangeFilter;
 import org.veupathdb.service.edass.generated.model.APIDateRangeFilterImpl;
 import org.veupathdb.service.edass.generated.model.APIFilter;
 import org.veupathdb.service.edass.generated.model.APIFilterImpl;
 import org.veupathdb.service.edass.generated.model.APINumberRangeFilter;
 import org.veupathdb.service.edass.generated.model.APINumberRangeFilterImpl;
-import org.veupathdb.service.edass.model.Variable.Resolution;
-import org.veupathdb.service.edass.model.Variable.VariableType;
 
-import static org.junit.jupiter.api.Assertions.*;
-
-import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -25,99 +22,14 @@ import javax.ws.rs.InternalServerErrorException;
 import org.gusdb.fgputil.functional.TreeNode;
 
 public class StudySubsettingUtilsTest {
-  
-  // reusable study objects
-  private static Study testStudy; 
-  
-  private static Entity household;
-  private static Entity householdObs;
-  private static Entity participant;
-  private static Entity observation;
-  private static Entity sample;
-  private static Entity treatment;
-  
-  private static Variable roof;
-  private static Variable shoesize;
-  private static Variable weight;
-  
-  private static Filter obsWeightFilter;
-  private static Filter houseRoofFilter;
+    
+  private static TestModel model;
   
   @BeforeAll
   public static void setUp() {
-    testStudy = createTestStudy();
-    createStaticFilters();
+    model = new TestModel();
   }
 
-  static Study createTestStudy() {
-    Study study = new Study("555555"); 
-    createTestEntities();
-    TreeNode<Entity> entityTree = constructEntityTree();
-    Set<Variable> variables = constructVariables();
-    study.initEntitiesAndVariables(entityTree, variables);
-    return study;
-  }
-  
-  static void createTestEntities() {
-    household = new Entity("Household", "1", "Hshld_tall", "Hshld_ancestors",
-        "household_id");
-    householdObs = new Entity("HouseholdObs", "4", "HouseObs_tall", "HouseObs_ancestors",
-        "household_obs_id");
-    participant = new Entity("Participant", "2", "Part_tall", "Part_ancestors",
-        "participant_id");
-    observation = new Entity("Observation", "3", "Obs_tall", "Obs_ancestors",
-        "observation_id");
-    sample = new Entity("Sample", "5", "Sample_tall", "Sample_ancestors",
-        "sample_id");
-    treatment = new Entity("Treatment", "6", "Treatment_tall", "Treatment_ancestors",
-        "treatment_id");
-  }
-  
-  static TreeNode<Entity> constructEntityTree() {
-    TreeNode<Entity> householdNode = new TreeNode<Entity>(household);
-
-    TreeNode<Entity> houseObsNode = new TreeNode<Entity>(householdObs);
-    householdNode.addChildNode(houseObsNode);
-
-    TreeNode<Entity> participantNode = new TreeNode<Entity>(participant);
-    householdNode.addChildNode(participantNode);
-
-    TreeNode<Entity> observationNode = new TreeNode<Entity>(observation);
-    participantNode.addChildNode(observationNode);
-    
-    TreeNode<Entity> sampleNode = new TreeNode<Entity>(sample);
-    observationNode.addChildNode(sampleNode);
-    
-    TreeNode<Entity> treatmentNode = new TreeNode<Entity>(treatment);
-    observationNode.addChildNode(treatmentNode);
-    
-    return householdNode;
-  }
-  
-  static Set<Variable> constructVariables() {
-    Set<Variable> vars = new HashSet<Variable>();
-    roof = new Variable("roof", "10", household.getEntityId(), VariableType.STRING, Resolution.CATEGORICAL);
-    shoesize = new Variable("shoesize", "11", participant.getEntityId(), VariableType.NUMBER, Resolution.CATEGORICAL);    
-    weight = new Variable("weight", "12", observation.getEntityId(), VariableType.NUMBER, Resolution.CONTINUOUS);    
-    vars.add(roof);
-    vars.add(shoesize);
-    vars.add(weight);
-    return vars;
-  }
-  
-  static void createStaticFilters() {
-    
-    // create observation weight filter
-    obsWeightFilter = new NumberRangeFilter(observation.getEntityId(),
-        observation.getEntityPrimaryKeyColumnName(), observation.getEntityTallTableName(), 
-        weight.getId(), 10, 20);
-
-    // create household roof filter
-    List<String> roofs = Arrays.asList(new String[]{"metal", "tile"});
-    houseRoofFilter = new StringSetFilter(household.getEntityId(),
-        household.getEntityPrimaryKeyColumnName(), household.getEntityTallTableName(),
-        roof.getId(), roofs);
-  }
   
   /*
   static String getSqlJoinString(Entity parentEntity, Entity childEntity) {
@@ -127,64 +39,19 @@ public class StudySubsettingUtilsTest {
    */
 
   @Test
-  @DisplayName("Test valid construction of filters from API filters")
-  void testConstructFilters() {
-    
-    Set<APIFilter> afs = new HashSet<APIFilter>();
-    
-    APIDateRangeFilter dateFilter = new APIDateRangeFilterImpl();
-    dateFilter.setEntityId(participant.getEntityId());
-    
-    afs.add(dateFilter);
-    
-    APINumberRangeFilter numberFilter = new APINumberRangeFilterImpl();
-    numberFilter.setEntityId(treatment.getEntityId());
-    afs.add(numberFilter);
-    
-    StudySubsettingUtils.constructFiltersFromAPIFilters(testStudy, afs);
-    
-    assertEquals(2, afs.size());
-  }
-
-  @Test
-  @DisplayName("Test rejection of invalid API filters")
-  void testIncorrectConstructFilters() {
-    
-    assertThrows(InternalServerErrorException.class, new Executable() {
-      
-      @Override
-      public void execute() throws Throwable {
-        Set<APIFilter> afs = new HashSet<APIFilter>();
-        
-        // a legit filter
-        APIDateRangeFilter dateFilter = new APIDateRangeFilterImpl();
-        dateFilter.setEntityId(household.getEntityId());
-        afs.add(dateFilter);
-        
-        // illegit... can't be the superclass
-        APIFilter nakedFilter = new APIFilterImpl();
-        nakedFilter.setEntityId(sample.getEntityId());
-        afs.add(nakedFilter);
-
-        StudySubsettingUtils.constructFiltersFromAPIFilters(testStudy, afs);
-      }
-    });
-  }
-  
-  @Test
   @DisplayName("Test getting set of entity IDs from set of filters ")
   void testGetEntityIdsInFilters() {
    
     // add it to a set
     Set<Filter> filters = new HashSet<Filter>();
-    filters.add(obsWeightFilter);
-    filters.add(houseRoofFilter);
+    filters.add(model.obsWeightFilter);
+    filters.add(model.houseRoofFilter);
     
     Set<String> entityIdsInFilters = StudySubsettingUtils.getEntityIdsInFilters(filters);
 
     assertEquals(2, entityIdsInFilters.size(), "ID set has incorrect size");
-    assertTrue(entityIdsInFilters.contains(observation.getEntityId()), "ID set does not contain observ.");
-    assertTrue(entityIdsInFilters.contains(household.getEntityId()), "ID set does not contain household.");
+    assertTrue(entityIdsInFilters.contains(model.observation.getEntityId()), "ID set does not contain observ.");
+    assertTrue(entityIdsInFilters.contains(model.household.getEntityId()), "ID set does not contain household.");
   }
   
   @Test
@@ -193,17 +60,17 @@ public class StudySubsettingUtilsTest {
     
     // create filter set with obs filter
     Set<Filter> filters = new HashSet<Filter>();
-    filters.add(obsWeightFilter);
+    filters.add(model.obsWeightFilter);
     
     // set output entity
-    Entity outputEntity = household;
+    Entity outputEntity = model.household;
     
     // prune tree
-    TreeNode<Entity> prunedTree = StudySubsettingUtils.pruneTree(testStudy.getEntityTree(), filters, outputEntity);
+    TreeNode<Entity> prunedTree = StudySubsettingUtils.pruneTree(model.study.getEntityTree(), filters, outputEntity);
     
      // construct expected tree
-    TreeNode<Entity> expectedTree = new TreeNode<Entity>(household);
-    expectedTree.addChild(observation);
+    TreeNode<Entity> expectedTree = new TreeNode<Entity>(model.household);
+    expectedTree.addChild(model.observation);
 
     // compare
     assertTrue(compareEntityTrees(prunedTree, expectedTree));
@@ -215,17 +82,17 @@ public class StudySubsettingUtilsTest {
     
     // add household roof filter to set
     Set<Filter> filters = new HashSet<Filter>();
-    filters.add(houseRoofFilter);
+    filters.add(model.houseRoofFilter);
     
     // set output entity
-    Entity outputEntity = observation;
+    Entity outputEntity = model.observation;
     
     // prune tree
-    TreeNode<Entity> prunedTree = StudySubsettingUtils.pruneTree(testStudy.getEntityTree(), filters, outputEntity);
+    TreeNode<Entity> prunedTree = StudySubsettingUtils.pruneTree(model.study.getEntityTree(), filters, outputEntity);
     
      // construct expected tree
-    TreeNode<Entity> expectedTree = new TreeNode<Entity>(household);
-    expectedTree.addChild(observation);
+    TreeNode<Entity> expectedTree = new TreeNode<Entity>(model.household);
+    expectedTree.addChild(model.observation);
 
     // compare
     assertTrue(compareEntityTrees(prunedTree, expectedTree));
@@ -236,18 +103,18 @@ public class StudySubsettingUtilsTest {
   void testPruning3() {
     
     Set<Filter> filters = new HashSet<Filter>();
-    filters.add(obsWeightFilter);
+    filters.add(model.obsWeightFilter);
     
     // set output entity
-    Entity outputEntity = householdObs;
+    Entity outputEntity = model.householdObs;
     
     // prune tree
-    TreeNode<Entity> prunedTree = StudySubsettingUtils.pruneTree(testStudy.getEntityTree(), filters, outputEntity);
+    TreeNode<Entity> prunedTree = StudySubsettingUtils.pruneTree(model.study.getEntityTree(), filters, outputEntity);
     
      // construct expected tree
-    TreeNode<Entity> expectedTree = new TreeNode<Entity>(household);
-    expectedTree.addChild(householdObs);
-    expectedTree.addChild(observation);
+    TreeNode<Entity> expectedTree = new TreeNode<Entity>(model.household);
+    expectedTree.addChild(model.householdObs);
+    expectedTree.addChild(model.observation);
 
     /*
     System.out.println("Expected Tree: " + expectedTree);

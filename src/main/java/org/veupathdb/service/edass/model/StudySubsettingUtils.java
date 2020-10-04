@@ -8,15 +8,7 @@ import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
 import javax.sql.DataSource;
-import javax.ws.rs.InternalServerErrorException;
-
 import org.gusdb.fgputil.functional.TreeNode;
-import org.veupathdb.service.edass.generated.model.APIDateRangeFilter;
-import org.veupathdb.service.edass.generated.model.APIDateSetFilter;
-import org.veupathdb.service.edass.generated.model.APIFilter;
-import org.veupathdb.service.edass.generated.model.APINumberRangeFilter;
-import org.veupathdb.service.edass.generated.model.APINumberSetFilter;
-import org.veupathdb.service.edass.generated.model.APIStringSetFilter;
 import org.veupathdb.service.edass.model.Variable.VariableType;
 
 /**
@@ -32,8 +24,6 @@ public class StudySubsettingUtils {
   public static void produceTabularSubset(DataSource datasource, Study study, Entity outputEntity,
       Set<String> outputVariableNames, Set<Filter> filters) {
 
-    validateOutputVariables(study, outputEntity, outputVariableNames);
-    
     Set<String> entityIdsInFilters = getEntityIdsInFilters(filters);
 
     TreeNode<Entity> prunedEntityTree = pruneTree(study.getEntityTree(), filters, outputEntity);
@@ -43,13 +33,6 @@ public class StudySubsettingUtils {
     // TODO run sql and produce stream output
   }
   
-  /* confirm that output variables belong to the output entity */
-  static void validateOutputVariables(Study study, Entity outputEntity, Set<String> outputVariableNames) {
-    String outputEntityId = outputEntity.getEntityId();
-    for (String varName : outputVariableNames) 
-      if (!study.getVariable(varName).getEntityId().equals(outputEntityId))
-        throw new InternalServerErrorException();    
-  }
   
   public static void produceHistogramSubset(DataSource datasource, Study study, Entity outputEntity,
       Variable histogramVariable, Set<Filter> filters) {

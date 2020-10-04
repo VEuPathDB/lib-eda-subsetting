@@ -2,6 +2,7 @@ package org.veupathdb.service.edass.service;
 
 import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 import javax.sql.DataSource;
@@ -72,6 +73,9 @@ public class Studies implements org.veupathdb.service.edass.generated.resources.
     if (!Study.validateStudyId(datasource, studyId))
       throw new NotFoundException("Study ID " + studyId + " is not found.");
    
+    Study study = Study.loadStudy(datasource, studyId);
+    validateOutputVariables(study, request.getOutputEntityId(), request.getOutputVariableIds());
+
    return null;
   }
   
@@ -116,5 +120,12 @@ public class Studies implements org.veupathdb.service.edass.generated.resources.
     return subsetFilters;
   }
 
+  /* confirm that output variables belong to the output entity */
+  static void validateOutputVariables(Study study, String outputEntityId, List<String> outputVariableNames) {
+    for (String varId : outputVariableNames) 
+      if (!study.getVariable(varId).getEntityId().equals(outputEntityId))
+        throw new BadRequestException("Output variable '" + varId
+            + "' is not consistent with output entity '" + outputEntityId + "'" );    
+  }
 
 }

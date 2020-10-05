@@ -1,11 +1,13 @@
 package org.veupathdb.service.edass.model;
 
+import java.time.LocalDateTime;
+
 public class DateRangeFilter extends Filter {
 
-  private String min;
-  private String max;
+  private LocalDateTime min;
+  private LocalDateTime max;
   
-  public DateRangeFilter(String entityId, String entityPrimaryKeyColumunName, String entityTableName, String variableId, String min, String max) {
+  public DateRangeFilter(String entityId, String entityPrimaryKeyColumunName, String entityTableName, String variableId, LocalDateTime min, LocalDateTime max) {
     super(entityId, entityPrimaryKeyColumunName, entityTableName, variableId);
     this.min = min;
     this.max = max;

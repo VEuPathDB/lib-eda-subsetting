@@ -1,5 +1,8 @@
 package org.veupathdb.service.edass.service;
 
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeParseException;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -99,10 +102,13 @@ public class Studies implements org.veupathdb.service.edass.generated.resources.
       Filter newFilter;
       if (apiFilter instanceof APIDateRangeFilter) {
         APIDateRangeFilter f = (APIDateRangeFilter)apiFilter;
-        newFilter = new DateRangeFilter(id, pkCol, table, varId, f.getMin(), f.getMax());
+        newFilter = new DateRangeFilter(id, pkCol, table, varId,
+            convertDate(f.getMin()), convertDate(f.getMax()));
       } else if (apiFilter instanceof APIDateSetFilter) {
         APIDateSetFilter f = (APIDateSetFilter)apiFilter;
-        newFilter = new DateSetFilter(id, pkCol, table, varId, f.getDateSet());
+        List<LocalDateTime> dateSet = new ArrayList<LocalDateTime>();
+        for (String dateStr : f.getDateSet()) dateSet.add(convertDate(dateStr));
+        newFilter = new DateSetFilter(id, pkCol, table, varId, dateSet);
       } else if (apiFilter instanceof APINumberRangeFilter) {
         APINumberRangeFilter f = (APINumberRangeFilter)apiFilter;
         newFilter = new NumberRangeFilter(id, pkCol, table, varId, f.getMin(), f.getMax());
@@ -127,5 +133,14 @@ public class Studies implements org.veupathdb.service.edass.generated.resources.
         throw new BadRequestException("Output variable '" + varId
             + "' is not consistent with output entity '" + outputEntityId + "'" );    
   }
-
+  
+  static LocalDateTime convertDate(String dateStr) {
+    try {
+      DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm");
+      LocalDateTime date = LocalDateTime.parse(dateStr, formatter); 
+      return date;
+    } catch (DateTimeParseException e) {
+      throw new BadRequestException("Can't parse date string" + dateStr);
+    }
+  }
 }

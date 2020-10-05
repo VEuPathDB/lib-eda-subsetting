@@ -111,6 +111,10 @@ public class StudySubsettingUtils {
         + String.join("," + nl, withClauses);
   }
   
+  /*
+   * Get a with clause for this entity.  If the filters don't include any from this entity,
+   * then the with clause will just select * from the entity's ancestor table
+   */
   static String generateWithClause(Entity entity, Set<Filter> filters) {
 
     // default WITH body assumes no filters. we use the ancestor table because it is small

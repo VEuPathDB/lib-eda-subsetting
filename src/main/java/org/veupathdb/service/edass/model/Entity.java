@@ -3,6 +3,7 @@
  */
 package org.veupathdb.service.edass.model;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -59,7 +60,7 @@ public class Entity {
   }
   
   public void setAncestorEntities(List<Entity> ancestorEntities) {
-    this.ancestorEntities = ancestorEntities;
+    this.ancestorEntities = new ArrayList<Entity>(ancestorEntities);
     this.ancestorPkColNames = 
         ancestorEntities.stream().map(entry -> entry.getEntityPrimaryKeyColumnName()).collect(Collectors.toList());
     this.ancestorFullPkColNames = 

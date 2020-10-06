@@ -5,6 +5,8 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
 
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -35,11 +37,11 @@ public class StudySubsettingUtilsTest {
   void testGetEntityIdsInFilters() {
    
     // add it to a set
-    Set<Filter> filters = new HashSet<Filter>();
+    List<Filter> filters = new ArrayList<Filter>();
     filters.add(model.obsWeightFilter);
     filters.add(model.houseRoofFilter);
     
-    Set<String> entityIdsInFilters = StudySubsettingUtils.getEntityIdsInFilters(filters);
+    List<String> entityIdsInFilters = StudySubsettingUtils.getEntityIdsInFilters(filters);
 
     assertEquals(2, entityIdsInFilters.size(), "ID set has incorrect size");
     assertTrue(entityIdsInFilters.contains(model.observation.getEntityId()), "ID set does not contain observ.");
@@ -51,7 +53,7 @@ public class StudySubsettingUtilsTest {
   void testPruning1() {
     
     // create filter set with obs filter
-    Set<Filter> filters = new HashSet<Filter>();
+    List<Filter> filters = new ArrayList<Filter>();
     filters.add(model.obsWeightFilter);
     
     // set output entity
@@ -73,7 +75,7 @@ public class StudySubsettingUtilsTest {
   void testPruning2() {
     
     // add household roof filter to set
-    Set<Filter> filters = new HashSet<Filter>();
+    List<Filter> filters = new ArrayList<Filter>();
     filters.add(model.houseRoofFilter);
     
     // set output entity
@@ -94,7 +96,7 @@ public class StudySubsettingUtilsTest {
   @DisplayName("Test pruning an entity tree with a pivot")
   void testPruning3() {
     
-    Set<Filter> filters = new HashSet<Filter>();
+    List<Filter> filters = new ArrayList<Filter>();
     filters.add(model.obsWeightFilter);
     
     // set output entity
@@ -139,7 +141,7 @@ public class StudySubsettingUtilsTest {
   @DisplayName("Test creating a WITH clause without any relevant filters")
   void testWithClauseNoFilters() {
     
-    Set<Filter> filters = new HashSet<Filter>();
+    List<Filter> filters = new ArrayList<Filter>();
     filters.add(model.obsWeightFilter);
     filters.add(model.obsFavNewYearsFilter);
     String withClause = StudySubsettingUtils.generateWithClause(model.householdObs, filters);
@@ -153,7 +155,7 @@ public class StudySubsettingUtilsTest {
   @DisplayName("Test creating a WITH clause with filters")
   void testWithClause() {
     
-    Set<Filter> filters = new HashSet<Filter>();
+    List<Filter> filters = new ArrayList<Filter>();
     filters.add(model.obsWeightFilter);
     filters.add(model.obsFavNewYearsFilter);
     filters.add(model.obsBirthDateFilter);
@@ -163,12 +165,16 @@ public class StudySubsettingUtilsTest {
     String withClause = StudySubsettingUtils.generateWithClause(model.observation, filters);
     String expectedWithClause = "Observation as (" + nl + 
         "  SELECT observation_id FROM Obs_tall" + nl + 
-        "  WHERE ontology_term_name = '14'" + nl + 
-        "  AND date_value >= '2019-03-21T00:00' AND date_value <= '2019-03-28T00:00'" + nl + 
+        "  WHERE ontology_term_name = '12'" + nl + 
+        "  AND number_value >= 10 AND number_value <= 20" + nl + 
         "INTERSECT" + nl + 
         "  SELECT observation_id FROM Obs_tall" + nl + 
         "  WHERE ontology_term_name = '15'" + nl + 
         "  AND date_value IN ('2019-03-21T00:00', '2019-03-28T00:00', '2019-06-12T00:00')" + nl + 
+        "INTERSECT" + nl + 
+        "  SELECT observation_id FROM Obs_tall" + nl + 
+        "  WHERE ontology_term_name = '14'" + nl + 
+        "  AND date_value >= '2019-03-21T00:00' AND date_value <= '2019-03-28T00:00'" + nl + 
         "INTERSECT" + nl + 
         "  SELECT observation_id FROM Obs_tall" + nl + 
         "  WHERE ontology_term_name = '16'" + nl + 
@@ -177,12 +183,34 @@ public class StudySubsettingUtilsTest {
         "  SELECT observation_id FROM Obs_tall" + nl + 
         "  WHERE ontology_term_name = '13'" + nl + 
         "  AND number_value IN (5, 7, 9 )" + nl + 
-        "INTERSECT" + nl + 
-        "  SELECT observation_id FROM Obs_tall" + nl + 
-        "  WHERE ontology_term_name = '12'" + nl + 
-        "  AND number_value >= 10 AND number_value <= 20" + nl + 
         ")";
     assertEquals(expectedWithClause, withClause);
   }
+
+  @Test
+  @DisplayName("Test creating a select clause for tabular report")
+  void testGenerateTabularSelectClause() {
+    
+    String selectClause = StudySubsettingUtils.generateTabularSelectClause(model.observation);
+    String expectedSelectClause = "SELECT household_id, string_value, number_value, date_value";
+    assertEquals(expectedSelectClause, selectClause);
+  }
+
+  @Test
+  @DisplayName("Test getting full ancestor PKs list")
+  void testGetFullAncestorPKs() {
+    Set<String> cols = new HashSet<String>(model.observation.getAncestorFullPkColNames());
+    Set<String> expected = new HashSet<String>(Arrays.asList(new String[]{"participant_id", "household_id"}));
+    assertEquals(expected, cols);
+  }
+  
+  @Test
+  @DisplayName("Test populating ancestors")
+  void testPopulateAncestors() {
+    Entity h = model.study.getEntity(model.household.getEntityId());
+    assertEquals(new ArrayList<Entity>(), h.getAncestorEntities());
+  }
+  
+  
 
 }

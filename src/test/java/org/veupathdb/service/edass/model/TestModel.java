@@ -65,7 +65,10 @@ public class TestModel {
         "treatment_id");
   }
   
-  private TreeNode<Entity> constructEntityTree() {
+  /*
+   * return a fresh entity tree.
+   */
+  public TreeNode<Entity> constructEntityTree() {
     TreeNode<Entity> householdNode = new TreeNode<Entity>(household);
 
     TreeNode<Entity> houseObsNode = new TreeNode<Entity>(householdObs);

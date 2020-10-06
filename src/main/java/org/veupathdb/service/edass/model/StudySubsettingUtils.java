@@ -1,9 +1,7 @@
 package org.veupathdb.service.edass.model;
 
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
@@ -22,9 +20,9 @@ public class StudySubsettingUtils {
   private static final String nl = System.lineSeparator();
 
   public static void produceTabularSubset(DataSource datasource, Study study, Entity outputEntity,
-      Set<String> outputVariableNames, Set<Filter> filters) {
+      List<String> outputVariableNames, List<Filter> filters) {
 
-    Set<String> entityIdsInFilters = getEntityIdsInFilters(filters);
+    List<String> entityIdsInFilters = getEntityIdsInFilters(filters);
 
     TreeNode<Entity> prunedEntityTree = pruneTree(study.getEntityTree(), filters, outputEntity);
     
@@ -35,9 +33,9 @@ public class StudySubsettingUtils {
   
   
   public static void produceHistogramSubset(DataSource datasource, Study study, Entity outputEntity,
-      Variable histogramVariable, Set<Filter> filters) {
+      Variable histogramVariable, List<Filter> filters) {
 
-    Set<String> entityIdsInFilters = getEntityIdsInFilters(filters);
+    List<String> entityIdsInFilters = getEntityIdsInFilters(filters);
 
     TreeNode<Entity> prunedEntityTree = pruneTree(study.getEntityTree(), filters, outputEntity);
     
@@ -51,17 +49,17 @@ public class StudySubsettingUtils {
    * @param filters
    * @return
    */
-  static TreeNode<Entity> pruneTree(TreeNode<Entity> tree, Set<Filter> filters, Entity outputEntity) {
+  static TreeNode<Entity> pruneTree(TreeNode<Entity> tree, List<Filter> filters, Entity outputEntity) {
 
-    Set<String> entityIdsInFilters = getEntityIdsInFilters(filters);
+    List<String> entityIdsInFilters = getEntityIdsInFilters(filters);
 
     Predicate<Entity> isActive = e -> entityIdsInFilters.contains(e.getEntityId()) ||
         e.getEntityId().equals(outputEntity.getEntityId());
     return pruneToActiveAndPivotNodes(tree, isActive);
   }
   
-  static Set<String> getEntityIdsInFilters(Set<Filter> filters) {
-    return filters.stream().map(f -> f.getEntityId()).collect(Collectors.toSet());
+  static List<String> getEntityIdsInFilters(List<Filter> filters) {
+    return filters.stream().map(f -> f.getEntityId()).collect(Collectors.toList());
   }
 
   /**
@@ -73,7 +71,7 @@ public class StudySubsettingUtils {
    * @param entityIdsInFilters
    * @return
    */
-  static String generateTabularSql(Set<String> outputVariableNames, Entity outputEntity, Set<Filter> filters, TreeNode<Entity> prunedEntityTree, Set<String> entityIdsInFilters) {
+  static String generateTabularSql(List<String> outputVariableNames, Entity outputEntity, List<Filter> filters, TreeNode<Entity> prunedEntityTree, List<String> entityIdsInFilters) {
 
     return generateWithClauses(prunedEntityTree, filters, entityIdsInFilters) + nl
         + generateTabularSelectClause(outputEntity) + nl
@@ -92,9 +90,9 @@ public class StudySubsettingUtils {
    * @param entityIdsInFilters
    * @return
    */
-  static String generateHistogramSql(Entity outputEntity, Variable histogramVariable, Set<Filter> filters, TreeNode<Entity> prunedEntityTree, Set<String> entityIdsInFilters) {
+  static String generateHistogramSql(Entity outputEntity, Variable histogramVariable, List<Filter> filters, TreeNode<Entity> prunedEntityTree, List<String> entityIdsInFilters) {
     
-    Set<String> outputVariableNames = new HashSet<String>();
+    List<String> outputVariableNames = new ArrayList<String>();
     outputVariableNames.add(outputEntity.getEntityPrimaryKeyColumnName());
     
     return generateWithClauses(prunedEntityTree, filters, entityIdsInFilters) + nl
@@ -105,7 +103,7 @@ public class StudySubsettingUtils {
         + generateHistogramGroupByClause(histogramVariable) + nl;
    }
   
-  static String generateWithClauses(TreeNode<Entity> prunedEntityTree, Set<Filter> filters, Set<String> entityIdsInFilters) {
+  static String generateWithClauses(TreeNode<Entity> prunedEntityTree, List<Filter> filters, List<String> entityIdsInFilters) {
     List<String> withClauses = prunedEntityTree.flatten().stream().map(e -> generateWithClause(e, filters)).collect(Collectors.toList());
     return "WITH" + nl
         + String.join("," + nl, withClauses);
@@ -115,15 +113,15 @@ public class StudySubsettingUtils {
    * Get a with clause for this entity.  If the filters don't include any from this entity,
    * then the with clause will just select * from the entity's ancestor table
    */
-  static String generateWithClause(Entity entity, Set<Filter> filters) {
+  static String generateWithClause(Entity entity, List<Filter> filters) {
 
     // default WITH body assumes no filters. we use the ancestor table because it is small
     String withBody = "SELECT " + entity.getEntityPrimaryKeyColumnName() + " FROM " + entity.getEntityAncestorsTableName() + nl;
     
-    Set<Filter> filtersOnThisEnity = filters.stream().filter(f -> f.getEntityId().equals(entity.getEntityId())).collect(Collectors.toSet());
+    List<Filter> filtersOnThisEnity = filters.stream().filter(f -> f.getEntityId().equals(entity.getEntityId())).collect(Collectors.toList());
 
     if (!filtersOnThisEnity.isEmpty()) {
-      Set<String> filterSqls = filters.stream().filter(f -> f.getEntityId().equals(entity.getEntityId())).map(f -> f.getSql()).collect(Collectors.toSet());
+      List<String> filterSqls = filters.stream().filter(f -> f.getEntityId().equals(entity.getEntityId())).map(f -> f.getSql()).collect(Collectors.toList());
       withBody = String.join("INTERSECT" + nl, filterSqls);
     } 
 
@@ -133,6 +131,7 @@ public class StudySubsettingUtils {
   static String generateTabularSelectClause(Entity outputEntity) {
     // init list with pk columns, and add in the variable value columns
     List<String> colNames = new ArrayList<String>(outputEntity.getAncestorFullPkColNames());
+    colNames.add(outputEntity.getEntityName() + "." + outputEntity.getEntityPrimaryKeyColumnName());
     for (VariableType varType : VariableType.values()) colNames.add(varType.getTallTableColumnName());
 
     String cols = String.join(", ", colNames);
@@ -147,7 +146,7 @@ public class StudySubsettingUtils {
     return "FROM " + outputEntity.getEntityTallTableName();
   }
   
-  static String generateTabularWhereClause(Set<String> outputVariableNames) {
+  static String generateTabularWhereClause(List<String> outputVariableNames) {
     return "WHERE (" + nl + "  "
         + String.join(nl + "  ", outputVariableNames)
         + ")";

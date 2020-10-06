@@ -92,7 +92,7 @@ public class Studies implements org.veupathdb.service.edass.generated.resources.
     for (APIFilter apiFilter : filters) {
       Entity entity = study.getEntity(apiFilter.getEntityId());
       String id = entity.getEntityId();
-      String pkCol = entity.getEntityPrimaryKeyColumnName();
+      String pkCol = entity.getEntityPKColName();
       String table = entity.getEntityTallTableName();
       String varId = apiFilter.getVariableId();
       

@@ -43,11 +43,11 @@ public class Entity {
     return entityTallTableName;
   }
 
-  public String getEntityPrimaryKeyColumnName() {
+  public String getEntityPKColName() {
     return entityPrimaryKeyColumnName;
   }
   
-  public String getEntityFullPrimaryKeyColumnName() {
+  public String getEntityFullPKColName() {
     return entityName + "." + entityPrimaryKeyColumnName;
   }
   
@@ -66,9 +66,9 @@ public class Entity {
   public void setAncestorEntities(List<Entity> ancestorEntities) {
     this.ancestorEntities = new ArrayList<Entity>(ancestorEntities);
     this.ancestorPkColNames = 
-        ancestorEntities.stream().map(entry -> entry.getEntityPrimaryKeyColumnName()).collect(Collectors.toList());
+        ancestorEntities.stream().map(entry -> entry.getEntityPKColName()).collect(Collectors.toList());
     this.ancestorFullPkColNames = 
-        ancestorEntities.stream().map(entry -> entry.getEntityName() + "." + entry.getEntityPrimaryKeyColumnName()).collect(Collectors.toList());
+        ancestorEntities.stream().map(entry -> entry.getEntityName() + "." + entry.getEntityPKColName()).collect(Collectors.toList());
   }
 
   public List<Entity> getAncestorEntities() {

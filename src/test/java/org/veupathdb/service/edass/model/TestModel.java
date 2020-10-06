@@ -120,16 +120,16 @@ public class TestModel {
     
     // create observation weight filter
     obsWeightFilter = new NumberRangeFilter(observation.getEntityId(),
-        observation.getEntityPrimaryKeyColumnName(), observation.getEntityTallTableName(), 
+        observation.getEntityPKColName(), observation.getEntityTallTableName(), 
         weight.getId(), 10, 20);
 
     List<Number> favNums = Arrays.asList(new Number[]{5,7,9});
     obsFavNumberFilter = new NumberSetFilter(observation.getEntityId(),
-        observation.getEntityPrimaryKeyColumnName(), observation.getEntityTallTableName(), 
+        observation.getEntityPKColName(), observation.getEntityTallTableName(), 
         favNumber.getId(), favNums); 
 
     obsBirthDateFilter = new DateRangeFilter(observation.getEntityId(),
-        observation.getEntityPrimaryKeyColumnName(), observation.getEntityTallTableName(), 
+        observation.getEntityPKColName(), observation.getEntityTallTableName(), 
         birthDate.getId(),
         LocalDateTime.of(2019, Month.MARCH, 21, 00, 00),
         LocalDateTime.of(2019, Month.MARCH, 28, 00, 00));
@@ -139,23 +139,23 @@ public class TestModel {
     dates.add(LocalDateTime.of(2019, Month.MARCH, 28, 00, 00));
     dates.add(LocalDateTime.of(2019, Month.JUNE, 12, 00, 00));
     obsFavNewYearsFilter = new DateSetFilter(observation.getEntityId(),
-        observation.getEntityPrimaryKeyColumnName(), observation.getEntityTallTableName(), 
+        observation.getEntityPKColName(), observation.getEntityTallTableName(), 
         favNewYears.getId(),
         dates);
 
     List<String> moods = Arrays.asList(new String[]{"happy", "jolly", "giddy"});
     obsMoodFilter = new StringSetFilter(observation.getEntityId(),
-        observation.getEntityPrimaryKeyColumnName(), observation.getEntityTallTableName(), 
+        observation.getEntityPKColName(), observation.getEntityTallTableName(), 
         mood.getId(), moods); 
 
     obsWeightFilter = new NumberRangeFilter(observation.getEntityId(),
-        observation.getEntityPrimaryKeyColumnName(), observation.getEntityTallTableName(), 
+        observation.getEntityPKColName(), observation.getEntityTallTableName(), 
         weight.getId(), 10, 20);
 
     // create household roof filter
     List<String> roofs = Arrays.asList(new String[]{"metal", "tile"});
     houseRoofFilter = new StringSetFilter(household.getEntityId(),
-        household.getEntityPrimaryKeyColumnName(), household.getEntityTallTableName(),
+        household.getEntityPKColName(), household.getEntityTallTableName(),
         roof.getId(), roofs);
   }
 }

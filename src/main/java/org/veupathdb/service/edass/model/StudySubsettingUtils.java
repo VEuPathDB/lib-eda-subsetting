@@ -95,7 +95,7 @@ public class StudySubsettingUtils {
   static String generateHistogramSql(Entity outputEntity, Variable histogramVariable, List<Filter> filters, TreeNode<Entity> prunedEntityTree, List<String> entityIdsInFilters) {
     
     List<String> outputVariableNames = new ArrayList<String>();
-    outputVariableNames.add(outputEntity.getEntityPrimaryKeyColumnName());
+    outputVariableNames.add(outputEntity.getEntityPKColName());
     
     return generateWithClauses(prunedEntityTree, filters, entityIdsInFilters) + nl
         + generateHistogramSelectClause(histogramVariable) + nl
@@ -118,7 +118,7 @@ public class StudySubsettingUtils {
   static String generateWithClause(Entity entity, List<Filter> filters) {
 
     // default WITH body assumes no filters. we use the ancestor table because it is small
-    String withBody = "SELECT " + entity.getEntityPrimaryKeyColumnName() + " FROM " + entity.getEntityAncestorsTableName() + nl;
+    String withBody = "SELECT " + entity.getEntityPKColName() + " FROM " + entity.getEntityAncestorsTableName() + nl;
     
     List<Filter> filtersOnThisEnity = filters.stream().filter(f -> f.getEntityId().equals(entity.getEntityId())).collect(Collectors.toList());
 
@@ -133,7 +133,7 @@ public class StudySubsettingUtils {
   static String generateTabularSelectClause(Entity outputEntity) {
     // init list with pk columns, and add in the variable value columns
     List<String> colNames = new ArrayList<String>(outputEntity.getAncestorFullPkColNames());
-    colNames.add(outputEntity.getEntityName() + "." + outputEntity.getEntityPrimaryKeyColumnName());
+    colNames.add(outputEntity.getEntityName() + "." + outputEntity.getEntityPKColName());
     for (VariableType varType : VariableType.values()) colNames.add(varType.getTallTableColumnName());
 
     String cols = String.join(", ", colNames);
@@ -162,7 +162,7 @@ public class StudySubsettingUtils {
   }
 
   static String generateInClause(TreeNode<Entity> prunedEntityTree, Entity outputEntity) {
-    return "AND " + outputEntity.getEntityName() + " IN (" 
+    return "AND " + outputEntity.getEntityName() + "." + outputEntity.getEntityPKColName() + " IN (" + nl 
     + generateInClauseSelectClause(outputEntity) + nl
     + generateInClauseFromClause(prunedEntityTree) + nl
     + generateInClauseJoinsClause(prunedEntityTree) + nl
@@ -171,11 +171,11 @@ public class StudySubsettingUtils {
   }
   
   static String generateInClauseSelectClause(Entity outputEntity) {
-    return "  SELECT " + outputEntity.getEntityName() + "." + outputEntity.getEntityPrimaryKeyColumnName();
+    return "  SELECT " + outputEntity.getEntityName() + "." + outputEntity.getEntityPKColName();
   }
   
   static String generateInClauseFromClause(TreeNode<Entity> prunedEntityTree) {
-    List<String> fromClauses = prunedEntityTree.flatten().stream().map(e -> e.getEntityTallTableName() + " " + e.getEntityName()).collect(Collectors.toList());
+    List<String> fromClauses = prunedEntityTree.flatten().stream().map(e -> e.getEntityName()).collect(Collectors.toList());
     return "  FROM " + String.join(", ", fromClauses);
   }
 
@@ -187,7 +187,7 @@ public class StudySubsettingUtils {
   
   /*
    * Add to the input list the sql join of a parent entity with each of its children, plus, recursively, its
-   * children's sql joins
+   * children's sql joins.  (Because the tree might have been pruned, the "parent" is some ancestor)
    */
   static void addSqlJoinStrings(TreeNode<Entity> parent, List<String> sqlJoinStrings) {
     for (TreeNode<Entity> child : parent.getChildNodes()) {
@@ -198,12 +198,12 @@ public class StudySubsettingUtils {
 
   // this join is formed using the name from the WITH clause, which is the entity name
   static String getSqlJoinString(Entity parentEntity, Entity childEntity) {
-    return parentEntity.getEntityName() + "." + parentEntity.getEntityPrimaryKeyColumnName() + " = " +
-        childEntity.getEntityName() + "." + childEntity.getEntityPrimaryKeyColumnName();
+    return parentEntity.getEntityName() + "." + parentEntity.getEntityPKColName() + " = " +
+        childEntity.getEntityName() + "." + parentEntity.getEntityPKColName();
   }
   
   static String generateTabularOrderByClause(Entity outputEntity) {
-    return "ORDER BY " + outputEntity.getEntityPrimaryKeyColumnName();
+    return "ORDER BY " + outputEntity.getEntityPKColName();
   }
   
   static String generateHistogramGroupByClause(Variable outputVariable) {

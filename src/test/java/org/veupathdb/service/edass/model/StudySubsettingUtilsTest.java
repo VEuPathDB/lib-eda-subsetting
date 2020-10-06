@@ -192,9 +192,9 @@ public class StudySubsettingUtilsTest {
   void testGenerateTabularSelectClause() {
     
     String selectClause = StudySubsettingUtils.generateTabularSelectClause(model.observation);
-    String expectedSelectClause = "SELECT " + model.household.getEntityFullPrimaryKeyColumnName() +
-        ", " + model.participant.getEntityFullPrimaryKeyColumnName() +
-        ", " + model.observation.getEntityFullPrimaryKeyColumnName() +
+    String expectedSelectClause = "SELECT " + model.household.getEntityFullPKColName() +
+        ", " + model.participant.getEntityFullPKColName() +
+        ", " + model.observation.getEntityFullPKColName() +
         ", string_value, number_value, date_value";
     assertEquals(expectedSelectClause, selectClause);
   }
@@ -203,7 +203,7 @@ public class StudySubsettingUtilsTest {
   @DisplayName("Test getting full ancestor PKs list")
   void testGetFullAncestorPKs() {
     Set<String> cols = new HashSet<String>(model.observation.getAncestorFullPkColNames());
-    Set<String> expected = new HashSet<String>(Arrays.asList(new String[]{model.household.getEntityFullPrimaryKeyColumnName(), model.participant.getEntityFullPrimaryKeyColumnName()}));
+    Set<String> expected = new HashSet<String>(Arrays.asList(new String[]{model.household.getEntityFullPKColName(), model.participant.getEntityFullPKColName()}));
     assertEquals(expected, cols);
   }
   
@@ -249,6 +249,26 @@ public class StudySubsettingUtilsTest {
     assertEquals(expected, where);
   }
 
+  @Test
+  @DisplayName("Test creating an IN clause")
+  void testGenerateInClauseClause() {
+    
+    // construct pruned tree with a pivot (H, HO, O)
+    List<Filter> filters = new ArrayList<Filter>();
+    filters.add(model.obsWeightFilter);
+    Entity outputEntity = model.householdObs;
+    TreeNode<Entity> prunedTree = StudySubsettingUtils.pruneTree(model.study.getEntityTree(), filters, outputEntity);
 
+    List<String> from = Arrays.asList(new String[]{model.household.getEntityName(), model.householdObs.getEntityName(), model.observation.getEntityName()});
+    String inClause = StudySubsettingUtils.generateInClause(prunedTree, outputEntity);
+    String expected = "AND " + model.householdObs.getEntityFullPKColName() + " IN (" + nl +
+        "  SELECT " + model.householdObs.getEntityFullPKColName() +  nl +
+        "  FROM " + String.join(", ", from) + nl +
+        "  WHERE " + model.household.getEntityFullPKColName() + " = " + model.householdObs.getEntityName() + "." + model.household.getEntityPKColName() + nl +
+        "  AND " + model.household.getEntityFullPKColName() + " = " + model.observation.getEntityName() + "." + model.household.getEntityPKColName() + nl +
+        ")";
+
+    assertEquals(expected, inClause);
+  }
 
 }

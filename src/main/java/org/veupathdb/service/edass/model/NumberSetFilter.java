@@ -15,7 +15,7 @@ public class NumberSetFilter extends Filter {
   @Override
   public String getAndClausesSql() {
     List<String> vals = numberSet.stream().map(n -> String.valueOf(n)).collect(Collectors.toList());
-    return "AND number_value IN (" + String.join(", ", vals) + " )" + nl;
+    return "  AND number_value IN (" + String.join(", ", vals) + " )" + nl;
   }
 
 }

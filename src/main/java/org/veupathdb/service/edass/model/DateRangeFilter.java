@@ -15,6 +15,6 @@ public class DateRangeFilter extends Filter {
 
   @Override
   public String getAndClausesSql() {
-    return "AND date_value >= " + min + " AND date_value <= " + max + nl;
+    return "  AND date_value >= '" + min + "' AND date_value <= '" + max + "'" + nl;
   }
 }

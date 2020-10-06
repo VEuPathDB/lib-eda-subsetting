@@ -13,7 +13,7 @@ public class NumberRangeFilter extends Filter {
 
   @Override
   public String getAndClausesSql() {
-    return "AND number_value >= " + min + " AND number_value <= " + max + nl;
+    return "  AND number_value >= " + min + " AND number_value <= " + max + nl;
   }
 
 }

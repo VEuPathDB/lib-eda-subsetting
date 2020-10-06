@@ -118,17 +118,16 @@ public class StudySubsettingUtils {
   static String generateWithClause(Entity entity, Set<Filter> filters) {
 
     // default WITH body assumes no filters. we use the ancestor table because it is small
-    String withBody = "SELECT " + entity.getEntityPrimaryKeyColumnName() + " FROM " +
-        entity.getEntityParentTableName();
+    String withBody = "SELECT " + entity.getEntityPrimaryKeyColumnName() + " FROM " + entity.getEntityAncestorsTableName() + nl;
     
     Set<Filter> filtersOnThisEnity = filters.stream().filter(f -> f.getEntityId().equals(entity.getEntityId())).collect(Collectors.toSet());
 
     if (!filtersOnThisEnity.isEmpty()) {
-      Set<String> filterSqls = filters.stream().filter(f -> f.getEntityId().equals(entity.getEntityId())).map(f -> f.getAndClausesSql()).collect(Collectors.toSet());
-      withBody = String.join(nl + "INTERSECT" + nl, filterSqls);
-    }
+      Set<String> filterSqls = filters.stream().filter(f -> f.getEntityId().equals(entity.getEntityId())).map(f -> f.getSql()).collect(Collectors.toSet());
+      withBody = String.join("INTERSECT" + nl, filterSqls);
+    } 
 
-    return entity.getEntityName() + " as (" + nl + withBody + nl + ")";
+    return entity.getEntityName() + " as (" + nl + withBody + ")";
   }
   
   static String generateTabularSelectClause(Entity outputEntity) {

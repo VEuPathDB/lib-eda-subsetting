@@ -13,7 +13,7 @@ public class StringSetFilter extends Filter {
 
   @Override
   public String getAndClausesSql() {
-    return "AND string_value IN (" + String.join(", ", stringSet) + " )" + nl;
+    return "  AND string_value IN ('" + String.join("', '", stringSet) + "')" + nl;
   }
 
 }

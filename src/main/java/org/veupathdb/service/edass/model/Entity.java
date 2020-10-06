@@ -70,6 +70,10 @@ public class Entity {
     return Collections.unmodifiableList(ancestorEntities);
   }
   
+  public String getEntityAncestorsTableName() {
+    return entityAncestorsTableName;
+  }
+
   public String toString() {
     return "id: " + getEntityId() + " name: " + getEntityName() + " (" + super.toString() + ")";
   }

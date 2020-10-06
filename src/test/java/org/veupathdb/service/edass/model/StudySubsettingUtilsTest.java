@@ -3,21 +3,11 @@ package org.veupathdb.service.edass.model;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.function.Executable;
 import static org.junit.jupiter.api.Assertions.*;
-
-import org.veupathdb.service.edass.generated.model.APIDateRangeFilter;
-import org.veupathdb.service.edass.generated.model.APIDateRangeFilterImpl;
-import org.veupathdb.service.edass.generated.model.APIFilter;
-import org.veupathdb.service.edass.generated.model.APIFilterImpl;
-import org.veupathdb.service.edass.generated.model.APINumberRangeFilter;
-import org.veupathdb.service.edass.generated.model.APINumberRangeFilterImpl;
 
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-
-import javax.ws.rs.InternalServerErrorException;
 
 import org.gusdb.fgputil.functional.TreeNode;
 
@@ -25,6 +15,8 @@ public class StudySubsettingUtilsTest {
     
   private static TestModel model;
   
+  private static final String nl = System.lineSeparator();
+
   @BeforeAll
   public static void setUp() {
     model = new TestModel();
@@ -142,10 +134,55 @@ public class StudySubsettingUtilsTest {
     
     return true;
   }
-/*
+
   @Test
-  void testWithClause() {
-    generateWithClauses(prunedEntityTree, filters, entityIdsInFilters);
+  @DisplayName("Test creating a WITH clause without any relevant filters")
+  void testWithClauseNoFilters() {
+    
+    Set<Filter> filters = new HashSet<Filter>();
+    filters.add(model.obsWeightFilter);
+    filters.add(model.obsFavNewYearsFilter);
+    String withClause = StudySubsettingUtils.generateWithClause(model.householdObs, filters);
+    String expectedWithClause = "HouseholdObs as (" + nl +
+        "SELECT household_obs_id FROM HouseObs_ancestors" + nl +
+        ")";
+    assertEquals(expectedWithClause, withClause);
   }
-*/
+
+  @Test
+  @DisplayName("Test creating a WITH clause with filters")
+  void testWithClause() {
+    
+    Set<Filter> filters = new HashSet<Filter>();
+    filters.add(model.obsWeightFilter);
+    filters.add(model.obsFavNewYearsFilter);
+    filters.add(model.obsBirthDateFilter);
+    filters.add(model.obsMoodFilter);
+    filters.add(model.obsFavNumberFilter);
+    filters.add(model.houseRoofFilter);
+    String withClause = StudySubsettingUtils.generateWithClause(model.observation, filters);
+    String expectedWithClause = "Observation as (\n" + 
+        "  SELECT observation_id FROM Obs_tall\n" + 
+        "  WHERE ontology_term_name = '14'\n" + 
+        "  AND date_value >= '2019-03-21T00:00' AND date_value <= '2019-03-28T00:00'\n" + 
+        "INTERSECT\n" + 
+        "  SELECT observation_id FROM Obs_tall\n" + 
+        "  WHERE ontology_term_name = '15'\n" + 
+        "  AND date_value IN ('2019-03-21T00:00', '2019-03-28T00:00', '2019-06-12T00:00')\n" + 
+        "INTERSECT\n" + 
+        "  SELECT observation_id FROM Obs_tall\n" + 
+        "  WHERE ontology_term_name = '16'\n" + 
+        "  AND string_value IN ('happy', 'jolly', 'giddy')\n" + 
+        "INTERSECT\n" + 
+        "  SELECT observation_id FROM Obs_tall\n" + 
+        "  WHERE ontology_term_name = '13'\n" + 
+        "  AND number_value IN (5, 7, 9 )\n" + 
+        "INTERSECT\n" + 
+        "  SELECT observation_id FROM Obs_tall\n" + 
+        "  WHERE ontology_term_name = '12'\n" + 
+        "  AND number_value >= 10 AND number_value <= 20\n" + 
+        ")";
+    assertEquals(expectedWithClause, withClause);
+  }
+
 }

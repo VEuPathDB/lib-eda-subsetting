@@ -134,6 +134,7 @@ public class TestModel {
     List<LocalDateTime> dates = new ArrayList<LocalDateTime>();
     dates.add(LocalDateTime.of(2019, Month.MARCH, 21, 00, 00));
     dates.add(LocalDateTime.of(2019, Month.MARCH, 28, 00, 00));
+    dates.add(LocalDateTime.of(2019, Month.JUNE, 12, 00, 00));
     obsFavNewYearsFilter = new DateSetFilter(observation.getEntityId(),
         observation.getEntityPrimaryKeyColumnName(), observation.getEntityTallTableName(), 
         favNewYears.getId(),

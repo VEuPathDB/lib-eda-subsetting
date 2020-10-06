@@ -16,8 +16,8 @@ public abstract class Filter {
   }
 
   public String getSql() {
-    return "SELECT " + entityPrimaryKeyColumunName + " FROM " + entityTableName + nl
-        + "WHERE ontology_term_name = '" + variableName + "'" + nl 
+    return "  SELECT " + entityPrimaryKeyColumunName + " FROM " + entityTableName + nl
+        + "  WHERE ontology_term_name = '" + variableName + "'" + nl 
         + getAndClausesSql();
   }
 

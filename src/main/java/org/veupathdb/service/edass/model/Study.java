@@ -121,7 +121,7 @@ public class Study {
     entity.setAncestorEntities(ancestorEntities);
     ancestorEntities.add(entity);
     for (TreeNode<Entity> childNode : entityNode.getChildNodes()) {
-      populateEntityAncestors(childNode, ancestorEntities);
+      populateEntityAncestors(childNode, new ArrayList<Entity>(ancestorEntities));
     }
   }
   

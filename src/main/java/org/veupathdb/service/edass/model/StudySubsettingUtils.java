@@ -18,6 +18,8 @@ import org.veupathdb.service.edass.model.Variable.VariableType;
 public class StudySubsettingUtils {
 
   private static final String nl = System.lineSeparator();
+  
+  private static final String ontologyTermName = "ontology_term_name";
 
   public static void produceTabularSubset(DataSource datasource, Study study, Entity outputEntity,
       List<String> outputVariableNames, List<Filter> filters) {
@@ -147,8 +149,11 @@ public class StudySubsettingUtils {
   }
   
   static String generateTabularWhereClause(List<String> outputVariableNames) {
-    return "WHERE (" + nl + "  "
-        + String.join(nl + "  ", outputVariableNames)
+    
+    List<String> varExprs = new ArrayList<String>();
+    for (String varName : outputVariableNames) varExprs.add("  " + ontologyTermName + " = '" + varName + "'");
+    return "WHERE (" + nl 
+        + String.join(" OR" + nl, varExprs) + nl
         + ")";
   }
   

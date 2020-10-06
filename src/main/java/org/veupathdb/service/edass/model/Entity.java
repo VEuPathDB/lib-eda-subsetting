@@ -47,6 +47,10 @@ public class Entity {
     return entityPrimaryKeyColumnName;
   }
   
+  public String getEntityFullPrimaryKeyColumnName() {
+    return entityName + "." + entityPrimaryKeyColumnName;
+  }
+  
   public String getEntityParentTableName() {
     return entityAncestorsTableName;
   }

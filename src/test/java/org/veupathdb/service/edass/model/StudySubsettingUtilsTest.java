@@ -192,7 +192,10 @@ public class StudySubsettingUtilsTest {
   void testGenerateTabularSelectClause() {
     
     String selectClause = StudySubsettingUtils.generateTabularSelectClause(model.observation);
-    String expectedSelectClause = "SELECT household_id, string_value, number_value, date_value";
+    String expectedSelectClause = "SELECT " + model.household.getEntityFullPrimaryKeyColumnName() +
+        ", " + model.participant.getEntityFullPrimaryKeyColumnName() +
+        ", " + model.observation.getEntityFullPrimaryKeyColumnName() +
+        ", string_value, number_value, date_value";
     assertEquals(expectedSelectClause, selectClause);
   }
 
@@ -200,17 +203,52 @@ public class StudySubsettingUtilsTest {
   @DisplayName("Test getting full ancestor PKs list")
   void testGetFullAncestorPKs() {
     Set<String> cols = new HashSet<String>(model.observation.getAncestorFullPkColNames());
-    Set<String> expected = new HashSet<String>(Arrays.asList(new String[]{"participant_id", "household_id"}));
+    Set<String> expected = new HashSet<String>(Arrays.asList(new String[]{model.household.getEntityFullPrimaryKeyColumnName(), model.participant.getEntityFullPrimaryKeyColumnName()}));
     assertEquals(expected, cols);
   }
   
   @Test
   @DisplayName("Test populating ancestors")
   void testPopulateAncestors() {
-    Entity h = model.study.getEntity(model.household.getEntityId());
-    assertEquals(new ArrayList<Entity>(), h.getAncestorEntities());
+    Entity e = model.study.getEntity(model.household.getEntityId());
+    assertEquals(new ArrayList<Entity>(), e.getAncestorEntities());
+    
+    e = model.study.getEntity(model.participant.getEntityId());
+    List<Entity> l = Arrays.asList(new Entity[]{model.household});
+    assertEquals(l, e.getAncestorEntities());
+
+    e = model.study.getEntity(model.householdObs.getEntityId());
+    l = Arrays.asList(new Entity[]{model.household});
+    assertEquals(l, e.getAncestorEntities());
+
+    e = model.study.getEntity(model.observation.getEntityId());
+    l = Arrays.asList(new Entity[]{model.household, model.participant});
+    assertEquals(l, e.getAncestorEntities());
+  
+    e = model.study.getEntity(model.sample.getEntityId());
+    l = Arrays.asList(new Entity[]{model.household, model.participant, model.observation});
+    assertEquals(l, e.getAncestorEntities());
+  
+    e = model.study.getEntity(model.treatment.getEntityId());
+    l = Arrays.asList(new Entity[]{model.household, model.participant, model.observation});
+    assertEquals(l, e.getAncestorEntities());
+  
   }
   
-  
+  @Test
+  @DisplayName("Test creating a where clause for tabular report")
+  void testGenerateTabularWhereClause() {
+    
+    List<String> vars = Arrays.asList(new String[]{model.birthDate.getId(), model.favNumber.getId()});
+    String where = StudySubsettingUtils.generateTabularWhereClause(vars);
+    String expected = "WHERE (\n" + 
+        "  ontology_term_name = '14' OR" + nl +
+        "  ontology_term_name = '13'" + nl +
+        ")";
+
+    assertEquals(expected, where);
+  }
+
+
 
 }

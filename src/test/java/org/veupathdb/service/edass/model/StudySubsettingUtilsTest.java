@@ -161,26 +161,26 @@ public class StudySubsettingUtilsTest {
     filters.add(model.obsFavNumberFilter);
     filters.add(model.houseRoofFilter);
     String withClause = StudySubsettingUtils.generateWithClause(model.observation, filters);
-    String expectedWithClause = "Observation as (\n" + 
-        "  SELECT observation_id FROM Obs_tall\n" + 
-        "  WHERE ontology_term_name = '14'\n" + 
-        "  AND date_value >= '2019-03-21T00:00' AND date_value <= '2019-03-28T00:00'\n" + 
-        "INTERSECT\n" + 
-        "  SELECT observation_id FROM Obs_tall\n" + 
-        "  WHERE ontology_term_name = '15'\n" + 
-        "  AND date_value IN ('2019-03-21T00:00', '2019-03-28T00:00', '2019-06-12T00:00')\n" + 
-        "INTERSECT\n" + 
-        "  SELECT observation_id FROM Obs_tall\n" + 
-        "  WHERE ontology_term_name = '16'\n" + 
-        "  AND string_value IN ('happy', 'jolly', 'giddy')\n" + 
-        "INTERSECT\n" + 
-        "  SELECT observation_id FROM Obs_tall\n" + 
-        "  WHERE ontology_term_name = '13'\n" + 
-        "  AND number_value IN (5, 7, 9 )\n" + 
-        "INTERSECT\n" + 
-        "  SELECT observation_id FROM Obs_tall\n" + 
-        "  WHERE ontology_term_name = '12'\n" + 
-        "  AND number_value >= 10 AND number_value <= 20\n" + 
+    String expectedWithClause = "Observation as (" + nl + 
+        "  SELECT observation_id FROM Obs_tall" + nl + 
+        "  WHERE ontology_term_name = '14'" + nl + 
+        "  AND date_value >= '2019-03-21T00:00' AND date_value <= '2019-03-28T00:00'" + nl + 
+        "INTERSECT" + nl + 
+        "  SELECT observation_id FROM Obs_tall" + nl + 
+        "  WHERE ontology_term_name = '15'" + nl + 
+        "  AND date_value IN ('2019-03-21T00:00', '2019-03-28T00:00', '2019-06-12T00:00')" + nl + 
+        "INTERSECT" + nl + 
+        "  SELECT observation_id FROM Obs_tall" + nl + 
+        "  WHERE ontology_term_name = '16'" + nl + 
+        "  AND string_value IN ('happy', 'jolly', 'giddy')" + nl + 
+        "INTERSECT" + nl + 
+        "  SELECT observation_id FROM Obs_tall" + nl + 
+        "  WHERE ontology_term_name = '13'" + nl + 
+        "  AND number_value IN (5, 7, 9 )" + nl + 
+        "INTERSECT" + nl + 
+        "  SELECT observation_id FROM Obs_tall" + nl + 
+        "  WHERE ontology_term_name = '12'" + nl + 
+        "  AND number_value >= 10 AND number_value <= 20" + nl + 
         ")";
     assertEquals(expectedWithClause, withClause);
   }

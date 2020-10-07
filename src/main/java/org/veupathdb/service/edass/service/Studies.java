@@ -91,9 +91,6 @@ public class Studies implements org.veupathdb.service.edass.generated.resources.
 
     for (APIFilter apiFilter : filters) {
       Entity entity = study.getEntity(apiFilter.getEntityId());
-      String id = entity.getEntityId();
-      String pkCol = entity.getEntityPKColName();
-      String table = entity.getEntityTallTableName();
       String varId = apiFilter.getVariableId();
       
       if (study.getVariable(varId) == null) 
@@ -102,22 +99,22 @@ public class Studies implements org.veupathdb.service.edass.generated.resources.
       Filter newFilter;
       if (apiFilter instanceof APIDateRangeFilter) {
         APIDateRangeFilter f = (APIDateRangeFilter)apiFilter;
-        newFilter = new DateRangeFilter(id, pkCol, table, varId,
+        newFilter = new DateRangeFilter(entity, varId,
             convertDate(f.getMin()), convertDate(f.getMax()));
       } else if (apiFilter instanceof APIDateSetFilter) {
         APIDateSetFilter f = (APIDateSetFilter)apiFilter;
         List<LocalDateTime> dateSet = new ArrayList<LocalDateTime>();
         for (String dateStr : f.getDateSet()) dateSet.add(convertDate(dateStr));
-        newFilter = new DateSetFilter(id, pkCol, table, varId, dateSet);
+        newFilter = new DateSetFilter(entity, varId, dateSet);
       } else if (apiFilter instanceof APINumberRangeFilter) {
         APINumberRangeFilter f = (APINumberRangeFilter)apiFilter;
-        newFilter = new NumberRangeFilter(id, pkCol, table, varId, f.getMin(), f.getMax());
+        newFilter = new NumberRangeFilter(entity, varId, f.getMin(), f.getMax());
       } else if (apiFilter instanceof APINumberSetFilter) {
         APINumberSetFilter f = (APINumberSetFilter)apiFilter;
-        newFilter = new NumberSetFilter(id, pkCol, table, varId, f.getNumberSet());
+        newFilter = new NumberSetFilter(entity, varId, f.getNumberSet());
       } else if (apiFilter instanceof APIStringSetFilter) {
         APIStringSetFilter f = (APIStringSetFilter)apiFilter;
-        newFilter = new StringSetFilter(id, pkCol, table, varId, f.getStringSet());
+        newFilter = new StringSetFilter(entity, varId, f.getStringSet());
       } else
         throw new InternalServerErrorException("Input filter not an expected subclass of Filter");
 

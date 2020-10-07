@@ -1,22 +1,25 @@
 package org.veupathdb.service.edass.model;
 
+import java.util.ArrayList;
+import java.util.List;
+
 public abstract class Filter {
-  protected String entityPrimaryKeyColumunName;
-  protected String entityTableName;
-  protected String entityId;
+  protected Entity entity;
   protected String variableName;
   
   protected static final String nl = System.lineSeparator();
 
-  public Filter(String entityId, String entityPrimaryKeyColumunName, String entityTableName, String variableName) {
-    this.entityId = entityId;
-    this.entityPrimaryKeyColumunName = entityPrimaryKeyColumunName;
-    this.entityTableName = entityTableName;
+  public Filter(Entity entity, String variableName) {
+    this.entity = entity;
     this.variableName = variableName;
   }
 
   public String getSql() {
-    return "  SELECT " + entityPrimaryKeyColumunName + " FROM " + entityTableName + nl
+    List<String> selectColsList = new ArrayList<String>(entity.getAncestorPkColNames());
+    selectColsList.add(entity.getEntityPKColName());
+    String selectCols = String.join(", ", selectColsList);
+    
+    return "  SELECT " + selectCols + " FROM " + entity.getEntityTallTableName() + nl
         + "  WHERE ontology_term_name = '" + variableName + "'" + nl 
         + getAndClausesSql();
   }
@@ -27,16 +30,8 @@ public abstract class Filter {
    */
   public abstract String getAndClausesSql();
 
-  public String getEntityPrimaryKeyColumunName() {
-    return entityPrimaryKeyColumunName;
-  }
-
-  public String getEntityTableName() {
-    return entityTableName;
-  }
-
-  public String getEntityId() {
-    return entityId;
+  public Entity getEntity() {
+    return entity;
   }
   
   

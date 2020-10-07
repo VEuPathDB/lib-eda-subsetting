@@ -24,11 +24,9 @@ public class StudySubsettingUtils {
   public static void produceTabularSubset(DataSource datasource, Study study, Entity outputEntity,
       List<String> outputVariableNames, List<Filter> filters) {
 
-    List<String> entityIdsInFilters = getEntityIdsInFilters(filters);
-
     TreeNode<Entity> prunedEntityTree = pruneTree(study.getEntityTree(), filters, outputEntity);
     
-    String sql = generateTabularSql(outputVariableNames, outputEntity, filters, prunedEntityTree, entityIdsInFilters);
+    String sql = generateTabularSql(outputVariableNames, outputEntity, filters, prunedEntityTree);
 
     // TODO run sql and produce stream output
   }
@@ -37,11 +35,9 @@ public class StudySubsettingUtils {
   public static void produceHistogramSubset(DataSource datasource, Study study, Entity outputEntity,
       Variable histogramVariable, List<Filter> filters) {
 
-    List<String> entityIdsInFilters = getEntityIdsInFilters(filters);
-
     TreeNode<Entity> prunedEntityTree = pruneTree(study.getEntityTree(), filters, outputEntity);
     
-    String sql = generateHistogramSql(outputEntity, histogramVariable, filters, prunedEntityTree, entityIdsInFilters);
+    String sql = generateHistogramSql(outputEntity, histogramVariable, filters, prunedEntityTree);
     // TODO run sql and produce stream output
   }
 
@@ -61,7 +57,7 @@ public class StudySubsettingUtils {
   }
   
   static List<String> getEntityIdsInFilters(List<Filter> filters) {
-    return filters.stream().map(f -> f.getEntityId()).collect(Collectors.toList());
+    return filters.stream().map(f -> f.getEntity().getEntityId()).collect(Collectors.toList());
   }
 
   /**
@@ -73,9 +69,9 @@ public class StudySubsettingUtils {
    * @param entityIdsInFilters
    * @return
    */
-  static String generateTabularSql(List<String> outputVariableNames, Entity outputEntity, List<Filter> filters, TreeNode<Entity> prunedEntityTree, List<String> entityIdsInFilters) {
+  static String generateTabularSql(List<String> outputVariableNames, Entity outputEntity, List<Filter> filters, TreeNode<Entity> prunedEntityTree) {
 
-    return generateWithClauses(prunedEntityTree, filters, entityIdsInFilters) + nl
+    return generateWithClauses(prunedEntityTree, filters, getEntityIdsInFilters(filters)) + nl
         + generateTabularSelectClause(outputEntity) + nl
         + generateFromClause(outputEntity) + nl
         + generateTabularWhereClause(outputVariableNames) + nl
@@ -92,12 +88,12 @@ public class StudySubsettingUtils {
    * @param entityIdsInFilters
    * @return
    */
-  static String generateHistogramSql(Entity outputEntity, Variable histogramVariable, List<Filter> filters, TreeNode<Entity> prunedEntityTree, List<String> entityIdsInFilters) {
+  static String generateHistogramSql(Entity outputEntity, Variable histogramVariable, List<Filter> filters, TreeNode<Entity> prunedEntityTree) {
     
     List<String> outputVariableNames = new ArrayList<String>();
     outputVariableNames.add(outputEntity.getEntityPKColName());
     
-    return generateWithClauses(prunedEntityTree, filters, entityIdsInFilters) + nl
+    return generateWithClauses(prunedEntityTree, filters, getEntityIdsInFilters(filters)) + nl
         + generateHistogramSelectClause(histogramVariable) + nl
         + generateFromClause(outputEntity) + nl
         + generateHistogramWhereClause(histogramVariable) + nl
@@ -117,13 +113,17 @@ public class StudySubsettingUtils {
    */
   static String generateWithClause(Entity entity, List<Filter> filters) {
 
-    // default WITH body assumes no filters. we use the ancestor table because it is small
-    String withBody = "SELECT " + entity.getEntityPKColName() + " FROM " + entity.getEntityAncestorsTableName() + nl;
+    List<String> selectColsList = new ArrayList<String>(entity.getAncestorPkColNames());
+    selectColsList.add(entity.getEntityPKColName());
+    String selectCols = String.join(", ", selectColsList);
     
-    List<Filter> filtersOnThisEnity = filters.stream().filter(f -> f.getEntityId().equals(entity.getEntityId())).collect(Collectors.toList());
+    // default WITH body assumes no filters. we use the ancestor table because it is small
+    String withBody = "  SELECT " + selectCols + " FROM " + entity.getEntityAncestorsTableName() + nl;
+    
+    List<Filter> filtersOnThisEnity = filters.stream().filter(f -> f.getEntity().getEntityId().equals(entity.getEntityId())).collect(Collectors.toList());
 
     if (!filtersOnThisEnity.isEmpty()) {
-      List<String> filterSqls = filters.stream().filter(f -> f.getEntityId().equals(entity.getEntityId())).map(f -> f.getSql()).collect(Collectors.toList());
+      List<String> filterSqls = filters.stream().filter(f -> f.getEntity().getEntityId().equals(entity.getEntityId())).map(f -> f.getSql()).collect(Collectors.toList());
       withBody = String.join("INTERSECT" + nl, filterSqls);
     } 
 

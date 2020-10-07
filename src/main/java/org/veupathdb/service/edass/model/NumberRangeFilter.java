@@ -5,8 +5,8 @@ public class NumberRangeFilter extends Filter {
   private Number min;
   private Number max;
   
-  public NumberRangeFilter(String entityId, String entityPrimaryKeyColumunName, String entityTableName, String variableId, Number min, Number max) {
-    super(entityId, entityPrimaryKeyColumunName, entityTableName, variableId);
+  public NumberRangeFilter(Entity entity, String variableId, Number min, Number max) {
+    super(entity, variableId);
     this.min = min;
     this.max = max;
   }

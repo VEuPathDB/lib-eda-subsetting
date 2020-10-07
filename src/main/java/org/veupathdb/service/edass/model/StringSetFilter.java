@@ -6,8 +6,8 @@ public class StringSetFilter extends Filter {
 
   private List<String> stringSet;
   
-  public StringSetFilter(String entityId, String entityPrimaryKeyColumunName, String entityTableName, String variableId, List<String> stringSet) {
-    super(entityId, entityPrimaryKeyColumunName, entityTableName, variableId);
+  public StringSetFilter(Entity entity, String variableId, List<String> stringSet) {
+    super(entity, variableId);
     this.stringSet = stringSet;
   }
 

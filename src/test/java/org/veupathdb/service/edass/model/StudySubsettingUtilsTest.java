@@ -146,7 +146,7 @@ public class StudySubsettingUtilsTest {
     filters.add(model.obsFavNewYearsFilter);
     String withClause = StudySubsettingUtils.generateWithClause(model.householdObs, filters);
     String expectedWithClause = "HouseholdObs as (" + nl +
-        "SELECT household_obs_id FROM HouseObs_ancestors" + nl +
+        "  SELECT household_id, household_obs_id FROM HouseObs_ancestors" + nl +
         ")";
     assertEquals(expectedWithClause, withClause);
   }
@@ -163,25 +163,28 @@ public class StudySubsettingUtilsTest {
     filters.add(model.obsFavNumberFilter);
     filters.add(model.houseRoofFilter);
     String withClause = StudySubsettingUtils.generateWithClause(model.observation, filters);
+    
+    String obsSelect = "  SELECT " + String.join(", ", model.observation.getAncestorPkColNames()) + ", " + model.observation.getEntityPKColName() + " FROM " + model.observation.getEntityTallTableName() + nl;
+    
     String expectedWithClause = "Observation as (" + nl + 
-        "  SELECT observation_id FROM Obs_tall" + nl + 
-        "  WHERE ontology_term_name = '12'" + nl + 
+        obsSelect + 
+        "  WHERE ontology_term_name = '" + model.weight.getId() + "'" + nl + 
         "  AND number_value >= 10 AND number_value <= 20" + nl + 
         "INTERSECT" + nl + 
-        "  SELECT observation_id FROM Obs_tall" + nl + 
-        "  WHERE ontology_term_name = '15'" + nl + 
+        obsSelect + 
+        "  WHERE ontology_term_name = '" + model.favNewYears.getId() + "'" + nl + 
         "  AND date_value IN ('2019-03-21T00:00', '2019-03-28T00:00', '2019-06-12T00:00')" + nl + 
         "INTERSECT" + nl + 
-        "  SELECT observation_id FROM Obs_tall" + nl + 
-        "  WHERE ontology_term_name = '14'" + nl + 
+        obsSelect + 
+        "  WHERE ontology_term_name = '" + model.birthDate.getId() + "'" + nl + 
         "  AND date_value >= '2019-03-21T00:00' AND date_value <= '2019-03-28T00:00'" + nl + 
         "INTERSECT" + nl + 
-        "  SELECT observation_id FROM Obs_tall" + nl + 
-        "  WHERE ontology_term_name = '16'" + nl + 
+        obsSelect + 
+        "  WHERE ontology_term_name = '" + model.mood.getId() + "'" + nl + 
         "  AND string_value IN ('happy', 'jolly', 'giddy')" + nl + 
         "INTERSECT" + nl + 
-        "  SELECT observation_id FROM Obs_tall" + nl + 
-        "  WHERE ontology_term_name = '13'" + nl + 
+        obsSelect + 
+        "  WHERE ontology_term_name = '" + model.favNumber.getId() + "'" + nl + 
         "  AND number_value IN (5, 7, 9 )" + nl + 
         ")";
     assertEquals(expectedWithClause, withClause);
@@ -241,9 +244,9 @@ public class StudySubsettingUtilsTest {
     
     List<String> vars = Arrays.asList(new String[]{model.birthDate.getId(), model.favNumber.getId()});
     String where = StudySubsettingUtils.generateTabularWhereClause(vars);
-    String expected = "WHERE (\n" + 
-        "  ontology_term_name = '14' OR" + nl +
-        "  ontology_term_name = '13'" + nl +
+    String expected = "WHERE (" + nl +
+        "  ontology_term_name = '" + model.birthDate.getId() + "' OR" + nl +
+        "  ontology_term_name = '" + model.favNumber.getId() + "'" + nl +
         ")";
 
     assertEquals(expected, where);
@@ -269,6 +272,27 @@ public class StudySubsettingUtilsTest {
         ")";
 
     assertEquals(expected, inClause);
+  }
+
+  @Test
+  @DisplayName("Test getting full tabular sql")
+  void testGetTabularSql() {
+    
+    List<Filter> filters = new ArrayList<Filter>();
+    filters.add(model.obsWeightFilter);
+    filters.add(model.obsFavNewYearsFilter);
+    filters.add(model.obsBirthDateFilter);
+    filters.add(model.obsMoodFilter);
+    filters.add(model.obsFavNumberFilter);
+    filters.add(model.houseRoofFilter);
+    
+    List<String> outputVariableNames = Arrays.asList(new String[]{model.networth.getId(), model.shoesize.getId()});
+
+    TreeNode<Entity> prunedTree = StudySubsettingUtils.pruneTree(model.study.getEntityTree(), filters, model.participant);
+
+    String sql = StudySubsettingUtils.generateTabularSql(outputVariableNames, model.participant, filters, prunedTree);
+    String expected = "";
+    assertEquals(expected, sql);
   }
 
 }

@@ -36,6 +36,8 @@ public class TestModel {
   public Variable birthDate;
   public Variable favNewYears;
   public Variable mood;
+  public Variable haircolor;
+  public Variable networth;
   
   public Filter obsWeightFilter;
   public Filter houseRoofFilter;
@@ -51,17 +53,17 @@ public class TestModel {
   }
   
   private void createTestEntities() {
-    household = new Entity("Household", "1", "Hshld_tall", "Hshld_ancestors",
+    household = new Entity("Household", "entity-1", "Hshld_tall", "Hshld_ancestors",
         "household_id");
-    householdObs = new Entity("HouseholdObs", "4", "HouseObs_tall", "HouseObs_ancestors",
+    householdObs = new Entity("HouseholdObs", "entity-4", "HouseObs_tall", "HouseObs_ancestors",
         "household_obs_id");
-    participant = new Entity("Participant", "2", "Part_tall", "Part_ancestors",
+    participant = new Entity("Participant", "entity-2", "Part_tall", "Part_ancestors",
         "participant_id");
-    observation = new Entity("Observation", "3", "Obs_tall", "Obs_ancestors",
+    observation = new Entity("Observation", "entity-3", "Obs_tall", "Obs_ancestors",
         "observation_id");
-    sample = new Entity("Sample", "5", "Sample_tall", "Sample_ancestors",
+    sample = new Entity("Sample", "entity-5", "Sample_tall", "Sample_ancestors",
         "sample_id");
-    treatment = new Entity("Treatment", "6", "Treatment_tall", "Treatment_ancestors",
+    treatment = new Entity("Treatment", "entity-6", "Treatment_tall", "Treatment_ancestors",
         "treatment_id");
   }
   
@@ -92,25 +94,31 @@ public class TestModel {
   private Set<Variable> constructVariables() {
     Set<Variable> vars = new HashSet<Variable>();
 
-    roof = new Variable("roof", "10", household.getEntityId(), VariableType.STRING, Resolution.CATEGORICAL);
+    roof = new Variable("roof", "var-10", household.getEntityId(), VariableType.STRING, Resolution.CATEGORICAL);
     vars.add(roof);
     
-    shoesize = new Variable("shoesize", "11", participant.getEntityId(), VariableType.NUMBER, Resolution.CATEGORICAL);    
+    shoesize = new Variable("shoesize", "var-11", participant.getEntityId(), VariableType.NUMBER, Resolution.CATEGORICAL);    
     vars.add(shoesize);
 
-    weight = new Variable("weight", "12", observation.getEntityId(), VariableType.NUMBER, Resolution.CONTINUOUS);    
+    haircolor = new Variable("haircolor", "var-17", participant.getEntityId(), VariableType.STRING, Resolution.CATEGORICAL);    
+    vars.add(shoesize);
+
+    networth = new Variable("networth", "var-18", participant.getEntityId(), VariableType.NUMBER, Resolution.CONTINUOUS);    
+    vars.add(shoesize);
+
+    weight = new Variable("weight", "var-12", observation.getEntityId(), VariableType.NUMBER, Resolution.CONTINUOUS);    
     vars.add(weight);
     
-    favNumber = new Variable("favNumber", "13", observation.getEntityId(), VariableType.NUMBER, Resolution.CATEGORICAL);    
+    favNumber = new Variable("favNumber", "var-13", observation.getEntityId(), VariableType.NUMBER, Resolution.CATEGORICAL);    
     vars.add(weight);
     
-    birthDate  = new Variable("birthDate", "14", observation.getEntityId(), VariableType.DATE, Resolution.CONTINUOUS);    
+    birthDate  = new Variable("birthDate", "var-14", observation.getEntityId(), VariableType.DATE, Resolution.CONTINUOUS);    
     vars.add(birthDate);
     
-    favNewYears = new Variable("favNewYears", "15", observation.getEntityId(), VariableType.DATE, Resolution.CATEGORICAL);    
+    favNewYears = new Variable("favNewYears", "var-15", observation.getEntityId(), VariableType.DATE, Resolution.CATEGORICAL);    
     vars.add(favNewYears);
     
-    mood  = new Variable("mood", "16", observation.getEntityId(), VariableType.STRING, Resolution.CATEGORICAL);    
+    mood  = new Variable("mood", "var-16", observation.getEntityId(), VariableType.STRING, Resolution.CATEGORICAL);    
     vars.add(mood);
 
     return vars;
@@ -119,18 +127,12 @@ public class TestModel {
   private void createFilters() {
     
     // create observation weight filter
-    obsWeightFilter = new NumberRangeFilter(observation.getEntityId(),
-        observation.getEntityPKColName(), observation.getEntityTallTableName(), 
-        weight.getId(), 10, 20);
+    obsWeightFilter = new NumberRangeFilter(observation, weight.getId(), 10, 20);
 
     List<Number> favNums = Arrays.asList(new Number[]{5,7,9});
-    obsFavNumberFilter = new NumberSetFilter(observation.getEntityId(),
-        observation.getEntityPKColName(), observation.getEntityTallTableName(), 
-        favNumber.getId(), favNums); 
+    obsFavNumberFilter = new NumberSetFilter(observation, favNumber.getId(), favNums); 
 
-    obsBirthDateFilter = new DateRangeFilter(observation.getEntityId(),
-        observation.getEntityPKColName(), observation.getEntityTallTableName(), 
-        birthDate.getId(),
+    obsBirthDateFilter = new DateRangeFilter(observation, birthDate.getId(),
         LocalDateTime.of(2019, Month.MARCH, 21, 00, 00),
         LocalDateTime.of(2019, Month.MARCH, 28, 00, 00));
 
@@ -138,24 +140,15 @@ public class TestModel {
     dates.add(LocalDateTime.of(2019, Month.MARCH, 21, 00, 00));
     dates.add(LocalDateTime.of(2019, Month.MARCH, 28, 00, 00));
     dates.add(LocalDateTime.of(2019, Month.JUNE, 12, 00, 00));
-    obsFavNewYearsFilter = new DateSetFilter(observation.getEntityId(),
-        observation.getEntityPKColName(), observation.getEntityTallTableName(), 
-        favNewYears.getId(),
-        dates);
+    obsFavNewYearsFilter = new DateSetFilter(observation, favNewYears.getId(), dates);
 
     List<String> moods = Arrays.asList(new String[]{"happy", "jolly", "giddy"});
-    obsMoodFilter = new StringSetFilter(observation.getEntityId(),
-        observation.getEntityPKColName(), observation.getEntityTallTableName(), 
-        mood.getId(), moods); 
+    obsMoodFilter = new StringSetFilter(observation, mood.getId(), moods); 
 
-    obsWeightFilter = new NumberRangeFilter(observation.getEntityId(),
-        observation.getEntityPKColName(), observation.getEntityTallTableName(), 
-        weight.getId(), 10, 20);
+    obsWeightFilter = new NumberRangeFilter(observation, weight.getId(), 10, 20);
 
     // create household roof filter
     List<String> roofs = Arrays.asList(new String[]{"metal", "tile"});
-    houseRoofFilter = new StringSetFilter(household.getEntityId(),
-        household.getEntityPKColName(), household.getEntityTallTableName(),
-        roof.getId(), roofs);
+    houseRoofFilter = new StringSetFilter(household, roof.getId(), roofs);
   }
 }

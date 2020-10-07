@@ -8,8 +8,8 @@ public class DateSetFilter extends Filter {
 
   private List<LocalDateTime> dateSet;
    
-  public DateSetFilter(String entityId, String entityPrimaryKeyColumunName, String entityTableName, String variableId, List<LocalDateTime> dateSet) {
-    super(entityId, entityPrimaryKeyColumunName, entityTableName, variableId);
+  public DateSetFilter(Entity entity, String variableId, List<LocalDateTime> dateSet) {
+    super(entity, variableId);
     this.dateSet = dateSet;
   }
 

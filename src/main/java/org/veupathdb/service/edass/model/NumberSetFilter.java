@@ -7,8 +7,8 @@ public class NumberSetFilter extends Filter {
 
   private List<Number> numberSet;
   
-  public NumberSetFilter(String entityId, String entityPrimaryKeyColumunName, String entityTableName, String variableId, List<Number> numberSet) {
-    super(entityId, entityPrimaryKeyColumunName, entityTableName, variableId);
+  public NumberSetFilter(Entity entity, String variableId, List<Number> numberSet) {
+    super(entity, variableId);
     this.numberSet = numberSet;
   }
 

@@ -7,8 +7,8 @@ public class DateRangeFilter extends Filter {
   private LocalDateTime min;
   private LocalDateTime max;
   
-  public DateRangeFilter(String entityId, String entityPrimaryKeyColumunName, String entityTableName, String variableId, LocalDateTime min, LocalDateTime max) {
-    super(entityId, entityPrimaryKeyColumunName, entityTableName, variableId);
+  public DateRangeFilter(Entity entity, String variableId, LocalDateTime min, LocalDateTime max) {
+    super(entity, variableId);
     this.min = min;
     this.max = max;
   }

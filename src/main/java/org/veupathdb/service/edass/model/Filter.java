@@ -15,11 +15,29 @@ public abstract class Filter {
   }
 
   public String getSql() {
-    List<String> selectColsList = new ArrayList<String>(entity.getAncestorPkColNames());
-    selectColsList.add(entity.getEntityPKColName());
+    return entity.getAncestorPkColNames().isEmpty()?
+        getSqlNoAncestors() :
+          getSqlWithAncestors();
+  }
+
+  private String getSqlWithAncestors() {
+    List<String> selectColsList = new ArrayList<String>();
+    for (String name : entity.getAncestorPkColNames()) selectColsList.add("a." + name);
+    
+    selectColsList.add("t." + entity.getEntityPKColName());
     String selectCols = String.join(", ", selectColsList);
     
-    return "  SELECT " + selectCols + " FROM " + entity.getEntityTallTableName() + nl
+    return "  SELECT " + selectCols + nl 
+        + "  FROM " + entity.getEntityTallTableName() + " t, " + entity.getEntityAncestorsTableName() + " a" + nl
+        + "  WHERE t." + entity.getEntityPKColName() + " = a." + entity.getEntityPKColName() + nl 
+        + "  AND ontology_term_name = '" + variableName + "'" + nl 
+        + getAndClausesSql();
+  }
+  
+  private String getSqlNoAncestors() {
+    
+    return "  SELECT " + entity.getEntityPKColName() + nl 
+        + "  FROM " + entity.getEntityTallTableName() + nl
         + "  WHERE ontology_term_name = '" + variableName + "'" + nl 
         + getAndClausesSql();
   }

@@ -163,28 +163,39 @@ public class StudySubsettingUtilsTest {
     filters.add(model.obsFavNumberFilter);
     filters.add(model.houseRoofFilter);
     String withClause = StudySubsettingUtils.generateWithClause(model.observation, filters);
-    
-    String obsSelect = "  SELECT " + String.join(", ", model.observation.getAncestorPkColNames()) + ", " + model.observation.getEntityPKColName() + " FROM " + model.observation.getEntityTallTableName() + nl;
+ 
+    List<String> selectColsList = new ArrayList<String>();
+    for (String name : model.observation.getAncestorPkColNames()) selectColsList.add("a." + name);
+    selectColsList.add("t." + model.observation.getEntityPKColName());
+    String selectCols = String.join(", ", selectColsList);
+
+    //      SELECT a.household_id, a.participant_id, t.observation_id
+  //  FROM Obs_tall t, Obs_ancestors a
+
+    String obsBase = "  SELECT " + String.join(", ", selectCols) + nl +
+        "  FROM " + model.observation.getEntityTallTableName() + " t, " +
+        model.observation.getEntityAncestorsTableName() + " a" + nl +
+        "  WHERE t.observation_id = a.observation_id" + nl;
     
     String expectedWithClause = "Observation as (" + nl + 
-        obsSelect + 
-        "  WHERE ontology_term_name = '" + model.weight.getId() + "'" + nl + 
+        obsBase + 
+        "  AND ontology_term_name = '" + model.weight.getId() + "'" + nl + 
         "  AND number_value >= 10 AND number_value <= 20" + nl + 
         "INTERSECT" + nl + 
-        obsSelect + 
-        "  WHERE ontology_term_name = '" + model.favNewYears.getId() + "'" + nl + 
+        obsBase + 
+        "  AND ontology_term_name = '" + model.favNewYears.getId() + "'" + nl + 
         "  AND date_value IN ('2019-03-21T00:00', '2019-03-28T00:00', '2019-06-12T00:00')" + nl + 
         "INTERSECT" + nl + 
-        obsSelect + 
-        "  WHERE ontology_term_name = '" + model.birthDate.getId() + "'" + nl + 
+        obsBase + 
+        "  AND ontology_term_name = '" + model.birthDate.getId() + "'" + nl + 
         "  AND date_value >= '2019-03-21T00:00' AND date_value <= '2019-03-28T00:00'" + nl + 
         "INTERSECT" + nl + 
-        obsSelect + 
-        "  WHERE ontology_term_name = '" + model.mood.getId() + "'" + nl + 
+        obsBase + 
+        "  AND ontology_term_name = '" + model.mood.getId() + "'" + nl + 
         "  AND string_value IN ('happy', 'jolly', 'giddy')" + nl + 
         "INTERSECT" + nl + 
-        obsSelect + 
-        "  WHERE ontology_term_name = '" + model.favNumber.getId() + "'" + nl + 
+        obsBase + 
+        "  AND ontology_term_name = '" + model.favNumber.getId() + "'" + nl + 
         "  AND number_value IN (5, 7, 9 )" + nl + 
         ")";
     assertEquals(expectedWithClause, withClause);
@@ -274,6 +285,7 @@ public class StudySubsettingUtilsTest {
     assertEquals(expected, inClause);
   }
 
+  /* COMMENTED OUT... really just a cheesy way to print out the final sql
   @Test
   @DisplayName("Test getting full tabular sql")
   void testGetTabularSql() {
@@ -294,5 +306,5 @@ public class StudySubsettingUtilsTest {
     String expected = "";
     assertEquals(expected, sql);
   }
-
+*/
 }

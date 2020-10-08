@@ -49,14 +49,14 @@ public class Studies implements org.veupathdb.service.edass.generated.resources.
   }
 
   @Override
-  public GetStudiesByStudyIdAndEntityIdResponse getStudiesByStudyIdAndEntityId(String studyId,
+  public GetStudiesEntitiesByStudyIdAndEntityIdResponse getStudiesEntitiesByStudyIdAndEntityId(String studyId,
       String entityId) {
     // TODO Auto-generated method stub
     return null;
   }
 
     @Override
-  public PostStudiesHistogramByStudyIdAndEntityIdResponse postStudiesHistogramByStudyIdAndEntityId(String studyId,
+  public PostStudiesEntitiesVariableSummaryByStudyIdAndEntityIdResponse postStudiesEntitiesVariableSummaryByStudyIdAndEntityId(String studyId,
       String entityId, EntityHistogramPostRequest request) {
       
     DataSource datasource = DbManager.applicationDatabase().getDataSource();
@@ -68,7 +68,7 @@ public class Studies implements org.veupathdb.service.edass.generated.resources.
   }
 
   @Override
-  public PostStudiesTabularByStudyIdAndEntityIdResponse postStudiesTabularByStudyIdAndEntityId(String studyId,
+  public PostStudiesEntitiesTabularByStudyIdAndEntityIdResponse postStudiesEntitiesTabularByStudyIdAndEntityId(String studyId,
       String entityId, EntityTabularPostRequest request) {
     
     DataSource datasource = DbManager.applicationDatabase().getDataSource();

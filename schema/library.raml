@@ -9,33 +9,6 @@
 ################################################################################
 
 types:
-  HelloResponse:
-    type: object
-    additionalProperties: false
-    properties:
-      greeting:
-        type: string
-        enum:
-          - Hello World
-      anotherType: AnotherType
-  HelloPostRequest:
-    type: object
-    additionalProperties: false
-    properties:
-      greet:
-        description: Who do you want to say hello to?
-        type: string
-  HelloPostResponse:
-    type: object
-    additionalProperties: false
-    properties:
-      message:
-        description: Generated greeting
-        type: string
-  AnotherType:
-    type: object
-    properties:
-      something?: string
   StudiesGetResponse:
     type: object
     additionalProperties: false
@@ -155,4 +128,31 @@ types:
     properties:
       min: string
       max: string
+  HelloResponse:
+    type: object
+    additionalProperties: false
+    properties:
+      greeting:
+        type: string
+        enum:
+          - Hello World
+      anotherType: AnotherType
+  HelloPostRequest:
+    type: object
+    additionalProperties: false
+    properties:
+      greet:
+        description: Who do you want to say hello to?
+        type: string
+  HelloPostResponse:
+    type: object
+    additionalProperties: false
+    properties:
+      message:
+        description: Generated greeting
+        type: string
+  AnotherType:
+    type: object
+    properties:
+      something?: string
 

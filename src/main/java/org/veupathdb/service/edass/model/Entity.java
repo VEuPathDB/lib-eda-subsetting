@@ -82,4 +82,12 @@ public class Entity {
   public String toString() {
     return "id: " + getEntityId() + " name: " + getEntityName() + " (" + super.toString() + ")";
   }
+  
+  public String getAllPksSelectList(String entityTableName, String ancestorTableName) {
+    List<String> selectColsList = new ArrayList<String>();
+    for (String name : getAncestorPkColNames()) selectColsList.add(ancestorTableName + "." + name);
+  
+    selectColsList.add(entityTableName + "." + getEntityPKColName());
+    return String.join(", ", selectColsList);
+  }
 }

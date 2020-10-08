@@ -21,13 +21,8 @@ public abstract class Filter {
   }
 
   private String getSqlWithAncestors() {
-    List<String> selectColsList = new ArrayList<String>();
-    for (String name : entity.getAncestorPkColNames()) selectColsList.add("a." + name);
-    
-    selectColsList.add("t." + entity.getEntityPKColName());
-    String selectCols = String.join(", ", selectColsList);
-    
-    return "  SELECT " + selectCols + nl 
+
+    return "  SELECT " + entity.getAllPksSelectList("t", "a") + nl 
         + "  FROM " + entity.getEntityTallTableName() + " t, " + entity.getEntityAncestorsTableName() + " a" + nl
         + "  WHERE t." + entity.getEntityPKColName() + " = a." + entity.getEntityPKColName() + nl 
         + "  AND ontology_term_name = '" + variableName + "'" + nl 

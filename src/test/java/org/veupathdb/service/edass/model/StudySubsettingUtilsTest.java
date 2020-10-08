@@ -205,10 +205,10 @@ public class StudySubsettingUtilsTest {
   @DisplayName("Test creating a select clause for tabular report")
   void testGenerateTabularSelectClause() {
     
-    String selectClause = StudySubsettingUtils.generateTabularSelectClause(model.observation);
-    String expectedSelectClause = "SELECT " + model.household.getEntityFullPKColName() +
-        ", " + model.participant.getEntityFullPKColName() +
-        ", " + model.observation.getEntityFullPKColName() +
+    String selectClause = StudySubsettingUtils.generateTabularSelectClause(model.observation, "t", "a");
+    String expectedSelectClause = "SELECT a." + model.household.getEntityPKColName() +
+        ", a." + model.participant.getEntityPKColName() +
+        ", t." + model.observation.getEntityPKColName() +
         ", string_value, number_value, date_value";
     assertEquals(expectedSelectClause, selectClause);
   }
@@ -254,11 +254,12 @@ public class StudySubsettingUtilsTest {
   void testGenerateTabularWhereClause() {
     
     List<String> vars = Arrays.asList(new String[]{model.birthDate.getId(), model.favNumber.getId()});
-    String where = StudySubsettingUtils.generateTabularWhereClause(vars);
+    String where = StudySubsettingUtils.generateTabularWhereClause(vars, model.observation.getEntityPKColName(), "t", "a");
     String expected = "WHERE (" + nl +
         "  ontology_term_name = '" + model.birthDate.getId() + "' OR" + nl +
         "  ontology_term_name = '" + model.favNumber.getId() + "'" + nl +
-        ")";
+        ")" + nl +
+        "AND t." + model.observation.getEntityPKColName() + " = a." + model.observation.getEntityPKColName();
 
     assertEquals(expected, where);
   }
@@ -274,8 +275,8 @@ public class StudySubsettingUtilsTest {
     TreeNode<Entity> prunedTree = StudySubsettingUtils.pruneTree(model.study.getEntityTree(), filters, outputEntity);
 
     List<String> from = Arrays.asList(new String[]{model.household.getEntityName(), model.householdObs.getEntityName(), model.observation.getEntityName()});
-    String inClause = StudySubsettingUtils.generateInClause(prunedTree, outputEntity);
-    String expected = "AND " + model.householdObs.getEntityFullPKColName() + " IN (" + nl +
+    String inClause = StudySubsettingUtils.generateInClause(prunedTree, outputEntity, "t");
+    String expected = "AND t." + model.householdObs.getEntityPKColName() + " IN (" + nl +
         "  SELECT " + model.householdObs.getEntityFullPKColName() +  nl +
         "  FROM " + String.join(", ", from) + nl +
         "  WHERE " + model.household.getEntityFullPKColName() + " = " + model.householdObs.getEntityName() + "." + model.household.getEntityPKColName() + nl +
@@ -285,7 +286,7 @@ public class StudySubsettingUtilsTest {
     assertEquals(expected, inClause);
   }
 
-  /* COMMENTED OUT... really just a cheesy way to print out the final sql
+  /* COMMENTED OUT... really just a cheesy way to print out the final sql 
   @Test
   @DisplayName("Test getting full tabular sql")
   void testGetTabularSql() {
@@ -297,6 +298,7 @@ public class StudySubsettingUtilsTest {
     filters.add(model.obsMoodFilter);
     filters.add(model.obsFavNumberFilter);
     filters.add(model.houseRoofFilter);
+    filters.add(model.houseObsWaterSupplyFilter);
     
     List<String> outputVariableNames = Arrays.asList(new String[]{model.networth.getId(), model.shoesize.getId()});
 

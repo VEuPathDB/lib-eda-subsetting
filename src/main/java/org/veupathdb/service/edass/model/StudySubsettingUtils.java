@@ -71,11 +71,14 @@ public class StudySubsettingUtils {
    */
   static String generateTabularSql(List<String> outputVariableNames, Entity outputEntity, List<Filter> filters, TreeNode<Entity> prunedEntityTree) {
 
+    String tallTblAbbrev = "t"; 
+    String ancestorTblAbbrev = "a";
+    
     return generateWithClauses(prunedEntityTree, filters, getEntityIdsInFilters(filters)) + nl
-        + generateTabularSelectClause(outputEntity) + nl
-        + generateFromClause(outputEntity) + nl
-        + generateTabularWhereClause(outputVariableNames) + nl
-        + generateInClause(prunedEntityTree, outputEntity) + nl
+        + generateTabularSelectClause(outputEntity, tallTblAbbrev, ancestorTblAbbrev) + nl
+        + generateTabularFromClause(outputEntity, tallTblAbbrev, ancestorTblAbbrev) + nl
+        + generateTabularWhereClause(outputVariableNames, outputEntity.getEntityPKColName(), tallTblAbbrev, ancestorTblAbbrev) + nl
+        + generateInClause(prunedEntityTree, outputEntity, tallTblAbbrev) + nl
         + generateTabularOrderByClause(outputEntity) + nl;
   }
 
@@ -95,9 +98,9 @@ public class StudySubsettingUtils {
     
     return generateWithClauses(prunedEntityTree, filters, getEntityIdsInFilters(filters)) + nl
         + generateHistogramSelectClause(histogramVariable) + nl
-        + generateFromClause(outputEntity) + nl
+        + generateHistogramFromClause(outputEntity) + nl
         + generateHistogramWhereClause(histogramVariable) + nl
-        + generateInClause(prunedEntityTree, outputEntity) + nl        
+        + generateInClause(prunedEntityTree, outputEntity, outputEntity.getEntityTallTableName()) + nl        
         + generateHistogramGroupByClause(histogramVariable) + nl;
    }
   
@@ -130,39 +133,43 @@ public class StudySubsettingUtils {
     return entity.getEntityName() + " as (" + nl + withBody + ")";
   }
   
-  static String generateTabularSelectClause(Entity outputEntity) {
-    // init list with pk columns, and add in the variable value columns
-    List<String> colNames = new ArrayList<String>(outputEntity.getAncestorFullPkColNames());
-    colNames.add(outputEntity.getEntityName() + "." + outputEntity.getEntityPKColName());
-    for (VariableType varType : VariableType.values()) colNames.add(varType.getTallTableColumnName());
+  static String generateTabularSelectClause(Entity outputEntity, String tallTblAbbrev, String ancestorTblAbbrev) {
+    List<String> valColNames = new ArrayList<String>();
+    for (VariableType varType : VariableType.values()) valColNames.add(varType.getTallTableColumnName());
 
-    String cols = String.join(", ", colNames);
-    return "SELECT " + cols;
+    return "SELECT " + outputEntity.getAllPksSelectList(tallTblAbbrev, ancestorTblAbbrev) + ", " + 
+    String.join(", ", valColNames);
   }
     
   static String generateHistogramSelectClause(Variable histogramVariable) {
     return "SELECT count(" + histogramVariable.getName() + "), " + histogramVariable.getVariableType().getTallTableColumnName();
   }
   
-  static String generateFromClause(Entity outputEntity) {
+  static String generateHistogramFromClause(Entity outputEntity) {
     return "FROM " + outputEntity.getEntityTallTableName();
   }
   
-  static String generateTabularWhereClause(List<String> outputVariableNames) {
+  static String generateTabularFromClause(Entity outputEntity, String entityTblNm, String ancestorTblNm) {
+    return "FROM " + outputEntity.getEntityTallTableName() + " " + entityTblNm + ", " +
+        outputEntity.getEntityAncestorsTableName() + " " + ancestorTblNm;
+  }
+  
+  static String generateTabularWhereClause(List<String> outputVariableNames, String entityPkCol, String entityTblNm, String ancestorTblNm) {
     
     List<String> varExprs = new ArrayList<String>();
     for (String varName : outputVariableNames) varExprs.add("  " + ontologyTermName + " = '" + varName + "'");
     return "WHERE (" + nl 
         + String.join(" OR" + nl, varExprs) + nl
-        + ")";
+        + ")" + nl
+        + "AND " + entityTblNm + "." + entityPkCol + " = " + ancestorTblNm + "." + entityPkCol;
   }
   
   static String generateHistogramWhereClause(Variable outputVariable) {
     return "WHERE ontology_term_name = '" + outputVariable.getName() + "'";
   }
 
-  static String generateInClause(TreeNode<Entity> prunedEntityTree, Entity outputEntity) {
-    return "AND " + outputEntity.getEntityName() + "." + outputEntity.getEntityPKColName() + " IN (" + nl 
+  static String generateInClause(TreeNode<Entity> prunedEntityTree, Entity outputEntity, String tallTblAbbrev) {
+    return "AND " + tallTblAbbrev + "." + outputEntity.getEntityPKColName() + " IN (" + nl 
     + generateInClauseSelectClause(outputEntity) + nl
     + generateInClauseFromClause(prunedEntityTree) + nl
     + generateInClauseJoinsClause(prunedEntityTree) + nl
@@ -171,7 +178,7 @@ public class StudySubsettingUtils {
   }
   
   static String generateInClauseSelectClause(Entity outputEntity) {
-    return "  SELECT " + outputEntity.getEntityName() + "." + outputEntity.getEntityPKColName();
+    return "  SELECT " + outputEntity.getEntityFullPKColName();
   }
   
   static String generateInClauseFromClause(TreeNode<Entity> prunedEntityTree) {

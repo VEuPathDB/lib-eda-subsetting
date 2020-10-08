@@ -38,6 +38,7 @@ public class TestModel {
   public Variable mood;
   public Variable haircolor;
   public Variable networth;
+  public Variable waterSupply;
   
   public Filter obsWeightFilter;
   public Filter houseRoofFilter;
@@ -45,7 +46,8 @@ public class TestModel {
   public Filter obsBirthDateFilter;  // continuous date
   public Filter obsFavNewYearsFilter;  // categorical numeric
   public Filter obsMoodFilter; // string 
-
+  public Filter houseObsWaterSupplyFilter; // string 
+  
   public TestModel() {
     createTestEntities();
     study = new Study("555555", constructEntityTree(), constructVariables()); 
@@ -121,6 +123,9 @@ public class TestModel {
     mood  = new Variable("mood", "var-16", observation.getEntityId(), VariableType.STRING, Resolution.CATEGORICAL);    
     vars.add(mood);
 
+    waterSupply  = new Variable("waterSupply", "var-19", householdObs.getEntityId(), VariableType.STRING, Resolution.CATEGORICAL);    
+    vars.add(waterSupply);
+
     return vars;
   }
   
@@ -150,5 +155,9 @@ public class TestModel {
     // create household roof filter
     List<String> roofs = Arrays.asList(new String[]{"metal", "tile"});
     houseRoofFilter = new StringSetFilter(household, roof.getId(), roofs);
+
+    // create household observation filter
+    List<String> waterSupplies = Arrays.asList(new String[]{"piped", "well"});
+    houseObsWaterSupplyFilter = new StringSetFilter(householdObs, waterSupply.getId(), waterSupplies);
   }
 }

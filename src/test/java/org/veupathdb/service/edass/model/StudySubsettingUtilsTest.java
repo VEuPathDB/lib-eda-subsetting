@@ -224,26 +224,26 @@ public class StudySubsettingUtilsTest {
   @Test
   @DisplayName("Test populating ancestors")
   void testPopulateAncestors() {
-    Entity e = model.study.getEntity(model.household.getEntityId());
+    Entity e = model.study.getEntity(model.household.getEntityId()).orElse(null);
     assertEquals(new ArrayList<Entity>(), e.getAncestorEntities());
     
-    e = model.study.getEntity(model.participant.getEntityId());
+    e = model.study.getEntity(model.participant.getEntityId()).orElse(null);
     List<Entity> l = Arrays.asList(new Entity[]{model.household});
     assertEquals(l, e.getAncestorEntities());
 
-    e = model.study.getEntity(model.householdObs.getEntityId());
+    e = model.study.getEntity(model.householdObs.getEntityId()).orElse(null);
     l = Arrays.asList(new Entity[]{model.household});
     assertEquals(l, e.getAncestorEntities());
 
-    e = model.study.getEntity(model.observation.getEntityId());
+    e = model.study.getEntity(model.observation.getEntityId()).orElse(null);
     l = Arrays.asList(new Entity[]{model.household, model.participant});
     assertEquals(l, e.getAncestorEntities());
   
-    e = model.study.getEntity(model.sample.getEntityId());
+    e = model.study.getEntity(model.sample.getEntityId()).orElse(null);
     l = Arrays.asList(new Entity[]{model.household, model.participant, model.observation});
     assertEquals(l, e.getAncestorEntities());
   
-    e = model.study.getEntity(model.treatment.getEntityId());
+    e = model.study.getEntity(model.treatment.getEntityId()).orElse(null);
     l = Arrays.asList(new Entity[]{model.household, model.participant, model.observation});
     assertEquals(l, e.getAncestorEntities());
   
@@ -308,5 +308,27 @@ public class StudySubsettingUtilsTest {
     String expected = "";
     assertEquals(expected, sql);
   }
-*/
+  */
+  
+  @Test
+  @DisplayName("Test getting full histogram sql")
+  void testGetHistogramSql() {
+    
+    List<Filter> filters = new ArrayList<Filter>();
+    filters.add(model.obsWeightFilter);
+    filters.add(model.obsFavNewYearsFilter);
+    filters.add(model.obsBirthDateFilter);
+    filters.add(model.obsMoodFilter);
+    filters.add(model.obsFavNumberFilter);
+    filters.add(model.houseRoofFilter);
+    filters.add(model.houseObsWaterSupplyFilter);
+    
+    TreeNode<Entity> prunedTree = StudySubsettingUtils.pruneTree(model.study.getEntityTree(), filters, model.participant);
+
+    String sql = StudySubsettingUtils.generateHistogramSql(model.participant, model.shoesize, filters, prunedTree);
+    String expected = "";
+    assertEquals(expected, sql);
+  }
+
+//*/
 }

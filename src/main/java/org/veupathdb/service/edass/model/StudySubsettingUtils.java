@@ -2,11 +2,15 @@ package org.veupathdb.service.edass.model;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Iterator;
+import java.util.Optional;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
 import javax.sql.DataSource;
 import org.gusdb.fgputil.functional.TreeNode;
+import org.gusdb.fgputil.db.runner.SQLRunner;
+import org.gusdb.fgputil.db.stream.ResultSetIterator;
 import org.veupathdb.service.edass.model.Variable.VariableType;
 
 /**
@@ -22,23 +26,26 @@ public class StudySubsettingUtils {
   private static final String ontologyTermName = "ontology_term_name";
 
   public static void produceTabularSubset(DataSource datasource, Study study, Entity outputEntity,
-      List<String> outputVariableNames, List<Filter> filters) {
+      List<String> outputVariableIds, List<Filter> filters) {
 
     TreeNode<Entity> prunedEntityTree = pruneTree(study.getEntityTree(), filters, outputEntity);
     
-    String sql = generateTabularSql(outputVariableNames, outputEntity, filters, prunedEntityTree);
+    String sql = generateTabularSql(outputVariableIds, outputEntity, filters, prunedEntityTree);
 
     // TODO run sql and produce stream output
   }
   
-  
-  public static void produceHistogramSubset(DataSource datasource, Study study, Entity outputEntity,
+   public static Iterator<HistogramTuple> produceHistogramSubset(DataSource datasource, Study study, Entity outputEntity,
       Variable histogramVariable, List<Filter> filters) {
 
     TreeNode<Entity> prunedEntityTree = pruneTree(study.getEntityTree(), filters, outputEntity);
     
     String sql = generateHistogramSql(outputEntity, histogramVariable, filters, prunedEntityTree);
-    // TODO run sql and produce stream output
+    
+      return new SQLRunner(datasource, sql).executeQuery(rs -> {
+          return new ResultSetIterator<>(rs,
+              row -> Optional.of(new HistogramTuple(row.getString(1), row.getInt(2))));
+      });   
   }
 
   /**
@@ -62,14 +69,14 @@ public class StudySubsettingUtils {
 
   /**
    * Generate SQL to produce a multi-column tabular output (the requested variables), for the specified subset.
-   * @param outputVariableNames
+   * @param outputVariableIds
    * @param outputEntity
    * @param filters
    * @param prunedEntityTree
    * @param entityIdsInFilters
    * @return
    */
-  static String generateTabularSql(List<String> outputVariableNames, Entity outputEntity, List<Filter> filters, TreeNode<Entity> prunedEntityTree) {
+  static String generateTabularSql(List<String> outputVariableIds, Entity outputEntity, List<Filter> filters, TreeNode<Entity> prunedEntityTree) {
 
     String tallTblAbbrev = "t"; 
     String ancestorTblAbbrev = "a";
@@ -77,14 +84,13 @@ public class StudySubsettingUtils {
     return generateWithClauses(prunedEntityTree, filters, getEntityIdsInFilters(filters)) + nl
         + generateTabularSelectClause(outputEntity, tallTblAbbrev, ancestorTblAbbrev) + nl
         + generateTabularFromClause(outputEntity, tallTblAbbrev, ancestorTblAbbrev) + nl
-        + generateTabularWhereClause(outputVariableNames, outputEntity.getEntityPKColName(), tallTblAbbrev, ancestorTblAbbrev) + nl
+        + generateTabularWhereClause(outputVariableIds, outputEntity.getEntityPKColName(), tallTblAbbrev, ancestorTblAbbrev) + nl
         + generateInClause(prunedEntityTree, outputEntity, tallTblAbbrev) + nl
         + generateTabularOrderByClause(outputEntity) + nl;
   }
 
   /**
    * Generate SQL to produce a histogram for a single variable, for the specified subset.
-   * @param outputVariableNames
    * @param outputEntity
    * @param filters
    * @param prunedEntityTree
@@ -92,9 +98,6 @@ public class StudySubsettingUtils {
    * @return
    */
   static String generateHistogramSql(Entity outputEntity, Variable histogramVariable, List<Filter> filters, TreeNode<Entity> prunedEntityTree) {
-    
-    List<String> outputVariableNames = new ArrayList<String>();
-    outputVariableNames.add(outputEntity.getEntityPKColName());
     
     return generateWithClauses(prunedEntityTree, filters, getEntityIdsInFilters(filters)) + nl
         + generateHistogramSelectClause(histogramVariable) + nl
@@ -142,7 +145,7 @@ public class StudySubsettingUtils {
   }
     
   static String generateHistogramSelectClause(Variable histogramVariable) {
-    return "SELECT count(" + histogramVariable.getName() + "), " + histogramVariable.getVariableType().getTallTableColumnName();
+    return "SELECT " + histogramVariable.getVariableType().getTallTableColumnName() + " as value, count(" + histogramVariable.getEntity().getEntityPKColName() + ") as count ";
   }
   
   static String generateHistogramFromClause(Entity outputEntity) {
@@ -154,10 +157,10 @@ public class StudySubsettingUtils {
         outputEntity.getEntityAncestorsTableName() + " " + ancestorTblNm;
   }
   
-  static String generateTabularWhereClause(List<String> outputVariableNames, String entityPkCol, String entityTblNm, String ancestorTblNm) {
+  static String generateTabularWhereClause(List<String> outputVariableIds, String entityPkCol, String entityTblNm, String ancestorTblNm) {
     
     List<String> varExprs = new ArrayList<String>();
-    for (String varName : outputVariableNames) varExprs.add("  " + ontologyTermName + " = '" + varName + "'");
+    for (String varId : outputVariableIds) varExprs.add("  " + ontologyTermName + " = '" + varId + "'");
     return "WHERE (" + nl 
         + String.join(" OR" + nl, varExprs) + nl
         + ")" + nl

@@ -5,6 +5,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -99,17 +100,21 @@ public class Study {
     for (Variable var : vars)
       variableIdToEntityMap.put(var.getId(), entityIdMap.get(var.getEntityId()));
    }
+  
+  public String getStudyId() {
+    return studyId;
+  }
 
-  public Entity getEntity(String entityId) {
-    return entityIdMap.get(entityId);
+  public Optional<Entity> getEntity(String entityId) {
+    return Optional.ofNullable(entityIdMap.get(entityId));
   }
    
   public TreeNode<Entity> getEntityTree() {
     return entityTree.clone();
   }
   
-  public Variable getVariable(String variableId) {
-    return variablesMap.get(variableId);
+  public Optional<Variable> getVariable(String variableId) {
+    return Optional.ofNullable(variablesMap.get(variableId));
   }
   
   private static void populateEntityAncestors(TreeNode<Entity> rootEntityNode) {

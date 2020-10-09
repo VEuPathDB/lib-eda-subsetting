@@ -1,8 +1,5 @@
 package org.veupathdb.service.edass.model;
 
-import java.util.ArrayList;
-import java.util.List;
-
 public abstract class Filter {
   protected Entity entity;
   protected String variableName;

@@ -96,34 +96,34 @@ public class TestModel {
   private Set<Variable> constructVariables() {
     Set<Variable> vars = new HashSet<Variable>();
 
-    roof = new Variable("roof", "var-10", household.getEntityId(), VariableType.STRING, Resolution.CATEGORICAL);
+    roof = new Variable("roof", "var-10", household, VariableType.STRING, Resolution.CATEGORICAL);
     vars.add(roof);
     
-    shoesize = new Variable("shoesize", "var-11", participant.getEntityId(), VariableType.NUMBER, Resolution.CATEGORICAL);    
+    shoesize = new Variable("shoesize", "var-11", participant, VariableType.NUMBER, Resolution.CATEGORICAL);    
     vars.add(shoesize);
 
-    haircolor = new Variable("haircolor", "var-17", participant.getEntityId(), VariableType.STRING, Resolution.CATEGORICAL);    
+    haircolor = new Variable("haircolor", "var-17", participant, VariableType.STRING, Resolution.CATEGORICAL);    
     vars.add(shoesize);
 
-    networth = new Variable("networth", "var-18", participant.getEntityId(), VariableType.NUMBER, Resolution.CONTINUOUS);    
+    networth = new Variable("networth", "var-18", participant, VariableType.NUMBER, Resolution.CONTINUOUS);    
     vars.add(shoesize);
 
-    weight = new Variable("weight", "var-12", observation.getEntityId(), VariableType.NUMBER, Resolution.CONTINUOUS);    
+    weight = new Variable("weight", "var-12", observation, VariableType.NUMBER, Resolution.CONTINUOUS);    
     vars.add(weight);
     
-    favNumber = new Variable("favNumber", "var-13", observation.getEntityId(), VariableType.NUMBER, Resolution.CATEGORICAL);    
+    favNumber = new Variable("favNumber", "var-13", observation, VariableType.NUMBER, Resolution.CATEGORICAL);    
     vars.add(weight);
     
-    birthDate  = new Variable("birthDate", "var-14", observation.getEntityId(), VariableType.DATE, Resolution.CONTINUOUS);    
+    birthDate  = new Variable("birthDate", "var-14", observation, VariableType.DATE, Resolution.CONTINUOUS);    
     vars.add(birthDate);
     
-    favNewYears = new Variable("favNewYears", "var-15", observation.getEntityId(), VariableType.DATE, Resolution.CATEGORICAL);    
+    favNewYears = new Variable("favNewYears", "var-15", observation, VariableType.DATE, Resolution.CATEGORICAL);    
     vars.add(favNewYears);
     
-    mood  = new Variable("mood", "var-16", observation.getEntityId(), VariableType.STRING, Resolution.CATEGORICAL);    
+    mood  = new Variable("mood", "var-16", observation, VariableType.STRING, Resolution.CATEGORICAL);    
     vars.add(mood);
 
-    waterSupply  = new Variable("waterSupply", "var-19", householdObs.getEntityId(), VariableType.STRING, Resolution.CATEGORICAL);    
+    waterSupply  = new Variable("waterSupply", "var-19", householdObs, VariableType.STRING, Resolution.CATEGORICAL);    
     vars.add(waterSupply);
 
     return vars;

@@ -9,6 +9,33 @@
 ################################################################################
 
 types:
+  HelloResponse:
+    type: object
+    additionalProperties: false
+    properties:
+      greeting:
+        type: string
+        enum:
+          - Hello World
+      anotherType: AnotherType
+  HelloPostRequest:
+    type: object
+    additionalProperties: false
+    properties:
+      greet:
+        description: Who do you want to say hello to?
+        type: string
+  HelloPostResponse:
+    type: object
+    additionalProperties: false
+    properties:
+      message:
+        description: Generated greeting
+        type: string
+  AnotherType:
+    type: object
+    properties:
+      something?: string
   StudiesGetResponse:
     type: object
     additionalProperties: false
@@ -28,19 +55,17 @@ types:
     type: object
     additionalProperties: false
     properties:
-      outputEntityId: string
-      histogramVariableId: string
+      variableId: string
       filters: API_Filter[]
   EntityHistogramPostResponse:
     type: object
     additionalProperties: false
     properties:
-      counts: integer[]
+      counts: API_HistogramTuple[]
   EntityTabularPostRequest:
     type: object
     additionalProperties: false
     properties:
-      outputEntityId: string
       outputVariableIds: string[]
       filters: API_Filter[]
   API_StudyOverview:
@@ -128,31 +153,9 @@ types:
     properties:
       min: string
       max: string
-  HelloResponse:
-    type: object
-    additionalProperties: false
-    properties:
-      greeting:
-        type: string
-        enum:
-          - Hello World
-      anotherType: AnotherType
-  HelloPostRequest:
-    type: object
-    additionalProperties: false
-    properties:
-      greet:
-        description: Who do you want to say hello to?
-        type: string
-  HelloPostResponse:
-    type: object
-    additionalProperties: false
-    properties:
-      message:
-        description: Generated greeting
-        type: string
-  AnotherType:
+  API_HistogramTuple:
     type: object
     properties:
-      something?: string
+      value: string
+      count: integer
 

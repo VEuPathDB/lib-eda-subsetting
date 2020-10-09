@@ -4,9 +4,11 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
 import java.util.ArrayList;
-import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
-import java.util.Set;
+import java.util.function.Supplier;
+import java.util.stream.Stream;
+import java.util.stream.StreamSupport;
 
 import javax.sql.DataSource;
 import javax.ws.rs.BadRequestException;
@@ -21,13 +23,18 @@ import org.veupathdb.service.edass.model.DateRangeFilter;
 import org.veupathdb.service.edass.model.DateSetFilter;
 import org.veupathdb.service.edass.model.Entity;
 import org.veupathdb.service.edass.model.Filter;
+import org.veupathdb.service.edass.model.HistogramTuple;
 import org.veupathdb.service.edass.model.NumberRangeFilter;
 import org.veupathdb.service.edass.model.NumberSetFilter;
 import org.veupathdb.service.edass.model.StringSetFilter;
 import org.veupathdb.service.edass.model.Study;
+import org.veupathdb.service.edass.model.StudySubsettingUtils;
+import org.veupathdb.service.edass.model.Variable;
 import org.veupathdb.service.edass.generated.model.APIDateRangeFilter;
 import org.veupathdb.service.edass.generated.model.APIDateSetFilter;
 import org.veupathdb.service.edass.generated.model.APIFilter;
+import org.veupathdb.service.edass.generated.model.APIHistogramTuple;
+import org.veupathdb.service.edass.generated.model.APIHistogramTupleImpl;
 import org.veupathdb.service.edass.generated.model.APINumberRangeFilter;
 import org.veupathdb.service.edass.generated.model.APINumberSetFilter;
 import org.veupathdb.service.edass.generated.model.APIStringSetFilter;
@@ -61,9 +68,26 @@ public class Studies implements org.veupathdb.service.edass.generated.resources.
       
     DataSource datasource = DbManager.applicationDatabase().getDataSource();
     
-    if (!Study.validateStudyId(datasource, studyId))
-      throw new NotFoundException("Study ID " + studyId + " is not found.");
+    List<String> vars = new ArrayList<String>();
+    vars.add(request.getVariableId());  // force into a list for the unpacker
+    Unpacked unpacked = unpack(datasource, studyId, entityId, request.getFilters(), vars);
 
+    String varId = request.getVariableId();
+    Variable var = unpacked.study.getVariable(varId).orElseThrow(() -> new BadRequestException("Variable ID not found: " + varId));
+
+    Iterator<HistogramTuple> tuples =
+        StudySubsettingUtils.produceHistogramSubset(datasource, unpacked.study, unpacked.entity, var, unpacked.filters);
+
+    Iterable<HistogramTuple> iterable = () -> tuples;
+    Stream<HistogramTuple> targetStream = StreamSupport.stream(iterable.spliterator(), false);
+    
+    targetStream.map(tuple -> {
+      APIHistogramTuple apiTuple = new APIHistogramTupleImpl();
+      apiTuple.setValue(tuple.getValue());
+   //   apiTuple.setCount(tuple.getCount());
+      return apiTuple;
+    });
+    
    return null;
   }
 
@@ -73,28 +97,59 @@ public class Studies implements org.veupathdb.service.edass.generated.resources.
     
     DataSource datasource = DbManager.applicationDatabase().getDataSource();
     
+    Unpacked unpacked = unpack(datasource, studyId, entityId, request.getFilters(), request.getOutputVariableIds());
+
+    StudySubsettingUtils.produceTabularSubset(datasource, unpacked.study, unpacked.entity,
+        request.getOutputVariableIds(), unpacked.filters);
+
+    return null;
+  }
+  
+  private Unpacked unpack(DataSource datasource, String studyId, String entityId, List<APIFilter> apiFilters, List<String> variableIds) {
+    String studIdStr = "Study ID " + studyId;
     if (!Study.validateStudyId(datasource, studyId))
-      throw new NotFoundException("Study ID " + studyId + " is not found.");
+      throw new NotFoundException(studIdStr + " is not found.");
    
     Study study = Study.loadStudy(datasource, studyId);
-    validateOutputVariables(study, request.getOutputEntityId(), request.getOutputVariableIds());
+    Entity entity = study.getEntity(entityId).orElseThrow(() -> new NotFoundException("In " + studIdStr + " Entity ID not found: " + entityId));
+    
+    validateVariableIds(study, entityId, variableIds);
 
-   return null;
+    List<Filter> filters = constructFiltersFromAPIFilters(study, apiFilters);
+  
+    return new Unpacked(study, entity, filters);
+  }
+  
+  class Unpacked {
+    Unpacked(Study study, Entity entity, List<Filter> filters) {
+      this.study = study;
+      this.entity = entity;
+      this.filters = filters;
+    }
+    Study study;
+    Entity entity;
+    List<Filter> filters;
   }
   
   /*
    * Given a study and a set of API filters, construct and return a set of filters, each being the appropriate
    * filter subclass
    */
-  static Set<Filter> constructFiltersFromAPIFilters(Study study, Set<APIFilter> filters) {
-    Set<Filter> subsetFilters = new HashSet<Filter>();
+  static List<Filter> constructFiltersFromAPIFilters(Study study, List<APIFilter> filters) {
+    List<Filter> subsetFilters = new ArrayList<Filter>();
 
+    String errPrfx = "A filter references an unfound ";
+    
     for (APIFilter apiFilter : filters) {
-      Entity entity = study.getEntity(apiFilter.getEntityId());
-      String varId = apiFilter.getVariableId();
       
-      if (study.getVariable(varId) == null) 
-        throw new BadRequestException("Variable '" + varId + "' is not found");
+      // validate filter's entity id
+      Supplier<BadRequestException> excep = 
+          () -> new BadRequestException(errPrfx + "entity ID: " + apiFilter.getEntityId());
+      Entity entity = study.getEntity(apiFilter.getEntityId()).orElseThrow(excep);
+      
+      // validate filter's variable id
+      String varId = apiFilter.getVariableId();
+      study.getVariable(varId).orElseThrow(() -> new BadRequestException("Variable '" + varId + "' is not found"));
 
       Filter newFilter;
       if (apiFilter instanceof APIDateRangeFilter) {
@@ -124,11 +179,15 @@ public class Studies implements org.veupathdb.service.edass.generated.resources.
   }
 
   /* confirm that output variables belong to the output entity */
-  static void validateOutputVariables(Study study, String outputEntityId, List<String> outputVariableNames) {
-    for (String varId : outputVariableNames) 
-      if (!study.getVariable(varId).getEntityId().equals(outputEntityId))
-        throw new BadRequestException("Output variable '" + varId
-            + "' is not consistent with output entity '" + outputEntityId + "'" );    
+  static void validateVariableIds(Study study, String outputEntityId, List<String> variableIds) {
+    for (String varId : variableIds) {
+      
+      String errMsg = "Output variable '" + varId
+          + "' is not found for entity with ID: '" + outputEntityId + "'";
+      
+      Variable var = study.getVariable(varId).orElseThrow(() -> new BadRequestException(errMsg));
+      if (var.getEntityId().equals(outputEntityId)) throw new BadRequestException(errMsg);   
+    }
   }
   
   static LocalDateTime convertDate(String dateStr) {

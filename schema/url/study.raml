@@ -20,19 +20,17 @@ types:
   EntityHistogramPostRequest:
     additionalProperties: false
     properties:
-      outputEntityId: string
-      histogramVariableId: string
+      variableId: string
       filters: API_Filter[]
 
   EntityHistogramPostResponse:
     additionalProperties: false
     properties:
-      counts: integer[]
+      counts: API_HistogramTuple[]
 
   EntityTabularPostRequest:
     additionalProperties: false
     properties:
-      outputEntityId: string
       outputVariableIds: string[]
       filters: API_Filter[]
 
@@ -138,6 +136,12 @@ types:
     properties:
       min: string
       max: string
+
+  API_HistogramTuple:
+    type: object
+    properties:
+      value: string
+      count: integer
 
 
 

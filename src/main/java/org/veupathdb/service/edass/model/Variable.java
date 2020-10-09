@@ -3,7 +3,7 @@ package org.veupathdb.service.edass.model;
 public class Variable {
   private String name;
   private String id;
-  private String entityId;
+  private Entity entity;
   private VariableType type;
   private Resolution resolution;
   
@@ -28,11 +28,11 @@ public class Variable {
     CATEGORICAL;
   }
   
-  public Variable(String name, String id, String entityId, VariableType type, Resolution resolution) {
+  public Variable(String name, String id, Entity entity, VariableType type, Resolution resolution) {
 
     this.name = name;
     this.id = id;
-    this.entityId = entityId;
+    this.entity = entity;
     this.type = type;
     this.resolution = resolution;
   }
@@ -46,7 +46,11 @@ public class Variable {
   }
 
   public String getEntityId() {
-    return entityId;
+    return entity.getEntityId();
+  } 
+  
+  public Entity getEntity() {
+    return entity;
   } 
   
   public VariableType getVariableType() {

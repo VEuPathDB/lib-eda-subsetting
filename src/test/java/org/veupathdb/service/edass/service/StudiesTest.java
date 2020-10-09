@@ -6,13 +6,10 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.function.Executable;
 import static org.junit.jupiter.api.Assertions.*;
 
-import java.util.HashSet;
-import java.util.Set;
-
+import java.util.ArrayList;
+import java.util.List;
 import javax.ws.rs.InternalServerErrorException;
 
-import org.veupathdb.service.edass.generated.model.APIDateRangeFilter;
-import org.veupathdb.service.edass.generated.model.APIDateRangeFilterImpl;
 import org.veupathdb.service.edass.generated.model.APIFilter;
 import org.veupathdb.service.edass.generated.model.APIFilterImpl;
 import org.veupathdb.service.edass.generated.model.APINumberRangeFilter;
@@ -34,7 +31,7 @@ public class StudiesTest {
   @DisplayName("Test valid construction of filters from API filters")
   void testConstructFilters() {
     
-    Set<APIFilter> afs = new HashSet<APIFilter>();
+    List<APIFilter> afs = new ArrayList<APIFilter>();
     
     APIStringSetFilter stringFilter = new APIStringSetFilterImpl();
     stringFilter.setEntityId(model.participant.getEntityId());
@@ -60,7 +57,7 @@ public class StudiesTest {
       
       @Override
       public void execute() throws Throwable {
-        Set<APIFilter> afs = new HashSet<APIFilter>();
+        List<APIFilter> afs = new ArrayList<APIFilter>();
         
         // a legit filter
         APIStringSetFilter stringFilter = new APIStringSetFilterImpl();

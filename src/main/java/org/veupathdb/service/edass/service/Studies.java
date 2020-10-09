@@ -68,6 +68,7 @@ public class Studies implements org.veupathdb.service.edass.generated.resources.
       
     DataSource datasource = DbManager.applicationDatabase().getDataSource();
     
+    // unpack data from API input to model objects
     List<String> vars = new ArrayList<String>();
     vars.add(request.getVariableId());  // force into a list for the unpacker
     Unpacked unpacked = unpack(datasource, studyId, entityId, request.getFilters(), vars);
@@ -75,20 +76,26 @@ public class Studies implements org.veupathdb.service.edass.generated.resources.
     String varId = request.getVariableId();
     Variable var = unpacked.study.getVariable(varId).orElseThrow(() -> new BadRequestException("Variable ID not found: " + varId));
 
+    // generate and run sql to get histogram tuples
     Iterator<HistogramTuple> tuples =
         StudySubsettingUtils.produceHistogramSubset(datasource, unpacked.study, unpacked.entity, var, unpacked.filters);
 
+    // convert to stream for response
+    Stream<APIHistogramTuple> apiTuplesStream = convertTuplesToStream(tuples);
+    //TODO
+   return null;
+  }
+
+  private Stream<APIHistogramTuple> convertTuplesToStream(Iterator<HistogramTuple> tuples) {
     Iterable<HistogramTuple> iterable = () -> tuples;
     Stream<HistogramTuple> targetStream = StreamSupport.stream(iterable.spliterator(), false);
-    
-    targetStream.map(tuple -> {
+
+    return targetStream.map(tuple -> {
       APIHistogramTuple apiTuple = new APIHistogramTupleImpl();
       apiTuple.setValue(tuple.getValue());
-   //   apiTuple.setCount(tuple.getCount());
+      apiTuple.setCount(tuple.getCount());
       return apiTuple;
     });
-    
-   return null;
   }
 
   @Override

@@ -9,48 +9,6 @@
 ################################################################################
 
 types:
-  HelloResponse:
-    type: object
-    additionalProperties: false
-    properties:
-      greeting:
-        type: string
-        enum:
-          - Hello World
-      anotherType: AnotherType
-  HelloPostRequest:
-    type: object
-    additionalProperties: false
-    properties:
-      greet:
-        description: Who do you want to say hello to?
-        type: string
-  HelloPostResponse:
-    type: object
-    additionalProperties: false
-    properties:
-      message:
-        description: Generated greeting
-        type: string
-  AnotherType:
-    type: object
-    properties:
-      something?: string
-  StudiesGetResponse:
-    type: object
-    additionalProperties: false
-    properties:
-      studies: API_StudyOverview[]
-  StudyIdGetResponse:
-    type: object
-    additionalProperties: false
-    properties:
-      study: API_StudyDetail
-  EntityIdGetResponse:
-    type: object
-    additionalProperties: false
-    properties:
-      entity: API_Entity
   EntityHistogramPostRequest:
     type: object
     additionalProperties: false
@@ -68,6 +26,26 @@ types:
     properties:
       outputVariableIds: string[]
       filters: API_Filter[]
+  API_HistogramTuple:
+    type: object
+    properties:
+      value: string
+      count: integer
+  StudiesGetResponse:
+    type: object
+    additionalProperties: false
+    properties:
+      studies: API_StudyOverview[]
+  StudyIdGetResponse:
+    type: object
+    additionalProperties: false
+    properties:
+      study: API_StudyDetail
+  EntityIdGetResponse:
+    type: object
+    additionalProperties: false
+    properties:
+      entity: API_Entity
   API_StudyOverview:
     type: object
     properties:
@@ -153,9 +131,4 @@ types:
     properties:
       min: string
       max: string
-  API_HistogramTuple:
-    type: object
-    properties:
-      value: string
-      count: integer
 

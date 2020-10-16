@@ -44,8 +44,8 @@ public class StudySubsettingUtilsTest {
     List<String> entityIdsInFilters = StudySubsettingUtils.getEntityIdsInFilters(filters);
 
     assertEquals(2, entityIdsInFilters.size(), "ID set has incorrect size");
-    assertTrue(entityIdsInFilters.contains(model.observation.getEntityId()), "ID set does not contain observ.");
-    assertTrue(entityIdsInFilters.contains(model.household.getEntityId()), "ID set does not contain household.");
+    assertTrue(entityIdsInFilters.contains(model.observation.getId()), "ID set does not contain observ.");
+    assertTrue(entityIdsInFilters.contains(model.household.getId()), "ID set does not contain household.");
   }
   
   @Test
@@ -124,7 +124,7 @@ public class StudySubsettingUtilsTest {
     
     if (t1 == null && t2 == null) return true;
     
-    if (!t1.getContents().getEntityId().equals(t2.getContents().getEntityId())) return false;
+    if (!t1.getContents().getId().equals(t2.getContents().getId())) return false;
     
     List<TreeNode<Entity>> t1Kids = t1.getChildNodes();
     List<TreeNode<Entity>> t2Kids = t2.getChildNodes();
@@ -166,14 +166,14 @@ public class StudySubsettingUtilsTest {
  
     List<String> selectColsList = new ArrayList<String>();
     for (String name : model.observation.getAncestorPkColNames()) selectColsList.add("a." + name);
-    selectColsList.add("t." + model.observation.getEntityPKColName());
+    selectColsList.add("t." + model.observation.getPKColName());
     String selectCols = String.join(", ", selectColsList);
 
     //      SELECT a.household_id, a.participant_id, t.observation_id
   //  FROM Obs_tall t, Obs_ancestors a
 
     String obsBase = "  SELECT " + String.join(", ", selectCols) + nl +
-        "  FROM " + model.observation.getEntityTallTableName() + " t, " +
+        "  FROM " + model.observation.getTallTableName() + " t, " +
         model.observation.getEntityAncestorsTableName() + " a" + nl +
         "  WHERE t.observation_id = a.observation_id" + nl;
     
@@ -206,9 +206,9 @@ public class StudySubsettingUtilsTest {
   void testGenerateTabularSelectClause() {
     
     String selectClause = StudySubsettingUtils.generateTabularSelectClause(model.observation, "t", "a");
-    String expectedSelectClause = "SELECT a." + model.household.getEntityPKColName() +
-        ", a." + model.participant.getEntityPKColName() +
-        ", t." + model.observation.getEntityPKColName() +
+    String expectedSelectClause = "SELECT a." + model.household.getPKColName() +
+        ", a." + model.participant.getPKColName() +
+        ", t." + model.observation.getPKColName() +
         ", string_value, number_value, date_value";
     assertEquals(expectedSelectClause, selectClause);
   }
@@ -217,33 +217,33 @@ public class StudySubsettingUtilsTest {
   @DisplayName("Test getting full ancestor PKs list")
   void testGetFullAncestorPKs() {
     Set<String> cols = new HashSet<String>(model.observation.getAncestorFullPkColNames());
-    Set<String> expected = new HashSet<String>(Arrays.asList(new String[]{model.household.getEntityFullPKColName(), model.participant.getEntityFullPKColName()}));
+    Set<String> expected = new HashSet<String>(Arrays.asList(new String[]{model.household.getFullPKColName(), model.participant.getFullPKColName()}));
     assertEquals(expected, cols);
   }
   
   @Test
   @DisplayName("Test populating ancestors")
   void testPopulateAncestors() {
-    Entity e = model.study.getEntity(model.household.getEntityId()).orElse(null);
+    Entity e = model.study.getEntity(model.household.getId()).orElse(null);
     assertEquals(new ArrayList<Entity>(), e.getAncestorEntities());
     
-    e = model.study.getEntity(model.participant.getEntityId()).orElse(null);
+    e = model.study.getEntity(model.participant.getId()).orElse(null);
     List<Entity> l = Arrays.asList(new Entity[]{model.household});
     assertEquals(l, e.getAncestorEntities());
 
-    e = model.study.getEntity(model.householdObs.getEntityId()).orElse(null);
+    e = model.study.getEntity(model.householdObs.getId()).orElse(null);
     l = Arrays.asList(new Entity[]{model.household});
     assertEquals(l, e.getAncestorEntities());
 
-    e = model.study.getEntity(model.observation.getEntityId()).orElse(null);
+    e = model.study.getEntity(model.observation.getId()).orElse(null);
     l = Arrays.asList(new Entity[]{model.household, model.participant});
     assertEquals(l, e.getAncestorEntities());
   
-    e = model.study.getEntity(model.sample.getEntityId()).orElse(null);
+    e = model.study.getEntity(model.sample.getId()).orElse(null);
     l = Arrays.asList(new Entity[]{model.household, model.participant, model.observation});
     assertEquals(l, e.getAncestorEntities());
   
-    e = model.study.getEntity(model.treatment.getEntityId()).orElse(null);
+    e = model.study.getEntity(model.treatment.getId()).orElse(null);
     l = Arrays.asList(new Entity[]{model.household, model.participant, model.observation});
     assertEquals(l, e.getAncestorEntities());
   
@@ -254,12 +254,12 @@ public class StudySubsettingUtilsTest {
   void testGenerateTabularWhereClause() {
     
     List<String> vars = Arrays.asList(new String[]{model.birthDate.getId(), model.favNumber.getId()});
-    String where = StudySubsettingUtils.generateTabularWhereClause(vars, model.observation.getEntityPKColName(), "t", "a");
+    String where = StudySubsettingUtils.generateTabularWhereClause(vars, model.observation.getPKColName(), "t", "a");
     String expected = "WHERE (" + nl +
         "  ontology_term_name = '" + model.birthDate.getId() + "' OR" + nl +
         "  ontology_term_name = '" + model.favNumber.getId() + "'" + nl +
         ")" + nl +
-        "AND t." + model.observation.getEntityPKColName() + " = a." + model.observation.getEntityPKColName();
+        "AND t." + model.observation.getPKColName() + " = a." + model.observation.getPKColName();
 
     assertEquals(expected, where);
   }
@@ -274,13 +274,13 @@ public class StudySubsettingUtilsTest {
     Entity outputEntity = model.householdObs;
     TreeNode<Entity> prunedTree = StudySubsettingUtils.pruneTree(model.study.getEntityTree(), filters, outputEntity);
 
-    List<String> from = Arrays.asList(new String[]{model.household.getEntityName(), model.householdObs.getEntityName(), model.observation.getEntityName()});
+    List<String> from = Arrays.asList(new String[]{model.household.getName(), model.householdObs.getName(), model.observation.getName()});
     String inClause = StudySubsettingUtils.generateInClause(prunedTree, outputEntity, "t");
-    String expected = "AND t." + model.householdObs.getEntityPKColName() + " IN (" + nl +
-        "  SELECT " + model.householdObs.getEntityFullPKColName() +  nl +
+    String expected = "AND t." + model.householdObs.getPKColName() + " IN (" + nl +
+        "  SELECT " + model.householdObs.getFullPKColName() +  nl +
         "  FROM " + String.join(", ", from) + nl +
-        "  WHERE " + model.household.getEntityFullPKColName() + " = " + model.householdObs.getEntityName() + "." + model.household.getEntityPKColName() + nl +
-        "  AND " + model.household.getEntityFullPKColName() + " = " + model.observation.getEntityName() + "." + model.household.getEntityPKColName() + nl +
+        "  WHERE " + model.household.getFullPKColName() + " = " + model.householdObs.getName() + "." + model.household.getPKColName() + nl +
+        "  AND " + model.household.getFullPKColName() + " = " + model.observation.getName() + "." + model.household.getPKColName() + nl +
         ")";
 
     assertEquals(expected, inClause);
@@ -311,8 +311,8 @@ public class StudySubsettingUtilsTest {
   */
   
   @Test
-  @DisplayName("Test getting full histogram sql")
-  void testGetHistogramSql() {
+  @DisplayName("Test getting full distribution sql")
+  void testGetDistributionSql() {
     
     List<Filter> filters = new ArrayList<Filter>();
     filters.add(model.obsWeightFilter);
@@ -325,7 +325,7 @@ public class StudySubsettingUtilsTest {
     
     TreeNode<Entity> prunedTree = StudySubsettingUtils.pruneTree(model.study.getEntityTree(), filters, model.participant);
 
-    String sql = StudySubsettingUtils.generateHistogramSql(model.participant, model.shoesize, filters, prunedTree);
+    String sql = StudySubsettingUtils.generateDistributionSql(model.participant, model.shoesize, filters, prunedTree);
     String expected = "";
     assertEquals(expected, sql);
   }

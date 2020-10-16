@@ -35,19 +35,56 @@ public class StudySubsettingUtils {
     // TODO run sql and produce stream output
   }
   
-   public static Iterator<HistogramTuple> produceHistogramSubset(DataSource datasource, Study study, Entity outputEntity,
-      Variable histogramVariable, List<Filter> filters) {
+   public static Iterator<DistributionTuple> produceDistributionSubset(DataSource datasource, Study study, Entity outputEntity,
+      Variable distributionVariable, List<Filter> filters) {
 
     TreeNode<Entity> prunedEntityTree = pruneTree(study.getEntityTree(), filters, outputEntity);
     
-    String sql = generateHistogramSql(outputEntity, histogramVariable, filters, prunedEntityTree);
+    String sql = generateDistributionSql(outputEntity, distributionVariable, filters, prunedEntityTree);
     
       return new SQLRunner(datasource, sql).executeQuery(rs -> {
           return new ResultSetIterator<>(rs,
-              row -> Optional.of(new HistogramTuple(row.getString(1), row.getInt(2))));
+              row -> Optional.of(new DistributionTuple(row.getString(1), row.getInt(2))));
       });   
   }
 
+   /*
+   private static void writeAggregatedData(DataSource ds, OutputStream out) {
+     ​
+         // SQL to get rows from our test DB
+         String sql = "select * from records";
+     ​
+         // formatter to convert a group of people to a single String
+         Function<List<Person>,String> formatter = people -> people.get(0).getGroup() +
+           ": [ " + people.stream().map(Person::getName).collect(Collectors.joining(", ")) + " ]";
+     ​
+         // run SQL, process output, format and write aggregated records to output stream
+         new SQLRunner(ds, sql).executeQuery(rs -> {
+           try (BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(out))) {
+     ​
+             // construct an iterator over objects constructed by the rows returned by the query
+             Iterator<Person> people = new ResultSetIterator<>(rs,
+                 row -> Optional.of(new Person(row.getInt(1), row.getString(2), row.getString(3))));
+     ​
+             // group the objects by a common value
+             Iterator<List<Person>> groups = new GroupingIterator<Person>(people,
+                 (p1, p2) -> p1.getGroup().equals(p2.getGroup()));
+     ​
+             // iterate through groups and format into strings to be written to stream
+             for (List<Person> group : IteratorUtil.toIterable(groups)) {
+               writer.write(formatter.apply(group) + NL);
+             }
+     ​
+             writer.flush();
+             return null;
+           }
+           catch (IOException e) {
+             throw new RuntimeException("Unable to write to output stream", e);
+           }
+         });
+       }
+*/
+   
   /**
    * Prune tree to include only active nodes, based on filters and output entity
    * @param tree
@@ -58,13 +95,13 @@ public class StudySubsettingUtils {
 
     List<String> entityIdsInFilters = getEntityIdsInFilters(filters);
 
-    Predicate<Entity> isActive = e -> entityIdsInFilters.contains(e.getEntityId()) ||
-        e.getEntityId().equals(outputEntity.getEntityId());
+    Predicate<Entity> isActive = e -> entityIdsInFilters.contains(e.getId()) ||
+        e.getId().equals(outputEntity.getId());
     return pruneToActiveAndPivotNodes(tree, isActive);
   }
   
   static List<String> getEntityIdsInFilters(List<Filter> filters) {
-    return filters.stream().map(f -> f.getEntity().getEntityId()).collect(Collectors.toList());
+    return filters.stream().map(f -> f.getEntity().getId()).collect(Collectors.toList());
   }
 
   /**
@@ -84,27 +121,27 @@ public class StudySubsettingUtils {
     return generateWithClauses(prunedEntityTree, filters, getEntityIdsInFilters(filters)) + nl
         + generateTabularSelectClause(outputEntity, tallTblAbbrev, ancestorTblAbbrev) + nl
         + generateTabularFromClause(outputEntity, tallTblAbbrev, ancestorTblAbbrev) + nl
-        + generateTabularWhereClause(outputVariableIds, outputEntity.getEntityPKColName(), tallTblAbbrev, ancestorTblAbbrev) + nl
+        + generateTabularWhereClause(outputVariableIds, outputEntity.getPKColName(), tallTblAbbrev, ancestorTblAbbrev) + nl
         + generateInClause(prunedEntityTree, outputEntity, tallTblAbbrev) + nl
         + generateTabularOrderByClause(outputEntity) + nl;
   }
 
   /**
-   * Generate SQL to produce a histogram for a single variable, for the specified subset.
+   * Generate SQL to produce a distribution for a single variable, for the specified subset.
    * @param outputEntity
    * @param filters
    * @param prunedEntityTree
    * @param entityIdsInFilters
    * @return
    */
-  static String generateHistogramSql(Entity outputEntity, Variable histogramVariable, List<Filter> filters, TreeNode<Entity> prunedEntityTree) {
+  static String generateDistributionSql(Entity outputEntity, Variable distributionVariable, List<Filter> filters, TreeNode<Entity> prunedEntityTree) {
     
     return generateWithClauses(prunedEntityTree, filters, getEntityIdsInFilters(filters)) + nl
-        + generateHistogramSelectClause(histogramVariable) + nl
-        + generateHistogramFromClause(outputEntity) + nl
-        + generateHistogramWhereClause(histogramVariable) + nl
-        + generateInClause(prunedEntityTree, outputEntity, outputEntity.getEntityTallTableName()) + nl        
-        + generateHistogramGroupByClause(histogramVariable) + nl;
+        + generateDistributionSelectClause(distributionVariable) + nl
+        + generateDistributionFromClause(outputEntity) + nl
+        + generateDistributionWhereClause(distributionVariable) + nl
+        + generateInClause(prunedEntityTree, outputEntity, outputEntity.getTallTableName()) + nl        
+        + generateDistributionGroupByClause(distributionVariable) + nl;
    }
   
   static String generateWithClauses(TreeNode<Entity> prunedEntityTree, List<Filter> filters, List<String> entityIdsInFilters) {
@@ -120,20 +157,20 @@ public class StudySubsettingUtils {
   static String generateWithClause(Entity entity, List<Filter> filters) {
 
     List<String> selectColsList = new ArrayList<String>(entity.getAncestorPkColNames());
-    selectColsList.add(entity.getEntityPKColName());
+    selectColsList.add(entity.getPKColName());
     String selectCols = String.join(", ", selectColsList);
     
     // default WITH body assumes no filters. we use the ancestor table because it is small
     String withBody = "  SELECT " + selectCols + " FROM " + entity.getEntityAncestorsTableName() + nl;
     
-    List<Filter> filtersOnThisEnity = filters.stream().filter(f -> f.getEntity().getEntityId().equals(entity.getEntityId())).collect(Collectors.toList());
+    List<Filter> filtersOnThisEnity = filters.stream().filter(f -> f.getEntity().getId().equals(entity.getId())).collect(Collectors.toList());
 
     if (!filtersOnThisEnity.isEmpty()) {
-      List<String> filterSqls = filters.stream().filter(f -> f.getEntity().getEntityId().equals(entity.getEntityId())).map(f -> f.getSql()).collect(Collectors.toList());
+      List<String> filterSqls = filters.stream().filter(f -> f.getEntity().getId().equals(entity.getId())).map(f -> f.getSql()).collect(Collectors.toList());
       withBody = String.join("INTERSECT" + nl, filterSqls);
     } 
 
-    return entity.getEntityName() + " as (" + nl + withBody + ")";
+    return entity.getName() + " as (" + nl + withBody + ")";
   }
   
   static String generateTabularSelectClause(Entity outputEntity, String tallTblAbbrev, String ancestorTblAbbrev) {
@@ -144,16 +181,16 @@ public class StudySubsettingUtils {
     String.join(", ", valColNames);
   }
     
-  static String generateHistogramSelectClause(Variable histogramVariable) {
-    return "SELECT " + histogramVariable.getVariableType().getTallTableColumnName() + " as value, count(" + histogramVariable.getEntity().getEntityPKColName() + ") as count ";
+  static String generateDistributionSelectClause(Variable distributionVariable) {
+    return "SELECT " + distributionVariable.getVariableType().getTallTableColumnName() + " as value, count(" + distributionVariable.getEntity().getPKColName() + ") as count ";
   }
   
-  static String generateHistogramFromClause(Entity outputEntity) {
-    return "FROM " + outputEntity.getEntityTallTableName();
+  static String generateDistributionFromClause(Entity outputEntity) {
+    return "FROM " + outputEntity.getTallTableName();
   }
   
   static String generateTabularFromClause(Entity outputEntity, String entityTblNm, String ancestorTblNm) {
-    return "FROM " + outputEntity.getEntityTallTableName() + " " + entityTblNm + ", " +
+    return "FROM " + outputEntity.getTallTableName() + " " + entityTblNm + ", " +
         outputEntity.getEntityAncestorsTableName() + " " + ancestorTblNm;
   }
   
@@ -167,12 +204,12 @@ public class StudySubsettingUtils {
         + "AND " + entityTblNm + "." + entityPkCol + " = " + ancestorTblNm + "." + entityPkCol;
   }
   
-  static String generateHistogramWhereClause(Variable outputVariable) {
+  static String generateDistributionWhereClause(Variable outputVariable) {
     return "WHERE ontology_term_name = '" + outputVariable.getName() + "'";
   }
 
   static String generateInClause(TreeNode<Entity> prunedEntityTree, Entity outputEntity, String tallTblAbbrev) {
-    return "AND " + tallTblAbbrev + "." + outputEntity.getEntityPKColName() + " IN (" + nl 
+    return "AND " + tallTblAbbrev + "." + outputEntity.getPKColName() + " IN (" + nl 
     + generateInClauseSelectClause(outputEntity) + nl
     + generateInClauseFromClause(prunedEntityTree) + nl
     + generateInClauseJoinsClause(prunedEntityTree) + nl
@@ -181,11 +218,11 @@ public class StudySubsettingUtils {
   }
   
   static String generateInClauseSelectClause(Entity outputEntity) {
-    return "  SELECT " + outputEntity.getEntityFullPKColName();
+    return "  SELECT " + outputEntity.getFullPKColName();
   }
   
   static String generateInClauseFromClause(TreeNode<Entity> prunedEntityTree) {
-    List<String> fromClauses = prunedEntityTree.flatten().stream().map(e -> e.getEntityName()).collect(Collectors.toList());
+    List<String> fromClauses = prunedEntityTree.flatten().stream().map(e -> e.getName()).collect(Collectors.toList());
     return "  FROM " + String.join(", ", fromClauses);
   }
 
@@ -208,15 +245,15 @@ public class StudySubsettingUtils {
 
   // this join is formed using the name from the WITH clause, which is the entity name
   static String getSqlJoinString(Entity parentEntity, Entity childEntity) {
-    return parentEntity.getEntityName() + "." + parentEntity.getEntityPKColName() + " = " +
-        childEntity.getEntityName() + "." + parentEntity.getEntityPKColName();
+    return parentEntity.getName() + "." + parentEntity.getPKColName() + " = " +
+        childEntity.getName() + "." + parentEntity.getPKColName();
   }
   
   static String generateTabularOrderByClause(Entity outputEntity) {
-    return "ORDER BY " + outputEntity.getEntityPKColName();
+    return "ORDER BY " + outputEntity.getPKColName();
   }
   
-  static String generateHistogramGroupByClause(Variable outputVariable) {
+  static String generateDistributionGroupByClause(Variable outputVariable) {
     return "GROUP BY " + outputVariable.getVariableType().getTallTableColumnName();
   }
   

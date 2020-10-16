@@ -20,16 +20,16 @@ public abstract class Filter {
   private String getSqlWithAncestors() {
 
     return "  SELECT " + entity.getAllPksSelectList("t", "a") + nl 
-        + "  FROM " + entity.getEntityTallTableName() + " t, " + entity.getEntityAncestorsTableName() + " a" + nl
-        + "  WHERE t." + entity.getEntityPKColName() + " = a." + entity.getEntityPKColName() + nl 
+        + "  FROM " + entity.getTallTableName() + " t, " + entity.getEntityAncestorsTableName() + " a" + nl
+        + "  WHERE t." + entity.getPKColName() + " = a." + entity.getPKColName() + nl 
         + "  AND ontology_term_name = '" + variableName + "'" + nl 
         + getAndClausesSql();
   }
   
   private String getSqlNoAncestors() {
     
-    return "  SELECT " + entity.getEntityPKColName() + nl 
-        + "  FROM " + entity.getEntityTallTableName() + nl
+    return "  SELECT " + entity.getPKColName() + nl 
+        + "  FROM " + entity.getTallTableName() + nl
         + "  WHERE ontology_term_name = '" + variableName + "'" + nl 
         + getAndClausesSql();
   }

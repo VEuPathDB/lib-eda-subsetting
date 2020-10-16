@@ -23,7 +23,7 @@ import org.veupathdb.service.edass.model.DateRangeFilter;
 import org.veupathdb.service.edass.model.DateSetFilter;
 import org.veupathdb.service.edass.model.Entity;
 import org.veupathdb.service.edass.model.Filter;
-import org.veupathdb.service.edass.model.HistogramTuple;
+import org.veupathdb.service.edass.model.DistributionTuple;
 import org.veupathdb.service.edass.model.NumberRangeFilter;
 import org.veupathdb.service.edass.model.NumberSetFilter;
 import org.veupathdb.service.edass.model.StringSetFilter;
@@ -76,19 +76,19 @@ public class Studies implements org.veupathdb.service.edass.generated.resources.
     String varId = request.getVariableId();
     Variable var = unpacked.study.getVariable(varId).orElseThrow(() -> new BadRequestException("Variable ID not found: " + varId));
 
-    // generate and run sql to get histogram tuples
-    Iterator<HistogramTuple> tuples =
-        StudySubsettingUtils.produceHistogramSubset(datasource, unpacked.study, unpacked.entity, var, unpacked.filters);
+    // using model objects, generate and run sql to get histogram tuples
+    Iterator<DistributionTuple> tuples =
+        StudySubsettingUtils.produceDistributionSubset(datasource, unpacked.study, unpacked.entity, var, unpacked.filters);
 
     // convert to stream for response
-    Stream<APIHistogramTuple> apiTuplesStream = convertTuplesToStream(tuples);
+    Stream<APIHistogramTuple> apiTuplesStream = convertHistogramTuplesToStream(tuples);
     //TODO
    return null;
   }
 
-  private Stream<APIHistogramTuple> convertTuplesToStream(Iterator<HistogramTuple> tuples) {
-    Iterable<HistogramTuple> iterable = () -> tuples;
-    Stream<HistogramTuple> targetStream = StreamSupport.stream(iterable.spliterator(), false);
+  private Stream<APIHistogramTuple> convertHistogramTuplesToStream(Iterator<DistributionTuple> tuples) {
+    Iterable<DistributionTuple> iterable = () -> tuples;
+    Stream<DistributionTuple> targetStream = StreamSupport.stream(iterable.spliterator(), false);
 
     return targetStream.map(tuple -> {
       APIHistogramTuple apiTuple = new APIHistogramTupleImpl();

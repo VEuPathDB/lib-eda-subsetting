@@ -5,54 +5,63 @@ package org.veupathdb.service.edass.model;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.function.Function;
 import java.util.stream.Collectors;
+
+import javax.ws.rs.InternalServerErrorException;
 
 /**
  * @author Steve
  *
  */
 public class Entity {
-  private String entityId;
-  private String entityName;
-  private String entityTallTableName;
-  private String entityAncestorsTableName;
-  private String entityPrimaryKeyColumnName;
+  private String id;
+  private String name;
+  private String tallTableName;
+  private String ancestorsTableName;
+  private String primaryKeyColumnName;
+  private Map<String, Variable> variablesMap = new HashMap<String, Variable>();
   private List<Entity> ancestorEntities;
   private List<String> ancestorPkColNames;
   private List<String> ancestorFullPkColNames; // entityName.pkColName
+  private Integer tallRowSize; // number of columns in a tall table row
+  
+  public static final String VARIABLE_ID_COL_NAME = "variable_id";
   
   public Entity(String entityName, String entityId, String entityTallTableName, String entityAncestorsTableName,
       String entityPrimaryKeyColumnName) {
-    this.entityId = entityId;
-    this.entityName = entityName;
-    this.entityTallTableName = entityTallTableName;
-    this.entityAncestorsTableName = entityAncestorsTableName;
-    this.entityPrimaryKeyColumnName = entityPrimaryKeyColumnName;
+    this.id = entityId;
+    this.name = entityName;
+    this.tallTableName = entityTallTableName;
+    this.ancestorsTableName = entityAncestorsTableName;
+    this.primaryKeyColumnName = entityPrimaryKeyColumnName;
   }
 
-  public String getEntityId() {
-    return entityId;
+  public String getId() {
+    return id;
   }
 
-  String getEntityName() {
-    return entityName;
+  String getName() {
+    return name;
   }
 
-  public String getEntityTallTableName() {
-    return entityTallTableName;
+  public String getTallTableName() {
+    return tallTableName;
   }
 
-  public String getEntityPKColName() {
-    return entityPrimaryKeyColumnName;
+  public String getPKColName() {
+    return primaryKeyColumnName;
   }
   
-  public String getEntityFullPKColName() {
-    return entityName + "." + entityPrimaryKeyColumnName;
+  public String getFullPKColName() {
+    return name + "." + primaryKeyColumnName;
   }
   
-  public String getEntityParentTableName() {
-    return entityAncestorsTableName;
+  public String getParentTableName() {
+    return ancestorsTableName;
   }
   
   public List<String> getAncestorPkColNames() {
@@ -66,9 +75,9 @@ public class Entity {
   public void setAncestorEntities(List<Entity> ancestorEntities) {
     this.ancestorEntities = new ArrayList<Entity>(ancestorEntities);
     this.ancestorPkColNames = 
-        ancestorEntities.stream().map(entry -> entry.getEntityPKColName()).collect(Collectors.toList());
+        ancestorEntities.stream().map(entry -> entry.getPKColName()).collect(Collectors.toList());
     this.ancestorFullPkColNames = 
-        ancestorEntities.stream().map(entry -> entry.getEntityName() + "." + entry.getEntityPKColName()).collect(Collectors.toList());
+        ancestorEntities.stream().map(entry -> entry.getName() + "." + entry.getPKColName()).collect(Collectors.toList());
   }
 
   public List<Entity> getAncestorEntities() {
@@ -76,18 +85,92 @@ public class Entity {
   }
   
   public String getEntityAncestorsTableName() {
-    return entityAncestorsTableName;
+    return ancestorsTableName;
   }
 
   public String toString() {
-    return "id: " + getEntityId() + " name: " + getEntityName() + " (" + super.toString() + ")";
+    return "id: " + getId() + " name: " + getName() + " (" + super.toString() + ")";
   }
   
   public String getAllPksSelectList(String entityTableName, String ancestorTableName) {
     List<String> selectColsList = new ArrayList<String>();
     for (String name : getAncestorPkColNames()) selectColsList.add(ancestorTableName + "." + name);
   
-    selectColsList.add(entityTableName + "." + getEntityPKColName());
+    selectColsList.add(entityTableName + "." + getPKColName());
     return String.join(", ", selectColsList);
+  }
+  
+  /**
+   * Return a function that transforms a list of tall table rows to a single wide row.
+   * 
+   * Tall table rows look like this:
+   *   ancestor1_pk, ancestor2_pk, pk, variableA_id, string_value, number_value, date_value
+   *   ancestor1_pk, ancestor2_pk, pk, variableB_id, string_value, number_value, date_value
+   *   ancestor1_pk, ancestor2_pk, pk, variableC_id, string_value, number_value, date_value
+   *   
+   * Output row looks like this:
+   *   ancestor1_pk, ancestor2_pk, pk, variableA_value, variableB_value, variableC_value
+   *   
+   *   (all values are converted to strings)
+   * @return
+   */
+  public Function<List<Map<String, String>>, Map<String, String>> getPivotFunction() {
+    
+    String errPrefix = "Tall row supplied to entity " + id;
+
+    return (List<Map<String, String>> tallRows) -> {
+      
+      Map<String, String> wideRow = new HashMap<String, String>();
+
+      String tallRowEnityId = tallRows.get(0).get(primaryKeyColumnName);
+      wideRow.put(primaryKeyColumnName, tallRowEnityId);
+      
+      boolean first = true;
+      for (Map<String, String> tallRow : tallRows) {
+
+        String variableId = tallRow.get(VARIABLE_ID_COL_NAME);
+        
+        validateTallRow(tallRow, tallRowEnityId, errPrefix, variableId);
+        
+        Variable var = variablesMap.get(variableId);
+        
+        String value = tallRow.get(var.getVariableType().getTallTableColumnName());
+        wideRow.put(variableId, value);
+
+        // if first row, add ancestor PKs to wide table
+        for (String ancestorPkColName : ancestorPkColNames) {
+          if (!tallRow.containsKey(ancestorPkColName))
+            throw new InternalServerErrorException(errPrefix + " does not contain column " + ancestorPkColName);
+          if (first) wideRow.put(ancestorPkColName, tallRow.get(ancestorPkColName));
+        }
+        first = false;
+      }
+      return wideRow;
+    };
+  }
+  
+  private void validateTallRow(Map<String,String> tallRow, String errPrefix, String tallRowEnityId, String variableId) {
+    // do some simple validation
+    if (tallRow.size() != getTallRowSize()) 
+      throw new InternalServerErrorException(errPrefix + " has an unexpected number of columns: " + tallRow.size());
+    
+    if (!tallRow.get(primaryKeyColumnName).equals(tallRowEnityId))
+      throw new InternalServerErrorException(errPrefix + " has an unexpected PK value");
+
+    if (!tallRow.containsKey(VARIABLE_ID_COL_NAME) )
+      throw new InternalServerErrorException(errPrefix + " does not contain column " + VARIABLE_ID_COL_NAME);
+
+    if (!variablesMap.containsKey(variableId))
+      throw new InternalServerErrorException(errPrefix + " has an invalid variableId: " + variableId);
+  }
+  
+  // ancestor PKs, pk, variable_id, int_value, str_value, date_value
+  private Integer getTallRowSize() {
+    if (tallRowSize == null) tallRowSize = Integer.valueOf(ancestorEntities.size() + 5);
+    return tallRowSize;
+  }
+
+  public void addVariable(Variable var) {
+    variablesMap.put(var.getId(), var);
   }
 }

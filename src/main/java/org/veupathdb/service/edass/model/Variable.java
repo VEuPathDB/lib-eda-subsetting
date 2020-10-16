@@ -46,7 +46,7 @@ public class Variable {
   }
 
   public String getEntityId() {
-    return entity.getEntityId();
+    return entity.getId();
   } 
   
   public Entity getEntity() {

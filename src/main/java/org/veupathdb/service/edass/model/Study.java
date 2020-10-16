@@ -88,18 +88,19 @@ public class Study {
     validateEntityTreeIds(rootEntityNode);
     
     // build entity ID map
-    entityIdMap = rootEntityNode.flatten().stream().collect(Collectors.toMap(e -> e.getEntityId(), e -> e)); 
+    entityIdMap = rootEntityNode.flatten().stream().collect(Collectors.toMap(e -> e.getId(), e -> e)); 
 
     // give each entity a set of its ancestor entities.
     populateEntityAncestors(rootEntityNode);
     
     variablesMap = new HashMap<String, Variable>();
-    for (Variable var : vars) variablesMap.put(var.getId(), var);
-
     variableIdToEntityMap = new HashMap<String, Entity>();
-    for (Variable var : vars)
+    for (Variable var : vars) {
+      variablesMap.put(var.getId(), var);
       variableIdToEntityMap.put(var.getId(), entityIdMap.get(var.getEntityId()));
-   }
+      var.getEntity().addVariable(var);
+    }
+  }
   
   public String getStudyId() {
     return studyId;
@@ -134,17 +135,17 @@ public class Study {
    * Confirm that children have non-conflicting entity IDs. Throw runtime exception if invalid
    */
   private static void validateEntityTreeIds(TreeNode<Entity> entityNode) {
-    String errPrefix = "In entity " + entityNode.getContents().getEntityId() +
+    String errPrefix = "In entity " + entityNode.getContents().getId() +
         ", found a child with the same ID as ";
 
     Set<String> childEntityIds = new HashSet<String>();
     for (TreeNode<Entity> child : entityNode.getChildNodes()) {
       Entity childEntity = child.getContents();
-      if (childEntity.equals(entityNode.getContents().getEntityId()))
-        throw new InternalServerErrorException(errPrefix + "the parent: " + childEntity.getEntityId());
+      if (childEntity.equals(entityNode.getContents().getId()))
+        throw new InternalServerErrorException(errPrefix + "the parent: " + childEntity.getId());
 
-      if (childEntityIds.contains(childEntity.getEntityId()))
-        throw new InternalServerErrorException(errPrefix + "another child: " + childEntity.getEntityId());
+      if (childEntityIds.contains(childEntity.getId()))
+        throw new InternalServerErrorException(errPrefix + "another child: " + childEntity.getId());
     }
   }
 

@@ -34,13 +34,13 @@ public class StudiesTest {
     List<APIFilter> afs = new ArrayList<APIFilter>();
     
     APIStringSetFilter stringFilter = new APIStringSetFilterImpl();
-    stringFilter.setEntityId(model.participant.getEntityId());
+    stringFilter.setEntityId(model.participant.getId());
     stringFilter.setVariableId(model.shoesize.getId());
     
     afs.add(stringFilter);
     
     APINumberRangeFilter numberFilter = new APINumberRangeFilterImpl();
-    numberFilter.setEntityId(model.observation.getEntityId());
+    numberFilter.setEntityId(model.observation.getId());
     numberFilter.setVariableId(model.weight.getId());
     afs.add(numberFilter);
     
@@ -61,14 +61,14 @@ public class StudiesTest {
         
         // a legit filter
         APIStringSetFilter stringFilter = new APIStringSetFilterImpl();
-        stringFilter.setEntityId(model.participant.getEntityId());
+        stringFilter.setEntityId(model.participant.getId());
         stringFilter.setVariableId(model.shoesize.getId());
         
         afs.add(stringFilter);
        
         // illegit... can't be the superclass
         APIFilter nakedFilter = new APIFilterImpl();
-        nakedFilter.setEntityId(model.observation.getEntityId());
+        nakedFilter.setEntityId(model.observation.getId());
         nakedFilter.setVariableId(model.weight.getId());
         afs.add(nakedFilter);
 

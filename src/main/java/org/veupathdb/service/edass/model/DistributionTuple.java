@@ -1,10 +1,10 @@
 package org.veupathdb.service.edass.model;
 
-public class HistogramTuple {
+public class DistributionTuple {
   private String value;
   private Integer count;
   
-  public HistogramTuple(String value, Integer count) {
+  public DistributionTuple(String value, Integer count) {
     this.value = value;
     this.count = count;
   }

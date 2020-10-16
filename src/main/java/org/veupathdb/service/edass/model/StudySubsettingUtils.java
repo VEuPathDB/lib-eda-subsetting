@@ -1,5 +1,9 @@
 package org.veupathdb.service.edass.model;
 
+import java.io.BufferedWriter;
+import java.io.IOException;
+import java.io.OutputStream;
+import java.io.OutputStreamWriter;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -10,6 +14,8 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import javax.sql.DataSource;
+import javax.ws.rs.InternalServerErrorException;
+
 import org.gusdb.fgputil.functional.TreeNode;
 import org.gusdb.fgputil.db.runner.SQLRunner;
 import org.gusdb.fgputil.db.stream.ResultSetIterator;
@@ -50,16 +56,21 @@ public class StudySubsettingUtils {
 
   }
     
-  public static Iterator<DistributionTuple> produceDistributionSubset(DataSource datasource, Study study, Entity outputEntity,
-      Variable distributionVariable, List<Filter> filters) {
+  public static void produceDistributionSubset(DataSource datasource, Study study, Entity outputEntity,
+      Variable distributionVariable, List<Filter> filters, OutputStream outputStream) {
 
-     TreeNode<Entity> prunedEntityTree = pruneTree(study.getEntityTree(), filters, outputEntity);
+    TreeNode<Entity> prunedEntityTree = pruneTree(study.getEntityTree(), filters, outputEntity);
     
-     String sql = generateDistributionSql(outputEntity, distributionVariable, filters, prunedEntityTree);
+    String sql = generateDistributionSql(outputEntity, distributionVariable, filters, prunedEntityTree);
     
-    return new SQLRunner(datasource, sql).executeQuery(rs -> {
-      return new ResultSetIterator<>(rs,
-          row -> Optional.of(new DistributionTuple(row.getString(1), row.getInt(2))));
+    new SQLRunner(datasource, sql).executeQuery(rs -> {
+        try (BufferedWriter out = new BufferedWriter(new OutputStreamWriter(outputStream))) {
+          while (rs.next()) out.write(rs.getString(1) + "\t" + rs.getInt(2) + nl);
+          return null;
+        }
+        catch (IOException e) {
+          throw new InternalServerErrorException(e);
+        }
     });
   }
 
@@ -157,6 +168,7 @@ public class StudySubsettingUtils {
         + generateDistributionWhereClause(distributionVariable) + nl
         + generateInClause(prunedEntityTree, outputEntity, outputEntity.getTallTableName()) + nl        
         + generateDistributionGroupByClause(distributionVariable) + nl;
+    // TODO add ORDER BY value ASC
    }
   
   static String generateWithClauses(TreeNode<Entity> prunedEntityTree, List<Filter> filters, List<String> entityIdsInFilters) {

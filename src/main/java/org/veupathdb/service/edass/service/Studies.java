@@ -4,12 +4,8 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
 import java.util.function.Supplier;
-import java.util.stream.Stream;
-import java.util.stream.StreamSupport;
-
 import javax.sql.DataSource;
 import javax.ws.rs.BadRequestException;
 import javax.ws.rs.InternalServerErrorException;
@@ -17,13 +13,13 @@ import javax.ws.rs.NotFoundException;
 
 import org.veupathdb.lib.container.jaxrs.utils.db.DbManager;
 import org.veupathdb.service.edass.generated.model.EntityHistogramPostRequest;
+import org.veupathdb.service.edass.generated.model.EntityHistogramPostResponseStream;
 import org.veupathdb.service.edass.generated.model.EntityTabularPostRequest;
 import org.veupathdb.service.edass.generated.model.StudiesGetResponseImpl;
 import org.veupathdb.service.edass.model.DateRangeFilter;
 import org.veupathdb.service.edass.model.DateSetFilter;
 import org.veupathdb.service.edass.model.Entity;
 import org.veupathdb.service.edass.model.Filter;
-import org.veupathdb.service.edass.model.DistributionTuple;
 import org.veupathdb.service.edass.model.NumberRangeFilter;
 import org.veupathdb.service.edass.model.NumberSetFilter;
 import org.veupathdb.service.edass.model.StringSetFilter;
@@ -33,8 +29,6 @@ import org.veupathdb.service.edass.model.Variable;
 import org.veupathdb.service.edass.generated.model.APIDateRangeFilter;
 import org.veupathdb.service.edass.generated.model.APIDateSetFilter;
 import org.veupathdb.service.edass.generated.model.APIFilter;
-import org.veupathdb.service.edass.generated.model.APIHistogramTuple;
-import org.veupathdb.service.edass.generated.model.APIHistogramTupleImpl;
 import org.veupathdb.service.edass.generated.model.APINumberRangeFilter;
 import org.veupathdb.service.edass.generated.model.APINumberSetFilter;
 import org.veupathdb.service.edass.generated.model.APIStringSetFilter;
@@ -76,27 +70,12 @@ public class Studies implements org.veupathdb.service.edass.generated.resources.
     String varId = request.getVariableId();
     Variable var = unpacked.study.getVariable(varId).orElseThrow(() -> new BadRequestException("Variable ID not found: " + varId));
 
-    // using model objects, generate and run sql to get histogram tuples
-    Iterator<DistributionTuple> tuples =
-        StudySubsettingUtils.produceDistributionSubset(datasource, unpacked.study, unpacked.entity, var, unpacked.filters);
+    EntityHistogramPostResponseStream streamer = new EntityHistogramPostResponseStream
+        (outStream -> StudySubsettingUtils.produceDistributionSubset(datasource, unpacked.study, unpacked.entity, var, unpacked.filters, outStream));
 
-    // convert to stream for response
-    Stream<APIHistogramTuple> apiTuplesStream = convertHistogramTuplesToStream(tuples);
-    //TODO
-   return null;
-  }
-
-  private Stream<APIHistogramTuple> convertHistogramTuplesToStream(Iterator<DistributionTuple> tuples) {
-    Iterable<DistributionTuple> iterable = () -> tuples;
-    Stream<DistributionTuple> targetStream = StreamSupport.stream(iterable.spliterator(), false);
-
-    return targetStream.map(tuple -> {
-      APIHistogramTuple apiTuple = new APIHistogramTupleImpl();
-      apiTuple.setValue(tuple.getValue());
-      apiTuple.setCount(tuple.getCount());
-      return apiTuple;
-    });
-  }
+    return PostStudiesEntitiesVariableSummaryByStudyIdAndEntityIdResponse.
+        respond200WithApplicationJson(streamer);
+   }
 
   @Override
   public PostStudiesEntitiesTabularByStudyIdAndEntityIdResponse postStudiesEntitiesTabularByStudyIdAndEntityId(String studyId,

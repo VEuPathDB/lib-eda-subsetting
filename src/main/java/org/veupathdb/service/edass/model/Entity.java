@@ -4,6 +4,7 @@
 package org.veupathdb.service.edass.model;
 
 import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -31,6 +32,7 @@ public class Entity {
   private Integer tallRowSize; // number of columns in a tall table row
   
   public static final String VARIABLE_ID_COL_NAME = "variable_id";
+  public static final String VARIABLE_VALUE_COL_NAME = "value";
   
   public Entity(String entityName, String entityId, String entityTallTableName, String entityAncestorsTableName,
       String entityPrimaryKeyColumnName) {
@@ -109,9 +111,30 @@ public class Entity {
    * @return
    */
   public Map<String, String> resultSetToTallRowMap(ResultSet rs) {
+    // TODO cache this
+    List<String> colNames = new ArrayList<String>();
+    colNames.addAll(getAncestorPkColNames());
+    colNames.add(getPKColName());
+    colNames.add(VARIABLE_ID_COL_NAME);
+
     Map<String, String> tallRow = new HashMap<String, String>();
-    // TODO
-    return tallRow;
+
+    try {
+      for (String colName : colNames) {
+        tallRow.put(colName, rs.getString(colName));
+      }
+      
+      if (!variablesMap.containsKey(rs.getString(VARIABLE_ID_COL_NAME)))
+          throw new InternalServerErrorException("Can't find column in tall table result set: " + VARIABLE_ID_COL_NAME);
+      
+      Variable var = variablesMap.get(rs.getString(VARIABLE_ID_COL_NAME));
+      tallRow.put(VARIABLE_VALUE_COL_NAME, var.getVariableType().convertRowValueToStringValue(rs));
+      
+      return tallRow;
+    }
+    catch (SQLException e) {
+      throw new InternalServerErrorException(e);
+    }
   }
 
   
@@ -119,9 +142,9 @@ public class Entity {
    * Return a function that transforms a list of tall table rows to a single wide row.
    * 
    * Tall table rows look like this:
-   *   ancestor1_pk, ancestor2_pk, pk, variableA_id, string_value, number_value, date_value
-   *   ancestor1_pk, ancestor2_pk, pk, variableB_id, string_value, number_value, date_value
-   *   ancestor1_pk, ancestor2_pk, pk, variableC_id, string_value, number_value, date_value
+   *   ancestor1_pk, ancestor2_pk, pk, variableA_id, value
+   *   ancestor1_pk, ancestor2_pk, pk, variableB_id, value
+   *   ancestor1_pk, ancestor2_pk, pk, variableC_id, value
    *   
    * Output wide row looks like this:
    *   ancestor1_pk, ancestor2_pk, pk, variableA_value, variableB_value, variableC_value
@@ -147,9 +170,7 @@ public class Entity {
         
         validateTallRow(tallRow, tallRowEnityId, errPrefix, variableId);
         
-        Variable var = variablesMap.get(variableId);
-        
-        String value = tallRow.get(var.getVariableType().getTallTableColumnName());
+        String value = tallRow.get(VARIABLE_VALUE_COL_NAME);
         wideRow.put(variableId, value);
 
         // if first row, add ancestor PKs to wide table

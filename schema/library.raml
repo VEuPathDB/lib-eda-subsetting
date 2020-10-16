@@ -9,6 +9,62 @@
 ################################################################################
 
 types:
+  API_Filter:
+    type: object
+    discriminator: type
+    properties:
+      entityId: string
+      variableId: string
+      type: string
+  API_StringSetFilter:
+    type: API_Filter
+    discriminatorValue: stringSet
+    properties:
+      stringSet: string[]
+  API_NumberSetFilter:
+    type: API_Filter
+    discriminatorValue: numberSet
+    properties:
+      numberSet: number[]
+  API_DateSetFilter:
+    type: API_Filter
+    discriminatorValue: dateSet
+    properties:
+      dateSet: string[] # how to constrain this to a date?
+  API_NumberRangeFilter:
+    type: API_Filter
+    discriminatorValue: numberRange
+    properties:
+      min: number
+      max: number
+  API_DateRangeFilter:
+    type: API_Filter
+    discriminatorValue: dateRange
+    properties:
+      min: string
+      max: string
+  EntityHistogramPostRequest:
+    type: object
+    additionalProperties: false
+    properties:
+      variableId: string
+      filters: API_Filter[]
+  EntityHistogramPostResponse:
+    type: object
+    additionalProperties: false
+    properties:
+      counts: API_HistogramTuple[]
+  EntityTabularPostRequest:
+    type: object
+    additionalProperties: false
+    properties:
+      outputVariableIds: string[]
+      filters: API_Filter[]
+  API_HistogramTuple:
+    type: object
+    properties:
+      value: string
+      count: integer
   StudiesGetResponse:
     type: object
     additionalProperties: false
@@ -75,60 +131,4 @@ types:
         type: object
         properties:
           isContinuous: boolean
-  API_Filter:
-    type: object
-    discriminator: type
-    properties:
-      entityId: string
-      variableId: string
-      type: string
-  API_StringSetFilter:
-    type: API_Filter
-    discriminatorValue: stringSet
-    properties:
-      stringSet: string[]
-  API_NumberSetFilter:
-    type: API_Filter
-    discriminatorValue: numberSet
-    properties:
-      numberSet: number[]
-  API_DateSetFilter:
-    type: API_Filter
-    discriminatorValue: dateSet
-    properties:
-      dateSet: string[] # how to constrain this to a date?
-  API_NumberRangeFilter:
-    type: API_Filter
-    discriminatorValue: numberRange
-    properties:
-      min: number
-      max: number
-  API_DateRangeFilter:
-    type: API_Filter
-    discriminatorValue: dateRange
-    properties:
-      min: string
-      max: string
-  EntityHistogramPostRequest:
-    type: object
-    additionalProperties: false
-    properties:
-      variableId: string
-      filters: API_Filter[]
-  EntityHistogramPostResponse:
-    type: object
-    additionalProperties: false
-    properties:
-      counts: API_HistogramTuple[]
-  EntityTabularPostRequest:
-    type: object
-    additionalProperties: false
-    properties:
-      outputVariableIds: string[]
-      filters: API_Filter[]
-  API_HistogramTuple:
-    type: object
-    properties:
-      value: string
-      count: integer
 

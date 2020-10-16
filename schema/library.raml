@@ -9,28 +9,6 @@
 ################################################################################
 
 types:
-  EntityHistogramPostRequest:
-    type: object
-    additionalProperties: false
-    properties:
-      variableId: string
-      filters: API_Filter[]
-  EntityHistogramPostResponse:
-    type: object
-    additionalProperties: false
-    properties:
-      counts: API_HistogramTuple[]
-  EntityTabularPostRequest:
-    type: object
-    additionalProperties: false
-    properties:
-      outputVariableIds: string[]
-      filters: API_Filter[]
-  API_HistogramTuple:
-    type: object
-    properties:
-      value: string
-      count: integer
   StudiesGetResponse:
     type: object
     additionalProperties: false
@@ -131,4 +109,26 @@ types:
     properties:
       min: string
       max: string
+  EntityHistogramPostRequest:
+    type: object
+    additionalProperties: false
+    properties:
+      variableId: string
+      filters: API_Filter[]
+  EntityHistogramPostResponse:
+    type: object
+    additionalProperties: false
+    properties:
+      counts: API_HistogramTuple[]
+  EntityTabularPostRequest:
+    type: object
+    additionalProperties: false
+    properties:
+      outputVariableIds: string[]
+      filters: API_Filter[]
+  API_HistogramTuple:
+    type: object
+    properties:
+      value: string
+      count: integer
 

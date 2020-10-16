@@ -2,15 +2,18 @@ package org.veupathdb.service.edass.model;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Iterator;
 import java.util.Optional;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import javax.sql.DataSource;
 import org.gusdb.fgputil.functional.TreeNode;
 import org.gusdb.fgputil.db.runner.SQLRunner;
 import org.gusdb.fgputil.db.stream.ResultSetIterator;
+import org.gusdb.fgputil.iterator.GroupingIterator;
 import org.veupathdb.service.edass.model.Variable.VariableType;
 
 /**
@@ -32,20 +35,32 @@ public class StudySubsettingUtils {
     
     String sql = generateTabularSql(outputVariableIds, outputEntity, filters, prunedEntityTree);
 
-    // TODO run sql and produce stream output
+    Iterator<Map<String, String>> tallRowsInterator = 
+        new SQLRunner(datasource, sql).executeQuery(rs -> {
+          return new ResultSetIterator<>(rs, row -> Optional.of(outputEntity.resultSetToTallRowMap(rs)));
+       });
+    
+    String pkCol = outputEntity.getPKColName();
+    Iterator<List<Map<String, String>>> groupedTallRowsIterator = 
+        new GroupingIterator<Map<String, String>>(tallRowsInterator,
+        (row1, row2) -> row1.get(pkCol).equals(row2.get(pkCol)));
+    
+    Stream.generate(() -> null).takeWhile(x -> groupedTallRowsIterator.hasNext())
+    .map(n -> groupedTallRowsIterator.next()).map(outputEntity.getTallToWideFunction());
+
   }
-  
-   public static Iterator<DistributionTuple> produceDistributionSubset(DataSource datasource, Study study, Entity outputEntity,
+    
+  public static Iterator<DistributionTuple> produceDistributionSubset(DataSource datasource, Study study, Entity outputEntity,
       Variable distributionVariable, List<Filter> filters) {
 
-    TreeNode<Entity> prunedEntityTree = pruneTree(study.getEntityTree(), filters, outputEntity);
+     TreeNode<Entity> prunedEntityTree = pruneTree(study.getEntityTree(), filters, outputEntity);
     
-    String sql = generateDistributionSql(outputEntity, distributionVariable, filters, prunedEntityTree);
+     String sql = generateDistributionSql(outputEntity, distributionVariable, filters, prunedEntityTree);
     
-      return new SQLRunner(datasource, sql).executeQuery(rs -> {
-          return new ResultSetIterator<>(rs,
-              row -> Optional.of(new DistributionTuple(row.getString(1), row.getInt(2))));
-      });   
+    return new SQLRunner(datasource, sql).executeQuery(rs -> {
+      return new ResultSetIterator<>(rs,
+          row -> Optional.of(new DistributionTuple(row.getString(1), row.getInt(2))));
+    });
   }
 
    /*

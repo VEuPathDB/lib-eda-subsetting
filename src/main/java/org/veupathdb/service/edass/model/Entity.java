@@ -3,6 +3,7 @@
  */
 package org.veupathdb.service.edass.model;
 
+import java.sql.ResultSet;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -101,6 +102,20 @@ public class Entity {
   }
   
   /**
+   * Tall table rows look like this:
+   *   ancestor1_pk, ancestor2_pk, pk, variableA_id, string_value, number_value, date_value
+
+   * @param rs
+   * @return
+   */
+  public Map<String, String> resultSetToTallRowMap(ResultSet rs) {
+    Map<String, String> tallRow = new HashMap<String, String>();
+    // TODO
+    return tallRow;
+  }
+
+  
+  /**
    * Return a function that transforms a list of tall table rows to a single wide row.
    * 
    * Tall table rows look like this:
@@ -108,17 +123,17 @@ public class Entity {
    *   ancestor1_pk, ancestor2_pk, pk, variableB_id, string_value, number_value, date_value
    *   ancestor1_pk, ancestor2_pk, pk, variableC_id, string_value, number_value, date_value
    *   
-   * Output row looks like this:
+   * Output wide row looks like this:
    *   ancestor1_pk, ancestor2_pk, pk, variableA_value, variableB_value, variableC_value
    *   
    *   (all values are converted to strings)
    * @return
    */
-  public Function<List<Map<String, String>>, Map<String, String>> getPivotFunction() {
+  public Function<List<Map<String, String>>, Map<String, String>> getTallToWideFunction() {
     
     String errPrefix = "Tall row supplied to entity " + id;
 
-    return (List<Map<String, String>> tallRows) -> {
+    return tallRows -> {
       
       Map<String, String> wideRow = new HashMap<String, String>();
 

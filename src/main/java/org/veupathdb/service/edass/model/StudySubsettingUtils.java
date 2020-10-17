@@ -82,7 +82,7 @@ public class StudySubsettingUtils {
     }
   }
     
-  public static void produceDistributionSubset(DataSource datasource, Study study, Entity outputEntity,
+  public static void produceVariableDistribution(DataSource datasource, Study study, Entity outputEntity,
       Variable distributionVariable, List<Filter> filters, OutputStream outputStream) {
 
     TreeNode<Entity> prunedEntityTree = pruneTree(study.getEntityTree(), filters, outputEntity);
@@ -101,6 +101,18 @@ public class StudySubsettingUtils {
     });
   }
    
+  public static Integer getVariableCount(DataSource datasource, Study study, Entity outputEntity,
+      Variable distributionVariable, List<Filter> filters) {
+
+    TreeNode<Entity> prunedEntityTree = pruneTree(study.getEntityTree(), filters, outputEntity);
+    
+    String sql = generateDistributionSql(outputEntity, distributionVariable, filters, prunedEntityTree);
+    
+    return new SQLRunner(datasource, sql).executeQuery(rs -> {
+        rs.next();
+        return Integer.valueOf(rs.getInt(countColumnName));
+    });
+  }
   /**
    * Prune tree to include only active nodes, based on filters and output entity
    * @param tree
@@ -161,6 +173,23 @@ public class StudySubsettingUtils {
         + "ORDER BY " + valueColumnName + " ASC";
    }
   
+  /**
+   * Generate SQL to produce a count of the entities that have a value for a variable, for the specified subset.
+   * @param outputEntity
+   * @param filters
+   * @param prunedEntityTree
+   * @param entityIdsInFilters
+   * @return
+   */
+  static String generateVariableCountSql(Entity outputEntity, Variable variable, List<Filter> filters, TreeNode<Entity> prunedEntityTree) {
+    
+    return generateWithClauses(prunedEntityTree, filters, getEntityIdsInFilters(filters)) + nl
+        + generateVariableCountClause(variable) + nl
+        + generateDistributionFromClause(outputEntity) + nl
+        + generateDistributionWhereClause(variable) + nl
+        + generateInClause(prunedEntityTree, outputEntity, outputEntity.getTallTableName());        
+
+   }
   static String generateWithClauses(TreeNode<Entity> prunedEntityTree, List<Filter> filters, List<String> entityIdsInFilters) {
     List<String> withClauses = prunedEntityTree.flatten().stream().map(e -> generateWithClause(e, filters)).collect(Collectors.toList());
     return "WITH" + nl
@@ -200,6 +229,10 @@ public class StudySubsettingUtils {
     
   static String generateDistributionSelectClause(Variable distributionVariable) {
     return "SELECT " + distributionVariable.getVariableType().getTallTableColumnName() + " as " + valueColumnName + ", count(" + distributionVariable.getEntity().getPKColName() + ") as " + valueColumnName;
+  }
+  
+  static String generateVariableCountClause(Variable variable) {
+    return "SELECT count(distinct " + variable.getVariableType().getTallTableColumnName() + ") as " + countColumnName;
   }
   
   static String generateDistributionFromClause(Entity outputEntity) {

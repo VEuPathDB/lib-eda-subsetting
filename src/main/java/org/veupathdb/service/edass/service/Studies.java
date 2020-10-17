@@ -16,6 +16,9 @@ import org.veupathdb.service.edass.generated.model.VariableDistributionPostRespo
 import org.veupathdb.service.edass.generated.model.EntityTabularPostRequest;
 import org.veupathdb.service.edass.generated.model.EntityTabularPostResponseStream;
 import org.veupathdb.service.edass.generated.model.StudiesGetResponseImpl;
+import org.veupathdb.service.edass.generated.model.VariableCountPostRequest;
+import org.veupathdb.service.edass.generated.model.VariableCountPostResponse;
+import org.veupathdb.service.edass.generated.model.VariableCountPostResponseImpl;
 import org.veupathdb.service.edass.model.DateRangeFilter;
 import org.veupathdb.service.edass.model.DateSetFilter;
 import org.veupathdb.service.edass.model.Entity;
@@ -66,25 +69,48 @@ String studyId, String entityId, String variableId, VariableDistributionPostRequ
     // unpack data from API input to model objects
     List<String> vars = new ArrayList<String>();
     vars.add(variableId);  // force into a list for the unpacker
-    Unpacked unpacked = unpack(datasource, studyId, entityId, request.getFilters(), vars);
+    UnpackedRequest unpacked = unpack(datasource, studyId, entityId, request.getFilters(), vars);
 
     String varId = request.getVariableId();
     Variable var = unpacked.study.getVariable(varId).orElseThrow(() -> new BadRequestException("Variable ID not found: " + varId));
 
     VariableDistributionPostResponseStream streamer = new VariableDistributionPostResponseStream
-        (outStream -> StudySubsettingUtils.produceDistributionSubset(datasource, unpacked.study, unpacked.entity, var, unpacked.filters, outStream));
+        (outStream -> StudySubsettingUtils.produceVariableDistribution(datasource, unpacked.study, unpacked.entity, var, unpacked.filters, outStream));
 
     return PostStudiesEntitiesVariablesDistributionByStudyIdAndEntityIdAndVariableIdResponse.
         respond200WithApplicationJson(streamer);
    }
 
-  @Override
+    @Override
+    public PostStudiesEntitiesVariablesCountByStudyIdAndEntityIdAndVariableIdResponse postStudiesEntitiesVariablesCountByStudyIdAndEntityIdAndVariableId(
+        String studyId, String entityId, String variableId, VariableCountPostRequest request) {
+
+      DataSource datasource = DbManager.applicationDatabase().getDataSource();
+
+      // unpack data from API input to model objects
+      List<String> vars = new ArrayList<String>();
+      vars.add(variableId);  // force into a list for the unpacker
+      UnpackedRequest unpacked = unpack(datasource, studyId, entityId, request.getFilters(), vars);
+
+      String varId = request.getVariableId();
+      Variable var = unpacked.study.getVariable(varId).orElseThrow(() -> new BadRequestException("Variable ID not found: " + varId));
+
+      Integer count = StudySubsettingUtils.getVariableCount(datasource, unpacked.study, unpacked.entity,
+          var, unpacked.filters);
+
+      VariableCountPostResponse response = new VariableCountPostResponseImpl();
+      response.setCount(count);
+
+      return  PostStudiesEntitiesVariablesCountByStudyIdAndEntityIdAndVariableIdResponse.respond200WithApplicationJson(response);
+    }
+
+    @Override
   public PostStudiesEntitiesTabularByStudyIdAndEntityIdResponse postStudiesEntitiesTabularByStudyIdAndEntityId(String studyId,
       String entityId, EntityTabularPostRequest request) {
     
     DataSource datasource = DbManager.applicationDatabase().getDataSource();
     
-    Unpacked unpacked = unpack(datasource, studyId, entityId, request.getFilters(), request.getOutputVariableIds());
+    UnpackedRequest unpacked = unpack(datasource, studyId, entityId, request.getFilters(), request.getOutputVariableIds());
 
     EntityTabularPostResponseStream streamer = new EntityTabularPostResponseStream
         (outStream -> StudySubsettingUtils.produceTabularSubset(datasource, unpacked.study, unpacked.entity,
@@ -94,7 +120,7 @@ String studyId, String entityId, String variableId, VariableDistributionPostRequ
         respond200WithApplicationJson(streamer);
   }
   
-  private Unpacked unpack(DataSource datasource, String studyId, String entityId, List<APIFilter> apiFilters, List<String> variableIds) {
+  private UnpackedRequest unpack(DataSource datasource, String studyId, String entityId, List<APIFilter> apiFilters, List<String> variableIds) {
     String studIdStr = "Study ID " + studyId;
     if (!Study.validateStudyId(datasource, studyId))
       throw new NotFoundException(studIdStr + " is not found.");
@@ -106,11 +132,11 @@ String studyId, String entityId, String variableId, VariableDistributionPostRequ
 
     List<Filter> filters = constructFiltersFromAPIFilters(study, apiFilters);
   
-    return new Unpacked(study, entity, filters);
+    return new UnpackedRequest(study, entity, filters);
   }
   
-  class Unpacked {
-    Unpacked(Study study, Entity entity, List<Filter> filters) {
+  class UnpackedRequest {
+    UnpackedRequest(Study study, Entity entity, List<Filter> filters) {
       this.study = study;
       this.entity = entity;
       this.filters = filters;
@@ -188,4 +214,5 @@ String studyId, String entityId, String variableId, VariableDistributionPostRequ
       throw new BadRequestException("Can't parse date string" + dateStr);
     }
   }
+
 }

@@ -91,11 +91,34 @@ securitySchemes:
         
           /{variable-id}:            
 
+            /count:
+              post:
+                securedBy: header-auth
+                description: |
+                  Return a count of entities that have a value for this variable.  In the request, `filters` must be a subclass of [Filter](#type:lib.Filter)
+                body:
+                  application/json:
+                    type: lib.VariableCountPostRequest
+                responses:
+                  200:
+                    body:
+                      application/json:
+                        type: lib.VariableCountPostResponse
+                  
+                  401:
+                    body:
+                      application/json:
+                        type: error.UnauthorizedError
+                  500:
+                    body:
+                      application/json:
+                        type: error.ServerError
+         
             /distribution:
               post:
                 securedBy: header-auth
                 description: |
-                  Return a summary of value counts (histogram) for a single variable belonging to this entity.  In the request, `filters` must be a subclass of [Filter](#type:lib.Filter)
+                  Return a distribution for this variable, i.e., entity counts for each value of this variable.  In the request, `filters` must be a subclass of [Filter](#type:lib.Filter)
                 body:
                   application/json:
                     type: lib.VariableDistributionPostRequest

@@ -10,10 +10,9 @@ import javax.sql.DataSource;
 import javax.ws.rs.BadRequestException;
 import javax.ws.rs.InternalServerErrorException;
 import javax.ws.rs.NotFoundException;
-
 import org.veupathdb.lib.container.jaxrs.utils.db.DbManager;
-import org.veupathdb.service.edass.generated.model.EntityDistributionPostRequest;
-import org.veupathdb.service.edass.generated.model.EntityDistributionPostResponseStream;
+import org.veupathdb.service.edass.generated.model.VariableDistributionPostRequest;
+import org.veupathdb.service.edass.generated.model.VariableDistributionPostResponseStream;
 import org.veupathdb.service.edass.generated.model.EntityTabularPostRequest;
 import org.veupathdb.service.edass.generated.model.EntityTabularPostResponseStream;
 import org.veupathdb.service.edass.generated.model.StudiesGetResponseImpl;
@@ -58,23 +57,24 @@ public class Studies implements org.veupathdb.service.edass.generated.resources.
   }
 
     @Override
-  public PostStudiesEntitiesVariableDistributionByStudyIdAndEntityIdResponse postStudiesEntitiesVariableDistributionByStudyIdAndEntityId(String studyId,
-      String entityId, EntityDistributionPostRequest request) {
+  public   PostStudiesEntitiesVariablesDistributionByStudyIdAndEntityIdAndVariableIdResponse 
+  postStudiesEntitiesVariablesDistributionByStudyIdAndEntityIdAndVariableId(
+String studyId, String entityId, String variableId, VariableDistributionPostRequest request) {
       
     DataSource datasource = DbManager.applicationDatabase().getDataSource();
     
     // unpack data from API input to model objects
     List<String> vars = new ArrayList<String>();
-    vars.add(request.getVariableId());  // force into a list for the unpacker
+    vars.add(variableId);  // force into a list for the unpacker
     Unpacked unpacked = unpack(datasource, studyId, entityId, request.getFilters(), vars);
 
     String varId = request.getVariableId();
     Variable var = unpacked.study.getVariable(varId).orElseThrow(() -> new BadRequestException("Variable ID not found: " + varId));
 
-    EntityDistributionPostResponseStream streamer = new EntityDistributionPostResponseStream
+    VariableDistributionPostResponseStream streamer = new VariableDistributionPostResponseStream
         (outStream -> StudySubsettingUtils.produceDistributionSubset(datasource, unpacked.study, unpacked.entity, var, unpacked.filters, outStream));
 
-    return PostStudiesEntitiesVariableDistributionByStudyIdAndEntityIdResponse.
+    return PostStudiesEntitiesVariablesDistributionByStudyIdAndEntityIdAndVariableIdResponse.
         respond200WithApplicationJson(streamer);
    }
 

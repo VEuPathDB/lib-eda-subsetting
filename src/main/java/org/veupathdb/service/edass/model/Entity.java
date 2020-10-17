@@ -110,19 +110,16 @@ public class Entity {
    * @param rs
    * @return
    */
-  public Map<String, String> resultSetToTallRowMap(ResultSet rs) {
-    // TODO cache this
-    List<String> colNames = new ArrayList<String>();
-    colNames.addAll(getAncestorPkColNames());
-    colNames.add(getPKColName());
-    colNames.add(VARIABLE_ID_COL_NAME);
+  public Map<String, String> resultSetToTallRowMap(ResultSet rs, List<String> olNames) {
 
     Map<String, String> tallRow = new HashMap<String, String>();
 
     try {
-      for (String colName : colNames) {
+      for (String colName : getAncestorPkColNames()) {
         tallRow.put(colName, rs.getString(colName));
       }
+      tallRow.put(getPKColName(), rs.getString(getPKColName()));
+      tallRow.put(VARIABLE_ID_COL_NAME, rs.getString(VARIABLE_ID_COL_NAME));
       
       if (!variablesMap.containsKey(rs.getString(VARIABLE_ID_COL_NAME)))
           throw new InternalServerErrorException("Can't find column in tall table result set: " + VARIABLE_ID_COL_NAME);
@@ -136,7 +133,6 @@ public class Entity {
       throw new InternalServerErrorException(e);
     }
   }
-
   
   /**
    * Return a function that transforms a list of tall table rows to a single wide row.

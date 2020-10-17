@@ -4,6 +4,8 @@ import java.io.BufferedWriter;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
+import java.io.Writer;
+import java.sql.ResultSet;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -11,8 +13,6 @@ import java.util.Iterator;
 import java.util.Optional;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
-
 import javax.sql.DataSource;
 import javax.ws.rs.InternalServerErrorException;
 
@@ -20,6 +20,7 @@ import org.gusdb.fgputil.functional.TreeNode;
 import org.gusdb.fgputil.db.runner.SQLRunner;
 import org.gusdb.fgputil.db.stream.ResultSetIterator;
 import org.gusdb.fgputil.iterator.GroupingIterator;
+import org.gusdb.fgputil.iterator.IteratorUtil;
 import org.veupathdb.service.edass.model.Variable.VariableType;
 
 /**
@@ -30,30 +31,55 @@ import org.veupathdb.service.edass.model.Variable.VariableType;
  */
 public class StudySubsettingUtils {
 
-  private static final String nl = System.lineSeparator();
+  public static final String nl = System.lineSeparator();
   
   private static final String ontologyTermName = "ontology_term_name";
+  private static final String valueColumnName = "value";
+  private static final String countColumnName = "count";
 
   public static void produceTabularSubset(DataSource datasource, Study study, Entity outputEntity,
-      List<String> outputVariableIds, List<Filter> filters) {
+      List<String> outputVariableIds, List<Filter> filters, OutputStream outputStream) {
 
     TreeNode<Entity> prunedEntityTree = pruneTree(study.getEntityTree(), filters, outputEntity);
-    
+
     String sql = generateTabularSql(outputVariableIds, outputEntity, filters, prunedEntityTree);
 
-    Iterator<Map<String, String>> tallRowsInterator = 
-        new SQLRunner(datasource, sql).executeQuery(rs -> {
-          return new ResultSetIterator<>(rs, row -> Optional.of(outputEntity.resultSetToTallRowMap(rs)));
-       });
-    
-    String pkCol = outputEntity.getPKColName();
-    Iterator<List<Map<String, String>>> groupedTallRowsIterator = 
-        new GroupingIterator<Map<String, String>>(tallRowsInterator,
-        (row1, row2) -> row1.get(pkCol).equals(row2.get(pkCol)));
-    
-    Stream.generate(() -> null).takeWhile(x -> groupedTallRowsIterator.hasNext())
-    .map(n -> groupedTallRowsIterator.next()).map(outputEntity.getTallToWideFunction());
+    List<String> outputColumns = new ArrayList<String>();
+    outputColumns.add(outputEntity.getPKColName());
+    outputColumns.addAll(outputEntity.getAncestorPkColNames());
+    outputColumns.addAll(outputVariableIds);
 
+    new SQLRunner(datasource, sql).executeQuery(rs -> {
+      try (BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(outputStream))) {
+
+        writer.write(String.join("\t", outputColumns) + nl);
+        writeWideRows(rs, writer, outputColumns, outputEntity);
+        writer.flush();
+        return null;
+      }
+      catch (IOException e) {
+        throw new InternalServerErrorException(e);
+      }
+    });
+  }
+  
+  private static void writeWideRows(ResultSet rs, Writer writer, List<String> outputColumns, Entity outputEntity) throws IOException {
+
+    Iterator<Map<String, String>> tallRowsInterator = new ResultSetIterator<>(rs,
+        row -> Optional.of(outputEntity.resultSetToTallRowMap(rs, outputColumns)));
+
+    String pkCol = outputEntity.getPKColName();
+    Iterator<List<Map<String, String>>> groupedTallRowsIterator = new GroupingIterator<Map<String, String>>(
+        tallRowsInterator, (row1, row2) -> row1.get(pkCol).equals(row2.get(pkCol)));
+
+    // iterate through groups and format into strings to be written to stream
+    for (List<Map<String, String>> group : IteratorUtil.toIterable(groupedTallRowsIterator)) {
+      Map<String, String> wideRowMap = outputEntity.getTallToWideFunction().apply(group);
+      List<String> wideRow = new ArrayList<String>();
+      for (String colName : outputColumns)
+        wideRow.add(wideRowMap.containsKey(colName) ? wideRowMap.get(colName) : "");
+      writer.write("" + nl);
+    }
   }
     
   public static void produceDistributionSubset(DataSource datasource, Study study, Entity outputEntity,
@@ -64,8 +90,9 @@ public class StudySubsettingUtils {
     String sql = generateDistributionSql(outputEntity, distributionVariable, filters, prunedEntityTree);
     
     new SQLRunner(datasource, sql).executeQuery(rs -> {
-        try (BufferedWriter out = new BufferedWriter(new OutputStreamWriter(outputStream))) {
-          while (rs.next()) out.write(rs.getString(1) + "\t" + rs.getInt(2) + nl);
+        try (BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(outputStream))) {
+          writer.write(countColumnName + "\t" + valueColumnName + nl);
+          while (rs.next()) writer.write(rs.getString(valueColumnName) + "\t" + rs.getInt(countColumnName) + nl);
           return null;
         }
         catch (IOException e) {
@@ -73,43 +100,6 @@ public class StudySubsettingUtils {
         }
     });
   }
-
-   /*
-   private static void writeAggregatedData(DataSource ds, OutputStream out) {
-     ​
-         // SQL to get rows from our test DB
-         String sql = "select * from records";
-     ​
-         // formatter to convert a group of people to a single String
-         Function<List<Person>,String> formatter = people -> people.get(0).getGroup() +
-           ": [ " + people.stream().map(Person::getName).collect(Collectors.joining(", ")) + " ]";
-     ​
-         // run SQL, process output, format and write aggregated records to output stream
-         new SQLRunner(ds, sql).executeQuery(rs -> {
-           try (BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(out))) {
-     ​
-             // construct an iterator over objects constructed by the rows returned by the query
-             Iterator<Person> people = new ResultSetIterator<>(rs,
-                 row -> Optional.of(new Person(row.getInt(1), row.getString(2), row.getString(3))));
-     ​
-             // group the objects by a common value
-             Iterator<List<Person>> groups = new GroupingIterator<Person>(people,
-                 (p1, p2) -> p1.getGroup().equals(p2.getGroup()));
-     ​
-             // iterate through groups and format into strings to be written to stream
-             for (List<Person> group : IteratorUtil.toIterable(groups)) {
-               writer.write(formatter.apply(group) + NL);
-             }
-     ​
-             writer.flush();
-             return null;
-           }
-           catch (IOException e) {
-             throw new RuntimeException("Unable to write to output stream", e);
-           }
-         });
-       }
-*/
    
   /**
    * Prune tree to include only active nodes, based on filters and output entity
@@ -167,8 +157,8 @@ public class StudySubsettingUtils {
         + generateDistributionFromClause(outputEntity) + nl
         + generateDistributionWhereClause(distributionVariable) + nl
         + generateInClause(prunedEntityTree, outputEntity, outputEntity.getTallTableName()) + nl        
-        + generateDistributionGroupByClause(distributionVariable) + nl;
-    // TODO add ORDER BY value ASC
+        + generateDistributionGroupByClause(distributionVariable) + nl
+        + "ORDER BY " + valueColumnName + " ASC";
    }
   
   static String generateWithClauses(TreeNode<Entity> prunedEntityTree, List<Filter> filters, List<String> entityIdsInFilters) {
@@ -209,7 +199,7 @@ public class StudySubsettingUtils {
   }
     
   static String generateDistributionSelectClause(Variable distributionVariable) {
-    return "SELECT " + distributionVariable.getVariableType().getTallTableColumnName() + " as value, count(" + distributionVariable.getEntity().getPKColName() + ") as count ";
+    return "SELECT " + distributionVariable.getVariableType().getTallTableColumnName() + " as " + valueColumnName + ", count(" + distributionVariable.getEntity().getPKColName() + ") as " + valueColumnName;
   }
   
   static String generateDistributionFromClause(Entity outputEntity) {

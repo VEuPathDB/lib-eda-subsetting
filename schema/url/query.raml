@@ -3,13 +3,13 @@
 types:
   # Type name determines the name of the Java class that will be generated.
 
-  EntityHistogramPostRequest:
+  EntityDistributionPostRequest:
     additionalProperties: false
     properties:
       variableId: string
       filters: API_Filter[]
 
-  EntityHistogramPostResponse:
+  EntityDistributionPostResponse:
     additionalProperties: false
     properties:
       counts: API_HistogramTuple[]
@@ -19,6 +19,11 @@ types:
     properties:
       outputVariableIds: string[]
       filters: API_Filter[]
+
+  EntityTabularPostResponse:
+    additionalProperties: false
+    properties:
+      counts: string[][]
 
   API_HistogramTuple:
     type: object

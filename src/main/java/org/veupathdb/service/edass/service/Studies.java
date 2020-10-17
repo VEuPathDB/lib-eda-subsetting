@@ -12,9 +12,10 @@ import javax.ws.rs.InternalServerErrorException;
 import javax.ws.rs.NotFoundException;
 
 import org.veupathdb.lib.container.jaxrs.utils.db.DbManager;
-import org.veupathdb.service.edass.generated.model.EntityHistogramPostRequest;
-import org.veupathdb.service.edass.generated.model.EntityHistogramPostResponseStream;
+import org.veupathdb.service.edass.generated.model.EntityDistributionPostRequest;
+import org.veupathdb.service.edass.generated.model.EntityDistributionPostResponseStream;
 import org.veupathdb.service.edass.generated.model.EntityTabularPostRequest;
+import org.veupathdb.service.edass.generated.model.EntityTabularPostResponseStream;
 import org.veupathdb.service.edass.generated.model.StudiesGetResponseImpl;
 import org.veupathdb.service.edass.model.DateRangeFilter;
 import org.veupathdb.service.edass.model.DateSetFilter;
@@ -57,8 +58,8 @@ public class Studies implements org.veupathdb.service.edass.generated.resources.
   }
 
     @Override
-  public PostStudiesEntitiesVariableSummaryByStudyIdAndEntityIdResponse postStudiesEntitiesVariableSummaryByStudyIdAndEntityId(String studyId,
-      String entityId, EntityHistogramPostRequest request) {
+  public PostStudiesEntitiesVariableDistributionByStudyIdAndEntityIdResponse postStudiesEntitiesVariableDistributionByStudyIdAndEntityId(String studyId,
+      String entityId, EntityDistributionPostRequest request) {
       
     DataSource datasource = DbManager.applicationDatabase().getDataSource();
     
@@ -70,10 +71,10 @@ public class Studies implements org.veupathdb.service.edass.generated.resources.
     String varId = request.getVariableId();
     Variable var = unpacked.study.getVariable(varId).orElseThrow(() -> new BadRequestException("Variable ID not found: " + varId));
 
-    EntityHistogramPostResponseStream streamer = new EntityHistogramPostResponseStream
+    EntityDistributionPostResponseStream streamer = new EntityDistributionPostResponseStream
         (outStream -> StudySubsettingUtils.produceDistributionSubset(datasource, unpacked.study, unpacked.entity, var, unpacked.filters, outStream));
 
-    return PostStudiesEntitiesVariableSummaryByStudyIdAndEntityIdResponse.
+    return PostStudiesEntitiesVariableDistributionByStudyIdAndEntityIdResponse.
         respond200WithApplicationJson(streamer);
    }
 
@@ -85,10 +86,12 @@ public class Studies implements org.veupathdb.service.edass.generated.resources.
     
     Unpacked unpacked = unpack(datasource, studyId, entityId, request.getFilters(), request.getOutputVariableIds());
 
-    StudySubsettingUtils.produceTabularSubset(datasource, unpacked.study, unpacked.entity,
-        request.getOutputVariableIds(), unpacked.filters);
+    EntityTabularPostResponseStream streamer = new EntityTabularPostResponseStream
+        (outStream -> StudySubsettingUtils.produceTabularSubset(datasource, unpacked.study, unpacked.entity,
+            request.getOutputVariableIds(), unpacked.filters, outStream));
 
-    return null;
+    return PostStudiesEntitiesTabularByStudyIdAndEntityIdResponse.
+        respond200WithApplicationJson(streamer);
   }
   
   private Unpacked unpack(DataSource datasource, String studyId, String entityId, List<APIFilter> apiFilters, List<String> variableIds) {

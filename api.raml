@@ -64,19 +64,19 @@ securitySchemes:
                 application/json:
                   type: lib.EntityIdGetResponse
 
-        /variableSummary:
+        /variableDistribution:
           post:
             securedBy: header-auth
             description: |
               Return a summary of value counts (histogram) for a single variable belonging to this entity.  In the request, `filters` must be a subclass of [Filter](#type:lib.Filter)
             body:
               application/json:
-                type: lib.EntityHistogramPostRequest
+                type: lib.EntityDistributionPostRequest
             responses:
               200:
                 body:
                   application/json:
-                    type: lib.EntityHistogramPostResponse
+                    type: lib.EntityDistributionPostResponse
               
               401:
                 body:
@@ -99,7 +99,7 @@ securitySchemes:
               200:
                 body:
                   application/json:
-                    type: lib.EntityHistogramPostResponse
+                    type: lib.EntityTabularPostResponse
               
               401:
                 body:

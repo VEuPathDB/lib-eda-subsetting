@@ -43,13 +43,13 @@ types:
     properties:
       min: string
       max: string
-  EntityHistogramPostRequest:
+  EntityDistributionPostRequest:
     type: object
     additionalProperties: false
     properties:
       variableId: string
       filters: API_Filter[]
-  EntityHistogramPostResponse:
+  EntityDistributionPostResponse:
     type: object
     additionalProperties: false
     properties:
@@ -60,6 +60,11 @@ types:
     properties:
       outputVariableIds: string[]
       filters: API_Filter[]
+  EntityTabularPostResponse:
+    type: object
+    additionalProperties: false
+    properties:
+      counts: string[][]
   API_HistogramTuple:
     type: object
     properties:

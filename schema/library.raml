@@ -43,11 +43,20 @@ types:
     properties:
       min: string
       max: string
+  EntityCountPostRequest:
+    type: object
+    additionalProperties: false
+    properties:
+      filters: API_Filter[]
+  EntityCountPostResponse:
+    type: object
+    additionalProperties: false
+    properties:
+      count: integer
   VariableCountPostRequest:
     type: object
     additionalProperties: false
     properties:
-      variableId: string
       filters: API_Filter[]
   VariableCountPostResponse:
     type: object

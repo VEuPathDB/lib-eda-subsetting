@@ -36,6 +36,9 @@ import org.veupathdb.service.edass.generated.model.APINumberRangeFilter;
 import org.veupathdb.service.edass.generated.model.APINumberSetFilter;
 import org.veupathdb.service.edass.generated.model.APIStringSetFilter;
 import org.veupathdb.service.edass.generated.model.APIStudyOverview;
+import org.veupathdb.service.edass.generated.model.EntityCountPostRequest;
+import org.veupathdb.service.edass.generated.model.EntityCountPostResponse;
+import org.veupathdb.service.edass.generated.model.EntityCountPostResponseImpl;
 
 public class Studies implements org.veupathdb.service.edass.generated.resources.Studies {
 
@@ -59,8 +62,8 @@ public class Studies implements org.veupathdb.service.edass.generated.resources.
     return null;
   }
 
-    @Override
-  public   PostStudiesEntitiesVariablesDistributionByStudyIdAndEntityIdAndVariableIdResponse 
+  @Override
+  public PostStudiesEntitiesVariablesDistributionByStudyIdAndEntityIdAndVariableIdResponse 
   postStudiesEntitiesVariablesDistributionByStudyIdAndEntityIdAndVariableId(
 String studyId, String entityId, String variableId, VariableDistributionPostRequest request) {
       
@@ -92,8 +95,7 @@ String studyId, String entityId, String variableId, VariableDistributionPostRequ
       vars.add(variableId);  // force into a list for the unpacker
       UnpackedRequest unpacked = unpack(datasource, studyId, entityId, request.getFilters(), vars);
 
-      String varId = request.getVariableId();
-      Variable var = unpacked.study.getVariable(varId).orElseThrow(() -> new BadRequestException("Variable ID not found: " + varId));
+      Variable var = unpacked.study.getVariable(variableId).orElseThrow(() -> new BadRequestException("Variable ID not found: " + variableId));
 
       Integer count = StudySubsettingUtils.getVariableCount(datasource, unpacked.study, unpacked.entity,
           var, unpacked.filters);
@@ -118,6 +120,25 @@ String studyId, String entityId, String variableId, VariableDistributionPostRequ
 
     return PostStudiesEntitiesTabularByStudyIdAndEntityIdResponse.
         respond200WithApplicationJson(streamer);
+  }
+    
+  @Override
+  public PostStudiesEntitiesCountByStudyIdAndEntityIdResponse postStudiesEntitiesCountByStudyIdAndEntityId(
+      String studyId, String entityId, EntityCountPostRequest request) {
+
+    DataSource datasource = DbManager.applicationDatabase().getDataSource();
+
+    // unpack data from API input to model objects
+    List<String> vars = new ArrayList<String>();
+    UnpackedRequest unpacked = unpack(datasource, studyId, entityId, request.getFilters(), vars);
+
+    Integer count = StudySubsettingUtils.getEntityCount(datasource, unpacked.study, unpacked.entity,
+        unpacked.filters);
+
+    EntityCountPostResponse response = new EntityCountPostResponseImpl();
+    response.setCount(count);
+
+    return  PostStudiesEntitiesCountByStudyIdAndEntityIdResponse.respond200WithApplicationJson(response);
   }
   
   private UnpackedRequest unpack(DataSource datasource, String studyId, String entityId, List<APIFilter> apiFilters, List<String> variableIds) {

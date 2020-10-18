@@ -3,10 +3,19 @@
 types:
   # Type name determines the name of the Java class that will be generated.
 
+  EntityCountPostRequest:
+    additionalProperties: false
+    properties:
+      filters: API_Filter[]
+
+  EntityCountPostResponse:
+    additionalProperties: false
+    properties:
+      count: integer
+
   VariableCountPostRequest:
     additionalProperties: false
     properties:
-      variableId: string
       filters: API_Filter[]
 
   VariableCountPostResponse:

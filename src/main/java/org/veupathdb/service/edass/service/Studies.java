@@ -10,18 +10,23 @@ import javax.sql.DataSource;
 import javax.ws.rs.BadRequestException;
 import javax.ws.rs.InternalServerErrorException;
 import javax.ws.rs.NotFoundException;
+
+import org.gusdb.fgputil.functional.TreeNode;
 import org.veupathdb.lib.container.jaxrs.utils.db.DbManager;
 import org.veupathdb.service.edass.generated.model.VariableDistributionPostRequest;
 import org.veupathdb.service.edass.generated.model.VariableDistributionPostResponseStream;
 import org.veupathdb.service.edass.generated.model.EntityTabularPostRequest;
 import org.veupathdb.service.edass.generated.model.EntityTabularPostResponseStream;
 import org.veupathdb.service.edass.generated.model.StudiesGetResponseImpl;
+import org.veupathdb.service.edass.generated.model.StudyIdGetResponse;
+import org.veupathdb.service.edass.generated.model.StudyIdGetResponseImpl;
 import org.veupathdb.service.edass.generated.model.VariableCountPostRequest;
 import org.veupathdb.service.edass.generated.model.VariableCountPostResponse;
 import org.veupathdb.service.edass.generated.model.VariableCountPostResponseImpl;
 import org.veupathdb.service.edass.model.DateRangeFilter;
 import org.veupathdb.service.edass.model.DateSetFilter;
 import org.veupathdb.service.edass.model.Entity;
+import org.veupathdb.service.edass.model.EntityResultSetUtils;
 import org.veupathdb.service.edass.model.Filter;
 import org.veupathdb.service.edass.model.NumberRangeFilter;
 import org.veupathdb.service.edass.model.NumberSetFilter;
@@ -31,10 +36,14 @@ import org.veupathdb.service.edass.model.StudySubsettingUtils;
 import org.veupathdb.service.edass.model.Variable;
 import org.veupathdb.service.edass.generated.model.APIDateRangeFilter;
 import org.veupathdb.service.edass.generated.model.APIDateSetFilter;
+import org.veupathdb.service.edass.generated.model.APIEntity;
+import org.veupathdb.service.edass.generated.model.APIEntityImpl;
 import org.veupathdb.service.edass.generated.model.APIFilter;
 import org.veupathdb.service.edass.generated.model.APINumberRangeFilter;
 import org.veupathdb.service.edass.generated.model.APINumberSetFilter;
 import org.veupathdb.service.edass.generated.model.APIStringSetFilter;
+import org.veupathdb.service.edass.generated.model.APIStudyDetail;
+import org.veupathdb.service.edass.generated.model.APIStudyDetailImpl;
 import org.veupathdb.service.edass.generated.model.APIStudyOverview;
 import org.veupathdb.service.edass.generated.model.EntityCountPostRequest;
 import org.veupathdb.service.edass.generated.model.EntityCountPostResponse;
@@ -51,8 +60,33 @@ public class Studies implements org.veupathdb.service.edass.generated.resources.
 
   @Override
   public GetStudiesByStudyIdResponse getStudiesByStudyId(String studyId) {
-    // TODO Auto-generated method stub
-    return null;
+
+    DataSource datasource = DbManager.applicationDatabase().getDataSource();
+
+    TreeNode<Entity> entityTree = EntityResultSetUtils.getStudyEntityTree(datasource, studyId);
+
+    APIEntity apiEntityTree = entityTreeToAPITree(entityTree);
+    APIStudyDetail study = new APIStudyDetailImpl();
+    // TODO: lose or fill in study.setName() prop
+    study.setId(studyId);
+    study.setRootEntity(apiEntityTree);
+    
+    StudyIdGetResponse response = new StudyIdGetResponseImpl();
+    response.setStudy(study);
+    
+    return GetStudiesByStudyIdResponse.respond200WithApplicationJson(response);
+  }
+  
+  private static APIEntity entityTreeToAPITree(TreeNode<Entity> root) {
+    return root.mapStructure((entity, mappedChildren) -> {
+      APIEntity apiEntity = new APIEntityImpl();
+      apiEntity.setDescription(entity.getDescription());
+      apiEntity.setName(entity.getName());
+      apiEntity.setId(entity.getId());
+      apiEntity.setChildren(mappedChildren);
+      // TODO add variables
+      return apiEntity;
+    });
   }
 
   @Override

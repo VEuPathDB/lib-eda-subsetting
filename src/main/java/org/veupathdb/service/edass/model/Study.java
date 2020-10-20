@@ -15,7 +15,6 @@ import javax.ws.rs.InternalServerErrorException;
 import org.gusdb.fgputil.functional.TreeNode;
 import org.veupathdb.service.edass.generated.model.APIFilter;
 
-
 public class Study {
   private String studyId;
   private TreeNode<Entity> entityTree;
@@ -23,7 +22,7 @@ public class Study {
   private Map<String, Variable> variablesMap;  // id -> Variable
   private Map<String, Entity> variableIdToEntityMap;
   
-  public Study(String studyId, TreeNode<Entity> entityTree, Set<Variable> variables) {
+  public Study(String studyId, TreeNode<Entity> entityTree, List<Variable> variables) {
     this.studyId = studyId;
     this.entityTree = entityTree;
     initEntitiesAndVariables(entityTree, variables);
@@ -33,8 +32,8 @@ public class Study {
    * Expects a pre-validated study ID
    */
   public static Study loadStudy(DataSource datasource, String studyId) {
-    TreeNode<Entity> entityTree = loadEntityTree(datasource);
-    Set<Variable> variables = loadVariables(datasource);
+    TreeNode<Entity> entityTree = EntityResultSetUtils.getStudyEntityTree(datasource, studyId);
+    List<Variable> variables = loadVariables(datasource, studyId);
     return new Study(studyId, entityTree, variables);
   }
   
@@ -59,7 +58,8 @@ public class Study {
     return null;
   }
   
-  private static Set<Variable> loadVariables(DataSource datasource) {
+  private static List<Variable> loadVariables(DataSource datasource, String studyId) {
+    // TODO
     return null;
   }
 
@@ -67,15 +67,8 @@ public class Study {
    * return true if valid study id
    */
   public static boolean validateStudyId(DataSource datasource, String studyId) {
-    return false;
-  }
-  
-  /*
-   * get the full entity tree for this study from the datasource.
-   */
-  private static TreeNode<Entity> loadEntityTree(DataSource datasource) {
     // TODO
-    return null;
+    return false;
   }
   
   /**
@@ -83,7 +76,7 @@ public class Study {
    * @param rootEntityNode
    * @param vars
    */
-  void initEntitiesAndVariables(TreeNode<Entity> rootEntityNode, Set<Variable> vars) {
+  void initEntitiesAndVariables(TreeNode<Entity> rootEntityNode, List<Variable> vars) {
     entityTree = rootEntityNode;
     validateEntityTreeIds(rootEntityNode);
     

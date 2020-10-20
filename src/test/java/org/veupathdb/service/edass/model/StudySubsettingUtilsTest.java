@@ -275,7 +275,7 @@ public class StudySubsettingUtilsTest {
     TreeNode<Entity> prunedTree = StudySubsettingUtils.pruneTree(model.study.getEntityTree(), filters, outputEntity);
 
     List<String> from = Arrays.asList(new String[]{model.household.getName(), model.householdObs.getName(), model.observation.getName()});
-    String inClause = StudySubsettingUtils.generateInClause(prunedTree, outputEntity, "t");
+    String inClause = StudySubsettingUtils.generateInClause(prunedTree, outputEntity, "t", "AND");
     String expected = "AND t." + model.householdObs.getPKColName() + " IN (" + nl +
         "  SELECT " + model.householdObs.getFullPKColName() +  nl +
         "  FROM " + String.join(", ", from) + nl +

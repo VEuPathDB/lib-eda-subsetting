@@ -4,10 +4,7 @@ import java.time.LocalDateTime;
 import java.time.Month;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
-
 import org.gusdb.fgputil.functional.TreeNode;
 import org.veupathdb.service.edass.model.Variable.Resolution;
 import org.veupathdb.service.edass.model.Variable.VariableType;
@@ -55,17 +52,17 @@ public class TestModel {
   }
   
   private void createTestEntities() {
-    household = new Entity("Household", "entity-1", "Hshld_tall", "Hshld_ancestors",
+    household = new Entity("Household", "entity-1", "descrip", "Hshld_tall", "Hshld_ancestors",
         "household_id");
-    householdObs = new Entity("HouseholdObs", "entity-4", "HouseObs_tall", "HouseObs_ancestors",
+    householdObs = new Entity("HouseholdObs", "entity-4", "descrip", "HouseObs_tall", "HouseObs_ancestors",
         "household_obs_id");
-    participant = new Entity("Participant", "entity-2", "Part_tall", "Part_ancestors",
+    participant = new Entity("Participant", "entity-2", "descrip", "Part_tall", "Part_ancestors",
         "participant_id");
-    observation = new Entity("Observation", "entity-3", "Obs_tall", "Obs_ancestors",
+    observation = new Entity("Observation", "entity-3", "descrip", "Obs_tall", "Obs_ancestors",
         "observation_id");
-    sample = new Entity("Sample", "entity-5", "Sample_tall", "Sample_ancestors",
+    sample = new Entity("Sample", "entity-5", "descrip", "Sample_tall", "Sample_ancestors",
         "sample_id");
-    treatment = new Entity("Treatment", "entity-6", "Treatment_tall", "Treatment_ancestors",
+    treatment = new Entity("Treatment", "entity-6", "descrip", "Treatment_tall", "Treatment_ancestors",
         "treatment_id");
   }
   
@@ -93,8 +90,8 @@ public class TestModel {
     return householdNode;
   }
   
-  private Set<Variable> constructVariables() {
-    Set<Variable> vars = new HashSet<Variable>();
+  private List<Variable> constructVariables() {
+    List<Variable> vars = new ArrayList<Variable>();
 
     roof = new Variable("roof", "var-10", household, VariableType.STRING, Resolution.CATEGORICAL);
     vars.add(roof);

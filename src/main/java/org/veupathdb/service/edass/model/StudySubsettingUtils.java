@@ -37,6 +37,7 @@ public class StudySubsettingUtils {
   private static final String valueColumnName = "value";
   private static final String countColumnName = "count";
 
+  
   public static void produceTabularSubset(DataSource datasource, Study study, Entity outputEntity,
       List<String> outputVariableIds, List<Filter> filters, OutputStream outputStream) {
 
@@ -66,7 +67,7 @@ public class StudySubsettingUtils {
   private static void writeWideRows(ResultSet rs, Writer writer, List<String> outputColumns, Entity outputEntity) throws IOException {
 
     Iterator<Map<String, String>> tallRowsInterator = new ResultSetIterator<>(rs,
-        row -> Optional.of(outputEntity.resultSetToTallRowMap(rs, outputColumns)));
+        row -> Optional.of(EntityResultSetUtils.resultSetToTallRowMap(outputEntity, rs, outputColumns)));
 
     String pkCol = outputEntity.getPKColName();
     Iterator<List<Map<String, String>>> groupedTallRowsIterator = new GroupingIterator<Map<String, String>>(
@@ -74,7 +75,7 @@ public class StudySubsettingUtils {
 
     // iterate through groups and format into strings to be written to stream
     for (List<Map<String, String>> group : IteratorUtil.toIterable(groupedTallRowsIterator)) {
-      Map<String, String> wideRowMap = outputEntity.getTallToWideFunction().apply(group);
+      Map<String, String> wideRowMap = EntityResultSetUtils.getTallToWideFunction(outputEntity).apply(group);
       List<String> wideRow = new ArrayList<String>();
       for (String colName : outputColumns)
         wideRow.add(wideRowMap.containsKey(colName) ? wideRowMap.get(colName) : "");
@@ -374,14 +375,14 @@ public class StudySubsettingUtils {
    * (The graceful implementation below is courtesy of Ryan)
    */
 
-  private static <T> TreeNode<T> pruneToActiveAndPivotNodes(TreeNode<T> root, Predicate<T> isActive) {
+  private static  TreeNode<Entity> pruneToActiveAndPivotNodes(TreeNode<Entity> root, Predicate<Entity> isActive) {
     return root.mapStructure((nodeContents, mappedChildren) -> {
-      List<TreeNode<T>> activeChildren = mappedChildren.stream().filter(child -> child != null) // filter dead
+      List<TreeNode<Entity>> activeChildren = mappedChildren.stream().filter(child -> child != null) // filter dead
                                                                                                 // branches
           .collect(Collectors.toList());
       return isActive.test(nodeContents) || activeChildren.size() > 1 ?
       // this node is active itself or a pivot node; return with any active children
-      new TreeNode<T>(nodeContents).addAllChildNodes(activeChildren) :
+      new TreeNode<Entity>(nodeContents).addAllChildNodes(activeChildren) :
       // inactive, non-pivot node; return single active child or null
       activeChildren.isEmpty() ? null : activeChildren.get(0);
     });

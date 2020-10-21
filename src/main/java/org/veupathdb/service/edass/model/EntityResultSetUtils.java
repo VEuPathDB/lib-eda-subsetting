@@ -14,6 +14,11 @@ import javax.ws.rs.InternalServerErrorException;
 import org.gusdb.fgputil.db.runner.SQLRunner;
 import org.gusdb.fgputil.functional.TreeNode;
 
+/**
+ * utilities for creating Entities from result sets
+ * @author Steve
+ *
+ */
 public class EntityResultSetUtils {
 
   public static final String VARIABLE_ID_COL_NAME = "variable_id";
@@ -70,10 +75,10 @@ public class EntityResultSetUtils {
 
     String studyId;
     try {
-      studyId = rs.getString(STUDY_ID_COL_NAME);
-      String name = rs.getString(ENTITY_NAME_COL_NAME);
-      String id = rs.getString(ENTITY_ID_COL_NAME);
-      String descrip = rs.getString(DESCRIP_COL_NAME);
+      studyId = VariableResultSetUtils.getRsStringNotNull(rs, STUDY_ID_COL_NAME);
+      String name = VariableResultSetUtils.getRsStringNotNull(rs, ENTITY_NAME_COL_NAME);
+      String id = VariableResultSetUtils.getRsStringNotNull(rs, ENTITY_ID_COL_NAME);
+      String descrip = VariableResultSetUtils.getRsStringNotNull(rs, DESCRIP_COL_NAME);
       
       return new Entity(name, id, studyId + "_" + name + "_tall", descrip, studyId + "_" + name + "_ancestors", name + "_id");
     }
@@ -81,7 +86,6 @@ public class EntityResultSetUtils {
       throw new InternalServerErrorException(e);
     }
   }
-
   
   /**
    * Tall table rows look like this:

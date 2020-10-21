@@ -14,6 +14,10 @@ public class Variable {
   private Entity entity;
   private VariableType type;
   private Resolution resolution;
+  private String units;
+  private Integer precision;
+  private String displayName;
+  private String parentId;
   
   public static enum VariableType {
     STRING ("string_value", rs -> rs.getString("string_value")),  
@@ -56,6 +60,20 @@ public class Variable {
     this.resolution = resolution;
   }
 
+  public Variable(String name, String id, Entity entity, VariableType type, Resolution resolution,
+      String units, Integer precision, String displayName, String parentId) {
+    this.name = name;
+    this.id = id;
+    this.entity = entity;
+    this.type = type;
+    this.resolution = resolution;
+    this.units = units;
+    this.precision = precision;
+    this.displayName = displayName;
+    this.parentId = parentId;
+
+  }
+
   public String getName() {
     return name;
   }
@@ -79,5 +97,22 @@ public class Variable {
   public Resolution getResolution() {
     return resolution;
   }
+  
+  public String getUnits() {
+    return units;
+  }
+
+  public Integer getPrecision() {
+    return precision;
+  }
+
+  public String getDisplayName() {
+    return displayName;
+  }
+
+  public String getParentId() {
+    return parentId;
+  }
+
   
 }

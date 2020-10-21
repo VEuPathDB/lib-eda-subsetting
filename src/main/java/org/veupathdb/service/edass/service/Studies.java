@@ -66,13 +66,13 @@ public class Studies implements org.veupathdb.service.edass.generated.resources.
     TreeNode<Entity> entityTree = EntityResultSetUtils.getStudyEntityTree(datasource, studyId);
 
     APIEntity apiEntityTree = entityTreeToAPITree(entityTree);
-    APIStudyDetail study = new APIStudyDetailImpl();
+    APIStudyDetail apiStudyDetail = new APIStudyDetailImpl();
     // TODO: lose or fill in study.setName() prop
-    study.setId(studyId);
-    study.setRootEntity(apiEntityTree);
+    apiStudyDetail.setId(studyId);
+    apiStudyDetail.setRootEntity(apiEntityTree);
     
     StudyIdGetResponse response = new StudyIdGetResponseImpl();
-    response.setStudy(study);
+    response.setStudy(apiStudyDetail);
     
     return GetStudiesByStudyIdResponse.respond200WithApplicationJson(response);
   }

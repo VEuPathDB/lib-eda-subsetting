@@ -22,9 +22,10 @@ public class Study {
   private Map<String, Variable> variablesMap;  // id -> Variable
   private Map<String, Entity> variableIdToEntityMap;
   
-  public Study(String studyId, TreeNode<Entity> entityTree, List<Variable> variables) {
+  public Study(String studyId, TreeNode<Entity> entityTree, List<Variable> variables, Map<String, Entity> entityIdMap) {
     this.studyId = studyId;
     this.entityTree = entityTree;
+    this.entityIdMap = entityIdMap;
     initEntitiesAndVariables(entityTree, variables);
   }
   
@@ -32,9 +33,14 @@ public class Study {
    * Expects a pre-validated study ID
    */
   public static Study loadStudy(DataSource datasource, String studyId) {
+    
     TreeNode<Entity> entityTree = EntityResultSetUtils.getStudyEntityTree(datasource, studyId);
-    List<Variable> variables = loadVariables(datasource, studyId);
-    return new Study(studyId, entityTree, variables);
+    
+    Map<String, Entity> entityIdMap = entityTree.flatten().stream().collect(Collectors.toMap(e -> e.getId(), e -> e)); 
+
+    List<Variable> variables = VariableResultSetUtils.getStudyVariables(datasource, studyId, entityIdMap);
+
+    return new Study(studyId, entityTree, variables, entityIdMap);
   }
   
   /** 
@@ -58,11 +64,6 @@ public class Study {
     return null;
   }
   
-  private static List<Variable> loadVariables(DataSource datasource, String studyId) {
-    // TODO
-    return null;
-  }
-
   /*
    * return true if valid study id
    */
@@ -72,20 +73,34 @@ public class Study {
   }
   
   /**
-   * Build internal (convenience) state from the raw entity tree and variables set
+   * Build internal (convenience) state from the raw entity tree 
    * @param rootEntityNode
    * @param vars
    */
   void initEntitiesAndVariables(TreeNode<Entity> rootEntityNode, List<Variable> vars) {
+    initEntities(rootEntityNode);
+    initVariables(vars);
+  }
+  
+  /**
+   * Build internal (convenience) state from the raw variables set
+   * @param rootEntityNode
+   * @param vars
+   */
+  void initEntities(TreeNode<Entity> rootEntityNode) {
     entityTree = rootEntityNode;
     validateEntityTreeIds(rootEntityNode);
     
-    // build entity ID map
-    entityIdMap = rootEntityNode.flatten().stream().collect(Collectors.toMap(e -> e.getId(), e -> e)); 
-
     // give each entity a set of its ancestor entities.
     populateEntityAncestors(rootEntityNode);
-    
+  }  
+  
+  /**
+   * Build internal (convenience) state from the raw entity tree and variables set
+   * @param rootEntityNode
+   * @param vars
+   */
+  void initVariables(List<Variable> vars) {
     variablesMap = new HashMap<String, Variable>();
     variableIdToEntityMap = new HashMap<String, Entity>();
     for (Variable var : vars) {

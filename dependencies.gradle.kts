@@ -67,7 +67,7 @@ dependencies {
   implementation("com.fasterxml.jackson.dataformat:jackson-dataformat-yaml:${jackson}")
 
   // Stub database (temporary?)
-  implementation("org.hsqldb:hsqldb:2.2.9")
+  implementation("org.hsqldb:hsqldb:2.5.1")
 
   // Log4J
   implementation("org.apache.logging.log4j:log4j-api:${log4j}")

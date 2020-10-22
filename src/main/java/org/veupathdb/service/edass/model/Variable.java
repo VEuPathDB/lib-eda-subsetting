@@ -13,28 +13,34 @@ public class Variable {
   private String id;
   private Entity entity;
   private VariableType type;
-  private Resolution resolution;
+  private IsContinuous isContinuous;
   private String units;
   private Integer precision;
   private String displayName;
   private String parentId;
   
   public static enum VariableType {
-    STRING ("string_value", rs -> rs.getString("string_value")),  
-    NUMBER ("number_value", rs -> String.valueOf(rs.getDouble("number_value"))),
-    DATE   ("date_value", rs -> FormatUtil.formatDate(new Date(rs.getTimestamp("date_value").getTime())));
+    STRING ("string_value", rs -> rs.getString("string_value"), "string"),  
+    NUMBER ("number_value", rs -> String.valueOf(rs.getDouble("number_value")), "number"),
+    DATE   ("date_value", rs -> FormatUtil.formatDate(new Date(rs.getTimestamp("date_value").getTime())), "date");
 
     private final String tallTableColumnName;
+    private final String typeString;
     private final FunctionWithException<ResultSet, String> resultSetToStringValue;
 
-    VariableType(String tallTableColumnName, FunctionWithException<ResultSet, String> resultSetToStringValue) {
+    VariableType(String tallTableColumnName, FunctionWithException<ResultSet, String> resultSetToStringValue, String typeString) {
       this.tallTableColumnName = tallTableColumnName;
       this.resultSetToStringValue = resultSetToStringValue;
+      this.typeString = typeString;
     }
     
     public String getTallTableColumnName() {
       return this.tallTableColumnName;
     }   
+    
+    public String getTypeString() {
+      return this.typeString;
+    }
     
     public String convertRowValueToStringValue(ResultSet rs) {
       try {
@@ -46,27 +52,31 @@ public class Variable {
     }
   }
   
-  public enum Resolution {
-    CONTINUOUS,
-    CATEGORICAL;
+  public enum IsContinuous {
+    FALSE,
+    TRUE;
+    
+    public static IsContinuous fromBoolean(Boolean bool) {
+      return bool? TRUE : FALSE;
+    }
   }
   
-  public Variable(String name, String id, Entity entity, VariableType type, Resolution resolution) {
+  public Variable(String name, String id, Entity entity, VariableType type, IsContinuous isContinuous) {
 
     this.name = name;
     this.id = id;
     this.entity = entity;
     this.type = type;
-    this.resolution = resolution;
+    this.isContinuous = isContinuous;
   }
 
-  public Variable(String name, String id, Entity entity, VariableType type, Resolution resolution,
+  public Variable(String name, String id, Entity entity, VariableType type, IsContinuous isContinuous,
       String units, Integer precision, String displayName, String parentId) {
     this.name = name;
     this.id = id;
     this.entity = entity;
     this.type = type;
-    this.resolution = resolution;
+    this.isContinuous = isContinuous;
     this.units = units;
     this.precision = precision;
     this.displayName = displayName;
@@ -94,8 +104,8 @@ public class Variable {
     return type;
   }
 
-  public Resolution getResolution() {
-    return resolution;
+  public IsContinuous getIsContinuous() {
+    return isContinuous;
   }
   
   public String getUnits() {
@@ -114,5 +124,7 @@ public class Variable {
     return parentId;
   }
 
-  
+  public VariableType getType() {
+    return type;
+  }
 }

@@ -52,7 +52,7 @@ public class VariableResultSetUtils {
           getRsStringNotNull(rs, ID_COL_NAME),
           entity,
           Variable.VariableType.valueOf(getRsStringNotNull(rs, DATA_TYPE_COL_NAME)),
-          Variable.Resolution.valueOf(getRsStringNotNull(rs, RESOLUTION_COL_NAME)),
+          Variable.IsContinuous.fromBoolean(rs.getBoolean(PRECISION_COL_NAME)),
           getRsStringNotNull(rs, UNITS_COL_NAME),
           rs.getInt(PRECISION_COL_NAME),
           getRsStringNotNull(rs, DISPLAY_NAME_COL_NAME),

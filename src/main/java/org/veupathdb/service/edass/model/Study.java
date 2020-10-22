@@ -19,7 +19,6 @@ public class Study {
   private String studyId;
   private TreeNode<Entity> entityTree;
   private Map<String, Entity> entityIdMap;
-  private Map<String, Variable> variablesMap;  // id -> Variable
   private Map<String, Entity> variableIdToEntityMap;
   
   public Study(String studyId, TreeNode<Entity> entityTree, List<Variable> variables, Map<String, Entity> entityIdMap) {
@@ -101,10 +100,8 @@ public class Study {
    * @param vars
    */
   void initVariables(List<Variable> vars) {
-    variablesMap = new HashMap<String, Variable>();
-    variableIdToEntityMap = new HashMap<String, Entity>();
+    variableIdToEntityMap = new HashMap<String, Entity>();    
     for (Variable var : vars) {
-      variablesMap.put(var.getId(), var);
       variableIdToEntityMap.put(var.getId(), entityIdMap.get(var.getEntityId()));
       var.getEntity().addVariable(var);
     }
@@ -120,10 +117,6 @@ public class Study {
    
   public TreeNode<Entity> getEntityTree() {
     return entityTree.clone();
-  }
-  
-  public Optional<Variable> getVariable(String variableId) {
-    return Optional.ofNullable(variablesMap.get(variableId));
   }
   
   private static void populateEntityAncestors(TreeNode<Entity> rootEntityNode) {

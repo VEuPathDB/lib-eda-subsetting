@@ -4,9 +4,12 @@ import java.time.LocalDateTime;
 import java.time.Month;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+
 import org.gusdb.fgputil.functional.TreeNode;
-import org.veupathdb.service.edass.model.Variable.Resolution;
+import org.veupathdb.service.edass.model.Variable.IsContinuous;
 import org.veupathdb.service.edass.model.Variable.VariableType;
 
 /**
@@ -47,7 +50,7 @@ public class TestModel {
   
   public TestModel() {
     createTestEntities();
-    study = new Study("555555", constructEntityTree(), constructVariables()); 
+    study = new Study("555555", constructEntityTree(), constructVariables(), createIdMap()); 
     createFilters();
   }
   
@@ -66,6 +69,17 @@ public class TestModel {
         "treatment_id");
   }
   
+  private Map<String, Entity> createIdMap() {
+    Map<String, Entity> idMap = new HashMap<String, Entity>();
+    idMap.put("entity-1", household);
+    idMap.put("entity-4", householdObs);
+    idMap.put("entity-2", participant);
+    idMap.put("entity-3", observation);
+    idMap.put("entity-5", sample);
+    idMap.put("entity-6", treatment);
+    return idMap;
+   }
+
   /*
    * return a fresh entity tree.
    */
@@ -93,34 +107,34 @@ public class TestModel {
   private List<Variable> constructVariables() {
     List<Variable> vars = new ArrayList<Variable>();
 
-    roof = new Variable("roof", "var-10", household, VariableType.STRING, Resolution.CATEGORICAL);
+    roof = new Variable("roof", "var-10", household, VariableType.STRING, IsContinuous.FALSE);
     vars.add(roof);
     
-    shoesize = new Variable("shoesize", "var-11", participant, VariableType.NUMBER, Resolution.CATEGORICAL);    
+    shoesize = new Variable("shoesize", "var-11", participant, VariableType.NUMBER, IsContinuous.FALSE);    
     vars.add(shoesize);
 
-    haircolor = new Variable("haircolor", "var-17", participant, VariableType.STRING, Resolution.CATEGORICAL);    
-    vars.add(shoesize);
+    haircolor = new Variable("haircolor", "var-17", participant, VariableType.STRING, IsContinuous.FALSE);    
+    vars.add(haircolor);
 
-    networth = new Variable("networth", "var-18", participant, VariableType.NUMBER, Resolution.CONTINUOUS);    
-    vars.add(shoesize);
+    networth = new Variable("networth", "var-18", participant, VariableType.NUMBER, IsContinuous.TRUE);    
+    vars.add(networth);
 
-    weight = new Variable("weight", "var-12", observation, VariableType.NUMBER, Resolution.CONTINUOUS);    
+    weight = new Variable("weight", "var-12", observation, VariableType.NUMBER, IsContinuous.TRUE);    
     vars.add(weight);
     
-    favNumber = new Variable("favNumber", "var-13", observation, VariableType.NUMBER, Resolution.CATEGORICAL);    
-    vars.add(weight);
+    favNumber = new Variable("favNumber", "var-13", observation, VariableType.NUMBER, IsContinuous.FALSE);    
+    vars.add(favNumber);
     
-    birthDate  = new Variable("birthDate", "var-14", observation, VariableType.DATE, Resolution.CONTINUOUS);    
+    birthDate  = new Variable("birthDate", "var-14", observation, VariableType.DATE, IsContinuous.TRUE);    
     vars.add(birthDate);
     
-    favNewYears = new Variable("favNewYears", "var-15", observation, VariableType.DATE, Resolution.CATEGORICAL);    
+    favNewYears = new Variable("favNewYears", "var-15", observation, VariableType.DATE, IsContinuous.FALSE);    
     vars.add(favNewYears);
     
-    mood  = new Variable("mood", "var-16", observation, VariableType.STRING, Resolution.CATEGORICAL);    
+    mood  = new Variable("mood", "var-16", observation, VariableType.STRING, IsContinuous.FALSE);    
     vars.add(mood);
 
-    waterSupply  = new Variable("waterSupply", "var-19", householdObs, VariableType.STRING, Resolution.CATEGORICAL);    
+    waterSupply  = new Variable("waterSupply", "var-19", householdObs, VariableType.STRING, IsContinuous.FALSE);    
     vars.add(waterSupply);
 
     return vars;

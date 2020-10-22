@@ -23,6 +23,7 @@ public class Entity {
   private String ancestorsTableName;
   private String primaryKeyColumnName;
   private Map<String, Variable> variablesMap = new HashMap<String, Variable>();
+  private List<Variable> variablesList = new ArrayList<Variable>();
   private List<Entity> ancestorEntities;
   private List<String> ancestorPkColNames;
   private List<String> ancestorFullPkColNames; // entityName.pkColName
@@ -111,9 +112,15 @@ public class Entity {
     if (tallRowSize == null) tallRowSize = Integer.valueOf(ancestorEntities.size() + 5);
     return tallRowSize;
   }
+  
+  public List<Variable> getVariables() {
+    return Collections.unmodifiableList(variablesList);
+  }
  
-
   public void addVariable(Variable var) {
+    if (variablesMap.containsKey(var.getId()))
+      throw new RuntimeException("Trying to add duplicate variable: " + var.getId());
     variablesMap.put(var.getId(), var);
+    variablesList.add(var);
   }
 }

@@ -26,7 +26,6 @@ import org.veupathdb.service.edass.generated.model.VariableCountPostResponseImpl
 import org.veupathdb.service.edass.model.DateRangeFilter;
 import org.veupathdb.service.edass.model.DateSetFilter;
 import org.veupathdb.service.edass.model.Entity;
-import org.veupathdb.service.edass.model.EntityResultSetUtils;
 import org.veupathdb.service.edass.model.Filter;
 import org.veupathdb.service.edass.model.NumberRangeFilter;
 import org.veupathdb.service.edass.model.NumberSetFilter;
@@ -34,6 +33,7 @@ import org.veupathdb.service.edass.model.StringSetFilter;
 import org.veupathdb.service.edass.model.Study;
 import org.veupathdb.service.edass.model.StudySubsettingUtils;
 import org.veupathdb.service.edass.model.Variable;
+import org.veupathdb.service.edass.model.Variable.VariableType;
 import org.veupathdb.service.edass.generated.model.APIDateRangeFilter;
 import org.veupathdb.service.edass.generated.model.APIDateSetFilter;
 import org.veupathdb.service.edass.generated.model.APIEntity;
@@ -45,6 +45,13 @@ import org.veupathdb.service.edass.generated.model.APIStringSetFilter;
 import org.veupathdb.service.edass.generated.model.APIStudyDetail;
 import org.veupathdb.service.edass.generated.model.APIStudyDetailImpl;
 import org.veupathdb.service.edass.generated.model.APIStudyOverview;
+import org.veupathdb.service.edass.generated.model.APIVariable;
+import org.veupathdb.service.edass.generated.model.APIDateVariable;
+import org.veupathdb.service.edass.generated.model.APIDateVariableImpl;
+import org.veupathdb.service.edass.generated.model.APIStringVariable;
+import org.veupathdb.service.edass.generated.model.APIStringVariableImpl;
+import org.veupathdb.service.edass.generated.model.APINumberVariable;
+import org.veupathdb.service.edass.generated.model.APINumberVariableImpl;
 import org.veupathdb.service.edass.generated.model.EntityCountPostRequest;
 import org.veupathdb.service.edass.generated.model.EntityCountPostResponse;
 import org.veupathdb.service.edass.generated.model.EntityCountPostResponseImpl;
@@ -62,14 +69,15 @@ public class Studies implements org.veupathdb.service.edass.generated.resources.
   public GetStudiesByStudyIdResponse getStudiesByStudyId(String studyId) {
 
     DataSource datasource = DbManager.applicationDatabase().getDataSource();
+    
+    Study study = Study.loadStudy(datasource, studyId);
 
-    TreeNode<Entity> entityTree = EntityResultSetUtils.getStudyEntityTree(datasource, studyId);
-
-    APIEntity apiEntityTree = entityTreeToAPITree(entityTree);
+    APIEntity apiEntityTree = entityTreeToAPITree(study.getEntityTree());
+    
     APIStudyDetail apiStudyDetail = new APIStudyDetailImpl();
-    // TODO: lose or fill in study.setName() prop
     apiStudyDetail.setId(studyId);
-    apiStudyDetail.setRootEntity(apiEntityTree);
+    apiStudyDetail.setRootEntity(apiEntityTree);    
+    // TODO: lose or fill in study.setName() prop
     
     StudyIdGetResponse response = new StudyIdGetResponseImpl();
     response.setStudy(apiStudyDetail);
@@ -84,9 +92,46 @@ public class Studies implements org.veupathdb.service.edass.generated.resources.
       apiEntity.setName(entity.getName());
       apiEntity.setId(entity.getId());
       apiEntity.setChildren(mappedChildren);
-      // TODO add variables
+      
+      List<APIVariable> apiVariables = new ArrayList<APIVariable>();
+      for (Variable var : entity.getVariables()) 
+        apiVariables.add(variableToAPIVariable(var));
+      apiEntity.setVariables(apiVariables);
+
       return apiEntity;
     });
+  }
+  
+  private static APIVariable variableToAPIVariable(Variable var) {
+    if (var.getType() == VariableType.DATE) {
+      APIDateVariable apiVar = new APIDateVariableImpl();
+      setApiVarProps(apiVar, var);
+      apiVar.setIsContinuous(var.getIsContinuous() == Variable.IsContinuous.TRUE);    
+      return apiVar;
+    }
+    else if (var.getType() == VariableType.NUMBER) {
+      APINumberVariable apiVar = new APINumberVariableImpl();
+      setApiVarProps(apiVar, var);
+      apiVar.setPrecision(var.getPrecision());
+      apiVar.setUnits(var.getUnits());
+      apiVar.setIsContinuous(var.getIsContinuous() == Variable.IsContinuous.TRUE);    
+      return apiVar;
+    }
+    else if (var.getType() == VariableType.STRING) {
+      APIStringVariable apiVar = new APIStringVariableImpl();
+      setApiVarProps(apiVar, var);
+      return apiVar;
+    }
+    else {
+      throw new RuntimeException("Impossible enum value");
+    }
+  }
+  
+  private static void setApiVarProps(APIVariable apiVar, Variable var) {
+    apiVar.setId(var.getId());
+    apiVar.setName(var.getName());
+    apiVar.setDisplayName(var.getDisplayName());
+    apiVar.setParentId(var.getParentId());
   }
 
   @Override
@@ -108,8 +153,8 @@ String studyId, String entityId, String variableId, VariableDistributionPostRequ
     vars.add(variableId);  // force into a list for the unpacker
     UnpackedRequest unpacked = unpack(datasource, studyId, entityId, request.getFilters(), vars);
 
-    String varId = request.getVariableId();
-    Variable var = unpacked.study.getVariable(varId).orElseThrow(() -> new BadRequestException("Variable ID not found: " + varId));
+    Variable var = unpacked.entity.getVariable(variableId)
+        .orElseThrow(() -> new BadRequestException("Variable ID not found: " + variableId));
 
     VariableDistributionPostResponseStream streamer = new VariableDistributionPostResponseStream
         (outStream -> StudySubsettingUtils.produceVariableDistribution(datasource, unpacked.study, unpacked.entity, var, unpacked.filters, outStream));
@@ -129,7 +174,8 @@ String studyId, String entityId, String variableId, VariableDistributionPostRequ
       vars.add(variableId);  // force into a list for the unpacker
       UnpackedRequest unpacked = unpack(datasource, studyId, entityId, request.getFilters(), vars);
 
-      Variable var = unpacked.study.getVariable(variableId).orElseThrow(() -> new BadRequestException("Variable ID not found: " + variableId));
+      Variable var = unpacked.entity.getVariable(variableId)
+          .orElseThrow(() -> new BadRequestException("Variable ID not found: " + variableId));
 
       Integer count = StudySubsettingUtils.getVariableCount(datasource, unpacked.study, unpacked.entity,
           var, unpacked.filters);
@@ -219,7 +265,7 @@ String studyId, String entityId, String variableId, VariableDistributionPostRequ
       
       // validate filter's variable id
       String varId = apiFilter.getVariableId();
-      study.getVariable(varId).orElseThrow(() -> new BadRequestException("Variable '" + varId + "' is not found"));
+      entity.getVariable(varId).orElseThrow(() -> new BadRequestException("Variable '" + varId + "' is not found"));
 
       Filter newFilter;
       if (apiFilter instanceof APIDateRangeFilter) {
@@ -254,8 +300,8 @@ String studyId, String entityId, String variableId, VariableDistributionPostRequ
       
       String errMsg = "Output variable '" + varId
           + "' is not found for entity with ID: '" + outputEntityId + "'";
-      
-      Variable var = study.getVariable(varId).orElseThrow(() -> new BadRequestException(errMsg));
+      Entity entity = study.getEntity(outputEntityId).orElseThrow(() -> new RuntimeException("Invalid entityId: " + outputEntityId));
+      Variable var = entity.getVariable(varId).orElseThrow(() -> new BadRequestException(errMsg));
       if (var.getEntityId().equals(outputEntityId)) throw new BadRequestException(errMsg);   
     }
   }

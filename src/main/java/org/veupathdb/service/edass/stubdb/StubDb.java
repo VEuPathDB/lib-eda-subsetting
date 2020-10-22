@@ -1,0 +1,54 @@
+package org.veupathdb.service.edass.stubdb;
+
+import org.gusdb.fgputil.db.SqlScriptRunner;
+import org.gusdb.fgputil.db.runner.SQLRunner;
+import org.hsqldb.jdbc.JDBCDataSource;
+
+import javax.sql.DataSource;
+import java.io.IOException;
+import java.sql.SQLException;
+
+public class StubDb {
+
+  private static final String DB_SETUP_SCRIPT = "org/veupathdb/service/edass/stubdb/dbSetup.sql";
+
+  private static final String STUB_DB_NAME = "stubDb";
+
+  private static DataSource _ds;
+
+  public static DataSource getDataSource() {
+    if (_ds == null) {
+      synchronized(StubDb.class) {
+        if (_ds == null) _ds = loadDataSource();
+      }
+    }
+    return _ds;
+  }
+
+  private static DataSource loadDataSource() {
+    try {
+      JDBCDataSource ds = new JDBCDataSource();
+      ds.setDatabase("jdbc:hsqldb:mem:" + STUB_DB_NAME);
+      ds.setUser("stubby");
+      ds.setPassword("");
+      SqlScriptRunner.runSqlScript(ds, DB_SETUP_SCRIPT);
+      return ds;
+    }
+    catch (SQLException | IOException e) {
+      throw new RuntimeException("Unable to load stud database", e);
+    }
+  }
+
+  // Example usage!  This will not work for long!
+  public static void main(String[] args) {
+    new SQLRunner(getDataSource(), "select * from entities").executeQuery(rs -> {
+      while (rs.next()) {
+        System.out.println(
+            "ID: " + rs.getInt(1) +
+            ", Name: " + rs.getString(2) +
+            ", ParentId: " + rs.getInt(3));
+      }
+      return null;
+    });
+  }
+}

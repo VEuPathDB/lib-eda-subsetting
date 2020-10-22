@@ -286,34 +286,63 @@ public class StudySubsettingUtilsTest {
     assertEquals(expected, inClause);
   }
 
-  /* COMMENTED OUT... really just a cheesy way to print out the final sql 
   @Test
   @DisplayName("Test getting full tabular sql")
   void testGetTabularSql() {
     
-    List<Filter> filters = new ArrayList<Filter>();
-    filters.add(model.obsWeightFilter);
-    filters.add(model.obsFavNewYearsFilter);
-    filters.add(model.obsBirthDateFilter);
-    filters.add(model.obsMoodFilter);
-    filters.add(model.obsFavNumberFilter);
-    filters.add(model.houseRoofFilter);
-    filters.add(model.houseObsWaterSupplyFilter);
+    List<Filter> filters = getSomeFilters();
     
     List<String> outputVariableNames = Arrays.asList(new String[]{model.networth.getId(), model.shoesize.getId()});
 
     TreeNode<Entity> prunedTree = StudySubsettingUtils.pruneTree(model.study.getEntityTree(), filters, model.participant);
 
     String sql = StudySubsettingUtils.generateTabularSql(outputVariableNames, model.participant, filters, prunedTree);
-    String expected = "";
-    assertEquals(expected, sql);
+    assertNotEquals("", sql);
+    //System.out.println("Tabular SQL:" + "\n" + sql);
   }
-  */
-  
+
   @Test
   @DisplayName("Test getting full distribution sql")
   void testGetDistributionSql() {
     
+    List<Filter> filters = getSomeFilters();
+    
+    TreeNode<Entity> prunedTree = StudySubsettingUtils.pruneTree(model.study.getEntityTree(), filters, model.participant);
+
+    String sql = StudySubsettingUtils.generateDistributionSql(model.participant, model.shoesize, filters, prunedTree);
+    assertNotEquals("", sql);
+    //System.out.println("Distribution SQL:" + "\n" + sql);
+  }
+  
+  @Test
+  @DisplayName("Test getting count of entities sql")
+  void testGetEntitiesCountSql() {
+    
+    List<Filter> filters = getSomeFilters();
+    
+    TreeNode<Entity> prunedTree = StudySubsettingUtils.pruneTree(model.study.getEntityTree(), filters, model.participant);
+
+    String sql = StudySubsettingUtils.generateEntityCountSql(model.participant, filters, prunedTree);
+    assertNotEquals("", sql);
+    System.out.println("Entity Count SQL:" + "\n" + sql);
+  }
+
+  @Test
+  @DisplayName("Test getting count of entities that have a value for a variable sql")
+  void testGetVariableCountSql() {
+    
+    List<Filter> filters = getSomeFilters();
+    
+    TreeNode<Entity> prunedTree = StudySubsettingUtils.pruneTree(model.study.getEntityTree(), filters, model.participant);
+
+    String sql = StudySubsettingUtils.generateVariableCountSql(model.participant, model.networth, filters, prunedTree);
+    assertNotEquals("", sql);
+    System.out.println("Variable Count SQL:" + "\n" + sql);
+  }
+
+
+
+  List<Filter> getSomeFilters() {
     List<Filter> filters = new ArrayList<Filter>();
     filters.add(model.obsWeightFilter);
     filters.add(model.obsFavNewYearsFilter);
@@ -322,13 +351,7 @@ public class StudySubsettingUtilsTest {
     filters.add(model.obsFavNumberFilter);
     filters.add(model.houseRoofFilter);
     filters.add(model.houseObsWaterSupplyFilter);
+    return filters;
     
-    TreeNode<Entity> prunedTree = StudySubsettingUtils.pruneTree(model.study.getEntityTree(), filters, model.participant);
-
-    String sql = StudySubsettingUtils.generateDistributionSql(model.participant, model.shoesize, filters, prunedTree);
-    String expected = "";
-    assertEquals(expected, sql);
   }
-
-//*/
 }

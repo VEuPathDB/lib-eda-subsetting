@@ -182,10 +182,10 @@ public class StudySubsettingUtils {
     
     return generateWithClauses(prunedEntityTree, filters, getEntityIdsInFilters(filters)) + nl
         + "SELECT count(distinct " + outputEntity.getPKColName() + ")" + nl
-        + generateDistributionFromClause(outputEntity) + nl
-        + generateInClause(prunedEntityTree, outputEntity, outputEntity.getTallTableName(), "WHERE");        
+        + "FROM (" + nl
+        + generateJoiningSubselect(prunedEntityTree, outputEntity) + nl
+        + ") t";
   }
-
   
   /**
    * Generate SQL to produce a distribution for a single variable, for the specified subset.
@@ -217,7 +217,7 @@ public class StudySubsettingUtils {
   static String generateVariableCountSql(Entity outputEntity, Variable variable, List<Filter> filters, TreeNode<Entity> prunedEntityTree) {
     
     return generateWithClauses(prunedEntityTree, filters, getEntityIdsInFilters(filters)) + nl
-        + generateVariableCountClause(variable) + nl
+        + generateVariableCountSelectClause(variable) + nl
         + generateDistributionFromClause(outputEntity) + nl
         + generateDistributionWhereClause(variable) + nl
         + generateInClause(prunedEntityTree, outputEntity, outputEntity.getTallTableName(), "AND");        
@@ -264,8 +264,8 @@ public class StudySubsettingUtils {
     return "SELECT " + distributionVariable.getVariableType().getTallTableColumnName() + " as " + valueColumnName + ", count(" + distributionVariable.getEntity().getPKColName() + ") as " + valueColumnName;
   }
   
-  static String generateVariableCountClause(Variable variable) {
-    return "SELECT count(distinct " + variable.getVariableType().getTallTableColumnName() + ") as " + countColumnName;
+  static String generateVariableCountSelectClause(Variable variable) {
+    return "SELECT count(distinct " + variable.getEntity().getPKColName() + ") as " + countColumnName;
   }
   
   static String generateDistributionFromClause(Entity outputEntity) {
@@ -293,23 +293,26 @@ public class StudySubsettingUtils {
 
   static String generateInClause(TreeNode<Entity> prunedEntityTree, Entity outputEntity, String tallTblAbbrev, String whereOrAnd) {
     return whereOrAnd + " " + tallTblAbbrev + "." + outputEntity.getPKColName() + " IN (" + nl 
-    + generateInClauseSelectClause(outputEntity) + nl
-    + generateInClauseFromClause(prunedEntityTree) + nl
-    + generateInClauseJoinsClause(prunedEntityTree) + nl
+    + generateJoiningSubselect(prunedEntityTree, outputEntity) + nl
     + ")";
-
   }
   
-  static String generateInClauseSelectClause(Entity outputEntity) {
+  static String generateJoiningSubselect(TreeNode<Entity> prunedEntityTree, Entity outputEntity) {
+    return generateJoiningSelectClause(outputEntity) + nl
+    + generateJoiningFromClause(prunedEntityTree) + nl
+    + generateJoiningJoinsClause(prunedEntityTree); 
+  }
+  
+  static String generateJoiningSelectClause(Entity outputEntity) {
     return "  SELECT " + outputEntity.getFullPKColName();
   }
   
-  static String generateInClauseFromClause(TreeNode<Entity> prunedEntityTree) {
+  static String generateJoiningFromClause(TreeNode<Entity> prunedEntityTree) {
     List<String> fromClauses = prunedEntityTree.flatten().stream().map(e -> e.getName()).collect(Collectors.toList());
     return "  FROM " + String.join(", ", fromClauses);
   }
 
-  static String generateInClauseJoinsClause(TreeNode<Entity> prunedEntityTree) {
+  static String generateJoiningJoinsClause(TreeNode<Entity> prunedEntityTree) {
     List<String> sqlJoinStrings = new ArrayList<String>();
     addSqlJoinStrings(prunedEntityTree, sqlJoinStrings);
     return "  WHERE " + String.join(nl + "  AND ", sqlJoinStrings);    

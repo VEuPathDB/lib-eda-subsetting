@@ -12,7 +12,7 @@ import javax.ws.rs.InternalServerErrorException;
 import javax.ws.rs.NotFoundException;
 
 import org.gusdb.fgputil.functional.TreeNode;
-import org.veupathdb.lib.container.jaxrs.utils.db.DbManager;
+import org.veupathdb.service.edass.Resources;
 import org.veupathdb.service.edass.generated.model.VariableDistributionPostRequest;
 import org.veupathdb.service.edass.generated.model.VariableDistributionPostResponseStream;
 import org.veupathdb.service.edass.generated.model.EntityTabularPostRequest;
@@ -44,7 +44,6 @@ import org.veupathdb.service.edass.generated.model.APINumberSetFilter;
 import org.veupathdb.service.edass.generated.model.APIStringSetFilter;
 import org.veupathdb.service.edass.generated.model.APIStudyDetail;
 import org.veupathdb.service.edass.generated.model.APIStudyDetailImpl;
-import org.veupathdb.service.edass.generated.model.APIStudyOverview;
 import org.veupathdb.service.edass.generated.model.APIVariable;
 import org.veupathdb.service.edass.generated.model.APIDateVariable;
 import org.veupathdb.service.edass.generated.model.APIDateVariableImpl;
@@ -61,16 +60,14 @@ public class Studies implements org.veupathdb.service.edass.generated.resources.
   @Override
   public GetStudiesResponse getStudies() {
     var out = new StudiesGetResponseImpl();
-    out.setStudies(new ArrayList<APIStudyOverview>());
+    out.setStudies(new ArrayList<>());
     return GetStudiesResponse.respond200WithApplicationJson(out);
   }
 
   @Override
   public GetStudiesByStudyIdResponse getStudiesByStudyId(String studyId) {
 
-    DataSource datasource = DbManager.applicationDatabase().getDataSource();
-    
-    Study study = Study.loadStudy(datasource, studyId);
+    Study study = Study.loadStudy(Resources.getApplicationDataSource(), studyId);
 
     APIEntity apiEntityTree = entityTreeToAPITree(study.getEntityTree());
     
@@ -93,7 +90,7 @@ public class Studies implements org.veupathdb.service.edass.generated.resources.
       apiEntity.setId(entity.getId());
       apiEntity.setChildren(mappedChildren);
       
-      List<APIVariable> apiVariables = new ArrayList<APIVariable>();
+      List<APIVariable> apiVariables = new ArrayList<>();
       for (Variable var : entity.getVariables()) 
         apiVariables.add(variableToAPIVariable(var));
       apiEntity.setVariables(apiVariables);
@@ -146,10 +143,10 @@ public class Studies implements org.veupathdb.service.edass.generated.resources.
   postStudiesEntitiesVariablesDistributionByStudyIdAndEntityIdAndVariableId(
 String studyId, String entityId, String variableId, VariableDistributionPostRequest request) {
       
-    DataSource datasource = DbManager.applicationDatabase().getDataSource();
+    DataSource datasource = Resources.getApplicationDataSource();
     
     // unpack data from API input to model objects
-    List<String> vars = new ArrayList<String>();
+    List<String> vars = new ArrayList<>();
     vars.add(variableId);  // force into a list for the unpacker
     UnpackedRequest unpacked = unpack(datasource, studyId, entityId, request.getFilters(), vars);
 
@@ -167,10 +164,10 @@ String studyId, String entityId, String variableId, VariableDistributionPostRequ
     public PostStudiesEntitiesVariablesCountByStudyIdAndEntityIdAndVariableIdResponse postStudiesEntitiesVariablesCountByStudyIdAndEntityIdAndVariableId(
         String studyId, String entityId, String variableId, VariableCountPostRequest request) {
 
-      DataSource datasource = DbManager.applicationDatabase().getDataSource();
+      DataSource datasource = Resources.getApplicationDataSource();
 
       // unpack data from API input to model objects
-      List<String> vars = new ArrayList<String>();
+      List<String> vars = new ArrayList<>();
       vars.add(variableId);  // force into a list for the unpacker
       UnpackedRequest unpacked = unpack(datasource, studyId, entityId, request.getFilters(), vars);
 
@@ -190,7 +187,7 @@ String studyId, String entityId, String variableId, VariableDistributionPostRequ
   public PostStudiesEntitiesTabularByStudyIdAndEntityIdResponse postStudiesEntitiesTabularByStudyIdAndEntityId(String studyId,
       String entityId, EntityTabularPostRequest request) {
     
-    DataSource datasource = DbManager.applicationDatabase().getDataSource();
+    DataSource datasource = Resources.getApplicationDataSource();
     
     UnpackedRequest unpacked = unpack(datasource, studyId, entityId, request.getFilters(), request.getOutputVariableIds());
 
@@ -206,10 +203,10 @@ String studyId, String entityId, String variableId, VariableDistributionPostRequ
   public PostStudiesEntitiesCountByStudyIdAndEntityIdResponse postStudiesEntitiesCountByStudyIdAndEntityId(
       String studyId, String entityId, EntityCountPostRequest request) {
 
-    DataSource datasource = DbManager.applicationDatabase().getDataSource();
+    DataSource datasource = Resources.getApplicationDataSource();
 
     // unpack data from API input to model objects
-    List<String> vars = new ArrayList<String>();
+    List<String> vars = new ArrayList<>();
     UnpackedRequest unpacked = unpack(datasource, studyId, entityId, request.getFilters(), vars);
 
     Integer count = StudySubsettingUtils.getEntityCount(datasource, unpacked.study, unpacked.entity,
@@ -236,7 +233,7 @@ String studyId, String entityId, String variableId, VariableDistributionPostRequ
     return new UnpackedRequest(study, entity, filters);
   }
   
-  class UnpackedRequest {
+  static class UnpackedRequest {
     UnpackedRequest(Study study, Entity entity, List<Filter> filters) {
       this.study = study;
       this.entity = entity;
@@ -252,7 +249,7 @@ String studyId, String entityId, String variableId, VariableDistributionPostRequ
    * filter subclass
    */
   static List<Filter> constructFiltersFromAPIFilters(Study study, List<APIFilter> filters) {
-    List<Filter> subsetFilters = new ArrayList<Filter>();
+    List<Filter> subsetFilters = new ArrayList<>();
 
     String errPrfx = "A filter references an unfound ";
     
@@ -274,7 +271,7 @@ String studyId, String entityId, String variableId, VariableDistributionPostRequ
             convertDate(f.getMin()), convertDate(f.getMax()));
       } else if (apiFilter instanceof APIDateSetFilter) {
         APIDateSetFilter f = (APIDateSetFilter)apiFilter;
-        List<LocalDateTime> dateSet = new ArrayList<LocalDateTime>();
+        List<LocalDateTime> dateSet = new ArrayList<>();
         for (String dateStr : f.getDateSet()) dateSet.add(convertDate(dateStr));
         newFilter = new DateSetFilter(entity, varId, dateSet);
       } else if (apiFilter instanceof APINumberRangeFilter) {
@@ -309,11 +306,10 @@ String studyId, String entityId, String variableId, VariableDistributionPostRequ
   static LocalDateTime convertDate(String dateStr) {
     try {
       DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm");
-      LocalDateTime date = LocalDateTime.parse(dateStr, formatter); 
-      return date;
-    } catch (DateTimeParseException e) {
+      return LocalDateTime.parse(dateStr, formatter);
+    }
+    catch (DateTimeParseException e) {
       throw new BadRequestException("Can't parse date string" + dateStr);
     }
   }
-
 }

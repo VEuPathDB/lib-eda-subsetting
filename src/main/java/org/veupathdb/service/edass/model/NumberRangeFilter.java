@@ -1,5 +1,7 @@
 package org.veupathdb.service.edass.model;
 
+import static org.veupathdb.service.edass.model.RdbmsColumnNames.*;
+
 public class NumberRangeFilter extends Filter {
 
   private Number min;
@@ -13,7 +15,7 @@ public class NumberRangeFilter extends Filter {
 
   @Override
   public String getAndClausesSql() {
-    return "  AND number_value >= " + min + " AND number_value <= " + max + nl;
+    return "  AND " + NUMBER_VALUE_COL_NAME + " >= " + min + " AND " + NUMBER_VALUE_COL_NAME + " <= " + max + nl;
   }
 
 }

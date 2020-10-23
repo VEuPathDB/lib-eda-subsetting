@@ -1,6 +1,7 @@
 package org.veupathdb.service.edass.model;
 
 import java.time.LocalDateTime;
+import static org.veupathdb.service.edass.model.RdbmsColumnNames.*;
 
 public class DateRangeFilter extends Filter {
 
@@ -15,6 +16,6 @@ public class DateRangeFilter extends Filter {
 
   @Override
   public String getAndClausesSql() {
-    return "  AND date_value >= '" + min + "' AND date_value <= '" + max + "'" + nl;
+    return "  AND " + DATE_VALUE_COL_NAME + " >= '" + min + "' AND " + DATE_VALUE_COL_NAME + " <= '" + max + "'" + nl;
   }
 }

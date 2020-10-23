@@ -2,6 +2,7 @@ package org.veupathdb.service.edass.model;
 
 import java.util.List;
 import java.util.stream.Collectors;
+import static org.veupathdb.service.edass.model.RdbmsColumnNames.*;
 
 public class NumberSetFilter extends Filter {
 
@@ -15,7 +16,7 @@ public class NumberSetFilter extends Filter {
   @Override
   public String getAndClausesSql() {
     List<String> vals = numberSet.stream().map(n -> String.valueOf(n)).collect(Collectors.toList());
-    return "  AND number_value IN (" + String.join(", ", vals) + " )" + nl;
+    return "  AND " + NUMBER_VALUE_COL_NAME + " IN (" + String.join(", ", vals) + " )" + nl;
   }
 
 }

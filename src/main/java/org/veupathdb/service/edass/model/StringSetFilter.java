@@ -1,6 +1,8 @@
 package org.veupathdb.service.edass.model;
 
 import java.util.List;
+import static org.veupathdb.service.edass.model.RdbmsColumnNames.*;
+
 
 public class StringSetFilter extends Filter {
 
@@ -13,7 +15,7 @@ public class StringSetFilter extends Filter {
 
   @Override
   public String getAndClausesSql() {
-    return "  AND string_value IN ('" + String.join("', '", stringSet) + "')" + nl;
+    return "  AND " + STRING_VALUE_COL_NAME + " IN ('" + String.join("', '", stringSet) + "')" + nl;
   }
 
 }

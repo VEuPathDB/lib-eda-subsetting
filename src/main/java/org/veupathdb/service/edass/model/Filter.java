@@ -1,11 +1,11 @@
 package org.veupathdb.service.edass.model;
 
+import static org.veupathdb.service.edass.model.RdbmsColumnNames.*;
+
 public abstract class Filter {
   protected Entity entity;
   protected String variableName;
   
-  protected static final String nl = System.lineSeparator();
-
   public Filter(Entity entity, String variableName) {
     this.entity = entity;
     this.variableName = variableName;
@@ -22,7 +22,7 @@ public abstract class Filter {
     return "  SELECT " + entity.getAllPksSelectList("t", "a") + nl 
         + "  FROM " + entity.getTallTableName() + " t, " + entity.getEntityAncestorsTableName() + " a" + nl
         + "  WHERE t." + entity.getPKColName() + " = a." + entity.getPKColName() + nl 
-        + "  AND ontology_term_name = '" + variableName + "'" + nl 
+        + "  AND " + VARIABLE_ID_COL_NAME + " = '" + variableName + "'" + nl 
         + getAndClausesSql();
   }
   
@@ -30,7 +30,7 @@ public abstract class Filter {
     
     return "  SELECT " + entity.getPKColName() + nl 
         + "  FROM " + entity.getTallTableName() + nl
-        + "  WHERE ontology_term_name = '" + variableName + "'" + nl 
+        + "  WHERE " + VARIABLE_ID_COL_NAME + " = '" + variableName + "'" + nl 
         + getAndClausesSql();
   }
 

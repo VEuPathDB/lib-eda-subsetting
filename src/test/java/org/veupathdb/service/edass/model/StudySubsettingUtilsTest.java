@@ -13,18 +13,17 @@ import java.util.Set;
 
 import org.gusdb.fgputil.functional.TreeNode;
 
+import static org.veupathdb.service.edass.model.RdbmsColumnNames.*;
+
 public class StudySubsettingUtilsTest {
     
   private static TestModel model;
-  
-  private static final String nl = System.lineSeparator();
 
   @BeforeAll
   public static void setUp() {
     model = new TestModel();
   }
 
-  
   /*
   static String getSqlJoinString(Entity parentEntity, Entity childEntity) {
     return parentEntity.getEntityName() + "." + parentEntity.getEntityPrimaryKeyColumnName() + " = " +
@@ -179,24 +178,24 @@ public class StudySubsettingUtilsTest {
     
     String expectedWithClause = "Observation as (" + nl + 
         obsBase + 
-        "  AND ontology_term_name = '" + model.weight.getId() + "'" + nl + 
-        "  AND number_value >= 10 AND number_value <= 20" + nl + 
+        "  AND " + VARIABLE_ID_COL_NAME + " = '" + model.weight.getId() + "'" + nl + 
+        "  AND " + NUMBER_VALUE_COL_NAME + " >= 10 AND " + NUMBER_VALUE_COL_NAME + " <= 20" + nl + 
         "INTERSECT" + nl + 
         obsBase + 
-        "  AND ontology_term_name = '" + model.favNewYears.getId() + "'" + nl + 
-        "  AND date_value IN ('2019-03-21T00:00', '2019-03-28T00:00', '2019-06-12T00:00')" + nl + 
+        "  AND " + VARIABLE_ID_COL_NAME + " = '" + model.favNewYears.getId() + "'" + nl + 
+        "  AND " + DATE_VALUE_COL_NAME + " IN ('2019-03-21T00:00', '2019-03-28T00:00', '2019-06-12T00:00')" + nl + 
         "INTERSECT" + nl + 
         obsBase + 
-        "  AND ontology_term_name = '" + model.birthDate.getId() + "'" + nl + 
-        "  AND date_value >= '2019-03-21T00:00' AND date_value <= '2019-03-28T00:00'" + nl + 
+        "  AND " + VARIABLE_ID_COL_NAME + " = '" + model.birthDate.getId() + "'" + nl + 
+        "  AND " + DATE_VALUE_COL_NAME + " >= '2019-03-21T00:00' AND " + DATE_VALUE_COL_NAME + " <= '2019-03-28T00:00'" + nl + 
         "INTERSECT" + nl + 
         obsBase + 
-        "  AND ontology_term_name = '" + model.mood.getId() + "'" + nl + 
-        "  AND string_value IN ('happy', 'jolly', 'giddy')" + nl + 
+        "  AND " + VARIABLE_ID_COL_NAME + " = '" + model.mood.getId() + "'" + nl + 
+        "  AND " + STRING_VALUE_COL_NAME + " IN ('happy', 'jolly', 'giddy')" + nl + 
         "INTERSECT" + nl + 
         obsBase + 
-        "  AND ontology_term_name = '" + model.favNumber.getId() + "'" + nl + 
-        "  AND number_value IN (5, 7, 9 )" + nl + 
+        "  AND " + VARIABLE_ID_COL_NAME + " = '" + model.favNumber.getId() + "'" + nl + 
+        "  AND " + NUMBER_VALUE_COL_NAME + " IN (5, 7, 9 )" + nl + 
         ")";
     assertEquals(expectedWithClause, withClause);
   }
@@ -209,7 +208,7 @@ public class StudySubsettingUtilsTest {
     String expectedSelectClause = "SELECT a." + model.household.getPKColName() +
         ", a." + model.participant.getPKColName() +
         ", t." + model.observation.getPKColName() +
-        ", string_value, number_value, date_value";
+        ", " + STRING_VALUE_COL_NAME + ", " + NUMBER_VALUE_COL_NAME + ", " + DATE_VALUE_COL_NAME;
     assertEquals(expectedSelectClause, selectClause);
   }
 
@@ -256,8 +255,8 @@ public class StudySubsettingUtilsTest {
     List<String> vars = Arrays.asList(new String[]{model.birthDate.getId(), model.favNumber.getId()});
     String where = StudySubsettingUtils.generateTabularWhereClause(vars, model.observation.getPKColName(), "t", "a");
     String expected = "WHERE (" + nl +
-        "  ontology_term_name = '" + model.birthDate.getId() + "' OR" + nl +
-        "  ontology_term_name = '" + model.favNumber.getId() + "'" + nl +
+        "  " + VARIABLE_ID_COL_NAME + " = '" + model.birthDate.getId() + "' OR" + nl +
+        "  " + VARIABLE_ID_COL_NAME + " = '" + model.favNumber.getId() + "'" + nl +
         ")" + nl +
         "AND t." + model.observation.getPKColName() + " = a." + model.observation.getPKColName();
 

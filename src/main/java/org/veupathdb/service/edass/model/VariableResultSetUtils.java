@@ -11,17 +11,11 @@ import javax.ws.rs.InternalServerErrorException;
 
 import org.gusdb.fgputil.db.runner.SQLRunner;
 
+import static org.veupathdb.service.edass.model.RdbmsColumnNames.*;
+
 public class VariableResultSetUtils {
 
-  static final String NAME_COL_NAME = "name";
-  static final String ID_COL_NAME = "variable_id";
-  static final String ENTITY_ID_COL_NAME = "entity_id";
-  static final String DATA_TYPE_COL_NAME = "data_type";
-  static final String RESOLUTION_COL_NAME = "resolution";
-  static final String UNITS_COL_NAME = "units";
-  static final String PRECISION_COL_NAME = "precision";
-  static final String DISPLAY_NAME_COL_NAME = "display_name";
-  static final String PARENT_ID_COL_NAME = "parent_id";
+
 
   public static List<Variable> getStudyVariables(DataSource datasource, String studyId, Map<String, Entity> entityIdMap) {
     
@@ -35,10 +29,18 @@ public class VariableResultSetUtils {
       return variables;
     });
   }
-  
+
   private static String generateStudyVariablesListSql(String studyId) {
-    // TODO
-    return null;
+    String[] selectCols = {NAME_COL_NAME, VARIABLE_ID_COL_NAME, ENTITY_ID_COL_NAME, VARIABLE_TYPE_COL_NAME, 
+        CONTINUOUS_COL_NAME, UNITS_COL_NAME, PRECISION_COL_NAME, DISPLAY_NAME_COL_NAME, VARIABLE_PARENT_ID_COL_NAME};
+    
+    return "SELECT " + String.join(", ", selectCols) + nl
+        + "FROM " + ENTITY_TABLE_NAME + " e, " + nl
+        + "  " + VARIABLE_TABLE_NAME + " v," + nl
+        + "  " + VARIABLE_TYPE_TABLE_NAME + " t" + nl
+        + "WHERE e." + ENTITY_ID_COL_NAME + " = v." + ENTITY_ID_COL_NAME + nl
+        + "WHERE v." + VARIABLE_ID_COL_NAME + " = n." + VARIABLE_ID_COL_NAME + nl
+        + "AND " + STUDY_ID_COL_NAME + " = " + studyId;
   }
 
   private static Variable createVariableFromResultSet(ResultSet rs, Map<String, Entity> entityIdMap) {
@@ -49,14 +51,14 @@ public class VariableResultSetUtils {
       Entity entity = entityIdMap.get(entityId);
       return new Variable(
           getRsStringNotNull(rs, NAME_COL_NAME),
-          getRsStringNotNull(rs, ID_COL_NAME),
+          getRsStringNotNull(rs, VARIABLE_ID_COL_NAME),
           entity,
-          Variable.VariableType.valueOf(getRsStringNotNull(rs, DATA_TYPE_COL_NAME)),
+          Variable.VariableType.valueOf(getRsStringNotNull(rs, VARIABLE_TYPE_COL_NAME)),
           Variable.IsContinuous.fromBoolean(rs.getBoolean(PRECISION_COL_NAME)),
           getRsStringNotNull(rs, UNITS_COL_NAME),
           rs.getInt(PRECISION_COL_NAME),
           getRsStringNotNull(rs, DISPLAY_NAME_COL_NAME),
-          getRsStringNotNull(rs, PARENT_ID_COL_NAME)
+          getRsStringNotNull(rs, VARIABLE_PARENT_ID_COL_NAME)
           );
     }
     catch (SQLException e) {

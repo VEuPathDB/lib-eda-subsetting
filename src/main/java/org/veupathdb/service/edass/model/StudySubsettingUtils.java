@@ -23,6 +23,9 @@ import org.gusdb.fgputil.iterator.GroupingIterator;
 import org.gusdb.fgputil.iterator.IteratorUtil;
 import org.veupathdb.service.edass.model.Variable.VariableType;
 
+import static org.veupathdb.service.edass.model.RdbmsColumnNames.*;
+
+
 /**
  * A class to perform subsetting operations on a study entity
  * 
@@ -30,14 +33,10 @@ import org.veupathdb.service.edass.model.Variable.VariableType;
  *
  */
 public class StudySubsettingUtils {
-
-  public static final String nl = System.lineSeparator();
   
-  private static final String ontologyTermName = "ontology_term_name";
   private static final String valueColumnName = "value";
   private static final String countColumnName = "count";
 
-  
   public static void produceTabularSubset(DataSource datasource, Study study, Entity outputEntity,
       List<String> outputVariableIds, List<Filter> filters, OutputStream outputStream) {
 
@@ -280,7 +279,7 @@ public class StudySubsettingUtils {
   static String generateTabularWhereClause(List<String> outputVariableIds, String entityPkCol, String entityTblNm, String ancestorTblNm) {
     
     List<String> varExprs = new ArrayList<String>();
-    for (String varId : outputVariableIds) varExprs.add("  " + ontologyTermName + " = '" + varId + "'");
+    for (String varId : outputVariableIds) varExprs.add("  " + VARIABLE_ID_COL_NAME + " = '" + varId + "'");
     return "WHERE (" + nl 
         + String.join(" OR" + nl, varExprs) + nl
         + ")" + nl

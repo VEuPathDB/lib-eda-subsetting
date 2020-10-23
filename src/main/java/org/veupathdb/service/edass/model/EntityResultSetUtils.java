@@ -1,6 +1,7 @@
 package org.veupathdb.service.edass.model;
 
 import java.sql.ResultSet;
+
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -14,6 +15,8 @@ import javax.ws.rs.InternalServerErrorException;
 import org.gusdb.fgputil.db.runner.SQLRunner;
 import org.gusdb.fgputil.functional.TreeNode;
 
+import static org.veupathdb.service.edass.model.RdbmsColumnNames.*;
+
 /**
  * utilities for creating Entities from result sets
  * @author Steve
@@ -21,14 +24,7 @@ import org.gusdb.fgputil.functional.TreeNode;
  */
 public class EntityResultSetUtils {
 
-  public static final String VARIABLE_ID_COL_NAME = "variable_id";
-  public static final String VARIABLE_VALUE_COL_NAME = "value";
-    
-  public static final String ENTITY_NAME_COL_NAME = "name";
-  public static final String ENTITY_ID_COL_NAME = "entity_id";
-  public static final String STUDY_ID_COL_NAME = "study_id";
-  public static final String PARENT_ID_COL_NAME = "parent_id";
-  public static final String DESCRIP_COL_NAME = "description";
+
 
   public static TreeNode<Entity> getStudyEntityTree(DataSource datasource, String studyId) {
     
@@ -40,7 +36,7 @@ public class EntityResultSetUtils {
       Entity root = null;
       while (rs.next()) {
         Entity entity = createEntityFromResultSet(rs);
-        String parentId = rs.getString(PARENT_ID_COL_NAME);
+        String parentId = rs.getString(ENTITY_PARENT_ID_COL_NAME);
         if (parentId == null) {
           if (root != null) throw new InternalServerErrorException("In Study " + studyId + " found more than one root entity");
           root = entity;
@@ -67,8 +63,11 @@ public class EntityResultSetUtils {
   }
   
   private static String generateEntityTreeSql(String studyId) {
-    return null;
-    //TODO
+    String[] cols = {NAME_COL_NAME, ENTITY_ID_COL_NAME, DESCRIP_COL_NAME, ENTITY_PARENT_ID_COL_NAME};
+    return "SELECT " + String.join(", ", cols) + nl
+        + "FROM " + ENTITY_TABLE_NAME + " e, " + ENTITY_NAME_TABLE_NAME + " n" + nl
+        + "WHERE e." + ENTITY_NAME_ID_COL_NAME + " = n." + ENTITY_NAME_ID_COL_NAME + nl
+        + "AND " + STUDY_ID_COL_NAME + " = " + studyId;
   }
 
   private static Entity createEntityFromResultSet(ResultSet rs) {
@@ -76,7 +75,7 @@ public class EntityResultSetUtils {
     String studyId;
     try {
       studyId = VariableResultSetUtils.getRsStringNotNull(rs, STUDY_ID_COL_NAME);
-      String name = VariableResultSetUtils.getRsStringNotNull(rs, ENTITY_NAME_COL_NAME);
+      String name = VariableResultSetUtils.getRsStringNotNull(rs, NAME_COL_NAME);
       String id = VariableResultSetUtils.getRsStringNotNull(rs, ENTITY_ID_COL_NAME);
       String descrip = VariableResultSetUtils.getRsStringNotNull(rs, DESCRIP_COL_NAME);
       

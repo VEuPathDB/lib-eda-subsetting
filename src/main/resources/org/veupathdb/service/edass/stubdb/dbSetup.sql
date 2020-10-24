@@ -36,12 +36,15 @@ create table VariableType (
   PRIMARY KEY (variable_type_id)
 );
 
+-- this is the brief version of the ontology tree that is needed by EDA
+-- a "variable" might have values or not.  if not, it is just a category.
 create table Variable (
   variable_id integer not null,
   variable_type_id integer not null,
   entity_id integer not null,
   parent_variable_id integer,
   display_name varchar(30),
+  has_values integer,
   is_continuous integer,
   units varchar (30),
   precision integer,

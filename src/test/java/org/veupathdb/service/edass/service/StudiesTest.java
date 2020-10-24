@@ -8,8 +8,11 @@ import static org.junit.jupiter.api.Assertions.*;
 
 import java.util.ArrayList;
 import java.util.List;
+
+import javax.sql.DataSource;
 import javax.ws.rs.InternalServerErrorException;
 
+import org.veupathdb.service.edass.Resources;
 import org.veupathdb.service.edass.generated.model.APIFilter;
 import org.veupathdb.service.edass.generated.model.APIFilterImpl;
 import org.veupathdb.service.edass.generated.model.APINumberRangeFilter;
@@ -21,12 +24,14 @@ import org.veupathdb.service.edass.model.TestModel;
 public class StudiesTest {
 
   private static TestModel model;
+  private static DataSource datasource;
   
   @BeforeAll
   public static void setUp() {
     model = new TestModel();
+    datasource = Resources.getApplicationDataSource();
   }
-
+  
   @Test
   @DisplayName("Test valid construction of filters from API filters")
   void testConstructFilters() {

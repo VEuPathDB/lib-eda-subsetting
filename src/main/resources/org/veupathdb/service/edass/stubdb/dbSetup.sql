@@ -1,3 +1,5 @@
+-- the EDA service doesn't need to know much about the Study, because the WDK will serve that data
+-- the abbrev would be used in the name of the tall and ancestors tables
 create table Study (
   study_id integer not null,
   abbrev varchar(20) not null,
@@ -5,7 +7,7 @@ create table Study (
 );
 
 -- a controlled vocab of entity names, eg "Household", "Participant"
--- the abbreviation would be used in the name of the tall and ancestors tables
+-- the abbrev would be used in the name of the tall and ancestors tables
 CREATE TABLE EntityName (
   entity_name_id integer not null,
   name varchar(30) not null,

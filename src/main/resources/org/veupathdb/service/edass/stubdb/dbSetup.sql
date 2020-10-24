@@ -50,12 +50,14 @@ create table Variable (
   precision integer,
   PRIMARY KEY (variable_id)
 );
-
 ALTER TABLE Variable 
    ADD FOREIGN KEY (entity_id) REFERENCES Entity (entity_id);
 ALTER TABLE Variable 
    ADD FOREIGN KEY (variable_type_id) REFERENCES VariableType (variable_type_id); 
 
+-------------------------------------------------------------------------------------   
+-- THE FOLLOWING TABLES ARE AN EXAMPLE OF THE TABLES FOR A PARTICULAR FAKE STUDY (GEMS)
+-------------------------------------------------------------------------------------   
 create table GEMS_Household_tall (
   Household_id integer,
   variable_id integer,

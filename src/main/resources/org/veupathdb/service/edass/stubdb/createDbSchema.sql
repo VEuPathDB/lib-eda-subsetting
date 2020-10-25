@@ -22,7 +22,7 @@ CREATE TABLE Entity (
   entity_id varchar(30) not null,
   entity_name_id integer not null,
   study_id varchar(30) not null,
-  parent_entity_id integer,
+  parent_entity_id varchar(30),
   description varchar(25),
   PRIMARY KEY (entity_id)
 );
@@ -165,8 +165,5 @@ create table GEMS_ParticipantObs_ancestors (
 CREATE UNIQUE INDEX GEMS_ParticipantObs_ancestors_i1
 ON GEMS_ParticipantObs_ancestors (ParticipantObs_id);
 
---INSERT INTO ENTITIES values (1, 'households', null);
---INSERT INTO ENTITIES values (2, 'participants', 1);
---INSERT INTO ENTITIES values (3, 'ParticipantObss', 2);
 
 

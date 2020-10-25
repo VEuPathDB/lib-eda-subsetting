@@ -6,6 +6,7 @@ create table Study (
   abbrev varchar(20) not null,
   PRIMARY KEY (study_id)
 );
+alter table study add unique (abbrev);
 
 -- a controlled vocab of entity names, eg "Household", "Participant"
 -- the abbrev would be used in the name of the tall and ancestors tables
@@ -14,8 +15,11 @@ CREATE TABLE EntityName (
   name varchar(30) not null,
   plural_name varchar (30) not null,
   abbrev varchar(25),
-  PRIMARY KEY (entity_name_id)
+  PRIMARY KEY (entity_name_id),
 );
+alter table entityname add unique (name);
+alter table entityname add unique (plural_name);
+alter table entityname add unique (abbrev);
 
 -- the entity_id is a stable id
 CREATE TABLE Entity (
@@ -23,20 +27,23 @@ CREATE TABLE Entity (
   entity_name_id integer not null,
   study_id varchar(30) not null,
   parent_entity_id varchar(30),
-  description varchar(25),
-  PRIMARY KEY (entity_id)
+  description varchar(100),
+  PRIMARY KEY (entity_id),
 );
+alter table entity add unique (entity_name_id, study_id);
 ALTER TABLE Entity 
    ADD FOREIGN KEY (entity_name_id) REFERENCES EntityName (entity_name_id);
 ALTER TABLE Entity 
    ADD FOREIGN KEY (study_id) REFERENCES Study (study_id); 
    
+   
 -- a controlled vocabulary of variable types, eg "string", "date", "number"
 create table VariableType (
   variable_type_id integer not null,
   variable_type varchar(20) not null,
-  PRIMARY KEY (variable_type_id)
+  PRIMARY KEY (variable_type_id),
 );
+alter table VariableType add unique (variable_type);
 
 -- this is the brief version of the ontology tree that is needed by EDA
 -- a "variable" might have values or not.  if not, it is just a category.

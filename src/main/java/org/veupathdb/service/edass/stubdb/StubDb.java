@@ -10,7 +10,8 @@ import java.sql.SQLException;
 
 public class StubDb {
 
-  private static final String DB_SETUP_SCRIPT = "org/veupathdb/service/edass/stubdb/dbSetup.sql";
+  private static final String DB_SCHEMA_SCRIPT = "org/veupathdb/service/edass/stubdb/createDbSchema.sql";
+  private static final String DB_DATA_SCRIPT = "org/veupathdb/service/edass/stubdb/insertDbData.sql";
 
   private static final String STUB_DB_NAME = "stubDb";
 
@@ -31,7 +32,8 @@ public class StubDb {
       ds.setDatabase("jdbc:hsqldb:mem:" + STUB_DB_NAME);
       ds.setUser("stubby");
       ds.setPassword("");
-      SqlScriptRunner.runSqlScript(ds, DB_SETUP_SCRIPT);
+      SqlScriptRunner.runSqlScript(ds, DB_SCHEMA_SCRIPT);
+      SqlScriptRunner.runSqlScript(ds, DB_DATA_SCRIPT);
       return ds;
     }
     catch (SQLException | IOException e) {

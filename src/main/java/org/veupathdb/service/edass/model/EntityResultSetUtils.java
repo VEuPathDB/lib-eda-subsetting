@@ -70,7 +70,7 @@ public class EntityResultSetUtils {
         + "AND " + STUDY_ID_COL_NAME + " = " + studyId;
   }
 
-  private static Entity createEntityFromResultSet(ResultSet rs) {
+  public static Entity createEntityFromResultSet(ResultSet rs) {
 
     String studyId;
     try {
@@ -79,7 +79,7 @@ public class EntityResultSetUtils {
       String id = VariableResultSetUtils.getRsStringNotNull(rs, ENTITY_ID_COL_NAME);
       String descrip = VariableResultSetUtils.getRsStringNotNull(rs, DESCRIP_COL_NAME);
       
-      return new Entity(name, id, studyId + "_" + name + "_tall", descrip, studyId + "_" + name + "_ancestors", name + "_id");
+      return new Entity(name, id, descrip, studyId + "_" + name + "_tall", studyId + "_" + name + "_ancestors", name + "_id");
     }
     catch (SQLException e) {
       throw new InternalServerErrorException(e);

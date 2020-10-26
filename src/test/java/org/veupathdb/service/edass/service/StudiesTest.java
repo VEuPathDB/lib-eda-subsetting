@@ -1,11 +1,11 @@
 package org.veupathdb.service.edass.service;
 
+import org.gusdb.fgputil.db.runner.SQLRunner;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.function.Executable;
 import static org.junit.jupiter.api.Assertions.*;
-
 import java.util.ArrayList;
 import java.util.List;
 
@@ -19,6 +19,8 @@ import org.veupathdb.service.edass.generated.model.APINumberRangeFilter;
 import org.veupathdb.service.edass.generated.model.APINumberRangeFilterImpl;
 import org.veupathdb.service.edass.generated.model.APIStringSetFilter;
 import org.veupathdb.service.edass.generated.model.APIStringSetFilterImpl;
+import org.veupathdb.service.edass.model.Entity;
+import org.veupathdb.service.edass.model.EntityResultSetUtils;
 import org.veupathdb.service.edass.model.TestModel;
 
 public class StudiesTest {
@@ -30,6 +32,23 @@ public class StudiesTest {
   public static void setUp() {
     model = new TestModel();
     datasource = Resources.getApplicationDataSource();
+    
+  }
+  
+  @Test
+  @DisplayName("Test reading of entity table") 
+  void testReadEntityTable() {
+    String sql = "select e.*, n.name from entity e, entityname n " + 
+        " where e.entity_name_id = n.entity_name_id and entity_id = 'GEMS-Part'";
+    
+    Entity entity = new SQLRunner(datasource, sql).executeQuery(rs -> {
+      rs.next();
+      Entity e = EntityResultSetUtils.createEntityFromResultSet(rs);
+      return e;
+    });
+    assertEquals("GEMS-Part", entity.getId());
+    assertEquals("Participants in the study", entity.getDescription());
+    assertEquals( "Participant", entity.getName());
   }
   
   @Test

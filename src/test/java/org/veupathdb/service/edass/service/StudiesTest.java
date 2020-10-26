@@ -36,22 +36,6 @@ public class StudiesTest {
   }
   
   @Test
-  @DisplayName("Test reading of entity table") 
-  void testReadEntityTable() {
-    String sql = "select e.*, n.name from entity e, entityname n " + 
-        " where e.entity_name_id = n.entity_name_id and entity_id = 'GEMS-Part'";
-    
-    Entity entity = new SQLRunner(datasource, sql).executeQuery(rs -> {
-      rs.next();
-      Entity e = EntityResultSetUtils.createEntityFromResultSet(rs);
-      return e;
-    });
-    assertEquals("GEMS-Part", entity.getId());
-    assertEquals("Participants in the study", entity.getDescription());
-    assertEquals( "Participant", entity.getName());
-  }
-  
-  @Test
   @DisplayName("Test valid construction of filters from API filters")
   void testConstructFilters() {
     

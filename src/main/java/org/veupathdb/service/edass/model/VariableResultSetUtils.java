@@ -13,11 +13,9 @@ import org.gusdb.fgputil.db.runner.SQLRunner;
 
 import static org.veupathdb.service.edass.model.RdbmsColumnNames.*;
 
-public class VariableResultSetUtils {
+class VariableResultSetUtils {
 
-
-
-  public static List<Variable> getStudyVariables(DataSource datasource, String studyId, Map<String, Entity> entityIdMap) {
+  static List<Variable> getStudyVariables(DataSource datasource, String studyId, Map<String, Entity> entityIdMap) {
     
     String sql = generateStudyVariablesListSql(studyId);
     
@@ -66,10 +64,4 @@ public class VariableResultSetUtils {
     }
   }
   
-  static String getRsStringNotNull(ResultSet rs, String colName) throws SQLException {
-    if (rs.getString(colName) == null) 
-      throw new InternalServerErrorException("Found a null for variable column: " + colName);
-    return rs.getString(colName);
-  }
-
 }

@@ -24,14 +24,13 @@ import static org.veupathdb.service.edass.model.RdbmsColumnNames.*;
  */
 public class EntityResultSetUtils {
 
-
-
-  public static TreeNode<Entity> getStudyEntityTree(DataSource datasource, String studyId) {
+  static TreeNode<Entity> getStudyEntityTree(DataSource datasource, String studyId) {
     
     String sql = generateEntityTreeSql(studyId);
     
-    Map<String, List<Entity>> simpleTree = new HashMap<String, List<Entity>>(); // entityID -> child entities
-       
+    // entityID -> list of child entities
+    Map<String, List<Entity>> simpleTree = new HashMap<String, List<Entity>>();
+    
     Entity rootEntity = new SQLRunner(datasource, sql).executeQuery(rs -> {
       Entity root = null;
       while (rs.next()) {
@@ -40,17 +39,19 @@ public class EntityResultSetUtils {
         if (parentId == null) {
           if (root != null) throw new InternalServerErrorException("In Study " + studyId + " found more than one root entity");
           root = entity;
+        } else {
+          if (!simpleTree.containsKey(parentId)) simpleTree.put(parentId, new ArrayList<Entity>());
+          simpleTree.get(parentId).add(entity);
         }
-        if (!simpleTree.containsKey(parentId)) simpleTree.put(parentId, new ArrayList<Entity>());
-        simpleTree.get(parentId).add(entity);
       }
       return root;
     });
     
     if (rootEntity == null) throw new InternalServerErrorException("Found no entities for study: " + studyId);
-    
+
+    List<Entity> rootKids = simpleTree.get(rootEntity.getId());
     TreeNode<Entity> rootNode = new TreeNode<Entity>(rootEntity);
-    populateEntityTree(rootNode, simpleTree.get(rootEntity.getId()), simpleTree);
+    populateEntityTree(rootNode, rootKids, simpleTree);
     return rootNode;
   }
   
@@ -58,26 +59,30 @@ public class EntityResultSetUtils {
     for (Entity child : children) {
       TreeNode<Entity> childNode = new TreeNode<Entity>(child); 
       parentNode.addChildNode(childNode);
-      populateEntityTree(childNode, simpleTree.get(child.getId()), simpleTree);
+      
+      // if this node has children, recurse
+      if (simpleTree.containsKey(child.getId()))
+        populateEntityTree(childNode, simpleTree.get(child.getId()), simpleTree);
     }
   }
   
-  private static String generateEntityTreeSql(String studyId) {
-    String[] cols = {NAME_COL_NAME, ENTITY_ID_COL_NAME, DESCRIP_COL_NAME, ENTITY_PARENT_ID_COL_NAME};
+  static String generateEntityTreeSql(String studyId) {
+    String[] cols = {STUDY_ID_COL_NAME, NAME_COL_NAME, ENTITY_ID_COL_NAME, DESCRIP_COL_NAME, ENTITY_PARENT_ID_COL_NAME};
     return "SELECT " + String.join(", ", cols) + nl
         + "FROM " + ENTITY_TABLE_NAME + " e, " + ENTITY_NAME_TABLE_NAME + " n" + nl
         + "WHERE e." + ENTITY_NAME_ID_COL_NAME + " = n." + ENTITY_NAME_ID_COL_NAME + nl
-        + "AND " + STUDY_ID_COL_NAME + " = " + studyId;
+        + "AND " + STUDY_ID_COL_NAME + " = '" + studyId + "'" + nl
+        + "ORDER BY " + ENTITY_ID_COL_NAME;
   }
 
-  public static Entity createEntityFromResultSet(ResultSet rs) {
+  static Entity createEntityFromResultSet(ResultSet rs) {
 
     String studyId;
     try {
-      studyId = VariableResultSetUtils.getRsStringNotNull(rs, STUDY_ID_COL_NAME);
-      String name = VariableResultSetUtils.getRsStringNotNull(rs, NAME_COL_NAME);
-      String id = VariableResultSetUtils.getRsStringNotNull(rs, ENTITY_ID_COL_NAME);
-      String descrip = VariableResultSetUtils.getRsStringNotNull(rs, DESCRIP_COL_NAME);
+      studyId = getRsStringNotNull(rs, STUDY_ID_COL_NAME);
+      String name = getRsStringNotNull(rs, NAME_COL_NAME);
+      String id = getRsStringNotNull(rs, ENTITY_ID_COL_NAME);
+      String descrip = getRsStringNotNull(rs, DESCRIP_COL_NAME);
       
       return new Entity(name, id, descrip, studyId + "_" + name + "_tall", studyId + "_" + name + "_ancestors", name + "_id");
     }

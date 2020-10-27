@@ -1,6 +1,8 @@
 package org.veupathdb.service.edass.model;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
@@ -36,7 +38,7 @@ public class LoadStudyTest {
       Entity e = EntityResultSetUtils.createEntityFromResultSet(rs);
       return e;
     });
-    assertEquals("GEMS-House", entity.getId());
+    assertEquals("GEMS_House", entity.getId());
     assertEquals("Households from the study area", entity.getDescription());
     assertEquals( "Household", entity.getName());
   }
@@ -49,7 +51,7 @@ public class LoadStudyTest {
     List<String> entityIds = entityTree.flatten().stream().map(e -> e.getId()).collect(Collectors.toList()); 
 
     // this is an imperfect, but good enough, test.  it is possible a wrong tree would flatten like this, but very unlikely.
-    List<String> expected = Arrays.asList("GEMS-House", "GEMS-HouseObs", "GEMS-Part", "GEMS-PartObs", "GEMS-Sample", "GEMS-Treat");
+    List<String> expected = Arrays.asList("GEMS_House", "GEMS_HouseObs", "GEMS_Part", "GEMS_PartObs", "GEMS_Sample", "GEMS_Treat");
 
     assertEquals(expected, entityIds);
   }
@@ -73,7 +75,7 @@ public class LoadStudyTest {
 
     assertEquals("var-10", var.getId());
     assertEquals("Net worth", var.getDisplayName());
-    assertEquals("GEMS-Part", var.getEntityId());
+    assertEquals("GEMS_Part", var.getEntityId());
     assertEquals(Variable.IsContinuous.TRUE, var.getIsContinuous());
     assertEquals(null, var.getParentId());
     assertEquals(2, var.getPrecision());
@@ -93,8 +95,19 @@ public class LoadStudyTest {
     
     List<Variable> variables = VariableResultSetUtils.getStudyVariables(datasource, "DS12385", entityIdMap);
     
-    assertEquals(10, variables.size());
+    assertEquals(11, variables.size());
   }
+  
+  @Test
+  @DisplayName("Load study test") 
+  void testLoadStudy() {
+    
+    Study study = Study.loadStudy(datasource, "DS12385");
+    assertNotNull(study);
+  }
+  
+
+  
 
 
 }

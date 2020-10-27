@@ -3,6 +3,8 @@ package org.veupathdb.service.edass.model;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import org.veupathdb.service.edass.Resources;
+
 import static org.junit.jupiter.api.Assertions.*;
 
 import java.util.ArrayList;
@@ -10,6 +12,7 @@ import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import javax.sql.DataSource;
 
 import org.gusdb.fgputil.functional.TreeNode;
 
@@ -18,10 +21,12 @@ import static org.veupathdb.service.edass.model.RdbmsColumnNames.*;
 public class StudySubsettingUtilsTest {
     
   private static TestModel model;
-
+  private static DataSource datasource;
+ 
   @BeforeAll
   public static void setUp() {
     model = new TestModel();
+    datasource = Resources.getApplicationDataSource();    
   }
 
   /*
@@ -339,6 +344,20 @@ public class StudySubsettingUtilsTest {
     //System.out.println("Variable Count SQL:" + "\n" + sql);
   }
 
+  @Test
+  @DisplayName("Test get variable count - no filters") 
+  void testVariableCountNoFiltersFromDb() {
+    
+    Study study = Study.loadStudy(datasource, "DS12385");
+    String entityId = "GEMS_Part";
+    Entity entity = study.getEntity(entityId).orElseThrow(() -> new RuntimeException("Can't find entity: " + entityId));
+    String varId = "var-17";
+    Variable var = entity.getVariable(varId).orElseThrow(() -> new RuntimeException("Can't find variable: " + varId));;
+    Integer count = StudySubsettingUtils.getVariableCount(datasource, study, entity,
+        var, new ArrayList<Filter>());
+    
+    assertEquals(4, count);
+  }
 
 
   List<Filter> getSomeFilters() {

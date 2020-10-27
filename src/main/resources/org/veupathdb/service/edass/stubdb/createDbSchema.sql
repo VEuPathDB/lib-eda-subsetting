@@ -73,7 +73,7 @@ ALTER TABLE Variable
 -- THE FOLLOWING TABLES ARE AN EXAMPLE OF THE TABLES FOR A PARTICULAR FAKE STUDY (GEMS)
 -------------------------------------------------------------------------------------   
 -- might want to use an integer internal_variable_id for performance
-create table GEMS_Household_tall (
+create table GEMS_House_tall (
   Household_id integer,
   variable_id varchar(30),
   number_value integer, 
@@ -81,23 +81,23 @@ create table GEMS_Household_tall (
   date_value varchar(30),
   PRIMARY KEY (Household_id)
 );
-ALTER TABLE GEMS_Household_tall 
+ALTER TABLE GEMS_House_tall 
    ADD FOREIGN KEY (variable_id) REFERENCES Variable (variable_id); 
-CREATE UNIQUE INDEX GEMS_Household_tall_i1
-ON GEMS_Household_tall (variable_id, number_value, Household_id);
-CREATE UNIQUE INDEX GEMS_Household_tall_i2
-ON GEMS_Household_tall (variable_id, string_value, Household_id);
-CREATE UNIQUE INDEX GEMS_Household_tall_i3
-ON GEMS_Household_tall (variable_id, date_value, Household_id);
+CREATE UNIQUE INDEX GEMS_House_tall_i1
+ON GEMS_House_tall (variable_id, number_value, Household_id);
+CREATE UNIQUE INDEX GEMS_House_tall_i2
+ON GEMS_House_tall (variable_id, string_value, Household_id);
+CREATE UNIQUE INDEX GEMS_House_tall_i3
+ON GEMS_House_tall (variable_id, date_value, Household_id);
 
-create table GEMS_Household_ancestors (
+create table GEMS_House_ancestors (
   Household_id integer,
   PRIMARY KEY (Household_id)
 );
-CREATE UNIQUE INDEX GEMS_Household_ancestors_i1
-ON GEMS_Household_ancestors (Household_id);
+CREATE UNIQUE INDEX GEMS_House_ancestors_i1
+ON GEMS_House_ancestors (Household_id);
 
-create table GEMS_HouseholdObs_tall (
+create table GEMS_HouseObs_tall (
   HouseholdObs_id integer,
   variable_id varchar(30),
   number_value integer, 
@@ -105,73 +105,70 @@ create table GEMS_HouseholdObs_tall (
   date_value varchar(30),
   PRIMARY KEY (HouseholdObs_id)
 );
-ALTER TABLE GEMS_HouseholdObs_tall 
+ALTER TABLE GEMS_HouseObs_tall 
    ADD FOREIGN KEY (variable_id) REFERENCES Variable (variable_id); 
-CREATE UNIQUE INDEX GEMS_HouseholdObs_tall_i1
-ON GEMS_HouseholdObs_tall (variable_id, number_value, HouseholdObs_id);
-CREATE UNIQUE INDEX GEMS_HouseholdObs_tall_i2
-ON GEMS_HouseholdObs_tall (variable_id, string_value, HouseholdObs_id);
-CREATE UNIQUE INDEX GEMS_HouseholdObs_tall_i3
-ON GEMS_HouseholdObs_tall (variable_id, date_value, HouseholdObs_id);
+CREATE UNIQUE INDEX GEMS_HouseObs_tall_i1
+ON GEMS_HouseObs_tall (variable_id, number_value, HouseholdObs_id);
+CREATE UNIQUE INDEX GEMS_HouseObs_tall_i2
+ON GEMS_HouseObs_tall (variable_id, string_value, HouseholdObs_id);
+CREATE UNIQUE INDEX GEMS_HouseObs_tall_i3
+ON GEMS_HouseObs_tall (variable_id, date_value, HouseholdObs_id);
 
-create table GEMS_HouseholdObs_ancestors (
+create table GEMS_HouseObs_ancestors (
   HouseholdObs_id integer,
   Household_id integer,
-  PRIMARY KEY (HouseholdObs_id)
 );
-CREATE UNIQUE INDEX GEMS_HouseholdObs_ancestors_i1
-ON GEMS_HouseholdObs_ancestors (HouseholdObs_id);
+CREATE UNIQUE INDEX GEMS_HouseObs_ancestors_i1
+ON GEMS_HouseObs_ancestors (HouseholdObs_id);
 
-create table GEMS_Participant_tall (
+create table GEMS_Part_tall (
   Participant_id integer,
   variable_id varchar(30),
   number_value integer, 
   string_value varchar(100),
   date_value varchar(30),
-  PRIMARY KEY (Participant_id)
 );
-ALTER TABLE GEMS_Participant_tall 
+ALTER TABLE GEMS_Part_tall 
    ADD FOREIGN KEY (variable_id) REFERENCES Variable (variable_id); 
-CREATE UNIQUE INDEX GEMS_Participant_tall_i1
-ON GEMS_Participant_tall (variable_id, number_value, Participant_id);
-CREATE UNIQUE INDEX GEMS_Participant_tall_i2
-ON GEMS_Participant_tall (variable_id, string_value, Participant_id);
-CREATE UNIQUE INDEX GEMS_Participant_tall_i3
-ON GEMS_Participant_tall (variable_id, date_value, Participant_id);
+CREATE UNIQUE INDEX GEMS_Part_tall_i1
+ON GEMS_Part_tall (variable_id, number_value, Participant_id);
+CREATE UNIQUE INDEX GEMS_Part_tall_i2
+ON GEMS_Part_tall (variable_id, string_value, Participant_id);
+CREATE UNIQUE INDEX GEMS_Part_tall_i3
+ON GEMS_Part_tall (variable_id, date_value, Participant_id);
 
-create table GEMS_Participant_ancestors (
+create table GEMS_Part_ancestors (
   Participant_id integer,
   Household_id integer, 
   PRIMARY KEY (Participant_id)
 );
-CREATE UNIQUE INDEX GEMS_Participant_ancestors_i1
-ON GEMS_Participant_ancestors (Participant_id);
+CREATE UNIQUE INDEX GEMS_Part_ancestors_i1
+ON GEMS_Part_ancestors (Participant_id);
 
-create table GEMS_ParticipantObs_tall (
+create table GEMS_PartObs_tall (
   ParticipantObs_id integer,
   variable_id varchar(30),
   number_value integer, 
   string_value varchar(100),
   date_value varchar(30),
-  PRIMARY KEY (ParticipantObs_id)
 );
-ALTER TABLE GEMS_ParticipantObs_tall 
+ALTER TABLE GEMS_PartObs_tall 
    ADD FOREIGN KEY (variable_id) REFERENCES Variable (variable_id); 
-CREATE UNIQUE INDEX GEMS_ParticipantObs_tall_i1
-ON GEMS_ParticipantObs_tall (variable_id, number_value, ParticipantObs_id);
-CREATE UNIQUE INDEX GEMS_ParticipantObs_tall_i2
-ON GEMS_ParticipantObs_tall (variable_id, string_value, ParticipantObs_id);
-CREATE UNIQUE INDEX GEMS_ParticipantObs_tall_i3
-ON GEMS_ParticipantObs_tall (variable_id, date_value, ParticipantObs_id);
+CREATE UNIQUE INDEX GEMS_PartObs_tall_i1
+ON GEMS_PartObs_tall (variable_id, number_value, ParticipantObs_id);
+CREATE UNIQUE INDEX GEMS_PartObs_tall_i2
+ON GEMS_PartObs_tall (variable_id, string_value, ParticipantObs_id);
+CREATE UNIQUE INDEX GEMS_PartObs_tall_i3
+ON GEMS_PartObs_tall (variable_id, date_value, ParticipantObs_id);
 
-create table GEMS_ParticipantObs_ancestors (
+create table GEMS_PartObs_ancestors (
   ParticipantObs_id integer,
   Participant_id integer,
   Household_id integer, 
   PRIMARY KEY (ParticipantObs_id)
 );
-CREATE UNIQUE INDEX GEMS_ParticipantObs_ancestors_i1
-ON GEMS_ParticipantObs_ancestors (ParticipantObs_id);
+CREATE UNIQUE INDEX GEMS_PartObs_ancestors_i1
+ON GEMS_PartObs_ancestors (ParticipantObs_id);
 
 
 

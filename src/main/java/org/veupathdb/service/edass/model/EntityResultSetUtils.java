@@ -77,14 +77,12 @@ public class EntityResultSetUtils {
 
   static Entity createEntityFromResultSet(ResultSet rs) {
 
-    String studyId;
     try {
-      studyId = getRsStringNotNull(rs, STUDY_ID_COL_NAME);
       String name = getRsStringNotNull(rs, NAME_COL_NAME);
       String id = getRsStringNotNull(rs, ENTITY_ID_COL_NAME);
       String descrip = getRsStringNotNull(rs, DESCRIP_COL_NAME);
       
-      return new Entity(name, id, descrip, studyId + "_" + name + "_tall", studyId + "_" + name + "_ancestors", name + "_id");
+      return new Entity(name, id, descrip, id + "_tall", id + "_ancestors", name + "_id");
     }
     catch (SQLException e) {
       throw new InternalServerErrorException(e);

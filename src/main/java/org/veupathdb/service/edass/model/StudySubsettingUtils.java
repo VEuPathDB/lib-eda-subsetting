@@ -287,7 +287,7 @@ public class StudySubsettingUtils {
   }
   
   static String generateDistributionWhereClause(Variable outputVariable) {
-    return "WHERE ontology_term_name = '" + outputVariable.getId() + "'";
+    return "WHERE " + VARIABLE_ID_COL_NAME + " = '" + outputVariable.getId() + "'";
   }
 
   static String generateInClause(TreeNode<Entity> prunedEntityTree, Entity outputEntity, String tallTblAbbrev, String whereOrAnd) {
@@ -314,7 +314,7 @@ public class StudySubsettingUtils {
   static String generateJoiningJoinsClause(TreeNode<Entity> prunedEntityTree) {
     List<String> sqlJoinStrings = new ArrayList<String>();
     addSqlJoinStrings(prunedEntityTree, sqlJoinStrings);
-    return "  WHERE " + String.join(nl + "  AND ", sqlJoinStrings);    
+    return sqlJoinStrings.isEmpty()? "" : "  WHERE " + String.join(nl + "  AND ", sqlJoinStrings);    
   }
   
   /*

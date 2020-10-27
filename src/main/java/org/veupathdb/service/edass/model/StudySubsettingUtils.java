@@ -260,7 +260,7 @@ public class StudySubsettingUtils {
   }
     
   static String generateDistributionSelectClause(Variable distributionVariable) {
-    return "SELECT " + distributionVariable.getVariableType().getTallTableColumnName() + " as " + valueColumnName + ", count(" + distributionVariable.getEntity().getPKColName() + ") as " + valueColumnName;
+    return "SELECT " + distributionVariable.getType().getTallTableColumnName() + " as " + valueColumnName + ", count(" + distributionVariable.getEntity().getPKColName() + ") as " + valueColumnName;
   }
   
   static String generateVariableCountSelectClause(Variable variable) {
@@ -287,7 +287,7 @@ public class StudySubsettingUtils {
   }
   
   static String generateDistributionWhereClause(Variable outputVariable) {
-    return "WHERE ontology_term_name = '" + outputVariable.getName() + "'";
+    return "WHERE ontology_term_name = '" + outputVariable.getId() + "'";
   }
 
   static String generateInClause(TreeNode<Entity> prunedEntityTree, Entity outputEntity, String tallTblAbbrev, String whereOrAnd) {
@@ -339,7 +339,7 @@ public class StudySubsettingUtils {
   }
   
   static String generateDistributionGroupByClause(Variable outputVariable) {
-    return "GROUP BY " + outputVariable.getVariableType().getTallTableColumnName();
+    return "GROUP BY " + outputVariable.getType().getTallTableColumnName();
   }
   
 

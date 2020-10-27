@@ -126,8 +126,8 @@ public class Studies implements org.veupathdb.service.edass.generated.resources.
   
   private static void setApiVarProps(APIVariable apiVar, Variable var) {
     apiVar.setId(var.getId());
-    apiVar.setName(var.getName());
     apiVar.setDisplayName(var.getDisplayName());
+    apiVar.setProviderLabel(var.getProviderLabel());
     apiVar.setParentId(var.getParentId());
   }
 

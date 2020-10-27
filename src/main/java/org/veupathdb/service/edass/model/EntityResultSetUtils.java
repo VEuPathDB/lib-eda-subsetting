@@ -72,7 +72,7 @@ public class EntityResultSetUtils {
         + "FROM " + ENTITY_TABLE_NAME + " e, " + ENTITY_NAME_TABLE_NAME + " n" + nl
         + "WHERE e." + ENTITY_NAME_ID_COL_NAME + " = n." + ENTITY_NAME_ID_COL_NAME + nl
         + "AND " + STUDY_ID_COL_NAME + " = '" + studyId + "'" + nl
-        + "ORDER BY " + ENTITY_ID_COL_NAME;
+        + "ORDER BY " + ENTITY_ID_COL_NAME;  // stable ordering supports unit testing
   }
 
   static Entity createEntityFromResultSet(ResultSet rs) {
@@ -112,7 +112,7 @@ public class EntityResultSetUtils {
       Variable var = entity.getVariable(rs.getString(VARIABLE_ID_COL_NAME))
           .orElseThrow(() -> new InternalServerErrorException("Can't find column in tall table result set: " + VARIABLE_ID_COL_NAME));
 
-      tallRow.put(VARIABLE_VALUE_COL_NAME, var.getVariableType().convertRowValueToStringValue(rs));
+      tallRow.put(VARIABLE_VALUE_COL_NAME, var.getType().convertRowValueToStringValue(rs));
       
       return tallRow;
     }

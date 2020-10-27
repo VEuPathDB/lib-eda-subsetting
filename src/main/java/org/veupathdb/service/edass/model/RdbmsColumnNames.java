@@ -29,7 +29,9 @@ class RdbmsColumnNames {
   static final String VARIABLE_TYPE_TABLE_NAME = "variableType";
   static final String VARIABLE_ID_COL_NAME = "variable_id";
   static final String VARIABLE_TYPE_COL_NAME = "variable_type";
-  static final String CONTINUOUS_COL_NAME = "isContinuous";
+  static final String VARIABLE_TYPE_ID_COL_NAME = "variable_type_id";
+  static final String PROVIDER_LABEL_COL_NAME = "provider_label";
+  static final String CONTINUOUS_COL_NAME = "is_continuous";
   static final String UNITS_COL_NAME = "units";
   static final String PRECISION_COL_NAME = "precision";
   static final String VARIABLE_PARENT_ID_COL_NAME = "parent_variable_id";

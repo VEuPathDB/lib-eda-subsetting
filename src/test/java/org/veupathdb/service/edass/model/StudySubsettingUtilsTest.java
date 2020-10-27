@@ -323,7 +323,7 @@ public class StudySubsettingUtilsTest {
 
     String sql = StudySubsettingUtils.generateEntityCountSql(model.participant, filters, prunedTree);
     assertNotEquals("", sql);
-    System.out.println("Entity Count SQL:" + "\n" + sql);
+    //System.out.println("Entity Count SQL:" + "\n" + sql);
   }
 
   @Test
@@ -336,7 +336,7 @@ public class StudySubsettingUtilsTest {
 
     String sql = StudySubsettingUtils.generateVariableCountSql(model.participant, model.networth, filters, prunedTree);
     assertNotEquals("", sql);
-    System.out.println("Variable Count SQL:" + "\n" + sql);
+    //System.out.println("Variable Count SQL:" + "\n" + sql);
   }
 
 

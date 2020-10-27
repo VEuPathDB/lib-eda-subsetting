@@ -1,6 +1,5 @@
 package org.veupathdb.service.edass.service;
 
-import org.gusdb.fgputil.db.runner.SQLRunner;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -9,30 +8,23 @@ import static org.junit.jupiter.api.Assertions.*;
 import java.util.ArrayList;
 import java.util.List;
 
-import javax.sql.DataSource;
 import javax.ws.rs.InternalServerErrorException;
 
-import org.veupathdb.service.edass.Resources;
 import org.veupathdb.service.edass.generated.model.APIFilter;
 import org.veupathdb.service.edass.generated.model.APIFilterImpl;
 import org.veupathdb.service.edass.generated.model.APINumberRangeFilter;
 import org.veupathdb.service.edass.generated.model.APINumberRangeFilterImpl;
 import org.veupathdb.service.edass.generated.model.APIStringSetFilter;
 import org.veupathdb.service.edass.generated.model.APIStringSetFilterImpl;
-import org.veupathdb.service.edass.model.Entity;
-import org.veupathdb.service.edass.model.EntityResultSetUtils;
 import org.veupathdb.service.edass.model.TestModel;
 
 public class StudiesTest {
 
   private static TestModel model;
-  private static DataSource datasource;
   
   @BeforeAll
   public static void setUp() {
     model = new TestModel();
-    datasource = Resources.getApplicationDataSource();
-    
   }
   
   @Test

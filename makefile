@@ -78,7 +78,7 @@ install-dev-env:
 	@$(BIN_DIR)/install-npm.sh
 
 clean:
-	@rm -rf .gradle .tools vendor build docs
+	@rm -rf .gradle .tools vendor build
 
 fix-path:
 	@$(BIN_DIR)/fix-path.sh $(EXAMPLE_DIR) $(MAIN_DIR)
@@ -99,6 +99,23 @@ merge-raml:
 # File based targets
 #
 
-build/libs/service.jar: gen-jaxrs gen-docs vendor/fgputil-accountdb-1.0.0.jar  vendor/fgputil-core-1.0.0.jar vendor/fgputil-db-1.0.0.jar vendor/fgputil-web-1.0.0.jar build.gradle.kts service.properties
+build/libs/service.jar: \
+      gen-jaxrs \
+      gen-docs \
+      vendor/fgputil-accountdb-1.0.0.jar \
+      vendor/fgputil-cache-1.0.0.jar \
+      vendor/fgputil-cli-1.0.0.jar \
+      vendor/fgputil-core-1.0.0.jar \
+      vendor/fgputil-db-1.0.0.jar \
+      vendor/fgputil-events-1.0.0.jar \
+      vendor/fgputil-json-1.0.0.jar \
+      vendor/fgputil-server-1.0.0.jar \
+      vendor/fgputil-servlet-1.0.0.jar \
+      vendor/fgputil-solr-1.0.0.jar \
+      vendor/fgputil-test-1.0.0.jar \
+      vendor/fgputil-web-1.0.0.jar \
+      vendor/fgputil-xml-1.0.0.jar \
+      build.gradle.kts \
+      service.properties
 	@echo "$(C_BLUE)Building application jar$(C_NONE)"
 	@./gradlew clean test jar

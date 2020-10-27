@@ -14,7 +14,6 @@ import java.util.Optional;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import javax.sql.DataSource;
-import javax.ws.rs.InternalServerErrorException;
 
 import org.gusdb.fgputil.functional.TreeNode;
 import org.gusdb.fgputil.db.runner.SQLRunner;
@@ -58,7 +57,7 @@ public class StudySubsettingUtils {
         return null;
       }
       catch (IOException e) {
-        throw new InternalServerErrorException(e);
+        throw new RuntimeException(e);
       }
     });
   }
@@ -96,7 +95,7 @@ public class StudySubsettingUtils {
           return null;
         }
         catch (IOException e) {
-          throw new InternalServerErrorException(e);
+          throw new RuntimeException(e);
         }
     });
   }

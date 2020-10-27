@@ -10,7 +10,6 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 import javax.sql.DataSource;
-import javax.ws.rs.InternalServerErrorException;
 
 import org.gusdb.fgputil.functional.TreeNode;
 import org.veupathdb.service.edass.generated.model.APIFilter;
@@ -143,10 +142,10 @@ public class Study {
     for (TreeNode<Entity> child : entityNode.getChildNodes()) {
       Entity childEntity = child.getContents();
       if (childEntity.equals(entityNode.getContents().getId()))
-        throw new InternalServerErrorException(errPrefix + "the parent: " + childEntity.getId());
+        throw new RuntimeException(errPrefix + "the parent: " + childEntity.getId());
 
       if (childEntityIds.contains(childEntity.getId()))
-        throw new InternalServerErrorException(errPrefix + "another child: " + childEntity.getId());
+        throw new RuntimeException(errPrefix + "another child: " + childEntity.getId());
     }
   }
 

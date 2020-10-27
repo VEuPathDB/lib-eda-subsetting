@@ -10,7 +10,6 @@ import java.util.Map;
 import java.util.function.Function;
 
 import javax.sql.DataSource;
-import javax.ws.rs.InternalServerErrorException;
 
 import org.gusdb.fgputil.db.runner.SQLRunner;
 import org.gusdb.fgputil.functional.TreeNode;
@@ -37,7 +36,7 @@ public class EntityResultSetUtils {
         Entity entity = createEntityFromResultSet(rs);
         String parentId = rs.getString(ENTITY_PARENT_ID_COL_NAME);
         if (parentId == null) {
-          if (root != null) throw new InternalServerErrorException("In Study " + studyId + " found more than one root entity");
+          if (root != null) throw new RuntimeException("In Study " + studyId + " found more than one root entity");
           root = entity;
         } else {
           if (!simpleTree.containsKey(parentId)) simpleTree.put(parentId, new ArrayList<Entity>());
@@ -47,7 +46,7 @@ public class EntityResultSetUtils {
       return root;
     });
     
-    if (rootEntity == null) throw new InternalServerErrorException("Found no entities for study: " + studyId);
+    if (rootEntity == null) throw new RuntimeException("Found no entities for study: " + studyId);
 
     List<Entity> rootKids = simpleTree.get(rootEntity.getId());
     TreeNode<Entity> rootNode = new TreeNode<Entity>(rootEntity);
@@ -85,7 +84,7 @@ public class EntityResultSetUtils {
       return new Entity(name, id, descrip, id + "_tall", id + "_ancestors", name + "_id");
     }
     catch (SQLException e) {
-      throw new InternalServerErrorException(e);
+      throw new RuntimeException(e);
     }
   }
   
@@ -108,14 +107,14 @@ public class EntityResultSetUtils {
       tallRow.put(VARIABLE_ID_COL_NAME, rs.getString(VARIABLE_ID_COL_NAME));
       
       Variable var = entity.getVariable(rs.getString(VARIABLE_ID_COL_NAME))
-          .orElseThrow(() -> new InternalServerErrorException("Can't find column in tall table result set: " + VARIABLE_ID_COL_NAME));
+          .orElseThrow(() -> new RuntimeException("Can't find column in tall table result set: " + VARIABLE_ID_COL_NAME));
 
       tallRow.put(VARIABLE_VALUE_COL_NAME, var.getType().convertRowValueToStringValue(rs));
       
       return tallRow;
     }
     catch (SQLException e) {
-      throw new InternalServerErrorException(e);
+      throw new RuntimeException(e);
     }
   }
   /**
@@ -156,7 +155,7 @@ public class EntityResultSetUtils {
         // if first row, add ancestor PKs to wide table
         for (String ancestorPkColName : entity.getAncestorPkColNames()) {
           if (!tallRow.containsKey(ancestorPkColName))
-            throw new InternalServerErrorException(errPrefix + " does not contain column " + ancestorPkColName);
+            throw new RuntimeException(errPrefix + " does not contain column " + ancestorPkColName);
           if (first) wideRow.put(ancestorPkColName, tallRow.get(ancestorPkColName));
         }
         first = false;
@@ -168,16 +167,16 @@ public class EntityResultSetUtils {
   private static void validateTallRow(Entity entity, Map<String,String> tallRow, String errPrefix, String tallRowEnityId, String variableId) {
     // do some simple validation
     if (tallRow.size() != entity.getTallRowSize()) 
-      throw new InternalServerErrorException(errPrefix + " has an unexpected number of columns: " + tallRow.size());
+      throw new RuntimeException(errPrefix + " has an unexpected number of columns: " + tallRow.size());
     
     if (!tallRow.get(entity.getPKColName()).equals(tallRowEnityId))
-      throw new InternalServerErrorException(errPrefix + " has an unexpected PK value");
+      throw new RuntimeException(errPrefix + " has an unexpected PK value");
 
     if (!tallRow.containsKey(VARIABLE_ID_COL_NAME) )
-      throw new InternalServerErrorException(errPrefix + " does not contain column " + VARIABLE_ID_COL_NAME);
+      throw new RuntimeException(errPrefix + " does not contain column " + VARIABLE_ID_COL_NAME);
 
     entity.getVariable(variableId)
-        .orElseThrow(() -> new InternalServerErrorException(errPrefix + " has an invalid variableId: " + variableId));
+        .orElseThrow(() -> new RuntimeException(errPrefix + " has an invalid variableId: " + variableId));
   }
   
 }

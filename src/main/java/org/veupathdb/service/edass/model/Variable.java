@@ -6,8 +6,6 @@ import java.util.Map;
 
 import org.gusdb.fgputil.FormatUtil;
 
-import javax.ws.rs.InternalServerErrorException;
-
 import org.gusdb.fgputil.functional.FunctionalInterfaces.FunctionWithException;
 
 public class Variable {
@@ -57,7 +55,7 @@ public class Variable {
         return resultSetToStringValue.apply(rs);
       }
       catch (Exception e) {
-        throw new InternalServerErrorException(e);
+        throw new RuntimeException(e);
       }
     }
   }

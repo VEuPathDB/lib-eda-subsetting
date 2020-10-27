@@ -7,7 +7,6 @@ import java.util.List;
 import java.util.Map;
 
 import javax.sql.DataSource;
-import javax.ws.rs.InternalServerErrorException;
 
 import org.gusdb.fgputil.db.runner.SQLRunner;
 
@@ -46,7 +45,7 @@ class VariableResultSetUtils {
     try {
       String entityId = getRsStringNotNull(rs, ENTITY_ID_COL_NAME);
       if (!entityIdMap.containsKey(entityId))
-        throw new InternalServerErrorException("Variable's entity ID not found for this study: " + entityId);
+        throw new RuntimeException("Variable's entity ID not found for this study: " + entityId);
       Entity entity = entityIdMap.get(entityId);
       return new Variable(
           getRsStringNotNull(rs, PROVIDER_LABEL_COL_NAME),
@@ -61,7 +60,7 @@ class VariableResultSetUtils {
           );
     }
     catch (SQLException e) {
-      throw new InternalServerErrorException(e);
+      throw new RuntimeException(e);
     }
   }
   

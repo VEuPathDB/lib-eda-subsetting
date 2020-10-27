@@ -3,8 +3,6 @@ package org.veupathdb.service.edass.model;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 
-import javax.ws.rs.InternalServerErrorException;
-
 class RdbmsColumnNames {
   
   static final String nl = System.lineSeparator();
@@ -43,7 +41,7 @@ class RdbmsColumnNames {
   
   static String getRsStringNotNull(ResultSet rs, String colName) throws SQLException {
     if (rs.getString(colName) == null) 
-      throw new InternalServerErrorException("Found a null for variable column: " + colName);
+      throw new RuntimeException("Found a null for variable column: " + colName);
     return rs.getString(colName);
   }
 

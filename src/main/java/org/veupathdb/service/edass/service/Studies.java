@@ -132,13 +132,6 @@ public class Studies implements org.veupathdb.service.edass.generated.resources.
   }
 
   @Override
-  public GetStudiesEntitiesByStudyIdAndEntityIdResponse getStudiesEntitiesByStudyIdAndEntityId(String studyId,
-      String entityId) {
-    // TODO Auto-generated method stub
-    return null;
-  }
-
-  @Override
   public PostStudiesEntitiesVariablesDistributionByStudyIdAndEntityIdAndVariableIdResponse 
   postStudiesEntitiesVariablesDistributionByStudyIdAndEntityIdAndVariableId(
 String studyId, String entityId, String variableId, VariableDistributionPostRequest request) {

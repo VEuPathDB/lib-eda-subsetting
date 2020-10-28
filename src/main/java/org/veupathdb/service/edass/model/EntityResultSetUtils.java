@@ -81,7 +81,7 @@ public class EntityResultSetUtils {
       String id = getRsStringNotNull(rs, ENTITY_ID_COL_NAME);
       String descrip = getRsStringNotNull(rs, DESCRIP_COL_NAME);
       
-      return new Entity(name, id, descrip, id + "_tall", id + "_ancestors", name + "_id");
+      return new Entity(name, id, descrip, id + "_tall", id + "_ancestors", id + "_id");
     }
     catch (SQLException e) {
       throw new RuntimeException(e);

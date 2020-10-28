@@ -30,7 +30,7 @@ insert into variableType values (400, 'date');
 
 --(variable_id, variable_type_id, entity_id, parent_entity_id, display_name, has_values, is_continuous, units, precision)
 insert into variable values ('var-10', 300, 'GEMS_Part', null, '_networth', 'Net worth', 1, 1, 'dollars', 2);
-insert into variable values ('var-18', 200, 'GEMS_House', null, '_address', 'Address', 1, 0, null, null);
+insert into variable values ('var-18', 200, 'GEMS_House', null, '_address', 'City', 1, 0, null, null);
 insert into variable values ('var-11', 300, 'GEMS_Part', null, '_shoesize', 'Shoe size', 1, 0, 'shoe size', 1);
 insert into variable values ('var-20', 200, 'GEMS_Part', null, '_name', 'Name', 1, 0, null, null);
 insert into variable values ('var-17', 200, 'GEMS_Part', null, '_haircolor', 'Hair color', 1, 0, null, null);
@@ -47,9 +47,9 @@ insert into variable values ('var-19', 200, 'GEMS_HouseObs', null, '_watersupply
 
 -- households
 insert into gems_house_ancestors values (101);
-insert into gems_house_tall values (101, 'var-18', null, '215 Main Street', null);
+insert into gems_house_tall values (101, 'var-18', null, 'Miami', null);
 insert into gems_house_ancestors values (102);
-insert into gems_house_tall values (102, 'var-18', null, '56 Narrow Lane', null);
+insert into gems_house_tall values (102, 'var-18', null, 'Boston', null);
 
 -- household observations
 insert into gems_houseobs_ancestors values (301, 101);

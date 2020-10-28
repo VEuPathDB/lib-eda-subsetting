@@ -4,11 +4,13 @@ import static org.veupathdb.service.edass.model.RdbmsColumnNames.*;
 
 public abstract class Filter {
   protected Entity entity;
-  protected String variableName;
+  protected String variableId;
   
-  public Filter(Entity entity, String variableName) {
+  public Filter(Entity entity, String variableId) {
+    if (entity == null) throw new RuntimeException("Null entity not allowed");
+    entity.getVariable(variableId).orElseThrow(() -> new RuntimeException("Entity " + entity.getId() + "does not contain variable " + variableId));
     this.entity = entity;
-    this.variableName = variableName;
+    this.variableId = variableId;
   }
 
   public String getSql() {
@@ -22,7 +24,7 @@ public abstract class Filter {
     return "  SELECT " + entity.getAllPksSelectList("t", "a") + nl 
         + "  FROM " + entity.getTallTableName() + " t, " + entity.getEntityAncestorsTableName() + " a" + nl
         + "  WHERE t." + entity.getPKColName() + " = a." + entity.getPKColName() + nl 
-        + "  AND " + VARIABLE_ID_COL_NAME + " = '" + variableName + "'" + nl 
+        + "  AND " + VARIABLE_ID_COL_NAME + " = '" + variableId + "'" + nl 
         + getAndClausesSql();
   }
   
@@ -30,7 +32,7 @@ public abstract class Filter {
     
     return "  SELECT " + entity.getPKColName() + nl 
         + "  FROM " + entity.getTallTableName() + nl
-        + "  WHERE " + VARIABLE_ID_COL_NAME + " = '" + variableName + "'" + nl 
+        + "  WHERE " + VARIABLE_ID_COL_NAME + " = '" + variableId + "'" + nl 
         + getAndClausesSql();
   }
 

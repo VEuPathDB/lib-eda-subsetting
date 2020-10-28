@@ -247,7 +247,7 @@ public class StudySubsettingUtils {
       withBody = String.join("INTERSECT" + nl, filterSqls);
     } 
 
-    return entity.getName() + " as (" + nl + withBody + ")";
+    return entity.getWithClauseName() + " as (" + nl + withBody + ")";
   }
   
   static String generateTabularSelectClause(Entity outputEntity, String tallTblAbbrev, String ancestorTblAbbrev) {
@@ -306,7 +306,7 @@ public class StudySubsettingUtils {
   }
   
   static String generateJoiningFromClause(TreeNode<Entity> prunedEntityTree) {
-    List<String> fromClauses = prunedEntityTree.flatten().stream().map(e -> e.getName()).collect(Collectors.toList());
+    List<String> fromClauses = prunedEntityTree.flatten().stream().map(e -> e.getWithClauseName()).collect(Collectors.toList());
     return "  FROM " + String.join(", ", fromClauses);
   }
 
@@ -329,8 +329,8 @@ public class StudySubsettingUtils {
 
   // this join is formed using the name from the WITH clause, which is the entity name
   static String getSqlJoinString(Entity parentEntity, Entity childEntity) {
-    return parentEntity.getName() + "." + parentEntity.getPKColName() + " = " +
-        childEntity.getName() + "." + parentEntity.getPKColName();
+    return parentEntity.getWithClauseName() + "." + parentEntity.getPKColName() + " = " +
+        childEntity.getWithClauseName() + "." + parentEntity.getPKColName();
   }
   
   static String generateTabularOrderByClause(Entity outputEntity) {

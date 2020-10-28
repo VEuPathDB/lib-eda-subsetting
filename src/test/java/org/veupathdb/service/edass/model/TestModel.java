@@ -55,28 +55,28 @@ public class TestModel {
   }
   
   private void createTestEntities() {
-    household = new Entity("Household", "entity-1", "descrip", "Hshld_tall", "Hshld_ancestors",
+    household = new Entity("Household", "GEMS_House", "descrip", "Hshld_tall", "Hshld_ancestors",
         "household_id");
-    householdObs = new Entity("HouseholdObs", "entity-4", "descrip", "HouseObs_tall", "HouseObs_ancestors",
+    householdObs = new Entity("HouseholdObs", "GEMS_HouseObs", "descrip", "HouseObs_tall", "HouseObs_ancestors",
         "household_obs_id");
-    participant = new Entity("Participant", "entity-2", "descrip", "Part_tall", "Part_ancestors",
+    participant = new Entity("Participant", "GEMS_Part", "descrip", "Part_tall", "Part_ancestors",
         "participant_id");
-    observation = new Entity("Observation", "entity-3", "descrip", "Obs_tall", "Obs_ancestors",
+    observation = new Entity("Observation", "GEMS_PartObs", "descrip", "Obs_tall", "Obs_ancestors",
         "observation_id");
-    sample = new Entity("Sample", "entity-5", "descrip", "Sample_tall", "Sample_ancestors",
+    sample = new Entity("Sample", "GEMS_Sample", "descrip", "Sample_tall", "Sample_ancestors",
         "sample_id");
-    treatment = new Entity("Treatment", "entity-6", "descrip", "Treatment_tall", "Treatment_ancestors",
+    treatment = new Entity("Treatment", "GEMS_Treat", "descrip", "Treatment_tall", "Treatment_ancestors",
         "treatment_id");
   }
   
   private Map<String, Entity> createIdMap() {
     Map<String, Entity> idMap = new HashMap<String, Entity>();
-    idMap.put("entity-1", household);
-    idMap.put("entity-4", householdObs);
-    idMap.put("entity-2", participant);
-    idMap.put("entity-3", observation);
-    idMap.put("entity-5", sample);
-    idMap.put("entity-6", treatment);
+    idMap.put("GEMS_House", household);
+    idMap.put("GEMS_HouseObs", householdObs);
+    idMap.put("GEMS_Part", participant);
+    idMap.put("GEMS_PartObs", observation);
+    idMap.put("GEMS_Sample", sample);
+    idMap.put("GEMS_Treat", treatment);
     return idMap;
    }
 

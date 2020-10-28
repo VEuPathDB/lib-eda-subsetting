@@ -7,6 +7,8 @@ import org.veupathdb.service.edass.Resources;
 
 import static org.junit.jupiter.api.Assertions.*;
 
+import java.time.LocalDateTime;
+import java.time.Month;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
@@ -22,11 +24,23 @@ public class StudySubsettingUtilsTest {
     
   private static TestModel model;
   private static DataSource datasource;
- 
+  
+  // filters using data from the test db
+  private static Filter houseCityFilter;
+  private static Filter obsWeightFilter;
+  private static Filter partHairFilter;
+  private static Filter obsFavNumberFilter; // categorical numeric
+  private static Filter obsBirthDateFilter;  // continuous date
+  private static Filter obsVisitDateFilter;  // categorical numeric
+  private static Filter obsMoodFilter; // string 
+  private static Filter houseObsWaterSupplyFilter; // string 
+
   @BeforeAll
   public static void setUp() {
     model = new TestModel();
     datasource = Resources.getApplicationDataSource();    
+    Study study = Study.loadStudy(datasource, "DS12385");
+    createFiltersForDb(study);
   }
 
   /*
@@ -102,7 +116,6 @@ public class StudySubsettingUtilsTest {
     
     List<Filter> filters = new ArrayList<Filter>();
     filters.add(model.obsWeightFilter);
-    
     // set output entity
     Entity outputEntity = model.householdObs;
     
@@ -149,7 +162,7 @@ public class StudySubsettingUtilsTest {
     filters.add(model.obsWeightFilter);
     filters.add(model.obsFavNewYearsFilter);
     String withClause = StudySubsettingUtils.generateWithClause(model.householdObs, filters);
-    String expectedWithClause = "HouseholdObs as (" + nl +
+    String expectedWithClause = model.householdObs.getWithClauseName() + " as (" + nl +
         "  SELECT household_id, household_obs_id FROM HouseObs_ancestors" + nl +
         ")";
     assertEquals(expectedWithClause, withClause);
@@ -181,7 +194,7 @@ public class StudySubsettingUtilsTest {
         model.observation.getEntityAncestorsTableName() + " a" + nl +
         "  WHERE t.observation_id = a.observation_id" + nl;
     
-    String expectedWithClause = "Observation as (" + nl + 
+    String expectedWithClause = model.observation.getWithClauseName() +  " as (" + nl + 
         obsBase + 
         "  AND " + VARIABLE_ID_COL_NAME + " = '" + model.weight.getId() + "'" + nl + 
         "  AND " + NUMBER_VALUE_COL_NAME + " >= 10 AND " + NUMBER_VALUE_COL_NAME + " <= 20" + nl + 
@@ -278,13 +291,13 @@ public class StudySubsettingUtilsTest {
     Entity outputEntity = model.householdObs;
     TreeNode<Entity> prunedTree = StudySubsettingUtils.pruneTree(model.study.getEntityTree(), filters, outputEntity);
 
-    List<String> from = Arrays.asList(new String[]{model.household.getName(), model.householdObs.getName(), model.observation.getName()});
+    List<String> from = Arrays.asList(new String[]{model.household.getWithClauseName(), model.householdObs.getWithClauseName(), model.observation.getWithClauseName()});
     String inClause = StudySubsettingUtils.generateInClause(prunedTree, outputEntity, "t", "AND");
     String expected = "AND t." + model.householdObs.getPKColName() + " IN (" + nl +
         "  SELECT " + model.householdObs.getFullPKColName() +  nl +
         "  FROM " + String.join(", ", from) + nl +
-        "  WHERE " + model.household.getFullPKColName() + " = " + model.householdObs.getName() + "." + model.household.getPKColName() + nl +
-        "  AND " + model.household.getFullPKColName() + " = " + model.observation.getName() + "." + model.household.getPKColName() + nl +
+        "  WHERE " + model.household.getFullPKColName() + " = " + model.householdObs.getWithClauseName() + "." + model.household.getPKColName() + nl +
+        "  AND " + model.household.getFullPKColName() + " = " + model.observation.getWithClauseName() + "." + model.household.getPKColName() + nl +
         ")";
 
     assertEquals(expected, inClause);
@@ -349,14 +362,39 @@ public class StudySubsettingUtilsTest {
   void testVariableCountNoFiltersFromDb() {
     
     Study study = Study.loadStudy(datasource, "DS12385");
+
     String entityId = "GEMS_Part";
-    Entity entity = study.getEntity(entityId).orElseThrow(() -> new RuntimeException("Can't find entity: " + entityId));
+    Entity entity = study.getEntity(entityId).orElseThrow();
+
     String varId = "var-17";
-    Variable var = entity.getVariable(varId).orElseThrow(() -> new RuntimeException("Can't find variable: " + varId));;
+    Variable var = entity.getVariable(varId).orElseThrow();
+
     Integer count = StudySubsettingUtils.getVariableCount(datasource, study, entity,
         var, new ArrayList<Filter>());
     
     assertEquals(4, count);
+  }
+
+  @Test
+  @DisplayName("Test get variable count - with filters") 
+  void testVariableCountFromDb() {
+    
+    Study study = Study.loadStudy(datasource, "DS12385");
+
+    String entityId = "GEMS_Part";
+    Entity entity = study.getEntity(entityId).orElseThrow();
+
+    String varId = "var-17";
+    Variable var = entity.getVariable(varId).orElseThrow();
+
+    List<Filter> filters = new ArrayList<Filter>();
+    filters.add(partHairFilter);
+    filters.add(houseObsWaterSupplyFilter);
+
+    Integer count = StudySubsettingUtils.getVariableCount(datasource, study, entity,
+        var, filters);
+    
+    assertEquals(2, count);
   }
 
 
@@ -370,6 +408,53 @@ public class StudySubsettingUtilsTest {
     filters.add(model.houseRoofFilter);
     filters.add(model.houseObsWaterSupplyFilter);
     return filters;
-    
   }
+  
+  // filters using the test db
+  static void createFiltersForDb(Study study) {
+    
+    Entity household = study.getEntity("GEMS_House").orElseThrow();
+    Entity householdObs = study.getEntity("GEMS_HouseObs").orElseThrow();
+    Entity participant = study.getEntity("GEMS_Part").orElseThrow();
+    Entity observation = study.getEntity("GEMS_PartObs").orElseThrow();
+    
+    Variable city = household.getVariable("var-18").orElseThrow();  
+    Variable watersupply = householdObs.getVariable("var-19").orElseThrow();  
+    Variable haircolor = participant.getVariable("var-17").orElseThrow();  
+    Variable weight = observation.getVariable("var-12").orElseThrow();  
+    Variable favNumber = observation.getVariable("var-13").orElseThrow();  
+    Variable startDate = observation.getVariable("var-14").orElseThrow();  
+    Variable visitDate = observation.getVariable("var-15").orElseThrow();  
+    Variable mood = observation.getVariable("var-16").orElseThrow();  
+
+    List<String> haircolors = Arrays.asList(new String[]{"blond", "green"});
+    partHairFilter = new StringSetFilter(participant, haircolor.getId(), haircolors); 
+
+    obsWeightFilter = new NumberRangeFilter(observation, weight.getId(), 10, 20);
+
+    List<Number> favNums = Arrays.asList(new Number[]{5,7,9});
+    obsFavNumberFilter = new NumberSetFilter(observation, favNumber.getId(), favNums); 
+
+    obsBirthDateFilter = new DateRangeFilter(observation, startDate.getId(),
+        LocalDateTime.of(2019, Month.MARCH, 21, 00, 00),
+        LocalDateTime.of(2019, Month.MARCH, 28, 00, 00));
+
+    List<LocalDateTime> dates = new ArrayList<LocalDateTime>();
+    dates.add(LocalDateTime.of(2019, Month.MARCH, 21, 00, 00));
+    dates.add(LocalDateTime.of(2019, Month.MARCH, 28, 00, 00));
+    dates.add(LocalDateTime.of(2019, Month.JUNE, 12, 00, 00));
+    obsVisitDateFilter = new DateSetFilter(observation, visitDate.getId(), dates);
+
+    List<String> moods = Arrays.asList(new String[]{"happy", "jolly", "giddy"});
+    obsMoodFilter = new StringSetFilter(observation, mood.getId(), moods); 
+
+    obsWeightFilter = new NumberRangeFilter(observation, weight.getId(), 10, 20);
+
+    List<String> roofs = Arrays.asList(new String[]{"Boston", "Miami"});
+    houseCityFilter = new StringSetFilter(household, city.getId(), roofs);
+
+    List<String> waterSupplies = Arrays.asList(new String[]{"piped", "well"});
+    houseObsWaterSupplyFilter = new StringSetFilter(householdObs, watersupply.getId(), waterSupplies);
+  }
+
 }

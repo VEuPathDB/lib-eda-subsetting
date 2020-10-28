@@ -60,11 +60,15 @@ public class Entity {
   }
   
   public String getFullPKColName() {
-    return name + "." + primaryKeyColumnName;
+    return getWithClauseName() + "." + primaryKeyColumnName;
   }
   
   public String getParentTableName() {
     return ancestorsTableName;
+  }
+  
+  public String getWithClauseName() {
+    return id;
   }
   
   public List<String> getAncestorPkColNames() {
@@ -84,7 +88,7 @@ public class Entity {
     this.ancestorPkColNames = 
         ancestorEntities.stream().map(entry -> entry.getPKColName()).collect(Collectors.toList());
     this.ancestorFullPkColNames = 
-        ancestorEntities.stream().map(entry -> entry.getName() + "." + entry.getPKColName()).collect(Collectors.toList());
+        ancestorEntities.stream().map(entry -> entry.getFullPKColName()).collect(Collectors.toList());
   }
 
   public List<Entity> getAncestorEntities() {

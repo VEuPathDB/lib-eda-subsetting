@@ -179,7 +179,7 @@ public class StudySubsettingUtils {
   static String generateEntityCountSql(Entity outputEntity, List<Filter> filters, TreeNode<Entity> prunedEntityTree) {
     
     return generateWithClauses(prunedEntityTree, filters, getEntityIdsInFilters(filters)) + nl
-        + "SELECT count(distinct " + outputEntity.getPKColName() + ")" + nl
+        + "SELECT count(distinct " + outputEntity.getPKColName() + ") as " + countColumnName + nl
         + "FROM (" + nl
         + generateJoiningSubselect(prunedEntityTree, outputEntity) + nl
         + ") t";
@@ -259,7 +259,7 @@ public class StudySubsettingUtils {
   }
     
   static String generateDistributionSelectClause(Variable distributionVariable) {
-    return "SELECT " + distributionVariable.getType().getTallTableColumnName() + " as " + valueColumnName + ", count(" + distributionVariable.getEntity().getPKColName() + ") as " + valueColumnName;
+    return "SELECT " + distributionVariable.getType().getTallTableColumnName() + " as " + valueColumnName + ", count(" + distributionVariable.getEntity().getPKColName() + ") as " + countColumnName;
   }
   
   static String generateVariableCountSelectClause(Variable variable) {

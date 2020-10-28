@@ -7,6 +7,7 @@ import org.veupathdb.service.edass.Resources;
 
 import static org.junit.jupiter.api.Assertions.*;
 
+import java.io.ByteArrayOutputStream;
 import java.time.LocalDateTime;
 import java.time.Month;
 import java.util.ArrayList;
@@ -358,6 +359,46 @@ public class StudySubsettingUtilsTest {
   }
 
   @Test
+  @DisplayName("Test get entity count - no filters") 
+  void testEntityCountNoFiltersFromDb() {
+    
+    Study study = Study.loadStudy(datasource, "DS12385");
+
+    String entityId = "GEMS_Part";
+    Entity entity = study.getEntity(entityId).orElseThrow();
+
+    String varId = "var-17";
+    Variable var = entity.getVariable(varId).orElseThrow();
+
+    Integer count = StudySubsettingUtils.getEntityCount(datasource, study, entity,
+        new ArrayList<Filter>());
+    
+    assertEquals(4, count);
+  }
+
+  @Test
+  @DisplayName("Test get entity count - with filters") 
+  void testEntityCountFromDb() {
+    
+    Study study = Study.loadStudy(datasource, "DS12385");
+
+    String entityId = "GEMS_Part";
+    Entity entity = study.getEntity(entityId).orElseThrow();
+
+    String varId = "var-17";
+    Variable var = entity.getVariable(varId).orElseThrow();
+
+    List<Filter> filters = new ArrayList<Filter>();
+    filters.add(partHairFilter);
+    filters.add(houseObsWaterSupplyFilter);
+
+    Integer count = StudySubsettingUtils.getEntityCount(datasource, study, entity,
+        filters);
+    
+    assertEquals(2, count);
+  }
+
+  @Test
   @DisplayName("Test get variable count - no filters") 
   void testVariableCountNoFiltersFromDb() {
     
@@ -397,6 +438,53 @@ public class StudySubsettingUtilsTest {
     assertEquals(2, count);
   }
 
+  @Test
+  @DisplayName("Test variable distribution - no filters") 
+  void testVariableDistributionNoFilters() {
+    
+    Study study = Study.loadStudy(datasource, "DS12385");
+
+    String entityId = "GEMS_Part";
+    Entity entity = study.getEntity(entityId).orElseThrow();
+
+    String varId = "var-17";
+    Variable var = entity.getVariable(varId).orElseThrow();
+
+    ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+    StudySubsettingUtils.produceVariableDistribution(datasource, study, entity,
+        var, new ArrayList<Filter>(), outputStream);
+    
+    String outStr = outputStream.toString();
+    String[] rows = {"count\tvalue", "blond\t2", "brown\t1", "silver\t1"};
+    String expected = String.join(nl, rows) + nl;
+    assertEquals(expected, outStr);
+  }
+
+  @Test
+  @DisplayName("Test variable distribution - with filters") 
+  void testVariableDistribution() {
+    
+    Study study = Study.loadStudy(datasource, "DS12385");
+
+    String entityId = "GEMS_Part";
+    Entity entity = study.getEntity(entityId).orElseThrow();
+
+    String varId = "var-17";
+    Variable var = entity.getVariable(varId).orElseThrow();
+    
+    List<Filter> filters = new ArrayList<Filter>();
+    filters.add(houseCityFilter);
+    filters.add(houseObsWaterSupplyFilter);
+
+    ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+    StudySubsettingUtils.produceVariableDistribution(datasource, study, entity,
+        var, filters, outputStream);
+    
+    String outStr = outputStream.toString();
+    String[] rows = {"count\tvalue", "brown\t1", "silver\t1"};
+    String expected = String.join(nl, rows) + nl;
+    assertEquals(expected, outStr);
+  }
 
   List<Filter> getSomeFilters() {
     List<Filter> filters = new ArrayList<Filter>();
@@ -450,8 +538,8 @@ public class StudySubsettingUtilsTest {
 
     obsWeightFilter = new NumberRangeFilter(observation, weight.getId(), 10, 20);
 
-    List<String> roofs = Arrays.asList(new String[]{"Boston", "Miami"});
-    houseCityFilter = new StringSetFilter(household, city.getId(), roofs);
+    List<String> cities = Arrays.asList(new String[]{"Boston"});
+    houseCityFilter = new StringSetFilter(household, city.getId(), cities);
 
     List<String> waterSupplies = Arrays.asList(new String[]{"piped", "well"});
     houseObsWaterSupplyFilter = new StringSetFilter(householdObs, watersupply.getId(), waterSupplies);

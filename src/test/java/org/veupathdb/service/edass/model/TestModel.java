@@ -55,18 +55,12 @@ public class TestModel {
   }
   
   private void createTestEntities() {
-    household = new Entity("Household", "GEMS_House", "descrip", "Hshld_tall", "Hshld_ancestors",
-        "household_id");
-    householdObs = new Entity("HouseholdObs", "GEMS_HouseObs", "descrip", "HouseObs_tall", "HouseObs_ancestors",
-        "household_obs_id");
-    participant = new Entity("Participant", "GEMS_Part", "descrip", "Part_tall", "Part_ancestors",
-        "participant_id");
-    observation = new Entity("Observation", "GEMS_PartObs", "descrip", "Obs_tall", "Obs_ancestors",
-        "observation_id");
-    sample = new Entity("Sample", "GEMS_Sample", "descrip", "Sample_tall", "Sample_ancestors",
-        "sample_id");
-    treatment = new Entity("Treatment", "GEMS_Treat", "descrip", "Treatment_tall", "Treatment_ancestors",
-        "treatment_id");
+    household = new Entity("GEMS_House", "Household", "Households", "descrip");
+    householdObs = new Entity("GEMS_HouseObs", "Household Observation", "Household Observations", "descrip");
+    participant = new Entity("GEMS_Part", "Participant", "Participants", "descrip");
+    observation = new Entity("GEMS_PartObs", "Observation", "Observations", "descrip");
+    sample = new Entity("GEMS_Sample", "Sample", "Samples", "descrip");
+    treatment = new Entity("GEMS_Treat", "Treatment", "Treatments", "descrip");
   }
   
   private Map<String, Entity> createIdMap() {

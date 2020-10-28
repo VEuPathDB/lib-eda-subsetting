@@ -40,7 +40,7 @@ public class LoadStudyTest {
     });
     assertEquals("GEMS_House", entity.getId());
     assertEquals("Households from the study area", entity.getDescription());
-    assertEquals( "Household", entity.getName());
+    assertEquals( "Household", entity.getDisplayName());
   }
   
   @Test

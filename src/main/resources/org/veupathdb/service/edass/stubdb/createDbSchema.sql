@@ -9,16 +9,17 @@ create table Study (
 alter table study add unique (abbrev);
 
 -- a controlled vocab of entity names, eg "Household", "Participant"
--- the abbrev would be used in the name of the tall and ancestors tables
+-- (the abbrev would be used in the name of the tall and ancestors tables, 
+-- IF the entity ID is not recognizable)
 CREATE TABLE EntityName (
   entity_name_id integer not null,
-  name varchar(30) not null,
-  plural_name varchar (30) not null,
+  display_name varchar(30) not null,
+  display_name_plural varchar (30) not null,
   abbrev varchar(25),
   PRIMARY KEY (entity_name_id),
 );
-alter table entityname add unique (name);
-alter table entityname add unique (plural_name);
+alter table entityname add unique (display_name);
+alter table entityname add unique (display_name_plural);
 alter table entityname add unique (abbrev);
 
 -- the entity_id is a stable id

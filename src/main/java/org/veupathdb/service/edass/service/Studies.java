@@ -86,7 +86,7 @@ public class Studies implements org.veupathdb.service.edass.generated.resources.
     return root.mapStructure((entity, mappedChildren) -> {
       APIEntity apiEntity = new APIEntityImpl();
       apiEntity.setDescription(entity.getDescription());
-      apiEntity.setName(entity.getName());
+      apiEntity.setDisplayName(entity.getDisplayName());
       apiEntity.setId(entity.getId());
       apiEntity.setChildren(mappedChildren);
       

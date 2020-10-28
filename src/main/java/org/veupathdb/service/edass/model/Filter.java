@@ -22,7 +22,7 @@ public abstract class Filter {
   private String getSqlWithAncestors() {
 
     return "  SELECT " + entity.getAllPksSelectList("t", "a") + nl 
-        + "  FROM " + entity.getTallTableName() + " t, " + entity.getEntityAncestorsTableName() + " a" + nl
+        + "  FROM " + entity.getTallTableName() + " t, " + entity.getAncestorsTableName() + " a" + nl
         + "  WHERE t." + entity.getPKColName() + " = a." + entity.getPKColName() + nl 
         + "  AND " + VARIABLE_ID_COL_NAME + " = '" + variableId + "'" + nl 
         + getAndClausesSql();

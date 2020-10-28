@@ -163,7 +163,7 @@ public class StudySubsettingUtilsTest {
     filters.add(model.obsFavNewYearsFilter);
     String withClause = StudySubsettingUtils.generateWithClause(model.householdObs, filters);
     String expectedWithClause = model.householdObs.getWithClauseName() + " as (" + nl +
-        "  SELECT household_id, household_obs_id FROM HouseObs_ancestors" + nl +
+        "  SELECT " + model.household.getPKColName() + ", " +  model.householdObs.getPKColName() + " FROM " + model.householdObs.getAncestorsTableName() + nl +
         ")";
     assertEquals(expectedWithClause, withClause);
   }
@@ -191,8 +191,8 @@ public class StudySubsettingUtilsTest {
 
     String obsBase = "  SELECT " + String.join(", ", selectCols) + nl +
         "  FROM " + model.observation.getTallTableName() + " t, " +
-        model.observation.getEntityAncestorsTableName() + " a" + nl +
-        "  WHERE t.observation_id = a.observation_id" + nl;
+        model.observation.getAncestorsTableName() + " a" + nl +
+        "  WHERE t." + model.observation.getPKColName() + " = a." + model.observation.getPKColName() + nl;
     
     String expectedWithClause = model.observation.getWithClauseName() +  " as (" + nl + 
         obsBase + 

@@ -66,7 +66,7 @@ public class EntityResultSetUtils {
   }
   
   static String generateEntityTreeSql(String studyId) {
-    String[] cols = {STUDY_ID_COL_NAME, NAME_COL_NAME, ENTITY_ID_COL_NAME, DESCRIP_COL_NAME, ENTITY_PARENT_ID_COL_NAME};
+    String[] cols = {STUDY_ID_COL_NAME, DISPLAY_NAME_COL_NAME, DISPLAY_NAME_PLURAL_COL_NAME, ENTITY_ID_COL_NAME, DESCRIP_COL_NAME, ENTITY_PARENT_ID_COL_NAME};
     return "SELECT " + String.join(", ", cols) + nl
         + "FROM " + ENTITY_TABLE_NAME + " e, " + ENTITY_NAME_TABLE_NAME + " n" + nl
         + "WHERE e." + ENTITY_NAME_ID_COL_NAME + " = n." + ENTITY_NAME_ID_COL_NAME + nl
@@ -77,11 +77,12 @@ public class EntityResultSetUtils {
   static Entity createEntityFromResultSet(ResultSet rs) {
 
     try {
-      String name = getRsStringNotNull(rs, NAME_COL_NAME);
+      String name = getRsStringNotNull(rs, DISPLAY_NAME_COL_NAME);
+      String namePlural = getRsStringNotNull(rs, DISPLAY_NAME_PLURAL_COL_NAME);
       String id = getRsStringNotNull(rs, ENTITY_ID_COL_NAME);
       String descrip = getRsStringNotNull(rs, DESCRIP_COL_NAME);
       
-      return new Entity(name, id, descrip, id + "_tall", id + "_ancestors", id + "_id");
+      return new Entity(id, name, namePlural, descrip);
     }
     catch (SQLException e) {
       throw new RuntimeException(e);

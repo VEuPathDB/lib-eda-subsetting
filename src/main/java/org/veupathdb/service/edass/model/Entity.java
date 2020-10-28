@@ -17,11 +17,10 @@ import java.util.stream.Collectors;
  */
 public class Entity {
   private String id;
-  private String name;
+  private String displayName;
+  private String displayNamePlural;
   private String description;
-  private String tallTableName;
-  private String ancestorsTableName;
-  private String primaryKeyColumnName;
+
   private Map<String, Variable> variablesMap = new HashMap<String, Variable>();
   private List<Variable> variablesList = new ArrayList<Variable>();
   private List<Entity> ancestorEntities;
@@ -29,22 +28,23 @@ public class Entity {
   private List<String> ancestorFullPkColNames; // entityName.pkColName
   private Integer tallRowSize; // number of columns in a tall table row
   
-  public Entity(String entityName, String entityId, String description, String entityTallTableName, String entityAncestorsTableName,
-      String entityPrimaryKeyColumnName) {
+  public Entity(String entityId, String displayName, String displayNamePlural, String description) {
     this.id = entityId;
-    this.name = entityName;
+    this.displayName = displayName;
+    this.displayNamePlural = displayNamePlural;
     this.description = description;
-    this.tallTableName = entityTallTableName;
-    this.ancestorsTableName = entityAncestorsTableName;
-    this.primaryKeyColumnName = entityPrimaryKeyColumnName;
   }
   
   public String getId() {
     return id;
   }
 
-  public String getName() {
-    return name;
+  public String getDisplayName() {
+    return displayName;
+  }
+
+  public String getDisplayNamePlural() {
+    return displayNamePlural;
   }
 
   public String getDescription() {
@@ -52,21 +52,21 @@ public class Entity {
   }
 
   public String getTallTableName() {
-    return tallTableName;
+    return id + "_tall";
   }
 
   public String getPKColName() {
-    return primaryKeyColumnName;
+    return id + "_id";
   }
   
   public String getFullPKColName() {
-    return getWithClauseName() + "." + primaryKeyColumnName;
+    return getWithClauseName() + "." + getPKColName();
   }
   
-  public String getParentTableName() {
-    return ancestorsTableName;
+  public String getAncestorsTableName() {
+    return id + "_ancestors";
   }
-  
+
   public String getWithClauseName() {
     return id;
   }
@@ -95,12 +95,8 @@ public class Entity {
     return Collections.unmodifiableList(ancestorEntities);
   }
   
-  public String getEntityAncestorsTableName() {
-    return ancestorsTableName;
-  }
-
   public String toString() {
-    return "id: " + getId() + " name: " + getName() + " (" + super.toString() + ")";
+    return "id: " + getId() + " name: " + getDisplayName() + " (" + super.toString() + ")";
   }
   
   public String getAllPksSelectList(String entityTableName, String ancestorTableName) {

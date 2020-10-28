@@ -238,7 +238,7 @@ public class StudySubsettingUtils {
     String selectCols = String.join(", ", selectColsList);
     
     // default WITH body assumes no filters. we use the ancestor table because it is small
-    String withBody = "  SELECT " + selectCols + " FROM " + entity.getEntityAncestorsTableName() + nl;
+    String withBody = "  SELECT " + selectCols + " FROM " + entity.getAncestorsTableName() + nl;
     
     List<Filter> filtersOnThisEnity = filters.stream().filter(f -> f.getEntity().getId().equals(entity.getId())).collect(Collectors.toList());
 
@@ -272,7 +272,7 @@ public class StudySubsettingUtils {
   
   static String generateTabularFromClause(Entity outputEntity, String entityTblNm, String ancestorTblNm) {
     return "FROM " + outputEntity.getTallTableName() + " " + entityTblNm + ", " +
-        outputEntity.getEntityAncestorsTableName() + " " + ancestorTblNm;
+        outputEntity.getAncestorsTableName() + " " + ancestorTblNm;
   }
   
   static String generateTabularWhereClause(List<String> outputVariableIds, String entityPkCol, String entityTblNm, String ancestorTblNm) {

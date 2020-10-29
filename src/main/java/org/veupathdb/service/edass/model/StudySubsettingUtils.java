@@ -101,7 +101,7 @@ public class StudySubsettingUtils {
     int variableCount = getVariableCount(datasource, prunedEntityTree, outputEntity, distributionVariable, filters);
     
     String sql = generateDistributionSql(outputEntity, distributionVariable, filters, prunedEntityTree);
-    
+
     new SQLRunner(datasource, sql).executeQuery(rs -> {
       BufferedOutputStream bufferedOutput = new BufferedOutputStream(outputStream);
       try (JsonGenerator json = new JsonFactory().createGenerator(bufferedOutput, JsonEncoding.UTF8)) {
@@ -269,6 +269,7 @@ public class StudySubsettingUtils {
     for (VariableType varType : VariableType.values()) valColNames.add(varType.getTallTableColumnName());
 
     return "SELECT " + outputEntity.getAllPksSelectList(tallTblAbbrev, ancestorTblAbbrev) + ", " + 
+    VARIABLE_ID_COL_NAME + ", " +
     String.join(", ", valColNames);
   }
     

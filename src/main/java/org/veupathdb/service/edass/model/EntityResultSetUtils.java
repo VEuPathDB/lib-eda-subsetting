@@ -149,7 +149,7 @@ public class EntityResultSetUtils {
 
         String variableId = tallRow.get(VARIABLE_ID_COL_NAME);
         
-        validateTallRow(entity, tallRow, tallRowEnityId, errPrefix, variableId);
+        validateTallRow(entity, tallRow, errPrefix, tallRowEnityId, variableId);
         
         String value = tallRow.get(VARIABLE_VALUE_COL_NAME);
         wideRow.put(variableId, value);
@@ -169,7 +169,7 @@ public class EntityResultSetUtils {
   private static void validateTallRow(Entity entity, Map<String,String> tallRow, String errPrefix, String tallRowEnityId, String variableId) {
     // do some simple validation
     if (tallRow.size() != entity.getTallRowSize()) 
-      throw new RuntimeException(errPrefix + " has an unexpected number of columns: " + tallRow.size());
+      throw new RuntimeException(errPrefix + " has an unexpected number of columns: (" + tallRow.size() + "): " + tallRow.keySet());
     
     if (!tallRow.get(entity.getPKColName()).equals(tallRowEnityId))
       throw new RuntimeException(errPrefix + " has an unexpected PK value");

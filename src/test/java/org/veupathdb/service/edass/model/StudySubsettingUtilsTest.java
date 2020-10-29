@@ -236,7 +236,7 @@ public class StudySubsettingUtilsTest {
     String expectedSelectClause = "SELECT a." + model.household.getPKColName() +
         ", a." + model.participant.getPKColName() +
         ", t." + model.observation.getPKColName() +
-        ", " + STRING_VALUE_COL_NAME + ", " + NUMBER_VALUE_COL_NAME + ", " + DATE_VALUE_COL_NAME;
+        ", " + VARIABLE_ID_COL_NAME + ", " + STRING_VALUE_COL_NAME + ", " + NUMBER_VALUE_COL_NAME + ", " + DATE_VALUE_COL_NAME;
     assertEquals(expectedSelectClause, selectClause);
   }
 
@@ -420,8 +420,14 @@ public class StudySubsettingUtilsTest {
 
     StudySubsettingUtils.produceTabularSubset(datasource, study, entity,
         variables, filters, outStream);
-    
-    assertEquals("", outStream.toString());
+    String[] expected = {
+    "GEMS_Part_id", "GEMS_House_id", "var-17",  "var-20",
+    "201", "101",     "blond",   "Martin",
+    "202", "101",     "blond",   "Abe",
+    "203", "102",     "brown",   "Gladys",
+    "204", "102",     "silver",  "Susan"};
+ 
+    assertArrayEquals(expected, outStream.toString().split("\\s+"));
   }
 
   @Test
@@ -433,18 +439,27 @@ public class StudySubsettingUtilsTest {
     String entityId = "GEMS_Part";
     Entity entity = study.getEntity(entityId).orElseThrow();
 
-    String varId = "var-17";
-    Variable var = entity.getVariable(varId).orElseThrow();
+    List<Variable> variables = new ArrayList<Variable>();
+    variables.add(entity.getVariable("var-17").orElseThrow()); // hair color
+    variables.add(entity.getVariable("var-20").orElseThrow()); // name
 
     List<Filter> filters = new ArrayList<>();
     filters.add(partHairFilter);
     filters.add(houseObsWaterSupplyFilter);
 
-    TreeNode<Entity> prunedEntityTree = StudySubsettingUtils.pruneTree(study.getEntityTree(), filters, entity);
+    ByteArrayOutputStream outStream = new ByteArrayOutputStream();
 
-    Integer count = StudySubsettingUtils.getVariableCount(datasource, prunedEntityTree, entity, var, filters);
+    StudySubsettingUtils.produceTabularSubset(datasource, study, entity,
+        variables, filters, outStream);
+    String[] expected = {
+    "GEMS_Part_id", "GEMS_House_id", "var-17",  "var-20",
+    "201", "101",     "blond",   "Martin",
+    "202", "101",     "blond",   "Abe",
+//    "203", "102",     "brown",   "Gladys",
+//    "204", "102",     "silver",  "Susan"
+    };
     
-    assertEquals(2, count);
+    assertArrayEquals(expected, outStream.toString().split("\\s+"));
   }
   @Test
   @DisplayName("Test get variable count - no filters") 

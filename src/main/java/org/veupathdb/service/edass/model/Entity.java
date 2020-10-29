@@ -107,9 +107,9 @@ public class Entity {
     return String.join(", ", selectColsList);
   }
   
-  // ancestor PKs, pk, variable_id, int_value, str_value, date_value
+  // ancestor PKs, pk, variable_id, value
   Integer getTallRowSize() {
-    if (tallRowSize == null) tallRowSize = Integer.valueOf(ancestorEntities.size() + 5);
+    if (tallRowSize == null) tallRowSize = Integer.valueOf(ancestorEntities.size() + 3);
     return tallRowSize;
   }
   

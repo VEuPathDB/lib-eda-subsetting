@@ -1,7 +1,13 @@
 package org.veupathdb.service.edass.model;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import java.util.Collections;
 import static org.gusdb.fgputil.FormatUtil.NL;
+
+import java.util.HashMap;
+import java.util.Map;
+import org.gusdb.fgputil.functional.Functions;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -20,6 +26,7 @@ import java.util.Set;
 import javax.sql.DataSource;
 
 import org.gusdb.fgputil.functional.TreeNode;
+import org.veupathdb.service.edass.generated.model.VariableDistributionPostResponse;
 
 import static org.veupathdb.service.edass.model.RdbmsColumnNames.*;
 
@@ -485,7 +492,7 @@ public class StudySubsettingUtilsTest {
 
   @Test
   @DisplayName("Test variable distribution - no filters") 
-  void testVariableDistributionNoFilters() {
+  void testVariableDistributionNoFilters() throws JsonProcessingException {
     
     Study study = Study.loadStudy(datasource, "DS12385");
 
@@ -495,19 +502,22 @@ public class StudySubsettingUtilsTest {
     String varId = "var-17";
     Variable var = entity.getVariable(varId).orElseThrow();
 
-    ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
-    StudySubsettingUtils.produceVariableDistribution(datasource, study, entity,
-        var, new ArrayList<Filter>(), outputStream);
-    
-    String outStr = outputStream.toString();
-    String[] rows = {"count\tvalue", "blond\t2", "brown\t1", "silver\t1"};
-    String expected = String.join(NL, rows) + NL;
-    assertEquals(expected, outStr);
+    List<Filter> filters = Collections.emptyList();
+
+    int expectedVariableCount = 4;
+
+    Map<String, Integer> expectedDistribution = new HashMap<>(){{
+      put("blond", 2);
+      put("brown", 1);
+      put("silver", 1);
+    }};
+
+    testDistributionResponse(study, entity, var, filters, expectedVariableCount, expectedDistribution);
   }
 
   @Test
   @DisplayName("Test variable distribution - with filters") 
-  void testVariableDistribution() {
+  void testVariableDistribution() throws JsonProcessingException {
     
     Study study = Study.loadStudy(datasource, "DS12385");
 
@@ -521,14 +531,39 @@ public class StudySubsettingUtilsTest {
     filters.add(houseCityFilter);
     filters.add(houseObsWaterSupplyFilter);
 
+    int expectedVariableCount = 2;
+
+    Map<String, Integer> expectedDistribution = new HashMap<>(){{
+      put("brown", 1);
+      put("silver", 1);
+    }};
+
+    testDistributionResponse(study, entity, var, filters, expectedVariableCount, expectedDistribution);
+  }
+
+  private void testDistributionResponse(Study study, Entity entity, Variable var, List<Filter> filters, int expectedVariableCount, Map<String, Integer> expectedDistribution) throws JsonProcessingException {
+
+    // run distribution producer, read and parse response
     ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
-    StudySubsettingUtils.produceVariableDistribution(datasource, study, entity,
-        var, filters, outputStream);
-    
-    String outStr = outputStream.toString();
-    String[] rows = {"count\tvalue", "brown\t1", "silver\t1"};
-    String expected = String.join(NL, rows) + NL;
-    assertEquals(expected, outStr);
+    StudySubsettingUtils.produceVariableDistribution(datasource, study, entity, var, filters, outputStream);
+    VariableDistributionPostResponse response = new ObjectMapper()
+        .readerFor(VariableDistributionPostResponse.class).readValue(outputStream.toString());
+
+    // check variable count
+    assertEquals(expectedVariableCount, response.getEntitiesCount());
+
+    Map<String, Object> responseRows = response.getDistribution().getAdditionalProperties();
+
+    // check number of distribution rows
+    assertEquals(expectedDistribution.size(), responseRows.size());
+
+    for (Map.Entry expectedRow : expectedDistribution.entrySet()) {
+      Integer count = (Integer)responseRows.get(expectedRow.getKey()); // will throw if not integer
+      // check row exists for key
+      assertNotNull(count);
+      // check distribution size for key
+      assertEquals(expectedRow.getValue(), count);
+    }
   }
 
   List<Filter> getSomeFilters() {

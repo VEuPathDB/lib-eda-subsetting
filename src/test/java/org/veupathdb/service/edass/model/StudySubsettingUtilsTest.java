@@ -1,5 +1,7 @@
 package org.veupathdb.service.edass.model;
 
+import java.util.Collections;
+import static org.gusdb.fgputil.FormatUtil.NL;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -22,7 +24,7 @@ import org.gusdb.fgputil.functional.TreeNode;
 import static org.veupathdb.service.edass.model.RdbmsColumnNames.*;
 
 public class StudySubsettingUtilsTest {
-    
+
   private static TestModel model;
   private static DataSource datasource;
   
@@ -163,8 +165,8 @@ public class StudySubsettingUtilsTest {
     filters.add(model.obsWeightFilter);
     filters.add(model.obsFavNewYearsFilter);
     String withClause = StudySubsettingUtils.generateWithClause(model.householdObs, filters);
-    String expectedWithClause = model.householdObs.getWithClauseName() + " as (" + nl +
-        "  SELECT " + model.household.getPKColName() + ", " +  model.householdObs.getPKColName() + " FROM " + model.householdObs.getAncestorsTableName() + nl +
+    String expectedWithClause = model.householdObs.getWithClauseName() + " as (" + NL +
+        "  SELECT " + model.household.getPKColName() + ", " +  model.householdObs.getPKColName() + " FROM " + model.householdObs.getAncestorsTableName() + NL +
         ")";
     assertEquals(expectedWithClause, withClause);
   }
@@ -190,31 +192,31 @@ public class StudySubsettingUtilsTest {
     //      SELECT a.household_id, a.participant_id, t.observation_id
   //  FROM Obs_tall t, Obs_ancestors a
 
-    String obsBase = "  SELECT " + String.join(", ", selectCols) + nl +
+    String obsBase = "  SELECT " + String.join(", ", selectCols) + NL +
         "  FROM " + model.observation.getTallTableName() + " t, " +
-        model.observation.getAncestorsTableName() + " a" + nl +
-        "  WHERE t." + model.observation.getPKColName() + " = a." + model.observation.getPKColName() + nl;
+        model.observation.getAncestorsTableName() + " a" + NL +
+        "  WHERE t." + model.observation.getPKColName() + " = a." + model.observation.getPKColName() + NL;
     
-    String expectedWithClause = model.observation.getWithClauseName() +  " as (" + nl + 
+    String expectedWithClause = model.observation.getWithClauseName() +  " as (" + NL +
         obsBase + 
-        "  AND " + VARIABLE_ID_COL_NAME + " = '" + model.weight.getId() + "'" + nl + 
-        "  AND " + NUMBER_VALUE_COL_NAME + " >= 10 AND " + NUMBER_VALUE_COL_NAME + " <= 20" + nl + 
-        "INTERSECT" + nl + 
+        "  AND " + VARIABLE_ID_COL_NAME + " = '" + model.weight.getId() + "'" + NL +
+        "  AND " + NUMBER_VALUE_COL_NAME + " >= 10 AND " + NUMBER_VALUE_COL_NAME + " <= 20" + NL +
+        "INTERSECT" + NL +
         obsBase + 
-        "  AND " + VARIABLE_ID_COL_NAME + " = '" + model.favNewYears.getId() + "'" + nl + 
-        "  AND " + DATE_VALUE_COL_NAME + " IN ('2019-03-21T00:00', '2019-03-28T00:00', '2019-06-12T00:00')" + nl + 
-        "INTERSECT" + nl + 
+        "  AND " + VARIABLE_ID_COL_NAME + " = '" + model.favNewYears.getId() + "'" + NL +
+        "  AND " + DATE_VALUE_COL_NAME + " IN ('2019-03-21T00:00', '2019-03-28T00:00', '2019-06-12T00:00')" + NL +
+        "INTERSECT" + NL +
         obsBase + 
-        "  AND " + VARIABLE_ID_COL_NAME + " = '" + model.birthDate.getId() + "'" + nl + 
-        "  AND " + DATE_VALUE_COL_NAME + " >= '2019-03-21T00:00' AND " + DATE_VALUE_COL_NAME + " <= '2019-03-28T00:00'" + nl + 
-        "INTERSECT" + nl + 
+        "  AND " + VARIABLE_ID_COL_NAME + " = '" + model.birthDate.getId() + "'" + NL +
+        "  AND " + DATE_VALUE_COL_NAME + " >= '2019-03-21T00:00' AND " + DATE_VALUE_COL_NAME + " <= '2019-03-28T00:00'" + NL +
+        "INTERSECT" + NL +
         obsBase + 
-        "  AND " + VARIABLE_ID_COL_NAME + " = '" + model.mood.getId() + "'" + nl + 
-        "  AND " + STRING_VALUE_COL_NAME + " IN ('happy', 'jolly', 'giddy')" + nl + 
-        "INTERSECT" + nl + 
+        "  AND " + VARIABLE_ID_COL_NAME + " = '" + model.mood.getId() + "'" + NL +
+        "  AND " + STRING_VALUE_COL_NAME + " IN ('happy', 'jolly', 'giddy')" + NL +
+        "INTERSECT" + NL +
         obsBase + 
-        "  AND " + VARIABLE_ID_COL_NAME + " = '" + model.favNumber.getId() + "'" + nl + 
-        "  AND " + NUMBER_VALUE_COL_NAME + " IN (5, 7, 9 )" + nl + 
+        "  AND " + VARIABLE_ID_COL_NAME + " = '" + model.favNumber.getId() + "'" + NL +
+        "  AND " + NUMBER_VALUE_COL_NAME + " IN (5, 7, 9 )" + NL +
         ")";
     assertEquals(expectedWithClause, withClause);
   }
@@ -273,10 +275,10 @@ public class StudySubsettingUtilsTest {
     
     List<String> vars = Arrays.asList(new String[]{model.birthDate.getId(), model.favNumber.getId()});
     String where = StudySubsettingUtils.generateTabularWhereClause(vars, model.observation.getPKColName(), "t", "a");
-    String expected = "WHERE (" + nl +
-        "  " + VARIABLE_ID_COL_NAME + " = '" + model.birthDate.getId() + "' OR" + nl +
-        "  " + VARIABLE_ID_COL_NAME + " = '" + model.favNumber.getId() + "'" + nl +
-        ")" + nl +
+    String expected = "WHERE (" + NL +
+        "  " + VARIABLE_ID_COL_NAME + " = '" + model.birthDate.getId() + "' OR" + NL +
+        "  " + VARIABLE_ID_COL_NAME + " = '" + model.favNumber.getId() + "'" + NL +
+        ")" + NL +
         "AND t." + model.observation.getPKColName() + " = a." + model.observation.getPKColName();
 
     assertEquals(expected, where);
@@ -294,11 +296,11 @@ public class StudySubsettingUtilsTest {
 
     List<String> from = Arrays.asList(new String[]{model.household.getWithClauseName(), model.householdObs.getWithClauseName(), model.observation.getWithClauseName()});
     String inClause = StudySubsettingUtils.generateInClause(prunedTree, outputEntity, "t", "AND");
-    String expected = "AND t." + model.householdObs.getPKColName() + " IN (" + nl +
-        "  SELECT " + model.householdObs.getFullPKColName() +  nl +
-        "  FROM " + String.join(", ", from) + nl +
-        "  WHERE " + model.household.getFullPKColName() + " = " + model.householdObs.getWithClauseName() + "." + model.household.getPKColName() + nl +
-        "  AND " + model.household.getFullPKColName() + " = " + model.observation.getWithClauseName() + "." + model.household.getPKColName() + nl +
+    String expected = "AND t." + model.householdObs.getPKColName() + " IN (" + NL +
+        "  SELECT " + model.householdObs.getFullPKColName() + NL +
+        "  FROM " + String.join(", ", from) + NL +
+        "  WHERE " + model.household.getFullPKColName() + " = " + model.householdObs.getWithClauseName() + "." + model.household.getPKColName() + NL +
+        "  AND " + model.household.getFullPKColName() + " = " + model.observation.getWithClauseName() + "." + model.household.getPKColName() + NL +
         ")";
 
     assertEquals(expected, inClause);
@@ -410,8 +412,11 @@ public class StudySubsettingUtilsTest {
     String varId = "var-17";
     Variable var = entity.getVariable(varId).orElseThrow();
 
-    Integer count = StudySubsettingUtils.getVariableCount(datasource, study, entity,
-        var, new ArrayList<Filter>());
+    List<Filter> filters = Collections.emptyList();
+
+    TreeNode<Entity> prunedEntityTree = StudySubsettingUtils.pruneTree(study.getEntityTree(), filters, entity);
+
+    Integer count = StudySubsettingUtils.getVariableCount(datasource, prunedEntityTree, entity, var, filters);
     
     assertEquals(4, count);
   }
@@ -428,12 +433,13 @@ public class StudySubsettingUtilsTest {
     String varId = "var-17";
     Variable var = entity.getVariable(varId).orElseThrow();
 
-    List<Filter> filters = new ArrayList<Filter>();
+    List<Filter> filters = new ArrayList<>();
     filters.add(partHairFilter);
     filters.add(houseObsWaterSupplyFilter);
 
-    Integer count = StudySubsettingUtils.getVariableCount(datasource, study, entity,
-        var, filters);
+    TreeNode<Entity> prunedEntityTree = StudySubsettingUtils.pruneTree(study.getEntityTree(), filters, entity);
+
+    Integer count = StudySubsettingUtils.getVariableCount(datasource, prunedEntityTree, entity, var, filters);
     
     assertEquals(2, count);
   }
@@ -456,7 +462,7 @@ public class StudySubsettingUtilsTest {
     
     String outStr = outputStream.toString();
     String[] rows = {"count\tvalue", "blond\t2", "brown\t1", "silver\t1"};
-    String expected = String.join(nl, rows) + nl;
+    String expected = String.join(NL, rows) + NL;
     assertEquals(expected, outStr);
   }
 
@@ -482,7 +488,7 @@ public class StudySubsettingUtilsTest {
     
     String outStr = outputStream.toString();
     String[] rows = {"count\tvalue", "brown\t1", "silver\t1"};
-    String expected = String.join(nl, rows) + nl;
+    String expected = String.join(NL, rows) + NL;
     assertEquals(expected, outStr);
   }
 

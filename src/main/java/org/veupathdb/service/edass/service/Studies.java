@@ -20,9 +20,6 @@ import org.veupathdb.service.edass.generated.model.EntityTabularPostResponseStre
 import org.veupathdb.service.edass.generated.model.StudiesGetResponseImpl;
 import org.veupathdb.service.edass.generated.model.StudyIdGetResponse;
 import org.veupathdb.service.edass.generated.model.StudyIdGetResponseImpl;
-import org.veupathdb.service.edass.generated.model.VariableCountPostRequest;
-import org.veupathdb.service.edass.generated.model.VariableCountPostResponse;
-import org.veupathdb.service.edass.generated.model.VariableCountPostResponseImpl;
 import org.veupathdb.service.edass.model.DateRangeFilter;
 import org.veupathdb.service.edass.model.DateSetFilter;
 import org.veupathdb.service.edass.model.Entity;
@@ -152,29 +149,6 @@ String studyId, String entityId, String variableId, VariableDistributionPostRequ
     return PostStudiesEntitiesVariablesDistributionByStudyIdAndEntityIdAndVariableIdResponse.
         respond200WithApplicationJson(streamer);
    }
-
-    @Override
-    public PostStudiesEntitiesVariablesCountByStudyIdAndEntityIdAndVariableIdResponse postStudiesEntitiesVariablesCountByStudyIdAndEntityIdAndVariableId(
-        String studyId, String entityId, String variableId, VariableCountPostRequest request) {
-
-      DataSource datasource = Resources.getApplicationDataSource();
-
-      // unpack data from API input to model objects
-      List<String> vars = new ArrayList<>();
-      vars.add(variableId);  // force into a list for the unpacker
-      UnpackedRequest unpacked = unpack(datasource, studyId, entityId, request.getFilters(), vars);
-
-      Variable var = unpacked.entity.getVariable(variableId)
-          .orElseThrow(() -> new BadRequestException("Variable ID not found: " + variableId));
-
-      Integer count = StudySubsettingUtils.getVariableCount(datasource, unpacked.study, unpacked.entity,
-          var, unpacked.filters);
-
-      VariableCountPostResponse response = new VariableCountPostResponseImpl();
-      response.setCount(count);
-
-      return  PostStudiesEntitiesVariablesCountByStudyIdAndEntityIdAndVariableIdResponse.respond200WithApplicationJson(response);
-    }
 
     @Override
   public PostStudiesEntitiesTabularByStudyIdAndEntityIdResponse postStudiesEntitiesTabularByStudyIdAndEntityId(String studyId,

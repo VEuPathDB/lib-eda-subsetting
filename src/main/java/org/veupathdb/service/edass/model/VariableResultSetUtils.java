@@ -5,11 +5,10 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-
 import javax.sql.DataSource;
-
 import org.gusdb.fgputil.db.runner.SQLRunner;
 
+import static org.gusdb.fgputil.FormatUtil.NL;
 import static org.veupathdb.service.edass.model.RdbmsColumnNames.*;
 
 class VariableResultSetUtils {
@@ -19,7 +18,7 @@ class VariableResultSetUtils {
     String sql = generateStudyVariablesListSql(studyId);
     
     return new SQLRunner(datasource, sql).executeQuery(rs -> {
-      List<Variable> variables = new ArrayList<Variable>();
+      List<Variable> variables = new ArrayList<>();
       while (rs.next()) {
         variables.add(createVariableFromResultSet(rs, entityIdMap));
       }
@@ -31,13 +30,13 @@ class VariableResultSetUtils {
     String[] selectCols = {VARIABLE_ID_COL_NAME, ENTITY_ID_COL_NAME, VARIABLE_TYPE_COL_NAME, 
         CONTINUOUS_COL_NAME, UNITS_COL_NAME, PRECISION_COL_NAME, PROVIDER_LABEL_COL_NAME, DISPLAY_NAME_COL_NAME, VARIABLE_PARENT_ID_COL_NAME};
     
-    return "SELECT " + String.join(", ", selectCols) + nl
-        + "FROM " + ENTITY_TABLE_NAME + " e, " + nl
-        + "  " + VARIABLE_TABLE_NAME + " v," + nl
-        + "  " + VARIABLE_TYPE_TABLE_NAME + " t" + nl
-        + "WHERE e." + ENTITY_ID_COL_NAME + " = v." + ENTITY_ID_COL_NAME + nl
-        + "AND v." + VARIABLE_TYPE_ID_COL_NAME + " = t." + VARIABLE_TYPE_ID_COL_NAME + nl
-        + "AND " + STUDY_ID_COL_NAME + " = '" + studyId + "'" + nl
+    return "SELECT " + String.join(", ", selectCols) + NL
+        + "FROM " + ENTITY_TABLE_NAME + " e, " + NL
+        + "  " + VARIABLE_TABLE_NAME + " v," + NL
+        + "  " + VARIABLE_TYPE_TABLE_NAME + " t" + NL
+        + "WHERE e." + ENTITY_ID_COL_NAME + " = v." + ENTITY_ID_COL_NAME + NL
+        + "AND v." + VARIABLE_TYPE_ID_COL_NAME + " = t." + VARIABLE_TYPE_ID_COL_NAME + NL
+        + "AND " + STUDY_ID_COL_NAME + " = '" + studyId + "'" + NL
         + "ORDER BY " + VARIABLE_ID_COL_NAME;  // stable ordering supports unit testing
   }
 

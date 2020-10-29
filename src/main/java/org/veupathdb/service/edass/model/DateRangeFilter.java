@@ -1,7 +1,9 @@
 package org.veupathdb.service.edass.model;
 
 import java.time.LocalDateTime;
-import static org.veupathdb.service.edass.model.RdbmsColumnNames.*;
+
+import static org.gusdb.fgputil.FormatUtil.NL;
+import static org.veupathdb.service.edass.model.RdbmsColumnNames.DATE_VALUE_COL_NAME;
 
 public class DateRangeFilter extends Filter {
 
@@ -16,6 +18,6 @@ public class DateRangeFilter extends Filter {
 
   @Override
   public String getAndClausesSql() {
-    return "  AND " + DATE_VALUE_COL_NAME + " >= '" + min + "' AND " + DATE_VALUE_COL_NAME + " <= '" + max + "'" + nl;
+    return "  AND " + DATE_VALUE_COL_NAME + " >= '" + min + "' AND " + DATE_VALUE_COL_NAME + " <= '" + max + "'" + NL;
   }
 }

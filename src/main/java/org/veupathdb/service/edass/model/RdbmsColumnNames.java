@@ -4,8 +4,6 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 
 class RdbmsColumnNames {
-  
-  static final String nl = System.lineSeparator();
 
   static final String VARIABLE_VALUE_COL_NAME = "value";
   
@@ -44,6 +42,4 @@ class RdbmsColumnNames {
       throw new RuntimeException("Found a null for variable column: " + colName);
     return rs.getString(colName);
   }
-
-
 }

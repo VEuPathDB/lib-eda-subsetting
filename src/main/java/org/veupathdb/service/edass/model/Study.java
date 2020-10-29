@@ -83,7 +83,6 @@ public class Study {
   /**
    * Build internal (convenience) state from the raw variables set
    * @param rootEntityNode
-   * @param vars
    */
   void initEntities(TreeNode<Entity> rootEntityNode) {
     entityTree = rootEntityNode;
@@ -95,7 +94,6 @@ public class Study {
   
   /**
    * Build internal (convenience) state from the raw entity tree and variables set
-   * @param rootEntityNode
    * @param vars
    */
   void initVariables(List<Variable> vars) {

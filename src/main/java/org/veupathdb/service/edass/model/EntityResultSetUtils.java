@@ -14,6 +14,7 @@ import javax.sql.DataSource;
 import org.gusdb.fgputil.db.runner.SQLRunner;
 import org.gusdb.fgputil.functional.TreeNode;
 
+import static org.gusdb.fgputil.FormatUtil.NL;
 import static org.veupathdb.service.edass.model.RdbmsColumnNames.*;
 
 /**
@@ -67,10 +68,10 @@ public class EntityResultSetUtils {
   
   static String generateEntityTreeSql(String studyId) {
     String[] cols = {STUDY_ID_COL_NAME, DISPLAY_NAME_COL_NAME, DISPLAY_NAME_PLURAL_COL_NAME, ENTITY_ID_COL_NAME, DESCRIP_COL_NAME, ENTITY_PARENT_ID_COL_NAME};
-    return "SELECT " + String.join(", ", cols) + nl
-        + "FROM " + ENTITY_TABLE_NAME + " e, " + ENTITY_NAME_TABLE_NAME + " n" + nl
-        + "WHERE e." + ENTITY_NAME_ID_COL_NAME + " = n." + ENTITY_NAME_ID_COL_NAME + nl
-        + "AND " + STUDY_ID_COL_NAME + " = '" + studyId + "'" + nl
+    return "SELECT " + String.join(", ", cols) + NL
+        + "FROM " + ENTITY_TABLE_NAME + " e, " + ENTITY_NAME_TABLE_NAME + " n" + NL
+        + "WHERE e." + ENTITY_NAME_ID_COL_NAME + " = n." + ENTITY_NAME_ID_COL_NAME + NL
+        + "AND " + STUDY_ID_COL_NAME + " = '" + studyId + "'" + NL
         + "ORDER BY " + ENTITY_ID_COL_NAME;  // stable ordering supports unit testing
   }
 

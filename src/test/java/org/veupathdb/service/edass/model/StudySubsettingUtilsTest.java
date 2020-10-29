@@ -273,7 +273,7 @@ public class StudySubsettingUtilsTest {
   @DisplayName("Test creating a where clause for tabular report")
   void testGenerateTabularWhereClause() {
     
-    List<String> vars = Arrays.asList(new String[]{model.birthDate.getId(), model.favNumber.getId()});
+    List<Variable> vars = Arrays.asList(new Variable[]{model.birthDate, model.favNumber});
     String where = StudySubsettingUtils.generateTabularWhereClause(vars, model.observation.getPKColName(), "t", "a");
     String expected = "WHERE (" + NL +
         "  " + VARIABLE_ID_COL_NAME + " = '" + model.birthDate.getId() + "' OR" + NL +
@@ -312,11 +312,11 @@ public class StudySubsettingUtilsTest {
     
     List<Filter> filters = getSomeFilters();
     
-    List<String> outputVariableNames = Arrays.asList(new String[]{model.networth.getId(), model.shoesize.getId()});
+    List<Variable> outputVariables = Arrays.asList(new Variable[]{model.networth, model.shoesize});
 
     TreeNode<Entity> prunedTree = StudySubsettingUtils.pruneTree(model.study.getEntityTree(), filters, model.participant);
 
-    String sql = StudySubsettingUtils.generateTabularSql(outputVariableNames, model.participant, filters, prunedTree);
+    String sql = StudySubsettingUtils.generateTabularSql(outputVariables, model.participant, filters, prunedTree);
     assertNotEquals("", sql);
     //System.out.println("Tabular SQL:" + "\n" + sql);
   }
@@ -368,10 +368,7 @@ public class StudySubsettingUtilsTest {
 
     String entityId = "GEMS_Part";
     Entity entity = study.getEntity(entityId).orElseThrow();
-
-    String varId = "var-17";
-    Variable var = entity.getVariable(varId).orElseThrow();
-
+    
     Integer count = StudySubsettingUtils.getEntityCount(datasource, study, entity,
         new ArrayList<Filter>());
     
@@ -387,9 +384,6 @@ public class StudySubsettingUtilsTest {
     String entityId = "GEMS_Part";
     Entity entity = study.getEntity(entityId).orElseThrow();
 
-    String varId = "var-17";
-    Variable var = entity.getVariable(varId).orElseThrow();
-
     List<Filter> filters = new ArrayList<Filter>();
     filters.add(partHairFilter);
     filters.add(houseObsWaterSupplyFilter);
@@ -400,6 +394,51 @@ public class StudySubsettingUtilsTest {
     assertEquals(2, count);
   }
 
+  @Test
+  @DisplayName("Test get tabular report - no filters") 
+  void testTabularReporttNoFiltersFromDb() {
+    
+    Study study = Study.loadStudy(datasource, "DS12385");
+
+    String entityId = "GEMS_Part";
+    Entity entity = study.getEntity(entityId).orElseThrow();
+
+    List<Variable> variables = new ArrayList<Variable>();
+    variables.add(entity.getVariable("var-17").orElseThrow()); // hair color
+    variables.add(entity.getVariable("var-20").orElseThrow()); // name
+
+    List<Filter> filters = Collections.emptyList();
+    
+    ByteArrayOutputStream outStream = new ByteArrayOutputStream();
+
+    StudySubsettingUtils.produceTabularSubset(datasource, study, entity,
+        variables, filters, outStream);
+    
+    assertEquals("", outStream.toString());
+  }
+
+  @Test
+  @DisplayName("Test get tabular report - with filters") 
+  void testTestTabularReportFromDb() {
+    
+    Study study = Study.loadStudy(datasource, "DS12385");
+
+    String entityId = "GEMS_Part";
+    Entity entity = study.getEntity(entityId).orElseThrow();
+
+    String varId = "var-17";
+    Variable var = entity.getVariable(varId).orElseThrow();
+
+    List<Filter> filters = new ArrayList<>();
+    filters.add(partHairFilter);
+    filters.add(houseObsWaterSupplyFilter);
+
+    TreeNode<Entity> prunedEntityTree = StudySubsettingUtils.pruneTree(study.getEntityTree(), filters, entity);
+
+    Integer count = StudySubsettingUtils.getVariableCount(datasource, prunedEntityTree, entity, var, filters);
+    
+    assertEquals(2, count);
+  }
   @Test
   @DisplayName("Test get variable count - no filters") 
   void testVariableCountNoFiltersFromDb() {

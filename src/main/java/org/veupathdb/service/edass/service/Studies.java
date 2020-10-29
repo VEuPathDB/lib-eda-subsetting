@@ -141,7 +141,7 @@ String studyId, String entityId, String variableId, VariableDistributionPostRequ
     UnpackedRequest unpacked = unpack(datasource, studyId, entityId, request.getFilters(), vars);
 
     Variable var = unpacked.entity.getVariable(variableId)
-        .orElseThrow(() -> new BadRequestException("Variable ID not found: " + variableId));
+        .orElseThrow(() -> new NotFoundException("Variable ID not found: " + variableId));
 
     VariableDistributionPostResponseStream streamer = new VariableDistributionPostResponseStream
         (outStream -> StudySubsettingUtils.produceVariableDistribution(datasource, unpacked.study, unpacked.entity, var, unpacked.filters, outStream));
@@ -157,10 +157,10 @@ String studyId, String entityId, String variableId, VariableDistributionPostRequ
     DataSource datasource = Resources.getApplicationDataSource();
     
     UnpackedRequest unpacked = unpack(datasource, studyId, entityId, request.getFilters(), request.getOutputVariableIds());
-
+    
     EntityTabularPostResponseStream streamer = new EntityTabularPostResponseStream
         (outStream -> StudySubsettingUtils.produceTabularSubset(datasource, unpacked.study, unpacked.entity,
-            request.getOutputVariableIds(), unpacked.filters, outStream));
+            unpacked.variables, unpacked.filters, outStream));
 
     return PostStudiesEntitiesTabularByStudyIdAndEntityIdResponse.
         respond200WithApplicationJson(streamer);
@@ -193,22 +193,24 @@ String studyId, String entityId, String variableId, VariableDistributionPostRequ
     Study study = Study.loadStudy(datasource, studyId);
     Entity entity = study.getEntity(entityId).orElseThrow(() -> new NotFoundException("In " + studIdStr + " Entity ID not found: " + entityId));
     
-    validateVariableIds(study, entityId, variableIds);
+    List<Variable> variables = getEntityVariables(study, entity, variableIds);
 
     List<Filter> filters = constructFiltersFromAPIFilters(study, apiFilters);
   
-    return new UnpackedRequest(study, entity, filters);
+    return new UnpackedRequest(study, entity, variables, filters);
   }
   
   static class UnpackedRequest {
-    UnpackedRequest(Study study, Entity entity, List<Filter> filters) {
+    UnpackedRequest(Study study, Entity entity, List<Variable> variables, List<Filter> filters) {
       this.study = study;
       this.entity = entity;
       this.filters = filters;
+      this.variables = variables;
     }
     Study study;
     Entity entity;
     List<Filter> filters;
+    List<Variable> variables;
   }
   
   /*
@@ -258,16 +260,15 @@ String studyId, String entityId, String variableId, VariableDistributionPostRequ
     return subsetFilters;
   }
 
-  /* confirm that output variables belong to the output entity */
-  static void validateVariableIds(Study study, String outputEntityId, List<String> variableIds) {
-    for (String varId : variableIds) {
-      
-      String errMsg = "Output variable '" + varId
-          + "' is not found for entity with ID: '" + outputEntityId + "'";
-      Entity entity = study.getEntity(outputEntityId).orElseThrow(() -> new RuntimeException("Invalid entityId: " + outputEntityId));
-      Variable var = entity.getVariable(varId).orElseThrow(() -> new BadRequestException(errMsg));
-      if (var.getEntityId().equals(outputEntityId)) throw new BadRequestException(errMsg);   
+  static List<Variable> getEntityVariables(Study study, Entity entity, List<String> variableIds) {
+
+    List<Variable> variables = new ArrayList<Variable>();
+    
+    for (String varId : variableIds) {     
+      String errMsg = "Variable '" + varId + "' is not found for entity with ID: '" + entity.getId() + "'";
+      variables.add(entity.getVariable(varId).orElseThrow(() -> new BadRequestException(errMsg)));
     }
+    return variables;
   }
   
   static LocalDateTime convertDate(String dateStr) {

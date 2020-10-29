@@ -44,11 +44,13 @@ public class StudySubsettingUtils {
   private static final String countColumnName = "count";
 
   public static void produceTabularSubset(DataSource datasource, Study study, Entity outputEntity,
-      List<String> outputVariableIds, List<Filter> filters, OutputStream outputStream) {
+      List<Variable> outputVariables, List<Filter> filters, OutputStream outputStream) {
 
     TreeNode<Entity> prunedEntityTree = pruneTree(study.getEntityTree(), filters, outputEntity);
 
-    String sql = generateTabularSql(outputVariableIds, outputEntity, filters, prunedEntityTree);
+    String sql = generateTabularSql(outputVariables, outputEntity, filters, prunedEntityTree);
+
+    List<String> outputVariableIds = outputVariables.stream().map(v -> v.getId()).collect(Collectors.toList());
 
     List<String> outputColumns = new ArrayList<>();
     outputColumns.add(outputEntity.getPKColName());
@@ -170,7 +172,7 @@ public class StudySubsettingUtils {
    * @param prunedEntityTree
    * @return
    */
-  static String generateTabularSql(List<String> outputVariableIds, Entity outputEntity, List<Filter> filters, TreeNode<Entity> prunedEntityTree) {
+  static String generateTabularSql(List<Variable> outputVariables, Entity outputEntity, List<Filter> filters, TreeNode<Entity> prunedEntityTree) {
 
     String tallTblAbbrev = "t"; 
     String ancestorTblAbbrev = "a";
@@ -178,7 +180,7 @@ public class StudySubsettingUtils {
     return generateWithClauses(prunedEntityTree, filters, getEntityIdsInFilters(filters)) + NL
         + generateTabularSelectClause(outputEntity, tallTblAbbrev, ancestorTblAbbrev) + NL
         + generateTabularFromClause(outputEntity, tallTblAbbrev, ancestorTblAbbrev) + NL
-        + generateTabularWhereClause(outputVariableIds, outputEntity.getPKColName(), tallTblAbbrev, ancestorTblAbbrev) + NL
+        + generateTabularWhereClause(outputVariables, outputEntity.getPKColName(), tallTblAbbrev, ancestorTblAbbrev) + NL
         + generateInClause(prunedEntityTree, outputEntity, tallTblAbbrev, "AND") + NL
         + generateTabularOrderByClause(outputEntity) + NL;
   }
@@ -287,8 +289,10 @@ public class StudySubsettingUtils {
         outputEntity.getAncestorsTableName() + " " + ancestorTblNm;
   }
   
-  static String generateTabularWhereClause(List<String> outputVariableIds, String entityPkCol, String entityTblNm, String ancestorTblNm) {
+  static String generateTabularWhereClause(List<Variable> outputVariables, String entityPkCol, String entityTblNm, String ancestorTblNm) {
     
+    List<String> outputVariableIds = outputVariables.stream().map(v -> v.getId()).collect(Collectors.toList());
+
     List<String> varExprs = new ArrayList<>();
     for (String varId : outputVariableIds) varExprs.add("  " + VARIABLE_ID_COL_NAME + " = '" + varId + "'");
     return "WHERE (" + NL

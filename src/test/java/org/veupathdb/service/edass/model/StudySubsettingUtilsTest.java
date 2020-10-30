@@ -572,7 +572,7 @@ public class StudySubsettingUtilsTest {
     // check number of distribution rows
     assertEquals(expectedDistribution.size(), responseRows.size());
 
-    for (Map.Entry expectedRow : expectedDistribution.entrySet()) {
+    for (Map.Entry<String,Integer> expectedRow : expectedDistribution.entrySet()) {
       Integer count = (Integer)responseRows.get(expectedRow.getKey()); // will throw if not integer
       // check row exists for key
       assertNotNull(count);

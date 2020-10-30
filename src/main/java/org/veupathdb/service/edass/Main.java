@@ -8,8 +8,8 @@ public class Main extends Server {
   public static void main(String[] args) {
     var server = new Main();
   //  server.enableAccountDB();
-    server.enableApplicationDB();
-    server.enableUserDB();
+  //  server.enableApplicationDB();
+  //  server.enableUserDB();
     server.start(args);
   }
 

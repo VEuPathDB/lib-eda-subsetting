@@ -11,6 +11,7 @@ import java.util.stream.Collectors;
 
 import javax.sql.DataSource;
 
+import org.gusdb.fgputil.db.runner.SQLRunner;
 import org.gusdb.fgputil.functional.TreeNode;
 import org.veupathdb.service.edass.generated.model.APIFilter;
 
@@ -66,8 +67,12 @@ public class Study {
    * return true if valid study id
    */
   public static boolean validateStudyId(DataSource datasource, String studyId) {
-    // TODO
-    return false;
+    String sql = "select count(*) as count from " + RdbmsColumnNames.STUDY_TABLE_NAME 
+        + " WHERE " + RdbmsColumnNames.STUDY_ID_COL_NAME + " = '" + studyId + "'";
+    return new SQLRunner(datasource, sql).executeQuery(rs -> {
+      rs.next();
+      return rs.getInt("count") != 0;
+    });
   }
   
   /**

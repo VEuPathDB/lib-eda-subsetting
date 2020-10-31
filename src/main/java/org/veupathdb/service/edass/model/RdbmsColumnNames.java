@@ -8,6 +8,7 @@ class RdbmsColumnNames {
   static final String VARIABLE_VALUE_COL_NAME = "value";
   
   // common
+  static final String STUDY_TABLE_NAME = "study";
   static final String DESCRIP_COL_NAME = "description";
   static final String DISPLAY_NAME_COL_NAME = "display_name";
   static final String DISPLAY_NAME_PLURAL_COL_NAME = "display_name_plural";

@@ -40,17 +40,4 @@ public class StubDb {
       throw new RuntimeException("Unable to load stud database", e);
     }
   }
-
-  // Example usage!  This will not work for long!
-  public static void main(String[] args) {
-    new SQLRunner(getDataSource(), "select * from entities").executeQuery(rs -> {
-      while (rs.next()) {
-        System.out.println(
-            "ID: " + rs.getInt(1) +
-            ", Name: " + rs.getString(2) +
-            ", ParentId: " + rs.getInt(3));
-      }
-      return null;
-    });
-  }
 }

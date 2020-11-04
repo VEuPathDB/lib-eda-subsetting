@@ -1,9 +1,5 @@
 package org.veupathdb.service.edass.model;
 
-import com.fasterxml.jackson.core.JsonEncoding;
-import com.fasterxml.jackson.core.JsonFactory;
-import com.fasterxml.jackson.core.JsonGenerator;
-import java.io.BufferedOutputStream;
 import java.io.BufferedWriter;
 import java.io.IOException;
 import java.io.OutputStream;
@@ -18,12 +14,17 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 import javax.sql.DataSource;
 import static org.gusdb.fgputil.FormatUtil.NL;
 import static org.gusdb.fgputil.FormatUtil.TAB;
 
+import org.gusdb.fgputil.Tuples.TwoTuple;
 import org.gusdb.fgputil.db.runner.SQLRunner;
+import org.gusdb.fgputil.db.runner.SingleIntResultSetHandler;
 import org.gusdb.fgputil.db.stream.ResultSetIterator;
+import org.gusdb.fgputil.db.stream.ResultSetStream;
+import org.gusdb.fgputil.db.stream.ResultSets;
 import org.gusdb.fgputil.functional.TreeNode;
 import org.gusdb.fgputil.iterator.GroupingIterator;
 import org.gusdb.fgputil.iterator.IteratorUtil;
@@ -40,8 +41,8 @@ import static org.veupathdb.service.edass.model.RdbmsColumnNames.VARIABLE_ID_COL
  */
 public class StudySubsettingUtils {
 
-  private static final String valueColumnName = "value";
-  private static final String countColumnName = "count";
+  private static final String VALUE_COLUMN_NAME = "value";
+  private static final String COUNT_COLUMN_NAME = "count";
 
   public static void produceTabularSubset(DataSource datasource, Study study, Entity outputEntity,
       List<Variable> outputVariables, List<Filter> filters, OutputStream outputStream) {
@@ -60,7 +61,7 @@ public class StudySubsettingUtils {
     new SQLRunner(datasource, sql).executeQuery(rs -> {
       try (BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(outputStream))) {
 
-        writer.write(String.join("\t", outputColumns) + NL);
+        writer.write(String.join(TAB, outputColumns) + NL);
         writeWideRows(rs, writer, outputColumns, outputEntity);
         writer.flush();
         return null;
@@ -90,59 +91,31 @@ public class StudySubsettingUtils {
       writer.write(String.join(TAB, wideRow) + NL);
     }
   }
-    
-  public static void produceVariableDistribution(DataSource datasource, Study study, Entity outputEntity,
-      Variable distributionVariable, List<Filter> filters, OutputStream outputStream) {
 
-    // get entity tree pruned to those entities of current interest
-    TreeNode<Entity> prunedEntityTree = pruneTree(study.getEntityTree(), filters, outputEntity);
-
-    // get variable count (may do in parallel later)
-    int variableCount = getVariableCount(datasource, prunedEntityTree, outputEntity, distributionVariable, filters);
-    
+  /**
+   * NOTE! This stream MUST be closed by the caller once the stream has been processed.
+   * The easiest way to do this is with a try-with-resources around this method's call.
+   * @return stream of distribution tuples
+   */
+  public static Stream<TwoTuple<String,Integer>> produceVariableDistribution(
+      DataSource datasource, TreeNode<Entity> prunedEntityTree, Entity outputEntity,
+      Variable distributionVariable, List<Filter> filters) {
     String sql = generateDistributionSql(outputEntity, distributionVariable, filters, prunedEntityTree);
-
-    new SQLRunner(datasource, sql).executeQuery(rs -> {
-      BufferedOutputStream bufferedOutput = new BufferedOutputStream(outputStream);
-      try (JsonGenerator json = new JsonFactory().createGenerator(bufferedOutput, JsonEncoding.UTF8)) {
-        json.writeStartObject();
-        json.writeNumberField("entitiesCount", variableCount);
-        json.writeFieldName("distribution");
-        json.writeStartObject();
-        while (rs.next()) {
-          json.writeNumberField(rs.getString(valueColumnName), rs.getInt(countColumnName));
-        }
-        json.writeEndObject();
-        json.writeEndObject();
-        json.flush();
-        return null;
-      }
-      catch (IOException e) {
-        throw new RuntimeException(e);
-      }
-    });
+    return ResultSets.openStream(datasource, sql, row -> Optional.of(
+        new TwoTuple<>(row.getString(VALUE_COLUMN_NAME), row.getInt(COUNT_COLUMN_NAME))));
   }
-   
-  public static Integer getVariableCount(DataSource datasource, TreeNode<Entity> prunedEntityTree, Entity outputEntity,
+
+  public static int getVariableCount(
+      DataSource datasource, TreeNode<Entity> prunedEntityTree, Entity outputEntity,
       Variable distributionVariable, List<Filter> filters) {
     String sql = generateVariableCountSql(outputEntity, distributionVariable, filters, prunedEntityTree);
-    return new SQLRunner(datasource, sql).executeQuery(rs -> {
-        rs.next();
-        return Integer.valueOf(rs.getInt(countColumnName));
-    });
+    return new SQLRunner(datasource, sql).executeQuery(new SingleIntResultSetHandler());
   }
 
-  public static Integer getEntityCount(DataSource datasource, Study study, Entity outputEntity,
-      List<Filter> filters) {
-
-    TreeNode<Entity> prunedEntityTree = pruneTree(study.getEntityTree(), filters, outputEntity);
-    
-    String sql = generateEntityCountSql(outputEntity, filters, prunedEntityTree);
-    
-    return new SQLRunner(datasource, sql).executeQuery(rs -> {
-        rs.next();
-        return Integer.valueOf(rs.getInt(countColumnName));
-    });
+  public static int getEntityCount(
+      DataSource datasource, TreeNode<Entity> prunedEntityTree, Entity targetEntity, List<Filter> filters) {
+    String sql = generateEntityCountSql(targetEntity, filters, prunedEntityTree);
+    return new SQLRunner(datasource, sql).executeQuery(new SingleIntResultSetHandler());
   }
 
   /**
@@ -151,12 +124,14 @@ public class StudySubsettingUtils {
    * @param filters
    * @return
    */
-  static TreeNode<Entity> pruneTree(TreeNode<Entity> tree, List<Filter> filters, Entity outputEntity) {
+  public static TreeNode<Entity> pruneTree(TreeNode<Entity> tree, List<Filter> filters, Entity outputEntity) {
 
     List<String> entityIdsInFilters = getEntityIdsInFilters(filters);
 
-    Predicate<Entity> isActive = e -> entityIdsInFilters.contains(e.getId()) ||
+    Predicate<Entity> isActive =
+        e -> entityIdsInFilters.contains(e.getId()) ||
         e.getId().equals(outputEntity.getId());
+
     return pruneToActiveAndPivotNodes(tree, isActive);
   }
   
@@ -166,7 +141,6 @@ public class StudySubsettingUtils {
 
   /**
    * Generate SQL to produce a multi-column tabular output (the requested variables), for the specified subset.
-   * @param outputVariableIds
    * @param outputEntity
    * @param filters
    * @param prunedEntityTree
@@ -195,7 +169,7 @@ public class StudySubsettingUtils {
   static String generateEntityCountSql(Entity outputEntity, List<Filter> filters, TreeNode<Entity> prunedEntityTree) {
     
     return generateWithClauses(prunedEntityTree, filters, getEntityIdsInFilters(filters)) + NL
-        + "SELECT count(distinct " + outputEntity.getPKColName() + ") as " + countColumnName + NL
+        + "SELECT count(distinct " + outputEntity.getPKColName() + ") as " + COUNT_COLUMN_NAME + NL
         + "FROM (" + NL
         + generateJoiningSubselect(prunedEntityTree, outputEntity) + NL
         + ") t";
@@ -216,7 +190,7 @@ public class StudySubsettingUtils {
         + generateDistributionWhereClause(distributionVariable) + NL
         + generateInClause(prunedEntityTree, outputEntity, outputEntity.getTallTableName(), "AND") + NL
         + generateDistributionGroupByClause(distributionVariable) + NL
-        + "ORDER BY " + valueColumnName + " ASC";
+        + "ORDER BY " + VALUE_COLUMN_NAME + " ASC";
    }
   
   /**
@@ -274,11 +248,11 @@ public class StudySubsettingUtils {
   }
     
   static String generateDistributionSelectClause(Variable distributionVariable) {
-    return "SELECT " + distributionVariable.getType().getTallTableColumnName() + " as " + valueColumnName + ", count(" + distributionVariable.getEntity().getPKColName() + ") as " + countColumnName;
+    return "SELECT " + distributionVariable.getType().getTallTableColumnName() + " as " + VALUE_COLUMN_NAME + ", count(" + distributionVariable.getEntity().getPKColName() + ") as " + COUNT_COLUMN_NAME;
   }
   
   static String generateVariableCountSelectClause(Variable variable) {
-    return "SELECT count(distinct " + variable.getEntity().getPKColName() + ") as " + countColumnName;
+    return "SELECT count(distinct " + variable.getEntity().getPKColName() + ") as " + COUNT_COLUMN_NAME;
   }
   
   static String generateDistributionFromClause(Entity outputEntity) {
@@ -392,7 +366,6 @@ public class StudySubsettingUtils {
    * 
    * (The graceful implementation below is courtesy of Ryan)
    */
-
   private static TreeNode<Entity> pruneToActiveAndPivotNodes(TreeNode<Entity> root, Predicate<Entity> isActive) {
     return root.mapStructure((nodeContents, mappedChildren) -> {
       List<TreeNode<Entity>> activeChildren = mappedChildren.stream()

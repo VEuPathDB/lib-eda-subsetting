@@ -44,6 +44,17 @@ public class StudySubsettingUtils {
   private static final String VALUE_COLUMN_NAME = "value";
   private static final String COUNT_COLUMN_NAME = "count";
 
+  /**
+   * Writes to the passed output stream tab delimited records containing
+   * the requested variables of the specified entity, reduced to the
+   * subset created by applying the given filters.
+   *
+   * @param datasource DB to run against
+   * @param study study context
+   * @param outputEntity entity type to return
+   * @param outputVariables variables requested
+   * @param filters filters to apply to create a subset of records
+   */
   public static void produceTabularSubset(DataSource datasource, Study study, Entity outputEntity,
       List<Variable> outputVariables, List<Filter> filters, OutputStream outputStream) {
 

@@ -68,7 +68,7 @@ public class Studies implements org.veupathdb.service.edass.generated.resources.
   @Override
   public GetStudiesResponse getStudies() {
     var out = new StudiesGetResponseImpl();
-    out.setStudies(new ArrayList<>());
+    out.setStudies(Study.getStudyOverviews(Resources.getApplicationDataSource()));
     return GetStudiesResponse.respond200WithApplicationJson(out);
   }
 

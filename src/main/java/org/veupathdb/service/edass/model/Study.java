@@ -8,14 +8,15 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
-
 import javax.sql.DataSource;
-
 import org.gusdb.fgputil.db.runner.SQLRunner;
 import org.gusdb.fgputil.functional.TreeNode;
 import org.veupathdb.service.edass.generated.model.APIFilter;
+import org.veupathdb.service.edass.generated.model.APIStudyOverview;
+import org.veupathdb.service.edass.generated.model.APIStudyOverviewImpl;
 
 public class Study {
+
   private String studyId;
   private TreeNode<Entity> entityTree;
   private Map<String, Entity> entityIdMap;
@@ -27,8 +28,25 @@ public class Study {
     this.entityIdMap = entityIdMap;
     initEntitiesAndVariables(entityTree, variables);
   }
-  
-  /* 
+
+  public static List<APIStudyOverview> getStudyOverviews(DataSource datasource) {
+    String sql =
+        "select " + RdbmsColumnNames.STUDY_ID_COL_NAME +
+             ", " + RdbmsColumnNames.ABBREV_COL_NAME +
+        " from " + RdbmsColumnNames.STUDY_TABLE_NAME;
+    return new SQLRunner(datasource, sql).executeQuery(rs -> {
+      List<APIStudyOverview> studyIds = new ArrayList<>();
+      while (rs.next()) {
+        APIStudyOverview study = new APIStudyOverviewImpl();
+        study.setId(rs.getString(1));
+        study.setName(rs.getString(2));
+        studyIds.add(study);
+      }
+      return studyIds;
+    });
+  }
+
+  /*
    * Expects a pre-validated study ID
    */
   public static Study loadStudy(DataSource datasource, String studyId) {
@@ -41,7 +59,7 @@ public class Study {
 
     return new Study(studyId, entityTree, variables, entityIdMap);
   }
-  
+
   /** 
    * 
    * @param entityId
@@ -67,12 +85,8 @@ public class Study {
    * return true if valid study id
    */
   public static boolean validateStudyId(DataSource datasource, String studyId) {
-    String sql = "select count(*) as count from " + RdbmsColumnNames.STUDY_TABLE_NAME 
-        + " WHERE " + RdbmsColumnNames.STUDY_ID_COL_NAME + " = '" + studyId + "'";
-    return new SQLRunner(datasource, sql).executeQuery(rs -> {
-      rs.next();
-      return rs.getInt("count") != 0;
-    });
+    return getStudyOverviews(datasource).stream()
+      .anyMatch(study -> study.getId().equals(studyId));
   }
   
   /**

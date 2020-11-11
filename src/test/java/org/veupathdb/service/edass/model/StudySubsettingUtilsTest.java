@@ -268,11 +268,11 @@ public class StudySubsettingUtilsTest {
     
     List<Variable> vars = Arrays.asList(new Variable[]{ _model.birthDate, _model.favNumber});
     String where = StudySubsettingUtils.generateTabularWhereClause(vars, _model.observation.getPKColName(), "t", "a");
-    String expected = "WHERE (" + NL +
-        "  " + VARIABLE_ID_COL_NAME + " = '" + _model.birthDate.getId() + "' OR" + NL +
-        "  " + VARIABLE_ID_COL_NAME + " = '" + _model.favNumber.getId() + "'" + NL +
-        ")" + NL +
-        "AND t." + _model.observation.getPKColName() + " = a." + _model.observation.getPKColName();
+    String expected = "WHERE t." + _model.observation.getPKColName() + " = a." + _model.observation.getPKColName() + NL +
+        "AND (" + NL +
+        " " + VARIABLE_ID_COL_NAME + " = '" + _model.birthDate.getId() + "' OR" + NL +
+        " " + VARIABLE_ID_COL_NAME + " = '" + _model.favNumber.getId() + "'" + NL +
+        ")" + NL;
 
     assertEquals(expected, where);
   }

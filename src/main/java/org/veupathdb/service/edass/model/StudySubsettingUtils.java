@@ -280,11 +280,9 @@ public class StudySubsettingUtils {
     List<String> outputVariableIds = outputVariables.stream().map(v -> v.getId()).collect(Collectors.toList());
 
     List<String> varExprs = new ArrayList<>();
-    for (String varId : outputVariableIds) varExprs.add("  " + VARIABLE_ID_COL_NAME + " = '" + varId + "'");
-    return "WHERE (" + NL
-        + String.join(" OR" + NL, varExprs) + NL
-        + ")" + NL
-        + "AND " + entityTblNm + "." + entityPkCol + " = " + ancestorTblNm + "." + entityPkCol;
+    for (String varId : outputVariableIds) varExprs.add(" " + VARIABLE_ID_COL_NAME + " = '" + varId + "'");
+    return "WHERE " + entityTblNm + "." + entityPkCol + " = " + ancestorTblNm + "." + entityPkCol + NL + (
+        varExprs.isEmpty() ? "" : "AND (" + NL + String.join(" OR" + NL, varExprs) + NL + ")" + NL);
   }
   
   static String generateDistributionWhereClause(Variable outputVariable) {

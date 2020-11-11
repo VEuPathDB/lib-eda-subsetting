@@ -6,11 +6,7 @@ import org.veupathdb.lib.container.jaxrs.server.Server;
 
 public class Main extends Server {
   public static void main(String[] args) {
-    var server = new Main();
-  //  server.enableAccountDB();
-  //  server.enableApplicationDB();
-  //  server.enableUserDB();
-    server.start(args);
+    new Main().start(args);
   }
 
   @Override
@@ -19,8 +15,7 @@ public class Main extends Server {
 
     // Enabled by default for debugging purposes, this should be removed when
     // production ready.
-    out.property("jersey.config.server.tracing.type", "ALL")
-      .property("jersey.config.server.tracing.threshold", "VERBOSE");
+    out.enableJerseyTrace();
 
     return out;
   }

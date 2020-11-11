@@ -16,9 +16,7 @@ import javax.sql.DataSource;
 import javax.ws.rs.BadRequestException;
 import javax.ws.rs.InternalServerErrorException;
 import javax.ws.rs.NotFoundException;
-import org.gusdb.fgputil.Tuples;
 import org.gusdb.fgputil.Tuples.TwoTuple;
-import org.gusdb.fgputil.functional.Functions;
 import org.gusdb.fgputil.functional.TreeNode;
 import org.veupathdb.service.edass.Resources;
 import org.veupathdb.service.edass.generated.model.APIDateRangeFilter;
@@ -61,7 +59,6 @@ import org.veupathdb.service.edass.model.Variable;
 import org.veupathdb.service.edass.model.Variable.VariableType;
 
 import static org.gusdb.fgputil.functional.Functions.cSwallow;
-import static org.gusdb.fgputil.functional.Functions.fSwallow;
 
 public class Studies implements org.veupathdb.service.edass.generated.resources.Studies {
 
@@ -214,10 +211,10 @@ public class Studies implements org.veupathdb.service.edass.generated.resources.
         (outStream -> StudySubsettingUtils.produceTabularSubset(datasource, request.getStudy(),
             request.getTargetEntity(), request.getRequestedVariables(), request.getFilters(), outStream));
 
-    return PostStudiesEntitiesTabularByStudyIdAndEntityIdResponse.
-        respond200WithApplicationJson(streamer);
+    return PostStudiesEntitiesTabularByStudyIdAndEntityIdResponse
+        .respond200WithTextPlain(streamer);
   }
-    
+
   @Override
   public PostStudiesEntitiesCountByStudyIdAndEntityIdResponse postStudiesEntitiesCountByStudyIdAndEntityId(
       String studyId, String entityId, EntityCountPostRequest rawRequest) {
@@ -248,7 +245,7 @@ public class Studies implements org.veupathdb.service.edass.generated.resources.
     Study study = Study.loadStudy(datasource, studyId);
     Entity entity = study.getEntity(entityId).orElseThrow(() -> new NotFoundException("In " + studIdStr + " Entity ID not found: " + entityId));
     
-    List<Variable> variables = getEntityVariables(study, entity, variableIds);
+    List<Variable> variables = getEntityVariables(entity, variableIds);
 
     List<Filter> filters = constructFiltersFromAPIFilters(study, apiFilters);
   
@@ -302,11 +299,11 @@ public class Studies implements org.veupathdb.service.edass.generated.resources.
     return subsetFilters;
   }
 
-  static List<Variable> getEntityVariables(Study study, Entity entity, List<String> variableIds) {
+  static List<Variable> getEntityVariables(Entity entity, List<String> variableIds) {
 
     List<Variable> variables = new ArrayList<>();
     
-    for (String varId : variableIds) {     
+    for (String varId : variableIds) {
       String errMsg = "Variable '" + varId + "' is not found for entity with ID: '" + entity.getId() + "'";
       variables.add(entity.getVariable(varId).orElseThrow(() -> new BadRequestException(errMsg)));
     }

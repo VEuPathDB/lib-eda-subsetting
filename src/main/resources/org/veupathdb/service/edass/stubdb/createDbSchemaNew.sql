@@ -11,7 +11,8 @@
 --apidb.ancestors_$entityTypeId (edited) 
 
 create table Study (
-  study_id varchar(30) not null,
+  study_id integer not null,
+  name varchar(30) not null,
   PRIMARY KEY (study_id)
 );
 
@@ -19,15 +20,16 @@ create table Study (
 CREATE TABLE EntityTypeGraph (
   entity_type_stable_id varchar(50) not null,
   entity_type_name varchar(30) not null,
-  study_id varchar(30) not null,
-  parent_entity_type_name varchar(30),
+  study_id integer not null,
+  parent_entity_type_stable_id varchar(30),
   description varchar(100),
   abbrev varchar(20),
   PRIMARY KEY (entity_type_stable_id),
 );
-alter table entity add unique (entity_type_name, study_id);
-alter table entity add unique (parent_entity_type_name, study_id);
-ALTER TABLE Entity 
+alter table EntityTypeGraph add unique (entity_type_name, study_id);
+alter table EntityTypeGraph add unique (parent_entity_type_stable_id, study_id);
+alter table EntityTypeGraph add unique (entity_type_stable_id, study_id);
+ALTER TABLE EntityTypeGraph 
    ADD FOREIGN KEY (study_id) REFERENCES Study (study_id); 
 
 --ATTRIBUTE_GRAPH_ID      NOT NULL NUMBER(12)     
@@ -43,10 +45,11 @@ ALTER TABLE Entity
 create table AttributeGraph (
   stable_id varchar(30),
   ontology_term_id integer,
-  study_id varchar(30) not null,
+  study_id integer not null,
   parent_stable_id varchar(30),
   provider_label varchar(30) not null,
   display_name varchar(30) not null,
+  term_type varchar(20),
   PRIMARY KEY (stable_id)
 );
 ALTER TABLE AttributeGraph 
@@ -92,8 +95,8 @@ ALTER TABLE Attribute
 --NUMBER_VALUE                        NUMBER         
 --DATE_VALUE                          DATE           
 
-create table AttributeValue_1000_Hshld (
-  entity_id integer,
+create table AttributeValue_1000_Prtcpnt (
+  prtcpnt_id integer,
   ontology_term_id integer,
   number_value integer, 
   string_value varchar(100),
@@ -110,6 +113,14 @@ ON AttributeValue_1000_Hshld (ontology_term_id, string_value, entity_id);
 CREATE UNIQUE INDEX AttributeValue_1000_Hshld_i3
 ON AttributeValue_1000_Hshld (ontology_term_id, date_value, entity_id);
    
+create table Ancestors_1000_Prtcpnt (
+  prtcpnt_id integer,
+  hshld_id integer,
+  PRIMARY KEY (prtcpnt_id)
+);
+CREATE UNIQUE INDEX GEMS_House_ancestors_i1
+ON GEMS_House_ancestors (GEMS_House_id);
+
 
    
 -------------------------------------------------------------------------------------   

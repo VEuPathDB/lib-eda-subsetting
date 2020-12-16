@@ -1,22 +1,13 @@
 -- the EDA service doesn't need to know much about the Study, because the WDK will serve that data
 -- the abbrev would be used in the name of the tall and ancestors tables
 -- the study_id is a stable ID
-
---apidb.Study :: one row per study (possibly many rows per investigation?)
---apidb.EntityTypeGraph  :: entity types + parent
---apidb.AttributeUnit  :: units for attributes/variables
---apidb.Attribute  :: Table describing the attributes which have values
---apidb.AttributeGraph  :: attribute/variable + parent
---apidb.attributevalue_$entityTypeId
---apidb.ancestors_$entityTypeId (edited) 
-
 create table Study (
   study_id integer not null,
   name varchar(30) not null,
   PRIMARY KEY (study_id)
 );
 
--- the entity_id is a stable id
+-- The entities types per study, eg Participants, and their tree relationships
 CREATE TABLE EntityTypeGraph (
   entity_type_stable_id varchar(50) not null,
   entity_type_name varchar(30) not null,
@@ -32,16 +23,8 @@ alter table EntityTypeGraph add unique (entity_type_stable_id, study_id);
 ALTER TABLE EntityTypeGraph 
    ADD FOREIGN KEY (study_id) REFERENCES Study (study_id);
 
---ATTRIBUTE_GRAPH_ID      NOT NULL NUMBER(12)     
---STUDY_ID                NOT NULL NUMBER(12)     
---ONTOLOGY_TERM_ID        NOT NULL NUMBER(10)     
---SOURCE_ID               NOT NULL VARCHAR2(255)  
---PARENT_SOURCE_ID        NOT NULL VARCHAR2(255)  
---PARENT_ONTOLOGY_TERM_ID NOT NULL NUMBER(10)     
---PROVIDER_LABEL                   VARCHAR2(30)   
---DISPLAY_NAME            NOT NULL VARCHAR2(1500) 
---TERM_TYPE                        VARCHAR2(20)   
-
+-- The variables/categories in a study, as a tree.  (It is called a graph because in non-EDA applications
+-- attributes might have multiple parents.)
 create table AttributeGraph (
   stable_id varchar(30),
   ontology_term_id integer,
@@ -58,26 +41,12 @@ ALTER TABLE AttributeGraph
 ALTER TABLE AttributeGraph 
    ADD FOREIGN KEY (parent_stable_id) REFERENCES AttributeGraph (stable_id); 
 
-   
--- this is the brief version of the ontology tree that is needed by EDA
--- a "variable" might have values or not.  if not, it is just a category.
--- the "variable_id" would hold the ontology term (ie, is a stable ID)
--- we might want to add an variable_id (integer) for performance reasons?
-
---ATTRIBUTE_ID                   NOT NULL NUMBER(12)    
---ENTITY_TYPE_ID                          NUMBER(12)    
---PROCESS_TYPE_ID                         NUMBER(12)    
---ONTOLOGY_TERM_ID               NOT NULL NUMBER(10)    
---SOURCE_ID                      NOT NULL VARCHAR2(255) 
---DATA_TYPE                      NOT NULL VARCHAR2(10)  
---HAS_MULTIPLE_VALUES_PER_ENTITY          NUMBER(38)    
---DATA_SHAPE                              VARCHAR2(30)  
---UNIT                                    VARCHAR2(30)  
---UNIT_ONTOLOGY_TERM_ID                   NUMBER(10)    
---PRECISION                               NUMBER(38) 
-
+-- the attributes that have values (ie, are not strictly a category).
+-- rows here link to the AttributeGraph table for positioning in the tree.
+-- we allow categories to have values, so items in this table might
+-- link to rows in AttributeGraph that are parents there.
 create table Attribute (
-  stable_id varchar(30),
+  stable_id varchar(30),  -- from OntologyTerm.source_id
   ontology_term_id integer,
   entity_type_stable_id varchar(30),
   has_multiple_values_per_entity integer,
@@ -90,15 +59,13 @@ create table Attribute (
 ALTER TABLE Attribute 
    ADD FOREIGN KEY (entity_type_stable_id) REFERENCES EntityTypeGraph (entity_type_stable_id);
 
--------------------------------------------------------------------------------------   
--- THE FOLLOWING TABLES ARE AN EXAMPLE OF THE TABLES FOR A PARTICULAR FAKE STUDY (GEMS)
--------------------------------------------------------------------------------------
-
---ENTITY_ID                  NOT NULL NUMBER(12)
---ATTRIBUTE_ONTOLOGY_TERM_ID NOT NULL NUMBER(10)
---STRING_VALUE                        VARCHAR2(1000)
---NUMBER_VALUE                        NUMBER
---DATE_VALUE                          DATE
+--------------------------------------------------------------------------------------------------
+-- the following tables are per-study.  Their name is formed using the study ID, in this case 1000.
+-- Each entity type gets two tables:
+--    AttrVal_XXXXX_YYYYY
+--    Ancestors_XXXXX_YYYYY
+--  where XXXXX is the study ID and YYYYY is the entity's abbreviation
+--------------------------------------------------------------------------------------------------
 
 create table AttrVal_1000_Hshld (
   hshld_id integer,

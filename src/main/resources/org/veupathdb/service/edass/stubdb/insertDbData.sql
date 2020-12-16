@@ -8,21 +8,26 @@
 ------------------------------------------------------------
 -- STUDY METADATA TABLES
 ------------------------------------------------------------
-insert into study values ('DS12385', 'GEMS');
+insert into study values (1000, 'GEMS');
 
-insert into entityName values (100, 'Household', 'Households', 'House');
-insert into entityName values (101, 'Household Observation', 'Household Observations', 'HouseObs');
-insert into entityName values (102, 'Participant', 'Participants', 'Part');
-insert into entityName values (103, 'Participant Observation', 'Participant Observations', 'PartObs');
-insert into entityName values (104, 'Sample', 'Samples', 'Samp');
-insert into entityName values (105, 'Treatment', 'Treatments', 'Treat');
+/*
+CREATE TABLE EntityTypeGraph (
+  entity_type_stable_id varchar(50) not null,
+  entity_type_name varchar(30) not null,
+  study_id integer not null,
+  parent_entity_type_stable_id varchar(30),
+  description varchar(100),
+  abbrev varchar(20),
+  PRIMARY KEY (entity_type_stable_id),
+);
+*/
 
-insert into entity values ('GEMS_House', 100, 'DS12385', null, 'Households from the study area');
-insert into entity values ('GEMS_HouseObs', 101, 'DS12385', 'GEMS_House', '');
-insert into entity values ('GEMS_Part', 102, 'DS12385', 'GEMS_House', 'Participants in the study');
-insert into entity values ('GEMS_PartObs', 103, 'DS12385', 'GEMS_Part', '');
-insert into entity values ('GEMS_Sample', 104, 'DS12385', 'GEMS_PartObs', '');
-insert into entity values ('GEMS_Treat', 105, 'DS12385', 'GEMS_PartObs', '');
+insert into entityTypeGraph values ('GEMS_House', 'Household', 1000, null, 'Households in the study', 'Hshld');
+insert into entityTypeGraph values ('GEMS_HouseObs', 'Household Observation', 1000, 'GEMS_House', 'Observations about households in the study', 'HshldObsrvtn');
+insert into entityTypeGraph values ('GEMS_Part', 'Participant', 1000, 'GEMS_House', 'Participants in the study', 'Prtcpnt');
+insert into entityTypeGraph values ('GEMS_PartObs', 'Participant Observation', 1000, 'GEMS_Part', 'Participant observations', 'PrtcpntObsrvtn');
+insert into entityTypeGraph values ('GEMS_Sample', 'Sample', 1000, 'GEMS_PartObs', 'Sample', 'Smpl');
+insert into entityTypeGraph values ('GEMS_Treat', 'Treat', 1000, 'GEMS_PartObs', 'Treatment', 'Trtmnt');
 
 insert into variableType values (200, 'string');
 insert into variableType values (300, 'number');

@@ -17,9 +17,9 @@ import org.veupathdb.service.edass.generated.model.APIStudyOverviewImpl;
 
 public class Study {
 
-  private String studyId;
+  private final String studyId;
   private TreeNode<Entity> entityTree;
-  private Map<String, Entity> entityIdMap;
+  private final Map<String, Entity> entityIdMap;
   private Map<String, Entity> variableIdToEntityMap;
   
   public Study(String studyId, TreeNode<Entity> entityTree, List<Variable> variables, Map<String, Entity> entityIdMap) {
@@ -32,7 +32,7 @@ public class Study {
   public static List<APIStudyOverview> getStudyOverviews(DataSource datasource) {
     String sql =
         "select " + RdbmsColumnNames.STUDY_ID_COL_NAME +
-             ", " + RdbmsColumnNames.ABBREV_COL_NAME +
+             ", " + RdbmsColumnNames.STUDY_NAME_COL_NAME +
         " from " + RdbmsColumnNames.STUDY_TABLE_NAME;
     return new SQLRunner(datasource, sql).executeQuery(rs -> {
       List<APIStudyOverview> studyIds = new ArrayList<>();
@@ -53,17 +53,14 @@ public class Study {
     
     TreeNode<Entity> entityTree = EntityResultSetUtils.getStudyEntityTree(datasource, studyId);
     
-    Map<String, Entity> entityIdMap = entityTree.flatten().stream().collect(Collectors.toMap(e -> e.getId(), e -> e)); 
+    Map<String, Entity> entityIdMap = entityTree.flatten().stream().collect(Collectors.toMap(Entity::getId, e -> e));
 
     List<Variable> variables = VariableResultSetUtils.getStudyVariables(datasource, studyId, entityIdMap);
 
     return new Study(studyId, entityTree, variables, entityIdMap);
   }
 
-  /** 
-   * 
-   * @param entityId
-   * @param variableIds
+  /**
    * @return list of error messages, if any
    */
   // TODO
@@ -72,8 +69,6 @@ public class Study {
   }
   
   /**
-   * 
-   * @param apiFilters
    * @return list of error messages, if any
    */
   // TODO
@@ -90,9 +85,7 @@ public class Study {
   }
   
   /**
-   * Build internal (convenience) state from the raw entity tree 
-   * @param rootEntityNode
-   * @param vars
+   * Build internal (convenience) state from the raw entity tree
    */
   void initEntitiesAndVariables(TreeNode<Entity> rootEntityNode, List<Variable> vars) {
     initEntities(rootEntityNode);
@@ -101,7 +94,6 @@ public class Study {
   
   /**
    * Build internal (convenience) state from the raw variables set
-   * @param rootEntityNode
    */
   void initEntities(TreeNode<Entity> rootEntityNode) {
     entityTree = rootEntityNode;
@@ -113,7 +105,6 @@ public class Study {
   
   /**
    * Build internal (convenience) state from the raw entity tree and variables set
-   * @param vars
    */
   void initVariables(List<Variable> vars) {
     variableIdToEntityMap = new HashMap<String, Entity>();    
@@ -144,7 +135,7 @@ public class Study {
     entity.setAncestorEntities(ancestorEntities);
     ancestorEntities.add(entity);
     for (TreeNode<Entity> childNode : entityNode.getChildNodes()) {
-      populateEntityAncestors(childNode, new ArrayList<Entity>(ancestorEntities));
+      populateEntityAncestors(childNode, new ArrayList<>(ancestorEntities));
     }
   }
   
@@ -155,14 +146,15 @@ public class Study {
     String errPrefix = "In entity " + entityNode.getContents().getId() +
         ", found a child with the same ID as ";
 
-    Set<String> childEntityIds = new HashSet<String>();
+    Set<String> childEntityIds = new HashSet<>();
     for (TreeNode<Entity> child : entityNode.getChildNodes()) {
       Entity childEntity = child.getContents();
-      if (childEntity.equals(entityNode.getContents().getId()))
+      if (childEntity.getId().equals(entityNode.getContents().getId()))
         throw new RuntimeException(errPrefix + "the parent: " + childEntity.getId());
 
       if (childEntityIds.contains(childEntity.getId()))
         throw new RuntimeException(errPrefix + "another child: " + childEntity.getId());
+      childEntityIds.add(childEntity.getId());
     }
   }
 

@@ -29,7 +29,7 @@ public class EntityResultSetUtils {
     String sql = generateEntityTreeSql(studyId);
     
     // entityID -> list of child entities
-    Map<String, List<Entity>> simpleTree = new HashMap<String, List<Entity>>();
+    Map<String, List<Entity>> simpleTree = new HashMap<>();
     
     Entity rootEntity = new SQLRunner(datasource, sql).executeQuery(rs -> {
       Entity root = null;
@@ -40,7 +40,7 @@ public class EntityResultSetUtils {
           if (root != null) throw new RuntimeException("In Study " + studyId + " found more than one root entity");
           root = entity;
         } else {
-          if (!simpleTree.containsKey(parentId)) simpleTree.put(parentId, new ArrayList<Entity>());
+          if (!simpleTree.containsKey(parentId)) simpleTree.put(parentId, new ArrayList<>());
           simpleTree.get(parentId).add(entity);
         }
       }
@@ -50,14 +50,14 @@ public class EntityResultSetUtils {
     if (rootEntity == null) throw new RuntimeException("Found no entities for study: " + studyId);
 
     List<Entity> rootKids = simpleTree.get(rootEntity.getId());
-    TreeNode<Entity> rootNode = new TreeNode<Entity>(rootEntity);
+    TreeNode<Entity> rootNode = new TreeNode<>(rootEntity);
     populateEntityTree(rootNode, rootKids, simpleTree);
     return rootNode;
   }
   
   static void populateEntityTree(TreeNode<Entity> parentNode, List<Entity> children, Map<String, List<Entity>> simpleTree) {
     for (Entity child : children) {
-      TreeNode<Entity> childNode = new TreeNode<Entity>(child); 
+      TreeNode<Entity> childNode = new TreeNode<>(child);
       parentNode.addChildNode(childNode);
       
       // if this node has children, recurse
@@ -93,13 +93,10 @@ public class EntityResultSetUtils {
   /**
    * Tall table rows look like this:
    *   ancestor1_pk, ancestor2_pk, pk, variableA_id, string_value, number_value, date_value
-
-   * @param rs
-   * @return
    */
-  static Map<String, String> resultSetToTallRowMap(Entity entity, ResultSet rs, List<String> olNames) {
+  static Map<String, String> resultSetToTallRowMap(Entity entity, ResultSet rs) {
 
-    Map<String, String> tallRow = new HashMap<String, String>();
+    Map<String, String> tallRow = new HashMap<>();
 
     try {
       for (String colName : entity.getAncestorPkColNames()) {
@@ -131,7 +128,6 @@ public class EntityResultSetUtils {
    *   ancestor1_pk, ancestor2_pk, pk, variableA_value, variableB_value, variableC_value
    *   
    *   (all values are converted to strings)
-   * @return
    */
   static Function<List<Map<String, String>>, Map<String, String>> getTallToWideFunction(Entity entity) {
     
@@ -139,7 +135,7 @@ public class EntityResultSetUtils {
 
     return tallRows -> {
       
-      Map<String, String> wideRow = new HashMap<String, String>();
+      Map<String, String> wideRow = new HashMap<>();
 
       String tallRowEnityId = tallRows.get(0).get(entity.getPKColName());
       wideRow.put(entity.getPKColName(), tallRowEnityId);

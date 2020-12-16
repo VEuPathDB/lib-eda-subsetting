@@ -8,13 +8,15 @@ class RdbmsColumnNames {
   static final String VARIABLE_VALUE_COL_NAME = "value";
   
   // common
-  static final String STUDY_TABLE_NAME = "study";
   static final String DESCRIP_COL_NAME = "description";
   static final String DISPLAY_NAME_COL_NAME = "display_name";
   static final String DISPLAY_NAME_PLURAL_COL_NAME = "display_name_plural";
-  static final String ABBREV_COL_NAME = "abbrev";
-  static final String STUDY_ID_COL_NAME = "study_id";
   static final String ENTITY_ID_COL_NAME = "entity_id";
+
+  // Study table
+  static final String STUDY_TABLE_NAME = "study";
+  static final String STUDY_ID_COL_NAME = "study_id";
+  static final String STUDY_NAME_COL_NAME = "name";
 
   // Entity table and EntityName table
   static final String ENTITY_TABLE_NAME = "entity";

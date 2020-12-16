@@ -23,7 +23,6 @@ import org.gusdb.fgputil.Tuples.TwoTuple;
 import org.gusdb.fgputil.db.runner.SQLRunner;
 import org.gusdb.fgputil.db.runner.SingleIntResultSetHandler;
 import org.gusdb.fgputil.db.stream.ResultSetIterator;
-import org.gusdb.fgputil.db.stream.ResultSetStream;
 import org.gusdb.fgputil.db.stream.ResultSets;
 import org.gusdb.fgputil.functional.TreeNode;
 import org.gusdb.fgputil.iterator.GroupingIterator;
@@ -86,7 +85,7 @@ public class StudySubsettingUtils {
   private static void writeWideRows(ResultSet rs, Writer writer, List<String> outputColumns, Entity outputEntity) throws IOException {
 
     Iterator<Map<String, String>> tallRowsIterator = new ResultSetIterator<>(rs,
-        row -> Optional.of(EntityResultSetUtils.resultSetToTallRowMap(outputEntity, rs, outputColumns)));
+        row -> Optional.of(EntityResultSetUtils.resultSetToTallRowMap(outputEntity, rs)));
 
     String pkCol = outputEntity.getPKColName();
     Iterator<List<Map<String, String>>> groupedTallRowsIterator = new GroupingIterator<>(

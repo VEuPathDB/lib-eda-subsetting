@@ -30,7 +30,7 @@ alter table EntityTypeGraph add unique (entity_type_name, study_id);
 alter table EntityTypeGraph add unique (parent_entity_type_stable_id, study_id);
 alter table EntityTypeGraph add unique (entity_type_stable_id, study_id);
 ALTER TABLE EntityTypeGraph 
-   ADD FOREIGN KEY (study_id) REFERENCES Study (study_id); 
+   ADD FOREIGN KEY (study_id) REFERENCES Study (study_id);
 
 --ATTRIBUTE_GRAPH_ID      NOT NULL NUMBER(12)     
 --STUDY_ID                NOT NULL NUMBER(12)     
@@ -52,7 +52,8 @@ create table AttributeGraph (
   term_type varchar(20),
   PRIMARY KEY (stable_id)
 );
-ALTER TABLE AttributeGraph 
+alter table AttributeGraph add unique (ontology_term_id);
+ALTER TABLE AttributeGraph
    ADD FOREIGN KEY (study_id) REFERENCES Study (study_id);
 ALTER TABLE AttributeGraph 
    ADD FOREIGN KEY (parent_stable_id) REFERENCES AttributeGraph (stable_id); 
@@ -88,141 +89,97 @@ create table Attribute (
 );
 ALTER TABLE Attribute 
    ADD FOREIGN KEY (entity_type_stable_id) REFERENCES EntityTypeGraph (entity_type_stable_id);
-  
---ENTITY_ID                  NOT NULL NUMBER(12)     
---ATTRIBUTE_ONTOLOGY_TERM_ID NOT NULL NUMBER(10)     
---STRING_VALUE                        VARCHAR2(1000) 
---NUMBER_VALUE                        NUMBER         
---DATE_VALUE                          DATE           
 
-create table AttributeValue_1000_Prtcpnt (
-  prtcpnt_id integer,
+-------------------------------------------------------------------------------------   
+-- THE FOLLOWING TABLES ARE AN EXAMPLE OF THE TABLES FOR A PARTICULAR FAKE STUDY (GEMS)
+-------------------------------------------------------------------------------------
+
+--ENTITY_ID                  NOT NULL NUMBER(12)
+--ATTRIBUTE_ONTOLOGY_TERM_ID NOT NULL NUMBER(10)
+--STRING_VALUE                        VARCHAR2(1000)
+--NUMBER_VALUE                        NUMBER
+--DATE_VALUE                          DATE
+
+create table AttrVal_1000_Hshld (
+  hshld_id integer,
   ontology_term_id integer,
   number_value integer, 
   string_value varchar(100),
   date_value varchar(30),
-  PRIMARY KEY (entity_id, ontology_term_id)
+);
+ALTER TABLE AttrVal_1000_Hshld
+   ADD FOREIGN KEY (ontology_term_id) REFERENCES AttributeGraph (ontology_term_id);
+CREATE INDEX AttrVal_1000_Hshld_i1
+ON AttrVal_1000_Hshld (ontology_term_id, hshld_id, number_value, string_value, date_value);
+-- for test db only
+CREATE unique INDEX AttrVal_1000_Hshld_i2 ON AttrVal_1000_Hshld (ontology_term_id, hshld_id);
+
+create table Ancestors_1000_Hshld (
+  hshld_id integer,
+  PRIMARY KEY (Hshld_id)
 );
 
-ALTER TABLE AttributeValue_1000_Hshld 
-   ADD FOREIGN KEY (ontology_term_id) REFERENCES Attribute (ontology_term_id); 
-CREATE UNIQUE INDEX AttributeValue_1000_Hshld_i1
-ON AttributeValue_1000_Hshld (ontology_term_id, number_value, entity_id);
-CREATE UNIQUE INDEX AttributeValue_1000_Hshld_i2
-ON AttributeValue_1000_Hshld (ontology_term_id, string_value, entity_id);
-CREATE UNIQUE INDEX AttributeValue_1000_Hshld_i3
-ON AttributeValue_1000_Hshld (ontology_term_id, date_value, entity_id);
-   
+create table AttrVal_1000_HshldObsrvtn (
+  HshldObsrvtn_id integer,
+  ontology_term_id integer,
+  number_value integer, 
+  string_value varchar(100),
+  date_value varchar(30),
+);
+ALTER TABLE AttrVal_1000_HshldObsrvtn
+   ADD FOREIGN KEY (ontology_term_id) REFERENCES AttributeGraph (ontology_term_id);
+CREATE INDEX AttrVal_1000_HshldObsrvtn_i1
+ON AttrVal_1000_HshldObsrvtn (ontology_term_id, HshldObsrvtn_id, number_value, string_value, date_value);
+-- for test db only
+CREATE unique INDEX AttrVal_1000_HshldObsrvtn_i2 ON AttrVal_1000_HshldObsrvtn (ontology_term_id, HshldObsrvtn_id);
+
+create table Ancestors_1000_HshldObsrvtn (
+  HshldObsrvtn_id integer,
+  Hshld_id integer,
+  PRIMARY KEY (Hshld_id)
+
+);
+
+create table AttrVal_1000_Prtcpnt (
+  prtcpnt_id integer,
+  ontology_term_id integer,
+  number_value integer,
+  string_value varchar(100),
+  date_value varchar(30),
+);
+ALTER TABLE AttrVal_1000_Prtcpnt
+   ADD FOREIGN KEY (ontology_term_id) REFERENCES AttributeGraph (ontology_term_id);
+CREATE INDEX AttrVal_1000_Prtcpnt_i1
+ON AttrVal_1000_Prtcpnt (ontology_term_id, prtcpnt_id, number_value, string_value, date_value);
+-- for test db only
+CREATE unique INDEX AttrVal_1000_Prtcpnt_i2 ON AttrVal_1000_Prtcpnt (ontology_term_id, prtcpnt_id);
+
 create table Ancestors_1000_Prtcpnt (
   prtcpnt_id integer,
   hshld_id integer,
   PRIMARY KEY (prtcpnt_id)
 );
-CREATE UNIQUE INDEX GEMS_House_ancestors_i1
-ON GEMS_House_ancestors (GEMS_House_id);
 
-
-   
--------------------------------------------------------------------------------------   
--- THE FOLLOWING TABLES ARE AN EXAMPLE OF THE TABLES FOR A PARTICULAR FAKE STUDY (GEMS)
--------------------------------------------------------------------------------------   
--- might want to use an integer internal_variable_id for performance
-create table GEMS_House_tall (
-  GEMS_House_id integer,
-  variable_id varchar(30),
-  number_value integer, 
-  string_value varchar(100),
-  date_value varchar(30),
-  PRIMARY KEY (GEMS_House_id)
-);
-ALTER TABLE GEMS_House_tall 
-   ADD FOREIGN KEY (variable_id) REFERENCES Variable (variable_id); 
-CREATE UNIQUE INDEX GEMS_House_tall_i1
-ON GEMS_House_tall (variable_id, number_value, GEMS_House_id);
-CREATE UNIQUE INDEX GEMS_House_tall_i2
-ON GEMS_House_tall (variable_id, string_value, GEMS_House_id);
-CREATE UNIQUE INDEX GEMS_House_tall_i3
-ON GEMS_House_tall (variable_id, date_value, GEMS_House_id);
-
-create table GEMS_House_ancestors (
-  GEMS_House_id integer,
-  PRIMARY KEY (GEMS_House_id)
-);
-CREATE UNIQUE INDEX GEMS_House_ancestors_i1
-ON GEMS_House_ancestors (GEMS_House_id);
-
-create table GEMS_HouseObs_tall (
-  GEMS_HouseObs_id integer,
-  variable_id varchar(30),
-  number_value integer, 
-  string_value varchar(100),
-  date_value varchar(30),
-  PRIMARY KEY (GEMS_HouseObs_id)
-);
-ALTER TABLE GEMS_HouseObs_tall 
-   ADD FOREIGN KEY (variable_id) REFERENCES Variable (variable_id); 
-CREATE UNIQUE INDEX GEMS_HouseObs_tall_i1
-ON GEMS_HouseObs_tall (variable_id, number_value, GEMS_HouseObs_id);
-CREATE UNIQUE INDEX GEMS_HouseObs_tall_i2
-ON GEMS_HouseObs_tall (variable_id, string_value, GEMS_HouseObs_id);
-CREATE UNIQUE INDEX GEMS_HouseObs_tall_i3
-ON GEMS_HouseObs_tall (variable_id, date_value, GEMS_HouseObs_id);
-
-create table GEMS_HouseObs_ancestors (
-  GEMS_HouseObs_id integer,
-  GEMS_House_id integer,
-);
-CREATE UNIQUE INDEX GEMS_HouseObs_ancestors_i1
-ON GEMS_HouseObs_ancestors (GEMS_HouseObs_id);
-
-create table GEMS_Part_tall (
-  GEMS_Part_id integer,
-  variable_id varchar(30),
+create table AttrVal_1000_PrtcpntObsrvtn (
+  PrtcpntObsrvtn_id integer,
+  ontology_term_id integer,
   number_value integer, 
   string_value varchar(100),
   date_value varchar(30),
 );
-ALTER TABLE GEMS_Part_tall 
-   ADD FOREIGN KEY (variable_id) REFERENCES Variable (variable_id); 
-CREATE UNIQUE INDEX GEMS_Part_tall_i1
-ON GEMS_Part_tall (variable_id, number_value, GEMS_Part_id);
-CREATE UNIQUE INDEX GEMS_Part_tall_i2
-ON GEMS_Part_tall (variable_id, string_value, GEMS_Part_id);
-CREATE UNIQUE INDEX GEMS_Part_tall_i3
-ON GEMS_Part_tall (variable_id, date_value, GEMS_Part_id);
+ALTER TABLE AttrVal_1000_PrtcpntObsrvtn
+   ADD FOREIGN KEY (ontology_term_id) REFERENCES AttributeGraph (ontology_term_id);
+CREATE INDEX AttrVal_1000_PrtcpntObsrvtn_i1
+ON AttrVal_1000_PrtcpntObsrvtn (ontology_term_id, PrtcpntObsrvtn_id, number_value, string_value, date_value);
+-- for test db only
+CREATE unique INDEX AttrVal_1000_PrtcpntObsrvtn_i2 ON AttrVal_1000_PrtcpntObsrvtn (ontology_term_id, PrtcpntObsrvtn_id);
 
-create table GEMS_Part_ancestors (
-  GEMS_Part_id integer,
-  GEMS_House_id integer, 
-  PRIMARY KEY (GEMS_Part_id)
+create table Ancestors_1000_PrtcpntObsrvtn (
+  PrtcpntObsrvtn_id integer,
+  Prtcpnt_id integer,
+  Hshld_id integer,
+  PRIMARY KEY (PrtcpntObsrvtn_id)
 );
-CREATE UNIQUE INDEX GEMS_Part_ancestors_i1
-ON GEMS_Part_ancestors (GEMS_Part_id);
-
-create table GEMS_PartObs_tall (
-  GEMS_PartObs_id integer,
-  variable_id varchar(30),
-  number_value integer, 
-  string_value varchar(100),
-  date_value varchar(30),
-);
-ALTER TABLE GEMS_PartObs_tall 
-   ADD FOREIGN KEY (variable_id) REFERENCES Variable (variable_id); 
-CREATE UNIQUE INDEX GEMS_PartObs_tall_i1
-ON GEMS_PartObs_tall (variable_id, number_value, GEMS_PartObs_id);
-CREATE UNIQUE INDEX GEMS_PartObs_tall_i2
-ON GEMS_PartObs_tall (variable_id, string_value, GEMS_PartObs_id);
-CREATE UNIQUE INDEX GEMS_PartObs_tall_i3
-ON GEMS_PartObs_tall (variable_id, date_value, GEMS_PartObs_id);
-
-create table GEMS_PartObs_ancestors (
-  GEMS_PartObs_id integer,
-  GEMS_Part_id integer,
-  GEMS_House_id integer, 
-  PRIMARY KEY (GEMS_PartObs_id)
-);
-CREATE UNIQUE INDEX GEMS_PartObs_ancestors_i1
-ON GEMS_PartObs_ancestors (GEMS_PartObs_id);
 
 
 

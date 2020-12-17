@@ -33,18 +33,42 @@ insert into variableType values (200, 'string');
 insert into variableType values (300, 'number');
 insert into variableType values (400, 'date');
 
---(variable_id, variable_type_id, entity_id, parent_entity_id, display_name, has_values, is_continuous, units, precision)
-insert into variable values ('var-10', 300, 'GEMS_Part', null, '_networth', 'Net worth', 1, 1, 'dollars', 2);
-insert into variable values ('var-18', 200, 'GEMS_House', null, '_address', 'City', 1, 0, null, null);
-insert into variable values ('var-11', 300, 'GEMS_Part', null, '_shoesize', 'Shoe size', 1, 0, 'shoe size', 1);
-insert into variable values ('var-20', 200, 'GEMS_Part', null, '_name', 'Name', 1, 0, null, null);
-insert into variable values ('var-17', 200, 'GEMS_Part', null, '_haircolor', 'Hair color', 1, 0, null, null);
-insert into variable values ('var-12', 300, 'GEMS_PartObs', null, '_weight', 'Weight', 1, 1, 'pounds', 2);
-insert into variable values ('var-13', 300, 'GEMS_PartObs', null, '_favnumber', 'Favorite number', 1, 0, '', null);
-insert into variable values ('var-14', 400, 'GEMS_PartObs', null, '_startdate', 'Start date', 1, 1, 'date', null);
-insert into variable values ('var-15', 300, 'GEMS_PartObs', null, '_visitdate', 'Visit date', 1, 0, null, null);
-insert into variable values ('var-16', 200, 'GEMS_PartObs', null, '_mood', 'Mood', 1, 0, null, null);
-insert into variable values ('var-19', 200, 'GEMS_HouseObs', null, '_watersupply', 'Water supply', 1, 0, null, null);
+--(stable_id, ontology_term_id, study_id, parent_stable_id, provider_label, display_name, term_type)
+insert into AttributeGraph values ('var-10', 300, 1000, null, '_networth', 'Net worth', null);
+insert into AttributeGraph values ('var-18', 200, 1000, null, '_address', 'City', null);
+insert into AttributeGraph values ('var-11', 300, 1000, null, '_shoesize', 'Shoe size', null);
+insert into AttributeGraph values ('var-20', 200, 1000, null, '_name', 'Name', null);
+insert into AttributeGraph values ('var-17', 200, 1000, null, '_haircolor', 'Hair color', null);
+insert into AttributeGraph values ('var-12', 300, 1000, null, '_weight', 'Weight', null);
+insert into AttributeGraph values ('var-13', 300, 1000, null, '_favnumber', 'Favorite number', null);
+insert into AttributeGraph values ('var-14', 400, 1000, null, '_startdate', 'Start date', null);
+insert into AttributeGraph values ('var-15', 300, 1000, null, '_visitdate', 'Visit date', null);
+insert into AttributeGraph values ('var-16', 200, 1000, null, '_mood', 'Mood', null);
+insert into AttributeGraph values ('var-19', 200, 1000, null, '_watersupply', 'Water supply', null);
+
+create table Attribute (
+  stable_id varchar(30),  -- from OntologyTerm.source_id
+  ontology_term_id integer,
+  entity_type_stable_id varchar(30),
+  has_multiple_values_per_entity integer,
+  data_shape varchar(10),
+  unit varchar (30),
+  unit_ontology_term_id integer,
+  precision integer,
+  PRIMARY KEY (stable_id)
+);
+--(stable_id, ontology_term_id, entity_type_stable_id, has_multiple_values_per_entity, data_shape, unit, unit_ontology_term_id, precision)
+insert into Attribute values ('var-10', 300, 'GEMS_Part', null, '_networth', 'Net worth', 1, 1, 'dollars', 2);
+insert into Attribute values ('var-18', 200, 'GEMS_House', null, '_address', 'City', 1, 0, null, null);
+insert into Attribute values ('var-11', 300, 'GEMS_Part', null, '_shoesize', 'Shoe size', 1, 0, 'shoe size', 1);
+insert into Attribute values ('var-20', 200, 'GEMS_Part', null, '_name', 'Name', 1, 0, null, null);
+insert into Attribute values ('var-17', 200, 'GEMS_Part', null, '_haircolor', 'Hair color', 1, 0, null, null);
+insert into Attribute values ('var-12', 300, 'GEMS_PartObs', null, '_weight', 'Weight', 1, 1, 'pounds', 2);
+insert into Attribute values ('var-13', 300, 'GEMS_PartObs', null, '_favnumber', 'Favorite number', 1, 0, '', null);
+insert into Attribute values ('var-14', 400, 'GEMS_PartObs', null, '_startdate', 'Start date', 1, 1, 'date', null);
+insert into Attribute values ('var-15', 300, 'GEMS_PartObs', null, '_visitdate', 'Visit date', 1, 0, null, null);
+insert into Attribute values ('var-16', 200, 'GEMS_PartObs', null, '_mood', 'Mood', 1, 0, null, null);
+insert into Attribute values ('var-19', 200, 'GEMS_HouseObs', null, '_watersupply', 'Water supply', 1, 0, null, null);
 
 ------------------------------------------------------------
 -- STUDY DATA TABLES

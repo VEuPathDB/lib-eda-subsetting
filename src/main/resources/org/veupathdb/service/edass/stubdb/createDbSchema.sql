@@ -9,27 +9,30 @@ create table Study (
 
 -- The entities types per study, eg Participants, and their tree relationships
 CREATE TABLE EntityTypeGraph (
-  entity_type_stable_id varchar(50) not null,
-  entity_type_name varchar(30) not null,
+--entity_type_graph_id integer,           -- JB not needed
+  stable_id varchar(50) not null,         -- JB previously entity_type_stable_id
+  name varchar(30) not null,              -- JB previously entity_type_name
   study_id integer not null,
-  parent_entity_type_stable_id varchar(30),
+  parent_stable_id varchar(30),           -- JB previously parent_entity_type_stable_id
   description varchar(100),
-  abbrev varchar(20),
+  abbrev varchar(20),                     
   PRIMARY KEY (entity_type_stable_id),
 );
-alter table EntityTypeGraph add unique (entity_type_name, study_id);
-alter table EntityTypeGraph add unique (parent_entity_type_stable_id, study_id);
-alter table EntityTypeGraph add unique (entity_type_stable_id, study_id);
+alter table EntityTypeGraph add unique (name, study_id);
+alter table EntityTypeGraph add unique (parent_stable_id, study_id);
+alter table EntityTypeGraph add unique (stable_id, study_id);
 ALTER TABLE EntityTypeGraph 
    ADD FOREIGN KEY (study_id) REFERENCES Study (study_id);
 
 -- The variables/categories in a study, as a tree.  (It is called a graph because in non-EDA applications
 -- attributes might have multiple parents.)
 create table AttributeGraph (
-  stable_id varchar(30),
-  ontology_term_id integer,
+--attribute_graph_id               -- JB not needed
+  stable_id varchar(30),           -- JB previously 'source_id'
   study_id integer not null,
-  parent_stable_id varchar(30),
+  ontology_term_id integer,
+  parent_stable_id varchar(30),      -- JB previously 'parent_source_id'
+  parent_ontology_term_id integer,   -- JB why do we need this?
   provider_label varchar(30) not null,
   display_name varchar(30) not null,
   term_type varchar(20),
@@ -46,9 +49,12 @@ ALTER TABLE AttributeGraph
 -- we allow categories to have values, so items in this table might
 -- link to rows in AttributeGraph that are parents there.
 create table Attribute (
-  stable_id varchar(30),  -- from OntologyTerm.source_id
-  ontology_term_id integer,
+--attribute_id integer              -- JB not needed
+  stable_id varchar(30),            -- JB previously 'source_id varchar(255)'  (why so large?)
   entity_type_stable_id varchar(30),
+  process_type_id integer,
+  ontology_term_id integer,
+  data_type varchar(10),
   has_multiple_values_per_entity integer,
   data_shape varchar(10),
   unit varchar (30),

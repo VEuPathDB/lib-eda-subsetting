@@ -15,7 +15,7 @@ CREATE TABLE EntityTypeGraph (
   study_id integer not null,
   parent_stable_id varchar(30),           -- JB previously parent_entity_type_stable_id
   description varchar(100),
-  abbrev varchar(20),                     
+  abbrev varchar(20),
   PRIMARY KEY (entity_type_stable_id),
 );
 alter table EntityTypeGraph add unique (name, study_id);
@@ -53,7 +53,7 @@ create table Attribute (
   stable_id varchar(30),            -- JB previously 'source_id varchar(255)'  (why so large?)
   entity_type_stable_id varchar(30),
   process_type_id integer,
-  ontology_term_id integer,
+  ontology_term_id integer,         -- JB this seems redundant with the same col in AttributeGraph (a join away)
   data_type varchar(10),
   has_multiple_values_per_entity integer,
   data_shape varchar(10),

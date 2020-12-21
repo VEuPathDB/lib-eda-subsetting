@@ -61,7 +61,7 @@ public class StudySubsettingUtils {
 
     String sql = generateTabularSql(outputVariables, outputEntity, filters, prunedEntityTree);
 
-    List<String> outputVariableIds = outputVariables.stream().map(v -> v.getId()).collect(Collectors.toList());
+    List<String> outputVariableIds = outputVariables.stream().map(Variable::getId).collect(Collectors.toList());
 
     List<String> outputColumns = new ArrayList<>();
     outputColumns.add(outputEntity.getPKColName());
@@ -130,9 +130,6 @@ public class StudySubsettingUtils {
 
   /**
    * Prune tree to include only active nodes, based on filters and output entity
-   * @param tree
-   * @param filters
-   * @return
    */
   public static TreeNode<Entity> pruneTree(TreeNode<Entity> tree, List<Filter> filters, Entity outputEntity) {
 
@@ -151,34 +148,26 @@ public class StudySubsettingUtils {
 
   /**
    * Generate SQL to produce a multi-column tabular output (the requested variables), for the specified subset.
-   * @param outputEntity
-   * @param filters
-   * @param prunedEntityTree
-   * @return
    */
   static String generateTabularSql(List<Variable> outputVariables, Entity outputEntity, List<Filter> filters, TreeNode<Entity> prunedEntityTree) {
 
     String tallTblAbbrev = "t"; 
     String ancestorTblAbbrev = "a";
     
-    return generateWithClauses(prunedEntityTree, filters, getEntityIdsInFilters(filters)) + NL
+    return generateWithClauses(prunedEntityTree, filters) + NL
         + generateTabularSelectClause(outputEntity, tallTblAbbrev, ancestorTblAbbrev) + NL
         + generateTabularFromClause(outputEntity, tallTblAbbrev, ancestorTblAbbrev) + NL
         + generateTabularWhereClause(outputVariables, outputEntity.getPKColName(), tallTblAbbrev, ancestorTblAbbrev) + NL
-        + generateInClause(prunedEntityTree, outputEntity, tallTblAbbrev, "AND") + NL
+        + generateInClause(prunedEntityTree, outputEntity, tallTblAbbrev) + NL
         + generateTabularOrderByClause(outputEntity) + NL;
   }
 
-  /**
+  /*
    * Generate SQL to produce a multi-column tabular output (the requested variables), for the specified subset.
-   * @param outputEntity
-   * @param filters
-   * @param prunedEntityTree
-   * @return
    */
   static String generateEntityCountSql(Entity outputEntity, List<Filter> filters, TreeNode<Entity> prunedEntityTree) {
     
-    return generateWithClauses(prunedEntityTree, filters, getEntityIdsInFilters(filters)) + NL
+    return generateWithClauses(prunedEntityTree, filters) + NL
         + "SELECT count(distinct " + outputEntity.getPKColName() + ") as " + COUNT_COLUMN_NAME + NL
         + "FROM (" + NL
         + generateJoiningSubselect(prunedEntityTree, outputEntity) + NL
@@ -187,39 +176,32 @@ public class StudySubsettingUtils {
   
   /**
    * Generate SQL to produce a distribution for a single variable, for the specified subset.
-   * @param outputEntity
-   * @param filters
-   * @param prunedEntityTree
-   * @return
    */
   static String generateDistributionSql(Entity outputEntity, Variable distributionVariable, List<Filter> filters, TreeNode<Entity> prunedEntityTree) {
     
-    return generateWithClauses(prunedEntityTree, filters, getEntityIdsInFilters(filters)) + NL
+    return generateWithClauses(prunedEntityTree, filters) + NL
         + generateDistributionSelectClause(distributionVariable) + NL
         + generateDistributionFromClause(outputEntity) + NL
         + generateDistributionWhereClause(distributionVariable) + NL
-        + generateInClause(prunedEntityTree, outputEntity, outputEntity.getTallTableName(), "AND") + NL
+        + generateInClause(prunedEntityTree, outputEntity, outputEntity.getTallTableName()) + NL
         + generateDistributionGroupByClause(distributionVariable) + NL
         + "ORDER BY " + VALUE_COLUMN_NAME + " ASC";
    }
   
   /**
    * Generate SQL to produce a count of the entities that have a value for a variable, for the specified subset.
-   * @param outputEntity
-   * @param filters
-   * @param prunedEntityTree
-   * @return
    */
   static String generateVariableCountSql(Entity outputEntity, Variable variable, List<Filter> filters, TreeNode<Entity> prunedEntityTree) {
     
-    return generateWithClauses(prunedEntityTree, filters, getEntityIdsInFilters(filters)) + NL
+    return generateWithClauses(prunedEntityTree, filters) + NL
         + generateVariableCountSelectClause(variable) + NL
         + generateDistributionFromClause(outputEntity) + NL
         + generateDistributionWhereClause(variable) + NL
-        + generateInClause(prunedEntityTree, outputEntity, outputEntity.getTallTableName(), "AND");        
+        + generateInClause(prunedEntityTree, outputEntity, outputEntity.getTallTableName());
 
    }
-  static String generateWithClauses(TreeNode<Entity> prunedEntityTree, List<Filter> filters, List<String> entityIdsInFilters) {
+
+  static String generateWithClauses(TreeNode<Entity> prunedEntityTree, List<Filter> filters) {
     List<String> withClauses = prunedEntityTree.flatten().stream().map(e -> generateWithClause(e, filters)).collect(Collectors.toList());
     return "WITH" + NL
         + String.join("," + NL, withClauses);
@@ -231,7 +213,7 @@ public class StudySubsettingUtils {
    */
   static String generateWithClause(Entity entity, List<Filter> filters) {
 
-    List<String> selectColsList = new ArrayList<String>(entity.getAncestorPkColNames());
+    List<String> selectColsList = new ArrayList<>(entity.getAncestorPkColNames());
     selectColsList.add(entity.getPKColName());
     String selectCols = String.join(", ", selectColsList);
     
@@ -241,7 +223,7 @@ public class StudySubsettingUtils {
     List<Filter> filtersOnThisEntity = filters.stream().filter(f -> f.getEntity().getId().equals(entity.getId())).collect(Collectors.toList());
 
     if (!filtersOnThisEntity.isEmpty()) {
-      List<String> filterSqls = filters.stream().filter(f -> f.getEntity().getId().equals(entity.getId())).map(f -> f.getSql()).collect(Collectors.toList());
+      List<String> filterSqls = filters.stream().filter(f -> f.getEntity().getId().equals(entity.getId())).map(Filter::getSql).collect(Collectors.toList());
       withBody = String.join("INTERSECT" + NL, filterSqls);
     } 
 
@@ -249,7 +231,7 @@ public class StudySubsettingUtils {
   }
   
   static String generateTabularSelectClause(Entity outputEntity, String tallTblAbbrev, String ancestorTblAbbrev) {
-    List<String> valColNames = new ArrayList<String>();
+    List<String> valColNames = new ArrayList<>();
     for (VariableType varType : VariableType.values()) valColNames.add(varType.getTallTableColumnName());
 
     return "SELECT " + outputEntity.getAllPksSelectList(tallTblAbbrev, ancestorTblAbbrev) + ", " + 
@@ -276,7 +258,7 @@ public class StudySubsettingUtils {
   
   static String generateTabularWhereClause(List<Variable> outputVariables, String entityPkCol, String entityTblNm, String ancestorTblNm) {
     
-    List<String> outputVariableIds = outputVariables.stream().map(v -> v.getId()).collect(Collectors.toList());
+    List<String> outputVariableIds = outputVariables.stream().map(Variable::getId).collect(Collectors.toList());
 
     List<String> varExprs = new ArrayList<>();
     for (String varId : outputVariableIds) varExprs.add(" " + VARIABLE_ID_COL_NAME + " = '" + varId + "'");
@@ -288,8 +270,8 @@ public class StudySubsettingUtils {
     return "WHERE " + VARIABLE_ID_COL_NAME + " = '" + outputVariable.getId() + "'";
   }
 
-  static String generateInClause(TreeNode<Entity> prunedEntityTree, Entity outputEntity, String tallTblAbbrev, String whereOrAnd) {
-    return whereOrAnd + " " + tallTblAbbrev + "." + outputEntity.getPKColName() + " IN (" + NL
+  static String generateInClause(TreeNode<Entity> prunedEntityTree, Entity outputEntity, String tallTblAbbrev) {
+    return "AND" + " " + tallTblAbbrev + "." + outputEntity.getPKColName() + " IN (" + NL
     + generateJoiningSubselect(prunedEntityTree, outputEntity) + NL
     + ")";
   }
@@ -310,7 +292,7 @@ public class StudySubsettingUtils {
   }
 
   static String generateJoiningJoinsClause(TreeNode<Entity> prunedEntityTree) {
-    List<String> sqlJoinStrings = new ArrayList<String>();
+    List<String> sqlJoinStrings = new ArrayList<>();
     addSqlJoinStrings(prunedEntityTree, sqlJoinStrings);
     return sqlJoinStrings.isEmpty()? "" : "  WHERE " + String.join(NL + "  AND ", sqlJoinStrings);
   }

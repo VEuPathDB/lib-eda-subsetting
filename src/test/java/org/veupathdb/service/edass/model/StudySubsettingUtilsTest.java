@@ -1,35 +1,21 @@
 package org.veupathdb.service.edass.model;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import java.util.Collections;
-import static org.gusdb.fgputil.FormatUtil.NL;
-
-import java.util.HashMap;
-import java.util.Map;
-import java.util.stream.Stream;
-import org.gusdb.fgputil.Tuples;
 import org.gusdb.fgputil.Tuples.TwoTuple;
 import org.gusdb.fgputil.functional.Functions;
+import org.gusdb.fgputil.functional.TreeNode;
 import org.gusdb.fgputil.iterator.IteratorUtil;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
-
-import static org.junit.jupiter.api.Assertions.*;
-
-import java.io.ByteArrayOutputStream;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
-import javax.sql.DataSource;
-
-import org.gusdb.fgputil.functional.TreeNode;
-import org.veupathdb.service.edass.generated.model.VariableDistributionPostResponse;
 import org.veupathdb.service.edass.stubdb.StubDb;
 
+import javax.sql.DataSource;
+import java.io.ByteArrayOutputStream;
+import java.util.*;
+import java.util.stream.Stream;
+
+import static org.gusdb.fgputil.FormatUtil.NL;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.veupathdb.service.edass.model.RdbmsColumnNames.*;
 
 public class StudySubsettingUtilsTest {
@@ -51,7 +37,7 @@ public class StudySubsettingUtilsTest {
   void testGetEntityIdsInFilters() {
    
     // add it to a set
-    List<Filter> filters = new ArrayList<Filter>();
+    List<Filter> filters = new ArrayList<>();
     filters.add(_model.obsWeightFilter);
     filters.add(_model.houseRoofFilter);
     
@@ -67,7 +53,7 @@ public class StudySubsettingUtilsTest {
   void testPruning1() {
     
     // create filter set with obs filter
-    List<Filter> filters = new ArrayList<Filter>();
+    List<Filter> filters = new ArrayList<>();
     filters.add(_model.obsWeightFilter);
     
     // set output entity
@@ -77,7 +63,7 @@ public class StudySubsettingUtilsTest {
     TreeNode<Entity> prunedTree = StudySubsettingUtils.pruneTree(_model.study.getEntityTree(), filters, outputEntity);
     
      // construct expected tree
-    TreeNode<Entity> expectedTree = new TreeNode<Entity>(_model.household);
+    TreeNode<Entity> expectedTree = new TreeNode<>(_model.household);
     expectedTree.addChild(_model.observation);
 
     // compare
@@ -89,7 +75,7 @@ public class StudySubsettingUtilsTest {
   void testPruning2() {
     
     // add household roof filter to set
-    List<Filter> filters = new ArrayList<Filter>();
+    List<Filter> filters = new ArrayList<>();
     filters.add(_model.houseRoofFilter);
     
     // set output entity
@@ -99,7 +85,7 @@ public class StudySubsettingUtilsTest {
     TreeNode<Entity> prunedTree = StudySubsettingUtils.pruneTree(_model.study.getEntityTree(), filters, outputEntity);
     
      // construct expected tree
-    TreeNode<Entity> expectedTree = new TreeNode<Entity>(_model.household);
+    TreeNode<Entity> expectedTree = new TreeNode<>(_model.household);
     expectedTree.addChild(_model.observation);
 
     // compare
@@ -110,7 +96,7 @@ public class StudySubsettingUtilsTest {
   @DisplayName("Test pruning an entity tree with a pivot")
   void testPruning3() {
     
-    List<Filter> filters = new ArrayList<Filter>();
+    List<Filter> filters = new ArrayList<>();
     filters.add(_model.obsWeightFilter);
     // set output entity
     Entity outputEntity = _model.householdObs;
@@ -119,7 +105,7 @@ public class StudySubsettingUtilsTest {
     TreeNode<Entity> prunedTree = StudySubsettingUtils.pruneTree(_model.study.getEntityTree(), filters, outputEntity);
     
      // construct expected tree
-    TreeNode<Entity> expectedTree = new TreeNode<Entity>(_model.household);
+    TreeNode<Entity> expectedTree = new TreeNode<>(_model.household);
     expectedTree.addChild(_model.householdObs);
     expectedTree.addChild(_model.observation);
 
@@ -154,7 +140,7 @@ public class StudySubsettingUtilsTest {
   @DisplayName("Test creating a WITH clause without any relevant filters")
   void testWithClauseNoFilters() {
     
-    List<Filter> filters = new ArrayList<Filter>();
+    List<Filter> filters = new ArrayList<>();
     filters.add(_model.obsWeightFilter);
     filters.add(_model.obsFavNewYearsFilter);
     String withClause = StudySubsettingUtils.generateWithClause(_model.householdObs, filters);
@@ -168,7 +154,7 @@ public class StudySubsettingUtilsTest {
   @DisplayName("Test creating a WITH clause with filters")
   void testWithClause() {
     
-    List<Filter> filters = new ArrayList<Filter>();
+    List<Filter> filters = new ArrayList<>();
     filters.add(_model.obsWeightFilter);
     filters.add(_model.obsFavNewYearsFilter);
     filters.add(_model.obsBirthDateFilter);
@@ -177,7 +163,7 @@ public class StudySubsettingUtilsTest {
     filters.add(_model.houseRoofFilter);
     String withClause = StudySubsettingUtils.generateWithClause(_model.observation, filters);
  
-    List<String> selectColsList = new ArrayList<String>();
+    List<String> selectColsList = new ArrayList<>();
     for (String name : _model.observation.getAncestorPkColNames()) selectColsList.add("a." + name);
     selectColsList.add("t." + _model.observation.getPKColName());
     String selectCols = String.join(", ", selectColsList);
@@ -229,8 +215,8 @@ public class StudySubsettingUtilsTest {
   @Test
   @DisplayName("Test getting full ancestor PKs list")
   void testGetFullAncestorPKs() {
-    Set<String> cols = new HashSet<String>(_model.observation.getAncestorFullPkColNames());
-    Set<String> expected = new HashSet<String>(Arrays.asList(new String[]{ _model.household.getFullPKColName(), _model.participant.getFullPKColName()}));
+    Set<String> cols = new HashSet<>(_model.observation.getAncestorFullPkColNames());
+    Set<String> expected = new HashSet<>(Arrays.asList(_model.household.getFullPKColName(), _model.participant.getFullPKColName()));
     assertEquals(expected, cols);
   }
   
@@ -238,26 +224,32 @@ public class StudySubsettingUtilsTest {
   @DisplayName("Test populating ancestors")
   void testPopulateAncestors() {
     Entity e = _model.study.getEntity(_model.household.getId()).orElse(null);
+    assert e != null;
     assertEquals(new ArrayList<Entity>(), e.getAncestorEntities());
     
     e = _model.study.getEntity(_model.participant.getId()).orElse(null);
-    List<Entity> l = Arrays.asList(new Entity[]{ _model.household});
+    List<Entity> l = Collections.singletonList(_model.household);
+    assert e != null;
     assertEquals(l, e.getAncestorEntities());
 
     e = _model.study.getEntity(_model.householdObs.getId()).orElse(null);
-    l = Arrays.asList(new Entity[]{ _model.household});
+    l = Collections.singletonList(_model.household);
+    assert e != null;
     assertEquals(l, e.getAncestorEntities());
 
     e = _model.study.getEntity(_model.observation.getId()).orElse(null);
-    l = Arrays.asList(new Entity[]{ _model.household, _model.participant});
+    l = Arrays.asList(_model.household, _model.participant);
+    assert e != null;
     assertEquals(l, e.getAncestorEntities());
   
     e = _model.study.getEntity(_model.sample.getId()).orElse(null);
-    l = Arrays.asList(new Entity[]{ _model.household, _model.participant, _model.observation});
+    l = Arrays.asList(_model.household, _model.participant, _model.observation);
+    assert e != null;
     assertEquals(l, e.getAncestorEntities());
   
     e = _model.study.getEntity(_model.treatment.getId()).orElse(null);
-    l = Arrays.asList(new Entity[]{ _model.household, _model.participant, _model.observation});
+    l = Arrays.asList(_model.household, _model.participant, _model.observation);
+    assert e != null;
     assertEquals(l, e.getAncestorEntities());
   
   }
@@ -266,7 +258,7 @@ public class StudySubsettingUtilsTest {
   @DisplayName("Test creating a where clause for tabular report")
   void testGenerateTabularWhereClause() {
     
-    List<Variable> vars = Arrays.asList(new Variable[]{ _model.birthDate, _model.favNumber});
+    List<Variable> vars = Arrays.asList(_model.birthDate, _model.favNumber);
     String where = StudySubsettingUtils.generateTabularWhereClause(vars, _model.observation.getPKColName(), "t", "a");
     String expected = "WHERE t." + _model.observation.getPKColName() + " = a." + _model.observation.getPKColName() + NL +
         "AND (" + NL +
@@ -282,13 +274,13 @@ public class StudySubsettingUtilsTest {
   void testGenerateInClauseClause() {
     
     // construct pruned tree with a pivot (H, HO, O)
-    List<Filter> filters = new ArrayList<Filter>();
+    List<Filter> filters = new ArrayList<>();
     filters.add(_model.obsWeightFilter);
     Entity outputEntity = _model.householdObs;
     TreeNode<Entity> prunedTree = StudySubsettingUtils.pruneTree(_model.study.getEntityTree(), filters, outputEntity);
 
-    List<String> from = Arrays.asList(new String[]{ _model.household.getWithClauseName(), _model.householdObs.getWithClauseName(), _model.observation.getWithClauseName()});
-    String inClause = StudySubsettingUtils.generateInClause(prunedTree, outputEntity, "t", "AND");
+    List<String> from = Arrays.asList(_model.household.getWithClauseName(), _model.householdObs.getWithClauseName(), _model.observation.getWithClauseName());
+    String inClause = StudySubsettingUtils.generateInClause(prunedTree, outputEntity, "t");
     String expected = "AND t." + _model.householdObs.getPKColName() + " IN (" + NL +
         "  SELECT " + _model.householdObs.getFullPKColName() + NL +
         "  FROM " + String.join(", ", from) + NL +
@@ -305,7 +297,7 @@ public class StudySubsettingUtilsTest {
     
     List<Filter> filters = getSomeFilters();
     
-    List<Variable> outputVariables = Arrays.asList(new Variable[]{ _model.networth, _model.shoesize});
+    List<Variable> outputVariables = Arrays.asList(_model.networth, _model.shoesize);
 
     TreeNode<Entity> prunedTree = StudySubsettingUtils.pruneTree(_model.study.getEntityTree(), filters, _model.participant);
 
@@ -365,7 +357,7 @@ public class StudySubsettingUtilsTest {
     List<Filter> filters = Collections.emptyList();
 
     TreeNode<Entity> prunedEntityTree = StudySubsettingUtils.pruneTree(study.getEntityTree(), filters, entity);
-    Integer count = StudySubsettingUtils.getEntityCount(_dataSource, prunedEntityTree, entity, new ArrayList<Filter>());
+    Integer count = StudySubsettingUtils.getEntityCount(_dataSource, prunedEntityTree, entity, new ArrayList<>());
     
     assertEquals(4, count);
   }
@@ -398,7 +390,7 @@ public class StudySubsettingUtilsTest {
     String entityId = "GEMS_Part";
     Entity entity = study.getEntity(entityId).orElseThrow();
 
-    List<Variable> variables = new ArrayList<Variable>();
+    List<Variable> variables = new ArrayList<>();
     variables.add(entity.getVariable("var-17").orElseThrow()); // hair color
     variables.add(entity.getVariable("var-20").orElseThrow()); // name
 
@@ -427,7 +419,7 @@ public class StudySubsettingUtilsTest {
     String entityId = "GEMS_Part";
     Entity entity = study.getEntity(entityId).orElseThrow();
 
-    List<Variable> variables = new ArrayList<Variable>();
+    List<Variable> variables = new ArrayList<>();
     variables.add(entity.getVariable("var-17").orElseThrow()); // hair color
     variables.add(entity.getVariable("var-20").orElseThrow()); // name
 
@@ -495,7 +487,7 @@ public class StudySubsettingUtilsTest {
 
   @Test
   @DisplayName("Test variable distribution - no filters") 
-  void testVariableDistributionNoFilters() throws JsonProcessingException {
+  void testVariableDistributionNoFilters() {
     
     Study study = Study.loadStudy(_dataSource, "DS12385");
 
@@ -518,7 +510,7 @@ public class StudySubsettingUtilsTest {
 
   @Test
   @DisplayName("Test variable distribution - with filters") 
-  void testVariableDistribution() throws JsonProcessingException {
+  void testVariableDistribution() {
     
     Study study = Study.loadStudy(_dataSource, "DS12385");
 
@@ -528,7 +520,7 @@ public class StudySubsettingUtilsTest {
     String varId = "var-17";
     Variable var = entity.getVariable(varId).orElseThrow();
     
-    List<Filter> filters = new ArrayList<Filter>();
+    List<Filter> filters = new ArrayList<>();
     filters.add(_filtersForTesting.houseCityFilter);
     filters.add(_filtersForTesting.houseObsWaterSupplyFilter);
 
@@ -549,11 +541,11 @@ public class StudySubsettingUtilsTest {
 
     Map<String,Integer> result = Functions.getMapFromList(IteratorUtil.toIterable(distributionStream.iterator()), tuple -> tuple);
 
-    assertTrue(expectedDistribution.equals(result));
+    assertEquals(result, expectedDistribution);
   }
 
   List<Filter> getSomeFilters() {
-    List<Filter> filters = new ArrayList<Filter>();
+    List<Filter> filters = new ArrayList<>();
     filters.add(_model.obsWeightFilter);
     filters.add(_model.obsFavNewYearsFilter);
     filters.add(_model.obsBirthDateFilter);

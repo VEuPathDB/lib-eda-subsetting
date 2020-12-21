@@ -67,11 +67,10 @@ public class EntityResultSetUtils {
   }
   
   static String generateEntityTreeSql(String studyId) {
-    String[] cols = {STUDY_ID_COL_NAME, DISPLAY_NAME_COL_NAME, DISPLAY_NAME_PLURAL_COL_NAME, ENTITY_ID_COL_NAME, DESCRIP_COL_NAME, ENTITY_PARENT_ID_COL_NAME};
+    String[] cols = {STUDY_ID_COL_NAME, ENTITY_ABBREV_COL_NAME, DISPLAY_NAME_COL_NAME, DISPLAY_NAME_PLURAL_COL_NAME, ENTITY_ID_COL_NAME, DESCRIP_COL_NAME, ENTITY_PARENT_ID_COL_NAME};
     return "SELECT " + String.join(", ", cols) + NL
-        + "FROM " + ENTITY_TABLE_NAME + " e, " + ENTITY_NAME_TABLE_NAME + " n" + NL
-        + "WHERE e." + ENTITY_NAME_ID_COL_NAME + " = n." + ENTITY_NAME_ID_COL_NAME + NL
-        + "AND " + STUDY_ID_COL_NAME + " = '" + studyId + "'" + NL
+        + "FROM " + ENTITY_TABLE_NAME + NL
+        + "WHERE " + STUDY_ID_COL_NAME + " = '" + studyId + "'" + NL
         + "ORDER BY " + ENTITY_ID_COL_NAME;  // stable ordering supports unit testing
   }
 
@@ -81,9 +80,11 @@ public class EntityResultSetUtils {
       String name = getRsStringNotNull(rs, DISPLAY_NAME_COL_NAME);
       String namePlural = getRsStringNotNull(rs, DISPLAY_NAME_PLURAL_COL_NAME);
       String id = getRsStringNotNull(rs, ENTITY_ID_COL_NAME);
+      String studyId = getRsStringNotNull(rs, ENTITY_STUDY_ID_COL_NAME);
       String descrip = getRsStringNotNull(rs, DESCRIP_COL_NAME);
-      
-      return new Entity(id, name, namePlural, descrip);
+      String abbrev = getRsStringNotNull(rs, ENTITY_ABBREV_COL_NAME);
+
+      return new Entity(id, studyId, name, namePlural, descrip, abbrev);
     }
     catch (SQLException e) {
       throw new RuntimeException(e);

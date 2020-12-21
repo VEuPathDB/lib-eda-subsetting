@@ -11,19 +11,19 @@ class RdbmsColumnNames {
   static final String DESCRIP_COL_NAME = "description";
   static final String DISPLAY_NAME_COL_NAME = "display_name";
   static final String DISPLAY_NAME_PLURAL_COL_NAME = "display_name_plural";
-  static final String ENTITY_ID_COL_NAME = "entity_id";
 
   // Study table
   static final String STUDY_TABLE_NAME = "study";
-  static final String STUDY_ID_COL_NAME = "study_id";
+  static final String STUDY_ID_COL_NAME = "stable_id";
   static final String STUDY_NAME_COL_NAME = "name";
 
   // Entity table and EntityName table
   static final String ENTITY_TABLE_NAME = "entity";
-  static final String ENTITY_NAME_TABLE_NAME = "entityName";
-  static final String ENTITY_NAME_ID_COL_NAME = "entity_name_id";
-  static final String ENTITY_PARENT_ID_COL_NAME = "parent_entity_id";
-  
+  static final String ENTITY_ID_COL_NAME = "stable_id";
+  static final String ENTITY_STUDY_ID_COL_NAME = "study_stable_id";
+  static final String ENTITY_PARENT_ID_COL_NAME = "parent_stable_id";
+  static final String ENTITY_ABBREV_COL_NAME = "abbrev";
+
   // Variable table and VariableType table
   static final String VARIABLE_TABLE_NAME = "variable";
   static final String VARIABLE_TYPE_TABLE_NAME = "variableType";

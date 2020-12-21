@@ -55,16 +55,16 @@ public class TestModel {
   }
   
   private void createTestEntities() {
-    household = new Entity("GEMS_House", "Household", "Households", "descrip");
-    householdObs = new Entity("GEMS_HouseObs", "Household Observation", "Household Observations", "descrip");
-    participant = new Entity("GEMS_Part", "Participant", "Participants", "descrip");
-    observation = new Entity("GEMS_PartObs", "Observation", "Observations", "descrip");
-    sample = new Entity("GEMS_Sample", "Sample", "Samples", "descrip");
-    treatment = new Entity("GEMS_Treat", "Treatment", "Treatments", "descrip");
+    household = new Entity("GEMS_House", "555555", "Household", "Households", "descrip", "Hshld");
+    householdObs = new Entity("GEMS_HouseObs", "555555", "Household Observation", "Household Observations", "descrip", "HshldObsvtn");
+    participant = new Entity("GEMS_Part", "555555", "Participant", "Participants", "descrip", "Prtcpnt");
+    observation = new Entity("GEMS_PartObs", "555555", "Observation", "Observations", "descrip", "PrtcpntObsrvtn");
+    sample = new Entity("GEMS_Sample", "555555", "Sample", "Samples", "descrip", "Smpl");
+    treatment = new Entity("GEMS_Treat", "555555", "Treatment", "Treatments", "descrip", "Trtmnt");
   }
   
   private Map<String, Entity> createIdMap() {
-    Map<String, Entity> idMap = new HashMap<String, Entity>();
+    Map<String, Entity> idMap = new HashMap<>();
     idMap.put("GEMS_House", household);
     idMap.put("GEMS_HouseObs", householdObs);
     idMap.put("GEMS_Part", participant);
@@ -78,28 +78,28 @@ public class TestModel {
    * return a fresh entity tree.
    */
   public TreeNode<Entity> constructEntityTree() {
-    TreeNode<Entity> householdNode = new TreeNode<Entity>(household);
+    TreeNode<Entity> householdNode = new TreeNode<>(household);
 
-    TreeNode<Entity> houseObsNode = new TreeNode<Entity>(householdObs);
+    TreeNode<Entity> houseObsNode = new TreeNode<>(householdObs);
     householdNode.addChildNode(houseObsNode);
 
-    TreeNode<Entity> participantNode = new TreeNode<Entity>(participant);
+    TreeNode<Entity> participantNode = new TreeNode<>(participant);
     householdNode.addChildNode(participantNode);
 
-    TreeNode<Entity> observationNode = new TreeNode<Entity>(observation);
+    TreeNode<Entity> observationNode = new TreeNode<>(observation);
     participantNode.addChildNode(observationNode);
     
-    TreeNode<Entity> sampleNode = new TreeNode<Entity>(sample);
+    TreeNode<Entity> sampleNode = new TreeNode<>(sample);
     observationNode.addChildNode(sampleNode);
     
-    TreeNode<Entity> treatmentNode = new TreeNode<Entity>(treatment);
+    TreeNode<Entity> treatmentNode = new TreeNode<>(treatment);
     observationNode.addChildNode(treatmentNode);
     
     return householdNode;
   }
   
   private List<Variable> constructVariables() {
-    List<Variable> vars = new ArrayList<Variable>();
+    List<Variable> vars = new ArrayList<>();
 
     roof = new Variable("roof", "var-10", household, VariableType.STRING, IsContinuous.FALSE);
     vars.add(roof);
@@ -143,26 +143,26 @@ public class TestModel {
     obsFavNumberFilter = new NumberSetFilter(observation, favNumber.getId(), favNums); 
 
     obsBirthDateFilter = new DateRangeFilter(observation, birthDate.getId(),
-        LocalDateTime.of(2019, Month.MARCH, 21, 00, 00),
-        LocalDateTime.of(2019, Month.MARCH, 28, 00, 00));
+        LocalDateTime.of(2019, Month.MARCH, 21, 0, 0),
+        LocalDateTime.of(2019, Month.MARCH, 28, 0, 0));
 
-    List<LocalDateTime> dates = new ArrayList<LocalDateTime>();
-    dates.add(LocalDateTime.of(2019, Month.MARCH, 21, 00, 00));
-    dates.add(LocalDateTime.of(2019, Month.MARCH, 28, 00, 00));
-    dates.add(LocalDateTime.of(2019, Month.JUNE, 12, 00, 00));
+    List<LocalDateTime> dates = new ArrayList<>();
+    dates.add(LocalDateTime.of(2019, Month.MARCH, 21, 0, 0));
+    dates.add(LocalDateTime.of(2019, Month.MARCH, 28, 0, 0));
+    dates.add(LocalDateTime.of(2019, Month.JUNE, 12, 0, 0));
     obsFavNewYearsFilter = new DateSetFilter(observation, favNewYears.getId(), dates);
 
-    List<String> moods = Arrays.asList(new String[]{"happy", "jolly", "giddy"});
+    List<String> moods = Arrays.asList("happy", "jolly", "giddy");
     obsMoodFilter = new StringSetFilter(observation, mood.getId(), moods); 
 
     obsWeightFilter = new NumberRangeFilter(observation, weight.getId(), 10, 20);
 
     // create household roof filter
-    List<String> roofs = Arrays.asList(new String[]{"metal", "tile"});
+    List<String> roofs = Arrays.asList("metal", "tile");
     houseRoofFilter = new StringSetFilter(household, roof.getId(), roofs);
 
     // create household observation filter
-    List<String> waterSupplies = Arrays.asList(new String[]{"piped", "well"});
+    List<String> waterSupplies = Arrays.asList("piped", "well");
     houseObsWaterSupplyFilter = new StringSetFilter(householdObs, waterSupply.getId(), waterSupplies);
   }
 }

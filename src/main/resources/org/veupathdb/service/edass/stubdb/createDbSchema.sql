@@ -3,6 +3,7 @@
 -- the study_id is a stable ID
 create table Study (
   study_id integer not null,
+  stable_id varchar(50) not null,     -- JB previously source_id
   name varchar(30) not null,
   PRIMARY KEY (study_id)
 );

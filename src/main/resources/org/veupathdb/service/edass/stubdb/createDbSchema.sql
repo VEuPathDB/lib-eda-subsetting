@@ -2,10 +2,10 @@
 -- the abbrev would be used in the name of the tall and ancestors tables
 -- the study_id is a stable ID
 create table Study (
-  study_id integer not null,
+--study_id  integer,                  -- JB not needed
   stable_id varchar(50) not null,     -- JB previously source_id
   name varchar(30) not null,
-  PRIMARY KEY (study_id)
+  PRIMARY KEY (stable_id)
 );
 
 -- The entities types per study, eg Participants, and their tree relationships
@@ -14,24 +14,24 @@ CREATE TABLE EntityTypeGraph (
   stable_id varchar(50) not null,             -- JB previously entity_type_stable_id
   display_name varchar(30) not null,          -- JB previously entity_type_name
   display_name_plural varchar(30) not null,   -- JB need a plural column
-  study_id integer not null,
-  parent_stable_id varchar(30),                -- JB previously parent_entity_type_stable_id
+  study_stable_id varchar(50) not null,       -- JB previously study_id
+  parent_stable_id varchar(30),               -- JB previously parent_entity_type_stable_id
   description varchar(100),
   abbrev varchar(20),
   PRIMARY KEY (entity_type_stable_id),
 );
-alter table EntityTypeGraph add unique (name, study_id);
-alter table EntityTypeGraph add unique (parent_stable_id, study_id);
-alter table EntityTypeGraph add unique (stable_id, study_id);
+alter table EntityTypeGraph add unique (name, study_stable_id);
+alter table EntityTypeGraph add unique (parent_stable_id, study_stable_id);
+alter table EntityTypeGraph add unique (stable_id, study_stable_id);
 ALTER TABLE EntityTypeGraph 
-   ADD FOREIGN KEY (study_id) REFERENCES Study (study_id);
+   ADD FOREIGN KEY (study_stable_id) REFERENCES Study (study_stable_id);
 
 -- The variables/categories in a study, as a tree.  (It is called a graph because in non-EDA applications
 -- attributes might have multiple parents.)
 create table AttributeGraph (
 --attribute_graph_id               -- JB not needed
   stable_id varchar(30),           -- JB previously 'source_id'
-  study_id integer not null,
+  study_stable_id varchar(30) not null,  -- JB previously study_id
   ontology_term_id integer,
   parent_stable_id varchar(30),      -- JB previously 'parent_source_id'
   parent_ontology_term_id integer,   -- JB why do we need this?
@@ -42,9 +42,9 @@ create table AttributeGraph (
 );
 alter table AttributeGraph add unique (ontology_term_id);
 ALTER TABLE AttributeGraph
-   ADD FOREIGN KEY (study_id) REFERENCES Study (study_id);
+   ADD FOREIGN KEY (study_stable_id) REFERENCES Study (study_stable_id);
 ALTER TABLE AttributeGraph 
-   ADD FOREIGN KEY (parent_stable_id) REFERENCES AttributeGraph (stable_id); 
+   ADD FOREIGN KEY (parent_stable_id) REFERENCES AttributeGraph (stable_id);
 
 -- the attributes that have values (ie, are not strictly a category).
 -- rows here link to the AttributeGraph table for positioning in the tree.

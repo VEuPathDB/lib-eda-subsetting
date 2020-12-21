@@ -9,11 +9,12 @@ create table Study (
 
 -- The entities types per study, eg Participants, and their tree relationships
 CREATE TABLE EntityTypeGraph (
---entity_type_graph_id integer,           -- JB not needed
-  stable_id varchar(50) not null,         -- JB previously entity_type_stable_id
-  name varchar(30) not null,              -- JB previously entity_type_name
+--entity_type_graph_id integer,               -- JB not needed
+  stable_id varchar(50) not null,             -- JB previously entity_type_stable_id
+  display_name varchar(30) not null,          -- JB previously entity_type_name
+  display_name_plural varchar(30) not null,   -- JB need a plural column
   study_id integer not null,
-  parent_stable_id varchar(30),           -- JB previously parent_entity_type_stable_id
+  parent_stable_id varchar(30),                -- JB previously parent_entity_type_stable_id
   description varchar(100),
   abbrev varchar(20),
   PRIMARY KEY (entity_type_stable_id),

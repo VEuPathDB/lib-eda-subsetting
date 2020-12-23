@@ -8,17 +8,7 @@ create table Study (
   PRIMARY KEY (stable_id)
 );
 alter table Study add unique (display_name);
-alter table Study add unique (internal_abbrev);
-
-create table EntityTypeName (
-  study_stable_id varchar(30),
-  entity_stable_id varchar(30),
-  description varchar(100),
-  display_name varchar(30) not null,
-  display_name_plural varchar(30)
-);
-alter table EntityTypeName add unique (study_stable_id, entity_stable_id);
-alter table EntityTypeName add unique (display_name, study_stable_id, entity_stable_id);
+alter table Study add unique (internal_abbrev);;
 
 -- The entities types per study, eg Participants, and their tree relationships
 CREATE TABLE EntityTypeGraph (
@@ -26,9 +16,13 @@ CREATE TABLE EntityTypeGraph (
   study_stable_id varchar(50) not null,
   parent_stable_id varchar(30),
   internal_abbrev varchar(20),
+  display_name varchar(30) not null,
+  display_name_plural varchar(30),
+  description varchar(100),
 );
 alter table EntityTypeGraph add unique (study_stable_id, stable_id);
 alter table EntityTypeGraph add unique (study_stable_id, internal_abbrev);
+alter table EntityTypeGraph add unique (display_name, study_stable_id, stable_id);
 ALTER TABLE EntityTypeGraph
    ADD FOREIGN KEY (study_stable_id) REFERENCES Study (stable_id);
 
@@ -46,11 +40,10 @@ create table Attribute_ds2324_Hshld (
   provider_label varchar(30) not null,
   display_name varchar(30) not null,
   term_type varchar(20),
-  process_type_id integer,
   has_value integer,
   data_type varchar(10),
   has_multiple_values_per_entity integer,
-  data_shape varchar(10),
+  data_shape varchar(20),
   unit varchar (30),
   unit_ontology_term_id integer,
   precision integer,
@@ -84,11 +77,10 @@ create table Attribute_ds2324_HshldObsrvtn (
   provider_label varchar(30) not null,
   display_name varchar(30) not null,
   term_type varchar(20),
-  process_type_id integer,
   has_value integer,
   data_type varchar(10),
   has_multiple_values_per_entity integer,
-  data_shape varchar(10),
+  data_shape varchar(20),
   unit varchar (30),
   unit_ontology_term_id integer,
   precision integer,
@@ -123,11 +115,10 @@ create table Attribute_ds2324_Prtcpnt (
   provider_label varchar(30) not null,
   display_name varchar(30) not null,
   term_type varchar(20),
-  process_type_id integer,
   has_value integer,
   data_type varchar(10),
   has_multiple_values_per_entity integer,
-  data_shape varchar(10),
+  data_shape varchar(20),
   unit varchar (30),
   unit_ontology_term_id integer,
   precision integer,
@@ -161,11 +152,10 @@ create table Attribute_ds2324_PrtcpntObsrvtn (
   provider_label varchar(30) not null,
   display_name varchar(30) not null,
   term_type varchar(20),
-  process_type_id integer,
   has_value integer,
   data_type varchar(10),
   has_multiple_values_per_entity integer,
-  data_shape varchar(10),
+  data_shape varchar(20),
   unit varchar (30),
   unit_ontology_term_id integer,
   precision integer,

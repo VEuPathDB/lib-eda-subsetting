@@ -18,7 +18,7 @@ public class DateSetFilter extends Filter {
 
   @Override
   public String getAndClausesSql() {
-    List<String> dateStrings = new ArrayList<String>();
+    List<String> dateStrings = new ArrayList<>();
     for (LocalDateTime date : dateSet) dateStrings.add(date.toString());
     return "  AND " + DATE_VALUE_COL_NAME + " IN ('" + String.join("', '", dateStrings) + "')" + NL;
   }

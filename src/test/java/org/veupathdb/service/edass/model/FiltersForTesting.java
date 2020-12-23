@@ -4,6 +4,7 @@ import java.time.LocalDateTime;
 import java.time.Month;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 
 public class FiltersForTesting {
@@ -34,7 +35,7 @@ public class FiltersForTesting {
     Variable visitDate = observation.getVariable("var-15").orElseThrow();
     Variable mood = observation.getVariable("var-16").orElseThrow();
 
-    List<String> haircolors = Arrays.asList(new String[]{"blond", "green"});
+    List<String> haircolors = Arrays.asList("blond", "green");
     partHairFilter = new StringSetFilter(participant, haircolor.getId(), haircolors);
 
     obsWeightFilter = new NumberRangeFilter(observation, weight.getId(), 10, 20);
@@ -43,24 +44,24 @@ public class FiltersForTesting {
     obsFavNumberFilter = new NumberSetFilter(observation, favNumber.getId(), favNums);
 
     obsBirthDateFilter = new DateRangeFilter(observation, startDate.getId(),
-        LocalDateTime.of(2019, Month.MARCH, 21, 00, 00),
-        LocalDateTime.of(2019, Month.MARCH, 28, 00, 00));
+        LocalDateTime.of(2019, Month.MARCH, 21, 0, 0),
+        LocalDateTime.of(2019, Month.MARCH, 28, 0, 0));
 
-    List<LocalDateTime> dates = new ArrayList<LocalDateTime>();
-    dates.add(LocalDateTime.of(2019, Month.MARCH, 21, 00, 00));
-    dates.add(LocalDateTime.of(2019, Month.MARCH, 28, 00, 00));
-    dates.add(LocalDateTime.of(2019, Month.JUNE, 12, 00, 00));
+    List<LocalDateTime> dates = new ArrayList<>();
+    dates.add(LocalDateTime.of(2019, Month.MARCH, 21, 0, 0));
+    dates.add(LocalDateTime.of(2019, Month.MARCH, 28, 0, 0));
+    dates.add(LocalDateTime.of(2019, Month.JUNE, 12, 0, 0));
     obsVisitDateFilter = new DateSetFilter(observation, visitDate.getId(), dates);
 
-    List<String> moods = Arrays.asList(new String[]{"happy", "jolly", "giddy"});
+    List<String> moods = Arrays.asList("happy", "jolly", "giddy");
     obsMoodFilter = new StringSetFilter(observation, mood.getId(), moods);
 
     obsWeightFilter = new NumberRangeFilter(observation, weight.getId(), 10, 20);
 
-    List<String> cities = Arrays.asList(new String[]{"Boston"});
+    List<String> cities = Collections.singletonList("Boston");
     houseCityFilter = new StringSetFilter(household, city.getId(), cities);
 
-    List<String> waterSupplies = Arrays.asList(new String[]{"piped", "well"});
+    List<String> waterSupplies = Arrays.asList("piped", "well");
     houseObsWaterSupplyFilter = new StringSetFilter(householdObs, watersupply.getId(), waterSupplies);
   }
 }

@@ -1,12 +1,10 @@
 package org.veupathdb.service.edass.model;
 
+import org.gusdb.fgputil.FormatUtil;
+import org.gusdb.fgputil.functional.FunctionalInterfaces.FunctionWithException;
+
 import java.sql.ResultSet;
 import java.util.Date;
-import java.util.Map;
-
-import org.gusdb.fgputil.FormatUtil;
-
-import org.gusdb.fgputil.functional.FunctionalInterfaces.FunctionWithException;
 
 public class Variable {
   private String providerLabel;
@@ -19,7 +17,7 @@ public class Variable {
   private String displayName;
   private String parentId;
   
-  public static enum VariableType {
+  public enum VariableType {
     STRING ("string_value", rs -> rs.getString("string_value"), "string"),  
     NUMBER ("number_value", rs -> String.valueOf(rs.getDouble("number_value")), "number"),
     DATE   ("date_value", rs -> FormatUtil.formatDate(new Date(rs.getTimestamp("date_value").getTime())), "date");
@@ -27,7 +25,6 @@ public class Variable {
     private final String tallTableColumnName;
     private final String typeString;
     private final FunctionWithException<ResultSet, String> resultSetToStringValue;
-    Map<String, VariableType> typeStringMap;
 
     VariableType(String tallTableColumnName, FunctionWithException<ResultSet, String> resultSetToStringValue, String typeString) {
       this.tallTableColumnName = tallTableColumnName;
@@ -37,12 +34,8 @@ public class Variable {
     
     public String getTallTableColumnName() {
       return this.tallTableColumnName;
-    }   
-    
-    public String getTypeString() {
-      return this.typeString;
     }
-    
+
     public static VariableType fromTypeString(String str) {
       if (str.equals(STRING.typeString)) return STRING;
       else if (str.equals(NUMBER.typeString)) return NUMBER;

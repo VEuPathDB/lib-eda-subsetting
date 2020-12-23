@@ -107,7 +107,7 @@ public class Study {
    * Build internal (convenience) state from the raw entity tree and variables set
    */
   void initVariables(List<Variable> vars) {
-    variableIdToEntityMap = new HashMap<String, Entity>();    
+    variableIdToEntityMap = new HashMap<>();
     for (Variable var : vars) {
       variableIdToEntityMap.put(var.getId(), entityIdMap.get(var.getEntityId()));
       var.getEntity().addVariable(var);

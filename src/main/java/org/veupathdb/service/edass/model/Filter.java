@@ -39,7 +39,6 @@ public abstract class Filter {
 
   /**
    * subclasses provide AND clauses specific to their type
-   * @return
    */
   public abstract String getAndClausesSql();
 

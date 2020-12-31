@@ -1,57 +1,52 @@
 package org.veupathdb.service.edass.model;
 
+import org.gusdb.fgputil.db.runner.SQLRunner;
+
+import javax.sql.DataSource;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
-import javax.sql.DataSource;
-import org.gusdb.fgputil.db.runner.SQLRunner;
 
 import static org.gusdb.fgputil.FormatUtil.NL;
 import static org.veupathdb.service.edass.model.RdbmsColumnNames.*;
 
 class VariableResultSetUtils {
 
-  static List<Variable> getStudyVariables(DataSource datasource, String studyId, Map<String, Entity> entityIdMap) {
+  static List<Variable> getEntityVariables(DataSource datasource, Entity entity) {
     
-    String sql = generateStudyVariablesListSql(studyId);
+    String sql = generateStudyVariablesListSql(entity.getVariablesTableName());
     
     return new SQLRunner(datasource, sql).executeQuery(rs -> {
       List<Variable> variables = new ArrayList<>();
       while (rs.next()) {
-        variables.add(createVariableFromResultSet(rs, entityIdMap));
+        variables.add(createVariableFromResultSet(rs, entity));
       }
       return variables;
     });
   }
 
-  static String generateStudyVariablesListSql(String studyId) {
-    String[] selectCols = {VARIABLE_ID_COL_NAME, ENTITY_ID_COL_NAME, VARIABLE_TYPE_COL_NAME, 
-        CONTINUOUS_COL_NAME, UNITS_COL_NAME, PRECISION_COL_NAME, PROVIDER_LABEL_COL_NAME, DISPLAY_NAME_COL_NAME, VARIABLE_PARENT_ID_COL_NAME};
+  static String generateStudyVariablesListSql(String variablesTableName) {
+    String[] selectCols = {VARIABLE_ID_COL_NAME, VARIABLE_TYPE_COL_NAME,
+            DATA_SHAPE_COL_NAME, DISPLAY_TYPE_COL_NAME, HAS_VALUES_COL_NAME, UNITS_COL_NAME, MULTIVALUED_COL_NAME, PRECISION_COL_NAME, PROVIDER_LABEL_COL_NAME, DISPLAY_NAME_COL_NAME, VARIABLE_PARENT_ID_COL_NAME};
     
     return "SELECT " + String.join(", ", selectCols) + NL
-        + "FROM " + ENTITY_TABLE_NAME + " e, " + NL
-        + "  " + VARIABLE_TABLE_NAME + " v," + NL
-        + "  " + VARIABLE_TYPE_TABLE_NAME + " t" + NL
-        + "WHERE e." + ENTITY_ID_COL_NAME + " = v." + ENTITY_ID_COL_NAME + NL
-        + "AND v." + VARIABLE_TYPE_ID_COL_NAME + " = t." + VARIABLE_TYPE_ID_COL_NAME + NL
-        + "AND " + STUDY_ID_COL_NAME + " = '" + studyId + "'" + NL
+        + "FROM " + variablesTableName + NL
         + "ORDER BY " + VARIABLE_ID_COL_NAME;  // stable ordering supports unit testing
   }
 
-  static Variable createVariableFromResultSet(ResultSet rs, Map<String, Entity> entityIdMap) {
+  //   public Variable(String providerLabel, String id, Entity entity, VariableType type, VariableDataShape dataShape,
+  //                  VariableDisplayType displayType, boolean hasValues, String units, Integer precision, String displayName, String parentId) {
+  static Variable createVariableFromResultSet(ResultSet rs, Entity entity) {
     try {
-      String entityId = getRsStringNotNull(rs, ENTITY_ID_COL_NAME);
-      if (!entityIdMap.containsKey(entityId))
-        throw new RuntimeException("Variable's entity ID not found for this study: " + entityId);
-      Entity entity = entityIdMap.get(entityId);
       return new Variable(
           getRsStringNotNull(rs, PROVIDER_LABEL_COL_NAME),
           getRsStringNotNull(rs, VARIABLE_ID_COL_NAME),
           entity,
           Variable.VariableType.fromTypeString(getRsStringNotNull(rs, VARIABLE_TYPE_COL_NAME)),
-          Variable.IsContinuous.fromBoolean(rs.getBoolean(PRECISION_COL_NAME)),
+          Variable.VariableDataShape.fromString(getRsStringNotNull(rs, DATA_SHAPE_COL_NAME)),
+          Variable.VariableDisplayType.fromString(getRsStringNotNull(rs, DISPLAY_TYPE_COL_NAME)),
+          rs.getBoolean(HAS_VALUES_COL_NAME),
           rs.getString(UNITS_COL_NAME),
           rs.getInt(PRECISION_COL_NAME),
           getRsStringNotNull(rs, DISPLAY_NAME_COL_NAME),

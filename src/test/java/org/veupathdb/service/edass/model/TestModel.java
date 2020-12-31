@@ -9,7 +9,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.gusdb.fgputil.functional.TreeNode;
-import org.veupathdb.service.edass.model.Variable.IsContinuous;
+import org.veupathdb.service.edass.model.Variable.VariableDataShape;
 import org.veupathdb.service.edass.model.Variable.VariableType;
 
 /**
@@ -50,7 +50,8 @@ public class TestModel {
   
   public TestModel() {
     createTestEntities();
-    study = new Study("555555", constructEntityTree(), constructVariables(), createIdMap()); 
+    Study.StudyOverview overview = new Study.StudyOverview("GEMS", "555555", "gems");
+    study = new Study(overview, constructEntityTree(), createIdMap());
     createFilters();
   }
   
@@ -101,34 +102,34 @@ public class TestModel {
   private List<Variable> constructVariables() {
     List<Variable> vars = new ArrayList<>();
 
-    roof = new Variable("roof", "var-10", household, VariableType.STRING, IsContinuous.FALSE);
+    roof = new Variable("roof", "var-10", household, VariableType.STRING, VariableDataShape.FALSE);
     vars.add(roof);
     
-    shoesize = new Variable("shoesize", "var-11", participant, VariableType.NUMBER, IsContinuous.FALSE);    
+    shoesize = new Variable("shoesize", "var-11", participant, VariableType.NUMBER, VariableDataShape.FALSE);
     vars.add(shoesize);
 
-    haircolor = new Variable("haircolor", "var-17", participant, VariableType.STRING, IsContinuous.FALSE);    
+    haircolor = new Variable("haircolor", "var-17", participant, VariableType.STRING, Variable.VariableDataShape.FALSE);
     vars.add(haircolor);
 
-    networth = new Variable("networth", "var-18", participant, VariableType.NUMBER, IsContinuous.TRUE);    
+    networth = new Variable("networth", "var-18", participant, VariableType.NUMBER, VariableDataShape.TRUE);
     vars.add(networth);
 
-    weight = new Variable("weight", "var-12", observation, VariableType.NUMBER, IsContinuous.TRUE);    
+    weight = new Variable("weight", "var-12", observation, VariableType.NUMBER, Variable.VariableDataShape.TRUE);
     vars.add(weight);
     
-    favNumber = new Variable("favNumber", "var-13", observation, VariableType.NUMBER, IsContinuous.FALSE);    
+    favNumber = new Variable("favNumber", "var-13", observation, VariableType.NUMBER, Variable.VariableDataShape.FALSE);
     vars.add(favNumber);
     
-    birthDate  = new Variable("birthDate", "var-14", observation, VariableType.DATE, IsContinuous.TRUE);    
+    birthDate  = new Variable("birthDate", "var-14", observation, VariableType.DATE, Variable.VariableDataShape.TRUE);
     vars.add(birthDate);
     
-    favNewYears = new Variable("favNewYears", "var-15", observation, VariableType.DATE, IsContinuous.FALSE);    
+    favNewYears = new Variable("favNewYears", "var-15", observation, VariableType.DATE, Variable.VariableDataShape.FALSE);
     vars.add(favNewYears);
     
-    mood  = new Variable("mood", "var-16", observation, VariableType.STRING, IsContinuous.FALSE);    
+    mood  = new Variable("mood", "var-16", observation, VariableType.STRING, VariableDataShape.FALSE);
     vars.add(mood);
 
-    waterSupply  = new Variable("waterSupply", "var-19", householdObs, VariableType.STRING, IsContinuous.FALSE);    
+    waterSupply  = new Variable("waterSupply", "var-19", householdObs, VariableType.STRING, VariableDataShape.FALSE);
     vars.add(waterSupply);
 
     return vars;

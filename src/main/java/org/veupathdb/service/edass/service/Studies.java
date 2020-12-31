@@ -3,70 +3,53 @@ package org.veupathdb.service.edass.service;
 import com.fasterxml.jackson.core.JsonEncoding;
 import com.fasterxml.jackson.core.JsonFactory;
 import com.fasterxml.jackson.core.JsonGenerator;
+import org.gusdb.fgputil.Tuples.TwoTuple;
+import org.gusdb.fgputil.functional.TreeNode;
+import org.veupathdb.service.edass.Resources;
+import org.veupathdb.service.edass.generated.model.*;
+import org.veupathdb.service.edass.model.*;
+import org.veupathdb.service.edass.model.Variable.VariableType;
+
+import javax.sql.DataSource;
+import javax.ws.rs.BadRequestException;
+import javax.ws.rs.InternalServerErrorException;
+import javax.ws.rs.NotFoundException;
 import java.io.BufferedOutputStream;
 import java.io.IOException;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
 import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.function.Supplier;
 import java.util.stream.Stream;
-import javax.sql.DataSource;
-import javax.ws.rs.BadRequestException;
-import javax.ws.rs.InternalServerErrorException;
-import javax.ws.rs.NotFoundException;
-import org.gusdb.fgputil.Tuples.TwoTuple;
-import org.gusdb.fgputil.functional.TreeNode;
-import org.veupathdb.service.edass.Resources;
-import org.veupathdb.service.edass.generated.model.APIDateRangeFilter;
-import org.veupathdb.service.edass.generated.model.APIDateSetFilter;
-import org.veupathdb.service.edass.generated.model.APIDateVariable;
-import org.veupathdb.service.edass.generated.model.APIDateVariableImpl;
-import org.veupathdb.service.edass.generated.model.APIEntity;
-import org.veupathdb.service.edass.generated.model.APIEntityImpl;
-import org.veupathdb.service.edass.generated.model.APIFilter;
-import org.veupathdb.service.edass.generated.model.APINumberRangeFilter;
-import org.veupathdb.service.edass.generated.model.APINumberSetFilter;
-import org.veupathdb.service.edass.generated.model.APINumberVariable;
-import org.veupathdb.service.edass.generated.model.APINumberVariableImpl;
-import org.veupathdb.service.edass.generated.model.APIStringSetFilter;
-import org.veupathdb.service.edass.generated.model.APIStringVariable;
-import org.veupathdb.service.edass.generated.model.APIStringVariableImpl;
-import org.veupathdb.service.edass.generated.model.APIStudyDetail;
-import org.veupathdb.service.edass.generated.model.APIStudyDetailImpl;
-import org.veupathdb.service.edass.generated.model.APIVariable;
-import org.veupathdb.service.edass.generated.model.EntityCountPostRequest;
-import org.veupathdb.service.edass.generated.model.EntityCountPostResponse;
-import org.veupathdb.service.edass.generated.model.EntityCountPostResponseImpl;
-import org.veupathdb.service.edass.generated.model.EntityTabularPostRequest;
-import org.veupathdb.service.edass.generated.model.EntityTabularPostResponseStream;
-import org.veupathdb.service.edass.generated.model.StudiesGetResponseImpl;
-import org.veupathdb.service.edass.generated.model.StudyIdGetResponse;
-import org.veupathdb.service.edass.generated.model.StudyIdGetResponseImpl;
-import org.veupathdb.service.edass.generated.model.VariableDistributionPostRequest;
-import org.veupathdb.service.edass.generated.model.VariableDistributionPostResponseStream;
-import org.veupathdb.service.edass.model.DateRangeFilter;
-import org.veupathdb.service.edass.model.DateSetFilter;
-import org.veupathdb.service.edass.model.Entity;
-import org.veupathdb.service.edass.model.Filter;
-import org.veupathdb.service.edass.model.NumberRangeFilter;
-import org.veupathdb.service.edass.model.NumberSetFilter;
-import org.veupathdb.service.edass.model.StringSetFilter;
-import org.veupathdb.service.edass.model.Study;
-import org.veupathdb.service.edass.model.StudySubsettingUtils;
-import org.veupathdb.service.edass.model.Variable;
-import org.veupathdb.service.edass.model.Variable.VariableType;
 
 import static org.gusdb.fgputil.functional.Functions.cSwallow;
 
 public class Studies implements org.veupathdb.service.edass.generated.resources.Studies {
+  Map<String, APIStudyOverview> apiStudyOverviews;  // cache the overviews
 
   @Override
   public GetStudiesResponse getStudies() {
     var out = new StudiesGetResponseImpl();
-    out.setStudies(Study.getStudyOverviews(Resources.getApplicationDataSource()));
+    out.setStudies(getStudyOverviews(Resources.getApplicationDataSource()));
     return GetStudiesResponse.respond200WithApplicationJson(out);
+  }
+
+  private List<APIStudyOverview> getStudyOverviews(DataSource datasource) {
+    if (apiStudyOverviews == null) {
+      List<Study.StudyOverview> overviews = Study.getStudyOverviews(datasource);
+      apiStudyOverviews = new LinkedHashMap<>();
+      for (Study.StudyOverview overview : overviews) {
+        APIStudyOverview study = new APIStudyOverviewImpl();
+        study.setId(overview.getId());
+        study.setName(overview.getDisplayName());
+        apiStudyOverviews.put(study.getId(), study);
+      }
+    }
+    return new ArrayList<>( apiStudyOverviews.values() );
   }
 
   @Override
@@ -108,7 +91,7 @@ public class Studies implements org.veupathdb.service.edass.generated.resources.
     if (var.getType() == VariableType.DATE) {
       APIDateVariable apiVar = new APIDateVariableImpl();
       setApiVarProps(apiVar, var);
-      apiVar.setIsContinuous(var.getIsContinuous() == Variable.IsContinuous.TRUE);    
+      apiVar.setIsContinuous(var.getIsContinuous() == Variable.VariableDataShape.TRUE);
       return apiVar;
     }
     else if (var.getType() == VariableType.NUMBER) {
@@ -116,7 +99,7 @@ public class Studies implements org.veupathdb.service.edass.generated.resources.
       setApiVarProps(apiVar, var);
       apiVar.setPrecision(var.getPrecision());
       apiVar.setUnits(var.getUnits());
-      apiVar.setIsContinuous(var.getIsContinuous() == Variable.IsContinuous.TRUE);    
+      apiVar.setIsContinuous(var.getIsContinuous() == Variable.VariableDataShape.TRUE);
       return apiVar;
     }
     else if (var.getType() == VariableType.STRING) {
@@ -239,7 +222,7 @@ public class Studies implements org.veupathdb.service.edass.generated.resources.
   
   private UnpackedRequest unpack(DataSource datasource, String studyId, String entityId, List<APIFilter> apiFilters, List<String> variableIds) {
     String studIdStr = "Study ID " + studyId;
-    if (!Study.validateStudyId(datasource, studyId))
+    if (!validateStudyId(datasource, studyId))
       throw new NotFoundException(studIdStr + " is not found.");
    
     Study study = Study.loadStudy(datasource, studyId);
@@ -250,6 +233,13 @@ public class Studies implements org.veupathdb.service.edass.generated.resources.
     List<Filter> filters = constructFiltersFromAPIFilters(study, apiFilters);
   
     return new UnpackedRequest(study, entity, variables, filters);
+  }
+  /*
+   * return true if valid study id
+   */
+  public boolean validateStudyId(DataSource datasource, String studyId) {
+    return getStudyOverviews(datasource).stream()
+            .anyMatch(study -> study.getId().equals(studyId));
   }
 
   /*

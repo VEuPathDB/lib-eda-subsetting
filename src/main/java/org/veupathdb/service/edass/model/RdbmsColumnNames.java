@@ -15,28 +15,30 @@ class RdbmsColumnNames {
   // Study table
   static final String STUDY_TABLE_NAME = "study";
   static final String STUDY_ID_COL_NAME = "stable_id";
-  static final String STUDY_NAME_COL_NAME = "name";
+  static final String STUDY_NAME_COL_NAME = "display_name";
+  static final String STUDY_ABBREV_COL_NAME = "internal_abbrev";
 
   // Entity table and EntityName table
-  static final String ENTITY_TABLE_NAME = "entity";
+  static final String ENTITY_TABLE_NAME = "EntityTypeGraph";
   static final String ENTITY_ID_COL_NAME = "stable_id";
   static final String ENTITY_STUDY_ID_COL_NAME = "study_stable_id";
   static final String ENTITY_PARENT_ID_COL_NAME = "parent_stable_id";
-  static final String ENTITY_ABBREV_COL_NAME = "abbrev";
+  static final String ENTITY_ABBREV_COL_NAME = "internal_abbrev";
 
   // Variable table and VariableType table
-  static final String VARIABLE_TABLE_NAME = "variable";
-  static final String VARIABLE_TYPE_TABLE_NAME = "variableType";
-  static final String VARIABLE_ID_COL_NAME = "variable_id";
-  static final String VARIABLE_TYPE_COL_NAME = "variable_type";
-  static final String VARIABLE_TYPE_ID_COL_NAME = "variable_type_id";
+  static final String VARIABLE_ID_COL_NAME = "stable_id";
+  static final String VARIABLE_TYPE_COL_NAME = "data_type";
   static final String PROVIDER_LABEL_COL_NAME = "provider_label";
-  static final String CONTINUOUS_COL_NAME = "is_continuous";
-  static final String UNITS_COL_NAME = "units";
+  static final String DATA_SHAPE_COL_NAME = "data_shape";
+  static final String DISPLAY_TYPE_COL_NAME = "term_type";
+  static final String HAS_VALUES_COL_NAME = "has_values";
+  static final String MULTIVALUED_COL_NAME = "has_multiple_values_per_entity";
+  static final String UNITS_COL_NAME = "unit";
   static final String PRECISION_COL_NAME = "precision";
-  static final String VARIABLE_PARENT_ID_COL_NAME = "parent_variable_id";
+  static final String VARIABLE_PARENT_ID_COL_NAME = "parent_stable_id";
   
   // Tall table
+  static final String TT_VARIABLE_ID_COL_NAME = "attribute_stable_id";
   static final String STRING_VALUE_COL_NAME = "string_value";
   static final String DATE_VALUE_COL_NAME = "date_value";
   static final String NUMBER_VALUE_COL_NAME = "number_value";

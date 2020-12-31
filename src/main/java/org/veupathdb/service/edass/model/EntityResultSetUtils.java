@@ -24,6 +24,8 @@ import static org.veupathdb.service.edass.model.RdbmsColumnNames.*;
  */
 public class EntityResultSetUtils {
 
+  private final static String STDY_ABBRV_COL_NM = "study_abbrev"; // for private queries
+
   static TreeNode<Entity> getStudyEntityTree(DataSource datasource, String studyId) {
     
     String sql = generateEntityTreeSql(studyId);
@@ -67,9 +69,9 @@ public class EntityResultSetUtils {
   }
   
   static String generateEntityTreeSql(String studyId) {
-    String[] cols = {STUDY_ID_COL_NAME, ENTITY_ABBREV_COL_NAME, DISPLAY_NAME_COL_NAME, DISPLAY_NAME_PLURAL_COL_NAME, ENTITY_ID_COL_NAME, DESCRIP_COL_NAME, ENTITY_PARENT_ID_COL_NAME};
-    return "SELECT " + String.join(", ", cols) + NL
-        + "FROM " + ENTITY_TABLE_NAME + NL
+    String[] entityCols = {STUDY_ID_COL_NAME, ENTITY_ABBREV_COL_NAME, DISPLAY_NAME_COL_NAME, DISPLAY_NAME_PLURAL_COL_NAME, ENTITY_ID_COL_NAME, DESCRIP_COL_NAME, ENTITY_PARENT_ID_COL_NAME};
+    return "SELECT e." + String.join(", e.", entityCols) + ", s." + STUDY_ABBREV_COL_NAME + " as " + STDY_ABBRV_COL_NM + NL
+        + "FROM " + ENTITY_TABLE_NAME + " e," + STUDY_TABLE_NAME + "s " + NL
         + "WHERE " + STUDY_ID_COL_NAME + " = '" + studyId + "'" + NL
         + "ORDER BY " + ENTITY_ID_COL_NAME;  // stable ordering supports unit testing
   }
@@ -80,11 +82,11 @@ public class EntityResultSetUtils {
       String name = getRsStringNotNull(rs, DISPLAY_NAME_COL_NAME);
       String namePlural = getRsStringNotNull(rs, DISPLAY_NAME_PLURAL_COL_NAME);
       String id = getRsStringNotNull(rs, ENTITY_ID_COL_NAME);
-      String studyId = getRsStringNotNull(rs, ENTITY_STUDY_ID_COL_NAME);
+      String studyAbbrev = getRsStringNotNull(rs, STDY_ABBRV_COL_NM);
       String descrip = getRsStringNotNull(rs, DESCRIP_COL_NAME);
       String abbrev = getRsStringNotNull(rs, ENTITY_ABBREV_COL_NAME);
 
-      return new Entity(id, studyId, name, namePlural, descrip, abbrev);
+      return new Entity(id, studyAbbrev, name, namePlural, descrip, abbrev);
     }
     catch (SQLException e) {
       throw new RuntimeException(e);
@@ -106,8 +108,8 @@ public class EntityResultSetUtils {
       tallRow.put(entity.getPKColName(), rs.getString(entity.getPKColName()));
       tallRow.put(VARIABLE_ID_COL_NAME, rs.getString(VARIABLE_ID_COL_NAME));
       
-      Variable var = entity.getVariable(rs.getString(VARIABLE_ID_COL_NAME))
-          .orElseThrow(() -> new RuntimeException("Can't find column in tall table result set: " + VARIABLE_ID_COL_NAME));
+      Variable var = entity.getVariable(rs.getString(TT_VARIABLE_ID_COL_NAME))
+          .orElseThrow(() -> new RuntimeException("Can't find column in tall table result set: " + TT_VARIABLE_ID_COL_NAME));
 
       tallRow.put(VARIABLE_VALUE_COL_NAME, var.getType().convertRowValueToStringValue(rs));
       
@@ -144,7 +146,7 @@ public class EntityResultSetUtils {
       boolean first = true;
       for (Map<String, String> tallRow : tallRows) {
 
-        String variableId = tallRow.get(VARIABLE_ID_COL_NAME);
+        String variableId = tallRow.get(TT_VARIABLE_ID_COL_NAME);
         
         validateTallRow(entity, tallRow, errPrefix, tallRowEnityId, variableId);
         
@@ -171,8 +173,8 @@ public class EntityResultSetUtils {
     if (!tallRow.get(entity.getPKColName()).equals(tallRowEnityId))
       throw new RuntimeException(errPrefix + " has an unexpected PK value");
 
-    if (!tallRow.containsKey(VARIABLE_ID_COL_NAME) )
-      throw new RuntimeException(errPrefix + " does not contain column " + VARIABLE_ID_COL_NAME);
+    if (!tallRow.containsKey(TT_VARIABLE_ID_COL_NAME) )
+      throw new RuntimeException(errPrefix + " does not contain column " + TT_VARIABLE_ID_COL_NAME);
 
     entity.getVariable(variableId)
         .orElseThrow(() -> new RuntimeException(errPrefix + " has an invalid variableId: " + variableId));

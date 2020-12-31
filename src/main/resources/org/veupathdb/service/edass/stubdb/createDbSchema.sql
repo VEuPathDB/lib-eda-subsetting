@@ -29,7 +29,7 @@ ALTER TABLE EntityTypeGraph
 --------------------------------------------------------------------------------------------------
 -- the following tables are per-study.  Their name is formed using the study ID, in this case ds2324.
 -- Each entity type gets two tables:
---    AttrVal_XXXXX_YYYYY
+--    AttributeValue_XXXXX_YYYYY
 --    Ancestors_XXXXX_YYYYY
 --  where XXXXX is the study internal_abbrev and YYYYY is the entity's internal_abbrev
 --------------------------------------------------------------------------------------------------
@@ -50,19 +50,19 @@ create table Attribute_ds2324_Hshld (
   PRIMARY KEY (stable_id)
 );
 
-create table AttrVal_ds2324_Hshld (
+create table AttributeValue_ds2324_Hshld (
   hshld_id varchar(20),
   attribute_stable_id varchar(30),
   number_value integer, 
   string_value varchar(100),
   date_value varchar(30),
 );
-ALTER TABLE AttrVal_ds2324_Hshld
+ALTER TABLE AttributeValue_ds2324_Hshld
    ADD FOREIGN KEY (attribute_stable_id) REFERENCES Attribute_ds2324_Hshld (stable_id);
-CREATE INDEX AttrVal_ds2324_Hshld_i1
-ON AttrVal_ds2324_Hshld (attribute_stable_id, hshld_id, number_value, string_value, date_value);
+CREATE INDEX AttributeValue_ds2324_Hshld_i1
+ON AttributeValue_ds2324_Hshld (attribute_stable_id, hshld_id, number_value, string_value, date_value);
 -- for test db only
-CREATE unique INDEX AttrVal_ds2324_Hshld_i2 ON AttrVal_ds2324_Hshld (attribute_stable_id, hshld_id);
+CREATE unique INDEX AttributeValue_ds2324_Hshld_i2 ON AttributeValue_ds2324_Hshld (attribute_stable_id, hshld_id);
 
 create table Ancestors_ds2324_Hshld (
   hshld_id integer,
@@ -87,19 +87,19 @@ create table Attribute_ds2324_HshldObsrvtn (
   PRIMARY KEY (stable_id)
 );
 
-create table AttrVal_ds2324_HshldObsrvtn (
+create table AttributeValue_ds2324_HshldObsrvtn (
   HshldObsrvtn_id integer,
   attribute_stable_id varchar(30),
   number_value integer, 
   string_value varchar(100),
   date_value varchar(30),
 );
-ALTER TABLE AttrVal_ds2324_HshldObsrvtn
+ALTER TABLE AttributeValue_ds2324_HshldObsrvtn
    ADD FOREIGN KEY (attribute_stable_id) REFERENCES Attribute_ds2324_HshldObsrvtn (stable_id);
-CREATE INDEX AttrVal_ds2324_HshldObsrvtn_i1
-ON AttrVal_ds2324_HshldObsrvtn (attribute_stable_id, HshldObsrvtn_id, number_value, string_value, date_value);
+CREATE INDEX AttributeValue_ds2324_HshldObsrvtn_i1
+ON AttributeValue_ds2324_HshldObsrvtn (attribute_stable_id, HshldObsrvtn_id, number_value, string_value, date_value);
 -- for test db only
-CREATE unique INDEX AttrVal_ds2324_HshldObsrvtn_i2 ON AttrVal_ds2324_HshldObsrvtn (attribute_stable_id, HshldObsrvtn_id);
+CREATE unique INDEX AttributeValue_ds2324_HshldObsrvtn_i2 ON AttributeValue_ds2324_HshldObsrvtn (attribute_stable_id, HshldObsrvtn_id);
 
 create table Ancestors_ds2324_HshldObsrvtn (
   HshldObsrvtn_id integer,
@@ -124,19 +124,19 @@ create table Attribute_ds2324_Prtcpnt (
   precision integer,
   PRIMARY KEY (stable_id)
 );
-create table AttrVal_ds2324_Prtcpnt (
+create table AttributeValue_ds2324_Prtcpnt (
   prtcpnt_id integer,
   attribute_stable_id varchar(30),
   number_value integer,
   string_value varchar(100),
   date_value varchar(30),
 );
-ALTER TABLE AttrVal_ds2324_Prtcpnt
+ALTER TABLE AttributeValue_ds2324_Prtcpnt
    ADD FOREIGN KEY (attribute_stable_id) REFERENCES Attribute_ds2324_Prtcpnt (stable_id);
-CREATE INDEX AttrVal_ds2324_Prtcpnt_i1
-ON AttrVal_ds2324_Prtcpnt (attribute_stable_id, prtcpnt_id, number_value, string_value, date_value);
+CREATE INDEX AttributeValue_ds2324_Prtcpnt_i1
+ON AttributeValue_ds2324_Prtcpnt (attribute_stable_id, prtcpnt_id, number_value, string_value, date_value);
 -- for test db only
-CREATE unique INDEX AttrVal_ds2324_Prtcpnt_i2 ON AttrVal_ds2324_Prtcpnt (attribute_stable_id, prtcpnt_id);
+CREATE unique INDEX AttributeValue_ds2324_Prtcpnt_i2 ON AttributeValue_ds2324_Prtcpnt (attribute_stable_id, prtcpnt_id);
 
 create table Ancestors_ds2324_Prtcpnt (
   prtcpnt_id integer,
@@ -162,19 +162,19 @@ create table Attribute_ds2324_PrtcpntObsrvtn (
   PRIMARY KEY (stable_id)
 );
 
-create table AttrVal_ds2324_PrtcpntObsrvtn (
+create table AttributeValue_ds2324_PrtcpntObsrvtn (
   PrtcpntObsrvtn_id integer,
   attribute_stable_id varchar(30),
   number_value integer, 
   string_value varchar(100),
   date_value varchar(30),
 );
-ALTER TABLE AttrVal_ds2324_PrtcpntObsrvtn
+ALTER TABLE AttributeValue_ds2324_PrtcpntObsrvtn
    ADD FOREIGN KEY (attribute_stable_id) REFERENCES Attribute_ds2324_PrtcpntObsrvtn (stable_id);
-CREATE INDEX AttrVal_ds2324_PrtcpntObsrvtn_i1
-ON AttrVal_ds2324_PrtcpntObsrvtn (attribute_stable_id, PrtcpntObsrvtn_id, number_value, string_value, date_value);
+CREATE INDEX AttributeValue_ds2324_PrtcpntObsrvtn_i1
+ON AttributeValue_ds2324_PrtcpntObsrvtn (attribute_stable_id, PrtcpntObsrvtn_id, number_value, string_value, date_value);
 -- for test db only
-CREATE unique INDEX AttrVal_ds2324_PrtcpntObsrvtn_i2 ON AttrVal_ds2324_PrtcpntObsrvtn (attribute_stable_id, PrtcpntObsrvtn_id);
+CREATE unique INDEX AttributeValue_ds2324_PrtcpntObsrvtn_i2 ON AttributeValue_ds2324_PrtcpntObsrvtn (attribute_stable_id, PrtcpntObsrvtn_id);
 
 create table Ancestors_ds2324_PrtcpntObsrvtn (
   PrtcpntObsrvtn_id integer,

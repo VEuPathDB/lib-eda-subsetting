@@ -73,7 +73,7 @@ public class LoadStudyTest {
     assertEquals("var-10", var.getId());
     assertEquals("Net worth", var.getDisplayName());
     assertEquals("GEMS_Part", var.getEntityId());
-    assertEquals(Variable.IsContinuous.TRUE, var.getIsContinuous());
+    assertEquals(Variable.VariableDataShape.TRUE, var.getIsContinuous());
     assertNull(var.getParentId());
     assertEquals(2, var.getPrecision());
     assertEquals("_networth", var.getProviderLabel());

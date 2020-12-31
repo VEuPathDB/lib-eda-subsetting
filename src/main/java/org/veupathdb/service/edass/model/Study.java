@@ -1,48 +1,41 @@
 package org.veupathdb.service.edass.model;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.Set;
-import java.util.stream.Collectors;
-import javax.sql.DataSource;
 import org.gusdb.fgputil.db.runner.SQLRunner;
 import org.gusdb.fgputil.functional.TreeNode;
 import org.veupathdb.service.edass.generated.model.APIFilter;
-import org.veupathdb.service.edass.generated.model.APIStudyOverview;
-import org.veupathdb.service.edass.generated.model.APIStudyOverviewImpl;
+
+import javax.sql.DataSource;
+import java.util.*;
+import java.util.stream.Collectors;
 
 public class Study {
-
-  private final String studyId;
   private TreeNode<Entity> entityTree;
   private final Map<String, Entity> entityIdMap;
-  private Map<String, Entity> variableIdToEntityMap;
+  private final StudyOverview overview;
   
-  public Study(String studyId, TreeNode<Entity> entityTree, List<Variable> variables, Map<String, Entity> entityIdMap) {
-    this.studyId = studyId;
+  public Study(StudyOverview overview, TreeNode<Entity> entityTree, Map<String, Entity> entityIdMap) {
     this.entityTree = entityTree;
     this.entityIdMap = entityIdMap;
-    initEntitiesAndVariables(entityTree, variables);
+    this.overview = overview;
+    initEntities(entityTree);
   }
 
-  public static List<APIStudyOverview> getStudyOverviews(DataSource datasource) {
+  public static List<StudyOverview> getStudyOverviews(DataSource datasource) {
     String sql =
         "select " + RdbmsColumnNames.STUDY_ID_COL_NAME +
-             ", " + RdbmsColumnNames.STUDY_NAME_COL_NAME +
+                ", " + RdbmsColumnNames.DISPLAY_NAME_COL_NAME +
+                ", " + RdbmsColumnNames.STUDY_ABBREV_COL_NAME +
         " from " + RdbmsColumnNames.STUDY_TABLE_NAME;
     return new SQLRunner(datasource, sql).executeQuery(rs -> {
-      List<APIStudyOverview> studyIds = new ArrayList<>();
+      List<StudyOverview> studyOverviews = new ArrayList<>();
       while (rs.next()) {
-        APIStudyOverview study = new APIStudyOverviewImpl();
-        study.setId(rs.getString(1));
-        study.setName(rs.getString(2));
-        studyIds.add(study);
+        String id = rs.getString(1);
+        String displayName = rs.getString(2);
+        String abbrev = rs.getString(3);
+        StudyOverview study = new StudyOverview(id, displayName, abbrev);
+        studyOverviews.add(study);
       }
-      return studyIds;
+      return studyOverviews;
     });
   }
 
@@ -50,14 +43,32 @@ public class Study {
    * Expects a pre-validated study ID
    */
   public static Study loadStudy(DataSource datasource, String studyId) {
-    
+
+    StudyOverview overview = getStudyOverview(datasource, studyId);
+
     TreeNode<Entity> entityTree = EntityResultSetUtils.getStudyEntityTree(datasource, studyId);
     
     Map<String, Entity> entityIdMap = entityTree.flatten().stream().collect(Collectors.toMap(Entity::getId, e -> e));
 
-    List<Variable> variables = VariableResultSetUtils.getStudyVariables(datasource, studyId, entityIdMap);
+    for (Entity entity : entityIdMap.values()) entity.loadVariables(datasource);
 
-    return new Study(studyId, entityTree, variables, entityIdMap);
+    return new Study(overview, entityTree, entityIdMap);
+  }
+
+  public static StudyOverview getStudyOverview(DataSource datasource, String studyId) {
+    String sql =
+            "select " + RdbmsColumnNames.STUDY_ID_COL_NAME +
+                    ", " + RdbmsColumnNames.DISPLAY_NAME_COL_NAME +
+                    ", " + RdbmsColumnNames.STUDY_ABBREV_COL_NAME +
+                    " from " + RdbmsColumnNames.STUDY_TABLE_NAME +
+                     " where " + RdbmsColumnNames.STUDY_ID_COL_NAME + " = '" + studyId + "'";
+    return new SQLRunner(datasource, sql).executeQuery(rs -> {
+      rs.next();
+      String id = rs.getString(1);
+      String displayName = rs.getString(2);
+      String abbrev = rs.getString(3);
+      return new StudyOverview(id, displayName, abbrev);
+    });
   }
 
   /**
@@ -76,22 +87,6 @@ public class Study {
     return null;
   }
   
-  /*
-   * return true if valid study id
-   */
-  public static boolean validateStudyId(DataSource datasource, String studyId) {
-    return getStudyOverviews(datasource).stream()
-      .anyMatch(study -> study.getId().equals(studyId));
-  }
-  
-  /**
-   * Build internal (convenience) state from the raw entity tree
-   */
-  void initEntitiesAndVariables(TreeNode<Entity> rootEntityNode, List<Variable> vars) {
-    initEntities(rootEntityNode);
-    initVariables(vars);
-  }
-  
   /**
    * Build internal (convenience) state from the raw variables set
    */
@@ -102,20 +97,9 @@ public class Study {
     // give each entity a set of its ancestor entities.
     populateEntityAncestors(rootEntityNode);
   }  
-  
-  /**
-   * Build internal (convenience) state from the raw entity tree and variables set
-   */
-  void initVariables(List<Variable> vars) {
-    variableIdToEntityMap = new HashMap<>();
-    for (Variable var : vars) {
-      variableIdToEntityMap.put(var.getId(), entityIdMap.get(var.getEntityId()));
-      var.getEntity().addVariable(var);
-    }
-  }
-  
+
   public String getStudyId() {
-    return studyId;
+    return overview.id;
   }
 
   public Optional<Entity> getEntity(String entityId) {
@@ -157,5 +141,32 @@ public class Study {
       childEntityIds.add(childEntity.getId());
     }
   }
+
+
+  /* a brief version of the study */
+  public static class StudyOverview {
+    private final String displayName;
+    private final String id;
+    private final String internalAbbrev;
+
+    public StudyOverview(String displayName, String id, String internalAbbrev) {
+      this.displayName = displayName;
+      this.id = id;
+      this.internalAbbrev = internalAbbrev;
+    }
+
+    public String getDisplayName() {
+      return displayName;
+    }
+
+    public String getId() {
+      return id;
+    }
+
+    public String getInternalAbbrev() {
+      return internalAbbrev;
+    }
+  }
+
 
 }

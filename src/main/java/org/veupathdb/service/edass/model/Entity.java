@@ -1,6 +1,7 @@
 
 package org.veupathdb.service.edass.model;
 
+import javax.sql.DataSource;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -14,23 +15,23 @@ import java.util.stream.Collectors;
  *
  */
 public class Entity {
-  private String id;
-  private String studyId;  // study's stable ID
-  private String displayName;
-  private String displayNamePlural;
-  private String description;
-  private String abbreviation;
+  private final String id;
+  private final String studyAbbrev; // internal abbrev
+  private final String displayName;
+  private final String displayNamePlural;
+  private final String description;
+  private final String abbreviation;
 
-  private Map<String, Variable> variablesMap = new HashMap<>();
-  private List<Variable> variablesList = new ArrayList<>();
+  private final Map<String, Variable> variablesMap = new HashMap<>();
+  private final List<Variable> variablesList = new ArrayList<>();
   private List<Entity> ancestorEntities;
   private List<String> ancestorPkColNames;
   private List<String> ancestorFullPkColNames; // entityName.pkColName
   private Integer tallRowSize; // number of columns in a tall table row
   
-  public Entity(String entityId, String studyId, String displayName, String displayNamePlural, String description, String abbreviation) {
+  public Entity(String entityId, String studyAbbrev, String displayName, String displayNamePlural, String description, String abbreviation) {
     this.id = entityId;
-    this.studyId = studyId;
+    this.studyAbbrev = studyAbbrev;
     this.displayName = displayName;
     this.displayNamePlural = displayNamePlural;
     this.description = description;
@@ -45,8 +46,8 @@ public class Entity {
     return id;
   }
 
-  public String getStudyId() {
-    return studyId;
+  public String getStudyAbbrev() {
+    return studyAbbrev;
   }
 
   public String getDisplayName() {
@@ -61,8 +62,10 @@ public class Entity {
     return description;
   }
 
+  public String getVariablesTableName() { return "Attribute_" + getStudyAbbrev() + "_" + getAbbreviation(); }
+
   public String getTallTableName() {
-    return "AttrVal_" + getStudyId() + "_" + getAbbreviation();
+    return "AttributeValue_" + getStudyAbbrev() + "_" + getAbbreviation();
   }
 
   public String getPKColName() {
@@ -74,7 +77,7 @@ public class Entity {
   }
   
   public String getAncestorsTableName() {
-    return "Ancestors_" + getStudyId() + "_" + getAbbreviation();
+    return "Ancestors_" + getStudyAbbrev() + "_" + getAbbreviation();
   }
 
   public String getWithClauseName() {
@@ -127,10 +130,15 @@ public class Entity {
     return Collections.unmodifiableList(variablesList);
   }
  
-  public void addVariable(Variable var) {
+  void addVariable(Variable var) {
     if (variablesMap.containsKey(var.getId()))
       throw new RuntimeException("Trying to add duplicate variable: " + var.getId());
     variablesMap.put(var.getId(), var);
     variablesList.add(var);
+  }
+
+  void loadVariables(DataSource datasource) {
+    List<Variable> variables = VariableResultSetUtils.getEntityVariables(datasource, this);
+    for (Variable var : variables) addVariable(var);
   }
 }

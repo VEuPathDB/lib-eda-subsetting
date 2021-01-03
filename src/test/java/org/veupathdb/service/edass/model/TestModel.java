@@ -102,34 +102,46 @@ public class TestModel {
   private List<Variable> constructVariables() {
     List<Variable> vars = new ArrayList<>();
 
-    roof = new Variable("roof", "var-10", household, VariableType.STRING, VariableDataShape.FALSE);
+    //  public Variable(String providerLabel, String id, Entity entity, VariableType type, VariableDataShape dataShape,
+    //                  VariableDisplayType displayType, boolean hasValues, String units, Integer precision, String displayName, String parentId) {
+    roof = new Variable("roof", "var-10", household, VariableType.STRING, VariableDataShape.CATEGORICAL,
+            Variable.VariableDisplayType.DEFAULT, true, null, null, "Roof", null);
     vars.add(roof);
     
-    shoesize = new Variable("shoesize", "var-11", participant, VariableType.NUMBER, VariableDataShape.FALSE);
+    shoesize = new Variable("shoesize", "var-11", participant, VariableType.NUMBER, VariableDataShape.CATEGORICAL,
+            Variable.VariableDisplayType.DEFAULT, true, null, null, "Roof", null);
     vars.add(shoesize);
 
-    haircolor = new Variable("haircolor", "var-17", participant, VariableType.STRING, Variable.VariableDataShape.FALSE);
+    haircolor = new Variable("haircolor", "var-17", participant, VariableType.STRING, Variable.VariableDataShape.CATEGORICAL,
+            Variable.VariableDisplayType.DEFAULT, true, null, null, "Roof", null);
     vars.add(haircolor);
 
-    networth = new Variable("networth", "var-18", participant, VariableType.NUMBER, VariableDataShape.TRUE);
+    networth = new Variable("networth", "var-18", participant, VariableType.NUMBER, VariableDataShape.CONTINUOUS,
+            Variable.VariableDisplayType.DEFAULT, true, null, null, "Roof", null);
     vars.add(networth);
 
-    weight = new Variable("weight", "var-12", observation, VariableType.NUMBER, Variable.VariableDataShape.TRUE);
+    weight = new Variable("weight", "var-12", observation, VariableType.NUMBER, Variable.VariableDataShape.CONTINUOUS,
+            Variable.VariableDisplayType.DEFAULT, true, null, null, "Roof", null);
     vars.add(weight);
     
-    favNumber = new Variable("favNumber", "var-13", observation, VariableType.NUMBER, Variable.VariableDataShape.FALSE);
+    favNumber = new Variable("favNumber", "var-13", observation, VariableType.NUMBER, Variable.VariableDataShape.CATEGORICAL,
+            Variable.VariableDisplayType.DEFAULT, true, null, null, "Roof", null);
     vars.add(favNumber);
     
-    birthDate  = new Variable("birthDate", "var-14", observation, VariableType.DATE, Variable.VariableDataShape.TRUE);
+    birthDate  = new Variable("birthDate", "var-14", observation, VariableType.DATE, Variable.VariableDataShape.CONTINUOUS,
+            Variable.VariableDisplayType.DEFAULT, true, null, null, "Roof", null);
     vars.add(birthDate);
     
-    favNewYears = new Variable("favNewYears", "var-15", observation, VariableType.DATE, Variable.VariableDataShape.FALSE);
+    favNewYears = new Variable("favNewYears", "var-15", observation, VariableType.DATE, Variable.VariableDataShape.CATEGORICAL,
+            Variable.VariableDisplayType.DEFAULT, true, null, null, "Roof", null);
     vars.add(favNewYears);
     
-    mood  = new Variable("mood", "var-16", observation, VariableType.STRING, VariableDataShape.FALSE);
+    mood  = new Variable("mood", "var-16", observation, VariableType.STRING, VariableDataShape.CATEGORICAL,
+            Variable.VariableDisplayType.DEFAULT, true, null, null, "Roof", null);
     vars.add(mood);
 
-    waterSupply  = new Variable("waterSupply", "var-19", householdObs, VariableType.STRING, VariableDataShape.FALSE);
+    waterSupply  = new Variable("waterSupply", "var-19", householdObs, VariableType.STRING, VariableDataShape.CATEGORICAL,
+            Variable.VariableDisplayType.DEFAULT, true, null, null, "Roof", null);
     vars.add(waterSupply);
 
     return vars;

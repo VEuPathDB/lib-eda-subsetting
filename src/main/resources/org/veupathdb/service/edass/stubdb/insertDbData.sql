@@ -43,7 +43,7 @@ insert into AttrVal_ds2324_HshldObsrvtn values (302, 'var-19', null, 'well', nul
 -- participants
 
 --(stable_id, ontology_term_id, parent_stable_id, provider_label, display_name, term_type, has_value, data_type, has_multiple_values_per_entity, data_shape, unit, unit_ontology_term_id, precision)
-insert into Attribute_ds2324_Prtcpnt values ('var-10', 300, null, '_networth', 'Net worth', null, 1, 'number', 0, 'continuous', 'dollars', null, 2);
+insert into Attribute_ds2324_Prtcpnt values ('var-10', 300, null, '_networth', 'Net worth', 'default', 1, 'number', 0, 'continuous', 'dollars', null, 2);
 insert into Attribute_ds2324_Prtcpnt values ('var-11', 300, null, '_shoesize', 'Shoe size', null, 1, 'number', 0, 'categorical', 'size', null, 1);
 insert into Attribute_ds2324_Prtcpnt values ('var-20', 200, null, '_name', 'Name', null, 1, 'string', 0, 'categorical', null, null, null);
 insert into Attribute_ds2324_Prtcpnt values ('var-17', 200, null, '_haircolor', 'Hair color', null, 1, 'string', 0,  'categorical', null, null, null);

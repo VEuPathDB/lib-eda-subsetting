@@ -88,10 +88,15 @@ public class Studies implements org.veupathdb.service.edass.generated.resources.
   }
   
   private static APIVariable variableToAPIVariable(Variable var) {
+    if (!var.getHasValues()) {
+      APIVariablesCategory apiVar = new APIVariablesCategoryImpl();
+      setApiVarProps(apiVar, var);
+      return apiVar;
+    }
     if (var.getType() == VariableType.DATE) {
       APIDateVariable apiVar = new APIDateVariableImpl();
       setApiVarProps(apiVar, var);
-      apiVar.setIsContinuous(var.getIsContinuous() == Variable.VariableDataShape.TRUE);
+      apiVar.setIsContinuous(var.getDataShape() == Variable.VariableDataShape.CONTINUOUS);
       return apiVar;
     }
     else if (var.getType() == VariableType.NUMBER) {
@@ -99,7 +104,7 @@ public class Studies implements org.veupathdb.service.edass.generated.resources.
       setApiVarProps(apiVar, var);
       apiVar.setPrecision(var.getPrecision());
       apiVar.setUnits(var.getUnits());
-      apiVar.setIsContinuous(var.getIsContinuous() == Variable.VariableDataShape.TRUE);
+      apiVar.setIsContinuous(var.getDataShape() == Variable.VariableDataShape.CONTINUOUS);
       return apiVar;
     }
     else if (var.getType() == VariableType.STRING) {

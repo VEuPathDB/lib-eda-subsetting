@@ -1,41 +1,22 @@
 package org.veupathdb.service.edass.service;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.Map;
-import javax.sql.DataSource;
-import javax.ws.rs.core.StreamingOutput;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.function.Executable;
-import static org.junit.jupiter.api.Assertions.*;
-import java.util.ArrayList;
-import java.util.List;
-
-import javax.ws.rs.InternalServerErrorException;
-
 import org.veupathdb.service.edass.Resources;
-import org.veupathdb.service.edass.generated.model.APIFilter;
-import org.veupathdb.service.edass.generated.model.APIFilterImpl;
-import org.veupathdb.service.edass.generated.model.APINumberRangeFilter;
-import org.veupathdb.service.edass.generated.model.APINumberRangeFilterImpl;
-import org.veupathdb.service.edass.generated.model.APIStringSetFilter;
-import org.veupathdb.service.edass.generated.model.APIStringSetFilterImpl;
-import org.veupathdb.service.edass.generated.model.VariableDistributionPostResponse;
-import org.veupathdb.service.edass.generated.model.VariableDistributionPostResponseStream;
-import org.veupathdb.service.edass.model.Entity;
-import org.veupathdb.service.edass.model.Filter;
-import org.veupathdb.service.edass.model.FiltersForTesting;
-import org.veupathdb.service.edass.model.Study;
-import org.veupathdb.service.edass.model.StudySubsettingUtils;
-import org.veupathdb.service.edass.model.TestModel;
-import org.veupathdb.service.edass.model.Variable;
+import org.veupathdb.service.edass.generated.model.*;
+import org.veupathdb.service.edass.model.*;
 import org.veupathdb.service.edass.stubdb.StubDb;
+
+import javax.sql.DataSource;
+import javax.ws.rs.InternalServerErrorException;
+import javax.ws.rs.core.StreamingOutput;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.util.*;
+
+import static org.junit.jupiter.api.Assertions.*;
 
 public class StudiesTest {
 
@@ -77,27 +58,23 @@ public class StudiesTest {
   @DisplayName("Test rejection of invalid API filters")
   void testIncorrectConstructFilters() {
     
-    assertThrows(InternalServerErrorException.class, new Executable() {
-      
-      @Override
-      public void execute() throws Throwable {
-        List<APIFilter> afs = new ArrayList<>();
-        
-        // a legit filter
-        APIStringSetFilter stringFilter = new APIStringSetFilterImpl();
-        stringFilter.setEntityId(_model.participant.getId());
-        stringFilter.setVariableId(_model.shoesize.getId());
-        
-        afs.add(stringFilter);
-       
-        // illegit... can't be the superclass
-        APIFilter nakedFilter = new APIFilterImpl();
-        nakedFilter.setEntityId(_model.observation.getId());
-        nakedFilter.setVariableId(_model.weight.getId());
-        afs.add(nakedFilter);
+    assertThrows(InternalServerErrorException.class, () -> {
+      List<APIFilter> afs = new ArrayList<>();
 
-        Studies.constructFiltersFromAPIFilters(_model.study, afs);
-      }
+      // a legit filter
+      APIStringSetFilter stringFilter = new APIStringSetFilterImpl();
+      stringFilter.setEntityId(_model.participant.getId());
+      stringFilter.setVariableId(_model.shoesize.getId());
+
+      afs.add(stringFilter);
+
+      // illegit... can't be the superclass
+      APIFilter nakedFilter = new APIFilterImpl();
+      nakedFilter.setEntityId(_model.observation.getId());
+      nakedFilter.setVariableId(_model.weight.getId());
+      afs.add(nakedFilter);
+
+      Studies.constructFiltersFromAPIFilters(_model.study, afs);
     });
   }
   @Test
@@ -137,7 +114,7 @@ public class StudiesTest {
     String varId = "var-17";
     Variable var = entity.getVariable(varId).orElseThrow();
 
-    List<Filter> filters = new ArrayList<Filter>();
+    List<Filter> filters = new ArrayList<>();
     filters.add(_filtersForTesting.houseCityFilter);
     filters.add(_filtersForTesting.houseObsWaterSupplyFilter);
 

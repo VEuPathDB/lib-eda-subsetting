@@ -28,7 +28,7 @@ public class StudySubsettingUtilsTest {
   public static void setUp() {
     _model = new TestModel();
     _dataSource = StubDb.getDataSource();
-    Study study = Study.loadStudy(_dataSource, "DS12385");
+    Study study = Study.loadStudy(_dataSource, LoadStudyTest.STUDY_ID);
     _filtersForTesting = new FiltersForTesting(study);
   }
 
@@ -121,7 +121,7 @@ public class StudySubsettingUtilsTest {
   static boolean compareEntityTrees(TreeNode<Entity> t1, TreeNode<Entity> t2) {
     if ((t1 == null && t2 != null) || (t1 != null && t2 == null)) return false;
     
-    if (t1 == null && t2 == null) return true;
+    if (t1 == null) return true; // both are null
     
     if (!t1.getContents().getId().equals(t2.getContents().getId())) return false;
     
@@ -349,7 +349,7 @@ public class StudySubsettingUtilsTest {
   @DisplayName("Test get entity count - no filters") 
   void testEntityCountNoFiltersFromDb() {
     
-    Study study = Study.loadStudy(_dataSource, "DS12385");
+    Study study = Study.loadStudy(_dataSource, LoadStudyTest.STUDY_ID);
 
     String entityId = "GEMS_Part";
     Entity entity = study.getEntity(entityId).orElseThrow();
@@ -366,7 +366,7 @@ public class StudySubsettingUtilsTest {
   @DisplayName("Test get entity count - with filters") 
   void testEntityCountFromDb() {
     
-    Study study = Study.loadStudy(_dataSource, "DS12385");
+    Study study = Study.loadStudy(_dataSource, LoadStudyTest.STUDY_ID);
 
     String entityId = "GEMS_Part";
     Entity entity = study.getEntity(entityId).orElseThrow();
@@ -385,7 +385,7 @@ public class StudySubsettingUtilsTest {
   @DisplayName("Test get tabular report - no filters") 
   void testTabularReporttNoFiltersFromDb() {
     
-    Study study = Study.loadStudy(_dataSource, "DS12385");
+    Study study = Study.loadStudy(_dataSource, LoadStudyTest.STUDY_ID);
 
     String entityId = "GEMS_Part";
     Entity entity = study.getEntity(entityId).orElseThrow();
@@ -414,7 +414,7 @@ public class StudySubsettingUtilsTest {
   @DisplayName("Test get tabular report - with filters") 
   void testTestTabularReportFromDb() {
     
-    Study study = Study.loadStudy(_dataSource, "DS12385");
+    Study study = Study.loadStudy(_dataSource, LoadStudyTest.STUDY_ID);
 
     String entityId = "GEMS_Part";
     Entity entity = study.getEntity(entityId).orElseThrow();
@@ -445,7 +445,7 @@ public class StudySubsettingUtilsTest {
   @DisplayName("Test get variable count - no filters") 
   void testVariableCountNoFiltersFromDb() {
     
-    Study study = Study.loadStudy(_dataSource, "DS12385");
+    Study study = Study.loadStudy(_dataSource, LoadStudyTest.STUDY_ID);
 
     String entityId = "GEMS_Part";
     Entity entity = study.getEntity(entityId).orElseThrow();
@@ -466,7 +466,7 @@ public class StudySubsettingUtilsTest {
   @DisplayName("Test get variable count - with filters") 
   void testVariableCountFromDb() {
     
-    Study study = Study.loadStudy(_dataSource, "DS12385");
+    Study study = Study.loadStudy(_dataSource, LoadStudyTest.STUDY_ID);
 
     String entityId = "GEMS_Part";
     Entity entity = study.getEntity(entityId).orElseThrow();
@@ -489,7 +489,7 @@ public class StudySubsettingUtilsTest {
   @DisplayName("Test variable distribution - no filters") 
   void testVariableDistributionNoFilters() {
     
-    Study study = Study.loadStudy(_dataSource, "DS12385");
+    Study study = Study.loadStudy(_dataSource, LoadStudyTest.STUDY_ID);
 
     String entityId = "GEMS_Part";
     Entity entity = study.getEntity(entityId).orElseThrow();
@@ -512,7 +512,7 @@ public class StudySubsettingUtilsTest {
   @DisplayName("Test variable distribution - with filters") 
   void testVariableDistribution() {
     
-    Study study = Study.loadStudy(_dataSource, "DS12385");
+    Study study = Study.loadStudy(_dataSource, LoadStudyTest.STUDY_ID);
 
     String entityId = "GEMS_Part";
     Entity entity = study.getEntity(entityId).orElseThrow();

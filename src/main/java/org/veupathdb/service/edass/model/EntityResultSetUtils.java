@@ -71,8 +71,9 @@ public class EntityResultSetUtils {
   static String generateEntityTreeSql(String studyId) {
     String[] entityCols = {STUDY_ID_COL_NAME, ENTITY_ABBREV_COL_NAME, DISPLAY_NAME_COL_NAME, DISPLAY_NAME_PLURAL_COL_NAME, ENTITY_ID_COL_NAME, DESCRIP_COL_NAME, ENTITY_PARENT_ID_COL_NAME};
     return "SELECT e." + String.join(", e.", entityCols) + ", s." + STUDY_ABBREV_COL_NAME + " as " + STDY_ABBRV_COL_NM + NL
-        + "FROM " + ENTITY_TABLE_NAME + " e," + STUDY_TABLE_NAME + "s " + NL
-        + "WHERE " + STUDY_ID_COL_NAME + " = '" + studyId + "'" + NL
+        + "FROM " + ENTITY_TABLE_NAME + " e," + STUDY_TABLE_NAME + " s " + NL
+        + "WHERE s." + STUDY_ID_COL_NAME + " = '" + studyId + "'" + NL
+        + "AND e." + ENTITY_STUDY_ID_COL_NAME + " = s." + STUDY_ID_COL_NAME  + NL
         + "ORDER BY " + ENTITY_ID_COL_NAME;  // stable ordering supports unit testing
   }
 

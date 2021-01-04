@@ -52,6 +52,7 @@ public class TestModel {
     createTestEntities();
     Study.StudyOverview overview = new Study.StudyOverview("GEMS", "555555", "gems");
     study = new Study(overview, constructEntityTree(), createIdMap());
+    constructVariables();
     createFilters();
   }
   
@@ -99,52 +100,50 @@ public class TestModel {
     return householdNode;
   }
   
-  private List<Variable> constructVariables() {
-    List<Variable> vars = new ArrayList<>();
+  private void constructVariables() {
 
     //  public Variable(String providerLabel, String id, Entity entity, VariableType type, VariableDataShape dataShape,
     //                  VariableDisplayType displayType, boolean hasValues, String units, Integer precision, String displayName, String parentId) {
     roof = new Variable("roof", "var-10", household, VariableType.STRING, VariableDataShape.CATEGORICAL,
             Variable.VariableDisplayType.DEFAULT, true, null, null, "Roof", null);
-    vars.add(roof);
+    household.addVariable(roof);
     
     shoesize = new Variable("shoesize", "var-11", participant, VariableType.NUMBER, VariableDataShape.CATEGORICAL,
             Variable.VariableDisplayType.DEFAULT, true, null, null, "Roof", null);
-    vars.add(shoesize);
+    participant.addVariable(shoesize);
 
     haircolor = new Variable("haircolor", "var-17", participant, VariableType.STRING, Variable.VariableDataShape.CATEGORICAL,
             Variable.VariableDisplayType.DEFAULT, true, null, null, "Roof", null);
-    vars.add(haircolor);
+    participant.addVariable(haircolor);
 
     networth = new Variable("networth", "var-18", participant, VariableType.NUMBER, VariableDataShape.CONTINUOUS,
             Variable.VariableDisplayType.DEFAULT, true, null, null, "Roof", null);
-    vars.add(networth);
+    participant.addVariable(networth);
 
     weight = new Variable("weight", "var-12", observation, VariableType.NUMBER, Variable.VariableDataShape.CONTINUOUS,
             Variable.VariableDisplayType.DEFAULT, true, null, null, "Roof", null);
-    vars.add(weight);
+    observation.addVariable(weight);
     
     favNumber = new Variable("favNumber", "var-13", observation, VariableType.NUMBER, Variable.VariableDataShape.CATEGORICAL,
             Variable.VariableDisplayType.DEFAULT, true, null, null, "Roof", null);
-    vars.add(favNumber);
+    observation.addVariable(favNumber);
     
     birthDate  = new Variable("birthDate", "var-14", observation, VariableType.DATE, Variable.VariableDataShape.CONTINUOUS,
             Variable.VariableDisplayType.DEFAULT, true, null, null, "Roof", null);
-    vars.add(birthDate);
+    observation.addVariable(birthDate);
     
     favNewYears = new Variable("favNewYears", "var-15", observation, VariableType.DATE, Variable.VariableDataShape.CATEGORICAL,
             Variable.VariableDisplayType.DEFAULT, true, null, null, "Roof", null);
-    vars.add(favNewYears);
+    observation.addVariable(favNewYears);
     
     mood  = new Variable("mood", "var-16", observation, VariableType.STRING, VariableDataShape.CATEGORICAL,
             Variable.VariableDisplayType.DEFAULT, true, null, null, "Roof", null);
-    vars.add(mood);
+    observation.addVariable(mood);
 
     waterSupply  = new Variable("waterSupply", "var-19", householdObs, VariableType.STRING, VariableDataShape.CATEGORICAL,
             Variable.VariableDisplayType.DEFAULT, true, null, null, "Roof", null);
-    vars.add(waterSupply);
+    householdObs.addVariable(waterSupply);
 
-    return vars;
   }
   
   private void createFilters() {

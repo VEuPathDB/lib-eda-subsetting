@@ -40,7 +40,7 @@ create table Attribute_ds2324_Hshld (
   provider_label varchar(30) not null,
   display_name varchar(30) not null,
   term_type varchar(20),
-  has_value integer,
+  has_values integer,
   data_type varchar(10),
   has_multiple_values_per_entity integer,
   data_shape varchar(20),
@@ -77,7 +77,7 @@ create table Attribute_ds2324_HshldObsrvtn (
   provider_label varchar(30) not null,
   display_name varchar(30) not null,
   term_type varchar(20),
-  has_value integer,
+  has_values integer,
   data_type varchar(10),
   has_multiple_values_per_entity integer,
   data_shape varchar(20),
@@ -115,7 +115,7 @@ create table Attribute_ds2324_Prtcpnt (
   provider_label varchar(30) not null,
   display_name varchar(30) not null,
   term_type varchar(20),
-  has_value integer,
+  has_values integer,
   data_type varchar(10),
   has_multiple_values_per_entity integer,
   data_shape varchar(20),
@@ -152,7 +152,7 @@ create table Attribute_ds2324_PrtcpntObsrvtn (
   provider_label varchar(30) not null,
   display_name varchar(30) not null,
   term_type varchar(20),
-  has_value integer,
+  has_values integer,
   data_type varchar(10),
   has_multiple_values_per_entity integer,
   data_shape varchar(20),
@@ -182,6 +182,42 @@ create table Ancestors_ds2324_PrtcpntObsrvtn (
   Hshld_id integer,
   PRIMARY KEY (PrtcpntObsrvtn_id)
 );
+
+create table Attribute_ds2324_Smpl (
+  stable_id varchar(30),
+  ontology_term_id integer,
+  parent_stable_id varchar(30),
+  provider_label varchar(30) not null,
+  display_name varchar(30) not null,
+  term_type varchar(20),
+  has_values integer,
+  data_type varchar(10),
+  has_multiple_values_per_entity integer,
+  data_shape varchar(20),
+  unit varchar (30),
+  unit_ontology_term_id integer,
+  precision integer,
+  PRIMARY KEY (stable_id)
+);
+
+create table Attribute_ds2324_Trtmnt (
+  stable_id varchar(30),
+  ontology_term_id integer,
+  parent_stable_id varchar(30),
+  provider_label varchar(30) not null,
+  display_name varchar(30) not null,
+  term_type varchar(20),
+  has_values integer,
+  data_type varchar(10),
+  has_multiple_values_per_entity integer,
+  data_shape varchar(20),
+  unit varchar (30),
+  unit_ontology_term_id integer,
+  precision integer,
+  PRIMARY KEY (stable_id)
+);
+
+
 
 
 

@@ -9,7 +9,7 @@ public abstract class Filter {
   
   public Filter(Entity entity, String variableId) {
     if (entity == null) throw new RuntimeException("Null entity not allowed");
-    entity.getVariable(variableId).orElseThrow(() -> new RuntimeException("Entity " + entity.getId() + "does not contain variable " + variableId));
+    entity.getVariable(variableId).orElseThrow(() -> new RuntimeException("Entity " + entity.getId() + " does not contain variable " + variableId));
     this.entity = entity;
     this.variableId = variableId;
   }

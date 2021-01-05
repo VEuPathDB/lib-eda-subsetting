@@ -178,23 +178,23 @@ public class StudySubsettingUtilsTest {
     
     String expectedWithClause = _model.observation.getWithClauseName() +  " as (" + NL +
         obsBase + 
-        "  AND " + VARIABLE_ID_COL_NAME + " = '" + _model.weight.getId() + "'" + NL +
+        "  AND " + TT_VARIABLE_ID_COL_NAME + " = '" + _model.weight.getId() + "'" + NL +
         "  AND " + NUMBER_VALUE_COL_NAME + " >= 10 AND " + NUMBER_VALUE_COL_NAME + " <= 20" + NL +
         "INTERSECT" + NL +
         obsBase + 
-        "  AND " + VARIABLE_ID_COL_NAME + " = '" + _model.favNewYears.getId() + "'" + NL +
+        "  AND " + TT_VARIABLE_ID_COL_NAME + " = '" + _model.favNewYears.getId() + "'" + NL +
         "  AND " + DATE_VALUE_COL_NAME + " IN ('2019-03-21T00:00', '2019-03-28T00:00', '2019-06-12T00:00')" + NL +
         "INTERSECT" + NL +
         obsBase + 
-        "  AND " + VARIABLE_ID_COL_NAME + " = '" + _model.birthDate.getId() + "'" + NL +
+        "  AND " + TT_VARIABLE_ID_COL_NAME + " = '" + _model.birthDate.getId() + "'" + NL +
         "  AND " + DATE_VALUE_COL_NAME + " >= '2019-03-21T00:00' AND " + DATE_VALUE_COL_NAME + " <= '2019-03-28T00:00'" + NL +
         "INTERSECT" + NL +
         obsBase + 
-        "  AND " + VARIABLE_ID_COL_NAME + " = '" + _model.mood.getId() + "'" + NL +
+        "  AND " + TT_VARIABLE_ID_COL_NAME + " = '" + _model.mood.getId() + "'" + NL +
         "  AND " + STRING_VALUE_COL_NAME + " IN ('happy', 'jolly', 'giddy')" + NL +
         "INTERSECT" + NL +
         obsBase + 
-        "  AND " + VARIABLE_ID_COL_NAME + " = '" + _model.favNumber.getId() + "'" + NL +
+        "  AND " + TT_VARIABLE_ID_COL_NAME + " = '" + _model.favNumber.getId() + "'" + NL +
         "  AND " + NUMBER_VALUE_COL_NAME + " IN (5, 7, 9 )" + NL +
         ")";
     assertEquals(expectedWithClause, withClause);
@@ -208,7 +208,7 @@ public class StudySubsettingUtilsTest {
     String expectedSelectClause = "SELECT a." + _model.household.getPKColName() +
         ", a." + _model.participant.getPKColName() +
         ", t." + _model.observation.getPKColName() +
-        ", " + VARIABLE_ID_COL_NAME + ", " + STRING_VALUE_COL_NAME + ", " + NUMBER_VALUE_COL_NAME + ", " + DATE_VALUE_COL_NAME;
+        ", " + TT_VARIABLE_ID_COL_NAME + ", " + STRING_VALUE_COL_NAME + ", " + NUMBER_VALUE_COL_NAME + ", " + DATE_VALUE_COL_NAME;
     assertEquals(expectedSelectClause, selectClause);
   }
 
@@ -262,8 +262,8 @@ public class StudySubsettingUtilsTest {
     String where = StudySubsettingUtils.generateTabularWhereClause(vars, _model.observation.getPKColName(), "t", "a");
     String expected = "WHERE t." + _model.observation.getPKColName() + " = a." + _model.observation.getPKColName() + NL +
         "AND (" + NL +
-        " " + VARIABLE_ID_COL_NAME + " = '" + _model.birthDate.getId() + "' OR" + NL +
-        " " + VARIABLE_ID_COL_NAME + " = '" + _model.favNumber.getId() + "'" + NL +
+        " " + TT_VARIABLE_ID_COL_NAME + " = '" + _model.birthDate.getId() + "' OR" + NL +
+        " " + TT_VARIABLE_ID_COL_NAME + " = '" + _model.favNumber.getId() + "'" + NL +
         ")" + NL;
 
     assertEquals(expected, where);
@@ -401,7 +401,7 @@ public class StudySubsettingUtilsTest {
     StudySubsettingUtils.produceTabularSubset(_dataSource, study, entity,
         variables, filters, outStream);
     String[] expected = {
-    "GEMS_Part_id", "GEMS_House_id", "var-17",  "var-20",
+    "Prtcpnt_id", "Hshld_id", "var-17",  "var-20",
     "201", "101",     "blond",   "Martin",
     "202", "101",     "blond",   "Abe",
     "203", "102",     "brown",   "Gladys",
@@ -432,7 +432,7 @@ public class StudySubsettingUtilsTest {
     StudySubsettingUtils.produceTabularSubset(_dataSource, study, entity,
         variables, filters, outStream);
     String[] expected = {
-    "GEMS_Part_id", "GEMS_House_id", "var-17",  "var-20",
+    "Prtcpnt_id", "Hshld_id", "var-17",  "var-20",
     "201", "101",     "blond",   "Martin",
     "202", "101",     "blond",   "Abe",
 //    "203", "102",     "brown",   "Gladys",

@@ -25,7 +25,7 @@ public abstract class Filter {
     return "  SELECT " + entity.getAllPksSelectList("t", "a") + NL
         + "  FROM " + entity.getTallTableName() + " t, " + entity.getAncestorsTableName() + " a" + NL
         + "  WHERE t." + entity.getPKColName() + " = a." + entity.getPKColName() + NL
-        + "  AND " + VARIABLE_ID_COL_NAME + " = '" + variableId + "'" + NL
+        + "  AND " + TT_VARIABLE_ID_COL_NAME + " = '" + variableId + "'" + NL
         + getAndClausesSql();
   }
   
@@ -33,7 +33,7 @@ public abstract class Filter {
     
     return "  SELECT " + entity.getPKColName() + NL
         + "  FROM " + entity.getTallTableName() + NL
-        + "  WHERE " + VARIABLE_ID_COL_NAME + " = '" + variableId + "'" + NL
+        + "  WHERE " + TT_VARIABLE_ID_COL_NAME + " = '" + variableId + "'" + NL
         + getAndClausesSql();
   }
 

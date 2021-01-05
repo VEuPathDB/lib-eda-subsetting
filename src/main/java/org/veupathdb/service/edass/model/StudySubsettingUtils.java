@@ -29,7 +29,7 @@ import org.gusdb.fgputil.iterator.GroupingIterator;
 import org.gusdb.fgputil.iterator.IteratorUtil;
 import org.veupathdb.service.edass.model.Variable.VariableType;
 
-import static org.veupathdb.service.edass.model.RdbmsColumnNames.VARIABLE_ID_COL_NAME;
+import static org.veupathdb.service.edass.model.RdbmsColumnNames.TT_VARIABLE_ID_COL_NAME;
 
 
 /**
@@ -235,7 +235,7 @@ public class StudySubsettingUtils {
     for (VariableType varType : VariableType.values()) valColNames.add(varType.getTallTableColumnName());
 
     return "SELECT " + outputEntity.getAllPksSelectList(tallTblAbbrev, ancestorTblAbbrev) + ", " + 
-    VARIABLE_ID_COL_NAME + ", " +
+    TT_VARIABLE_ID_COL_NAME + ", " +
     String.join(", ", valColNames);
   }
     
@@ -261,13 +261,13 @@ public class StudySubsettingUtils {
     List<String> outputVariableIds = outputVariables.stream().map(Variable::getId).collect(Collectors.toList());
 
     List<String> varExprs = new ArrayList<>();
-    for (String varId : outputVariableIds) varExprs.add(" " + VARIABLE_ID_COL_NAME + " = '" + varId + "'");
+    for (String varId : outputVariableIds) varExprs.add(" " + TT_VARIABLE_ID_COL_NAME + " = '" + varId + "'");
     return "WHERE " + entityTblNm + "." + entityPkCol + " = " + ancestorTblNm + "." + entityPkCol + NL + (
         varExprs.isEmpty() ? "" : "AND (" + NL + String.join(" OR" + NL, varExprs) + NL + ")" + NL);
   }
   
   static String generateDistributionWhereClause(Variable outputVariable) {
-    return "WHERE " + VARIABLE_ID_COL_NAME + " = '" + outputVariable.getId() + "'";
+    return "WHERE " + TT_VARIABLE_ID_COL_NAME + " = '" + outputVariable.getId() + "'";
   }
 
   static String generateInClause(TreeNode<Entity> prunedEntityTree, Entity outputEntity, String tallTblAbbrev) {

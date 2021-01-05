@@ -28,7 +28,7 @@ public class StudiesTest {
   public static void setUp() {
     _model = new TestModel();
     _dataSource = StubDb.getDataSource();
-    Study study = Study.loadStudy(_dataSource, "DS12385");
+    Study study = Study.loadStudy(_dataSource, "DS-2324");
     _filtersForTesting = new FiltersForTesting(study);
   }
   
@@ -81,7 +81,7 @@ public class StudiesTest {
   @DisplayName("Test variable distribution - no filters")
   void testVariableDistributionNoFilters() throws IOException {
 
-    Study study = Study.loadStudy(Resources.getApplicationDataSource(), "DS12385");
+    Study study = Study.loadStudy(Resources.getApplicationDataSource(), "DS-2324");
 
     String entityId = "GEMS_Part";
     Entity entity = study.getEntity(entityId).orElseThrow();
@@ -106,7 +106,7 @@ public class StudiesTest {
   @DisplayName("Test variable distribution - with filters")
   void testVariableDistribution() throws IOException {
 
-    Study study = Study.loadStudy(Resources.getApplicationDataSource(), "DS12385");
+    Study study = Study.loadStudy(Resources.getApplicationDataSource(), "DS-2324");
 
     String entityId = "GEMS_Part";
     Entity entity = study.getEntity(entityId).orElseThrow();

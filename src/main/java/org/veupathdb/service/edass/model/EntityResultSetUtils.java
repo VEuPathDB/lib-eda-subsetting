@@ -107,7 +107,7 @@ public class EntityResultSetUtils {
         tallRow.put(colName, rs.getString(colName));
       }
       tallRow.put(entity.getPKColName(), rs.getString(entity.getPKColName()));
-      tallRow.put(VARIABLE_ID_COL_NAME, rs.getString(VARIABLE_ID_COL_NAME));
+      tallRow.put(TT_VARIABLE_ID_COL_NAME, rs.getString(TT_VARIABLE_ID_COL_NAME));
       
       Variable var = entity.getVariable(rs.getString(TT_VARIABLE_ID_COL_NAME))
           .orElseThrow(() -> new RuntimeException("Can't find column in tall table result set: " + TT_VARIABLE_ID_COL_NAME));

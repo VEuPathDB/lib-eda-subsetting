@@ -149,7 +149,7 @@ public class Study {
     private final String id;
     private final String internalAbbrev;
 
-    public StudyOverview(String displayName, String id, String internalAbbrev) {
+    public StudyOverview(String id, String displayName, String internalAbbrev) {
       this.displayName = displayName;
       this.id = id;
       this.internalAbbrev = internalAbbrev;

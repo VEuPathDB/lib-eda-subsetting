@@ -43,7 +43,7 @@ class VariableResultSetUtils {
           getRsStringNotNull(rs, PROVIDER_LABEL_COL_NAME),
           getRsStringNotNull(rs, VARIABLE_ID_COL_NAME),
           entity,
-          Variable.VariableType.fromTypeString(getRsStringNotNull(rs, VARIABLE_TYPE_COL_NAME)),
+          Variable.VariableType.fromString(getRsStringNotNull(rs, VARIABLE_TYPE_COL_NAME)),
           Variable.VariableDataShape.fromString(getRsStringNotNull(rs, DATA_SHAPE_COL_NAME)),
           Variable.VariableDisplayType.fromString(getRsStringNotNull(rs, DISPLAY_TYPE_COL_NAME)),
           rs.getBoolean(HAS_VALUES_COL_NAME),

@@ -303,7 +303,7 @@ public class StudySubsettingUtilsTest {
 
     String sql = StudySubsettingUtils.generateTabularSql(outputVariables, _model.participant, filters, prunedTree);
     assertNotEquals("", sql);
-    //System.out.println("Tabular SQL:" + "\n" + sql);
+    System.out.println("Tabular SQL:" + "\n" + sql);
   }
 
   @Test
@@ -316,7 +316,7 @@ public class StudySubsettingUtilsTest {
 
     String sql = StudySubsettingUtils.generateDistributionSql(_model.participant, _model.shoesize, filters, prunedTree);
     assertNotEquals("", sql);
-    //System.out.println("Distribution SQL:" + "\n" + sql);
+    System.out.println("Distribution SQL:" + "\n" + sql);
   }
   
   @Test

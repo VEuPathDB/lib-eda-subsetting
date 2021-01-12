@@ -9,6 +9,48 @@
 ################################################################################
 
 types:
+  API_Filter:
+    type: object
+    discriminator: type
+    properties:
+      entityId: string
+      variableId: string
+      type: API_FilterType
+  API_FilterType:
+    type: string
+    enum:
+      - stringSet
+      - numberSet
+      - dateSet
+      - numberRange
+      - dateRange
+  API_StringSetFilter:
+    type: API_Filter
+    discriminatorValue: 'stringSet'
+    properties:
+      stringSet: string[]
+  API_NumberSetFilter:
+    type: API_Filter
+    discriminatorValue: 'numberSet'
+    properties:
+      numberSet: number[]
+  API_DateSetFilter:
+    type: API_Filter
+    discriminatorValue: 'dateSet'
+    properties:
+      dateSet: string[] # how to constrain this to a date?
+  API_NumberRangeFilter:
+    type: API_Filter
+    discriminatorValue: 'numberRange'
+    properties:
+      min: number
+      max: number
+  API_DateRangeFilter:
+    type: API_Filter
+    discriminatorValue: 'dateRange'
+    properties:
+      min: string
+      max: string
   EntityCountPostRequest:
     type: object
     additionalProperties: false
@@ -85,6 +127,9 @@ types:
       displayName: string
       parentId: string
       type: API_VariableType
+      isMultiValued: boolean
+      displayType: API_VariableDisplayType
+      dataShape: API_VariableDataShape
   API_VariableType:
     type: string
     enum:
@@ -92,6 +137,19 @@ types:
       - string
       - number
       - date
+      - longitude
+  API_VariableDataShape:
+    type: string
+    enum:
+      - continuous
+      - categorical
+      - ordinal
+      - two-valued
+  API_VariableDisplayType:
+    type: string
+    enum:
+      - default
+      - multifilter
   API_VariablesCategory:
     type: API_Variable
     discriminatorValue: category
@@ -102,54 +160,9 @@ types:
     type: API_Variable
     discriminatorValue: number
     properties:
-      isContinuous: boolean
       precision: integer
       units: string
   API_DateVariable:
     type: API_Variable
     discriminatorValue: date
-    properties:
-      isContinuous: boolean
-  API_Filter:
-    type: object
-    discriminator: type
-    properties:
-      entityId: string
-      variableId: string
-      type: API_FilterType
-  API_FilterType:
-    type: string
-    enum:
-      - stringSet
-      - numberSet
-      - dateSet
-      - numberRange
-      - dateRange
-  API_StringSetFilter:
-    type: API_Filter
-    discriminatorValue: 'stringSet'
-    properties:
-      stringSet: string[]
-  API_NumberSetFilter:
-    type: API_Filter
-    discriminatorValue: 'numberSet'
-    properties:
-      numberSet: number[]
-  API_DateSetFilter:
-    type: API_Filter
-    discriminatorValue: 'dateSet'
-    properties:
-      dateSet: string[] # how to constrain this to a date?
-  API_NumberRangeFilter:
-    type: API_Filter
-    discriminatorValue: 'numberRange'
-    properties:
-      min: number
-      max: number
-  API_DateRangeFilter:
-    type: API_Filter
-    discriminatorValue: 'dateRange'
-    properties:
-      min: string
-      max: string
 

@@ -46,7 +46,7 @@ public class Variable {
       return this.tallTableColumnName;
     }
 
-    public static VariableType fromTypeString(String str) {
+    public static VariableType fromString(String str) {
       if (str.equals(STRING.typeString)) return STRING;
       else if (str.equals(NUMBER.typeString)) return NUMBER;
       else if (str.equals(DATE.typeString)) return DATE;
@@ -62,31 +62,50 @@ public class Variable {
       }
     }
   }
-  
+
+  private final static String CONT_STR = "continuous";
+  private final static String CAT_STR = "categorical";
+  private final static String ORD_STR = "ordinal";
+  private final static String TWO_STR = "two-valued";
+
   public enum VariableDataShape {
-    CONTINUOUS,
-    CATEGORICAL,
-    ORDINAL,
-    BINARY;
-    
-    public static VariableDataShape fromString(String shape) {
+    CONTINUOUS(CONT_STR),
+    CATEGORICAL(CAT_STR),
+    ORDINAL(ORD_STR),
+    BINARY(TWO_STR);
+
+    private final String name;
+
+    VariableDataShape(String name) {
+      this.name = name;
+    }
+
+    public static VariableDataShape fromString(String shapeString) {
 
       VariableDataShape v;
 
-      switch (shape) {
-        case "continuous" -> v = CONTINUOUS;
-        case "categorical" -> v = CATEGORICAL;
-        case "ordinal" -> v = ORDINAL;
-        case "binary" -> v = BINARY;
-        default -> throw new RuntimeException("Unrecognized data shape: " + shape);
+      switch (shapeString) {
+        case CONT_STR -> v = CONTINUOUS;
+        case CAT_STR -> v = CATEGORICAL;
+        case ORD_STR -> v = ORDINAL;
+        case TWO_STR -> v = BINARY;
+        default -> throw new RuntimeException("Unrecognized data shape: " + shapeString);
       }
       return v;
     }
+
+    public String getName() { return name;}
   }
 
   public enum VariableDisplayType {
-    DEFAULT,
-    MULTIFILTER;
+    DEFAULT("default"),
+    MULTIFILTER("multifilter");
+
+    String type;
+
+    VariableDisplayType(String type) {
+      this.type = type;
+    }
 
     public static VariableDisplayType fromString(String displayType) {
 
@@ -96,9 +115,11 @@ public class Variable {
         case "default" -> t = DEFAULT;
         case "multifilter" -> t = MULTIFILTER;
         default -> throw new RuntimeException("Unrecognized variable display type: " + displayType);
-      };
+      }
       return t;
     }
+
+    public String getType() { return type; }
   }
 
   public Variable(String providerLabel, String id, Entity entity, VariableType type, VariableDataShape dataShape,

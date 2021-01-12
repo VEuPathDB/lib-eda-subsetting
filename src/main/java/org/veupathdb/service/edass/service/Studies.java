@@ -96,7 +96,8 @@ public class Studies implements org.veupathdb.service.edass.generated.resources.
     if (var.getType() == VariableType.DATE) {
       APIDateVariable apiVar = new APIDateVariableImpl();
       setApiVarProps(apiVar, var);
-      apiVar.setIsContinuous(var.getDataShape() == Variable.VariableDataShape.CONTINUOUS);
+      apiVar.setDataShape(APIVariableDataShape.valueOf(var.getDataShape().getName()));
+      apiVar.setDisplayType(APIVariableDisplayType.valueOf(var.getDisplayType().getType()));
       return apiVar;
     }
     else if (var.getType() == VariableType.NUMBER) {
@@ -104,11 +105,14 @@ public class Studies implements org.veupathdb.service.edass.generated.resources.
       setApiVarProps(apiVar, var);
       apiVar.setPrecision(var.getPrecision());
       apiVar.setUnits(var.getUnits());
-      apiVar.setIsContinuous(var.getDataShape() == Variable.VariableDataShape.CONTINUOUS);
+      apiVar.setDataShape(APIVariableDataShape.valueOf(var.getDataShape().getName()));
+      apiVar.setDisplayType(APIVariableDisplayType.valueOf(var.getDisplayType().getType()));
       return apiVar;
     }
     else if (var.getType() == VariableType.STRING) {
       APIStringVariable apiVar = new APIStringVariableImpl();
+      apiVar.setDataShape(APIVariableDataShape.valueOf(var.getDataShape().getName()));
+      apiVar.setDisplayType(APIVariableDisplayType.valueOf(var.getDisplayType().getType()));
       setApiVarProps(apiVar, var);
       return apiVar;
     }

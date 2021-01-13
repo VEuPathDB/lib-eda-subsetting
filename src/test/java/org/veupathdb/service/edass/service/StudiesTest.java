@@ -23,15 +23,33 @@ public class StudiesTest {
   private static TestModel _model;
   private static DataSource _dataSource;
   private static FiltersForTesting _filtersForTesting;
+  private static Study _study;
 
   @BeforeAll
   public static void setUp() {
     _model = new TestModel();
     _dataSource = StubDb.getDataSource();
-    Study study = Study.loadStudy(_dataSource, "DS-2324");
-    _filtersForTesting = new FiltersForTesting(study);
+    _study = Study.loadStudy(_dataSource, "DS-2324");
+    _filtersForTesting = new FiltersForTesting(_study);
   }
-  
+
+  @Test
+  @DisplayName("Test entity tree to api tree")
+  void testEntityTreeToAPITree() {
+
+    APIEntity apiEntityTree = Studies.entityTreeToAPITree(_study.getEntityTree());
+    assertEquals("GEMS_House", apiEntityTree.getId());
+
+    assertEquals(2, apiEntityTree.getChildren().size());
+  }
+
+  @Test
+  @DisplayName("Test get study details")
+  void testGetStudyDetails() {
+    APIStudyDetail studyDetail = Studies.getApiStudyDetail("DS-2324");
+    assertNotNull(studyDetail);
+  }
+
   @Test
   @DisplayName("Test valid construction of filters from API filters")
   void testConstructFilters() {

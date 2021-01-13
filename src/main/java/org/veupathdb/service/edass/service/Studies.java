@@ -55,22 +55,26 @@ public class Studies implements org.veupathdb.service.edass.generated.resources.
   @Override
   public GetStudiesByStudyIdResponse getStudiesByStudyId(String studyId) {
 
-    Study study = Study.loadStudy(Resources.getApplicationDataSource(), studyId);
-
-    APIEntity apiEntityTree = entityTreeToAPITree(study.getEntityTree());
-    
-    APIStudyDetail apiStudyDetail = new APIStudyDetailImpl();
-    apiStudyDetail.setId(studyId);
-    apiStudyDetail.setRootEntity(apiEntityTree);    
-    // TODO: lose or fill in study.setName() prop
-    
+    APIStudyDetail apiStudyDetail = getApiStudyDetail(studyId);
     StudyIdGetResponse response = new StudyIdGetResponseImpl();
     response.setStudy(apiStudyDetail);
     
     return GetStudiesByStudyIdResponse.respond200WithApplicationJson(response);
   }
+
+  public static APIStudyDetail getApiStudyDetail(String studyId) {
+    Study study = Study.loadStudy(Resources.getApplicationDataSource(), studyId);
+
+    APIEntity apiEntityTree = entityTreeToAPITree(study.getEntityTree());
+
+    APIStudyDetail apiStudyDetail = new APIStudyDetailImpl();
+    apiStudyDetail.setId(studyId);
+    apiStudyDetail.setRootEntity(apiEntityTree);
+    // TODO: lose or fill in study.setName() prop
+    return apiStudyDetail;
+  }
   
-  private static APIEntity entityTreeToAPITree(TreeNode<Entity> root) {
+  public static APIEntity entityTreeToAPITree(TreeNode<Entity> root) {
     return root.mapStructure((entity, mappedChildren) -> {
       APIEntity apiEntity = new APIEntityImpl();
       apiEntity.setDescription(entity.getDescription());
@@ -96,8 +100,8 @@ public class Studies implements org.veupathdb.service.edass.generated.resources.
     if (var.getType() == VariableType.DATE) {
       APIDateVariable apiVar = new APIDateVariableImpl();
       setApiVarProps(apiVar, var);
-      apiVar.setDataShape(APIVariableDataShape.valueOf(var.getDataShape().getName()));
-      apiVar.setDisplayType(APIVariableDisplayType.valueOf(var.getDisplayType().getType()));
+      apiVar.setDataShape(APIVariableDataShape.valueOf(var.getDataShape().toString()));
+      apiVar.setDisplayType(APIVariableDisplayType.valueOf(var.getDisplayType().toString()));
       return apiVar;
     }
     else if (var.getType() == VariableType.NUMBER) {
@@ -105,14 +109,14 @@ public class Studies implements org.veupathdb.service.edass.generated.resources.
       setApiVarProps(apiVar, var);
       apiVar.setPrecision(var.getPrecision());
       apiVar.setUnits(var.getUnits());
-      apiVar.setDataShape(APIVariableDataShape.valueOf(var.getDataShape().getName()));
-      apiVar.setDisplayType(APIVariableDisplayType.valueOf(var.getDisplayType().getType()));
+      apiVar.setDataShape(APIVariableDataShape.valueOf(var.getDataShape().toString()));
+      apiVar.setDisplayType(APIVariableDisplayType.valueOf(var.getDisplayType().toString()));
       return apiVar;
     }
     else if (var.getType() == VariableType.STRING) {
       APIStringVariable apiVar = new APIStringVariableImpl();
-      apiVar.setDataShape(APIVariableDataShape.valueOf(var.getDataShape().getName()));
-      apiVar.setDisplayType(APIVariableDisplayType.valueOf(var.getDisplayType().getType()));
+      apiVar.setDataShape(APIVariableDataShape.valueOf(var.getDataShape().toString()));
+      apiVar.setDisplayType(APIVariableDisplayType.valueOf(var.getDisplayType().toString()));
       setApiVarProps(apiVar, var);
       return apiVar;
     }

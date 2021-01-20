@@ -1,5 +1,7 @@
 package org.veupathdb.service.edass.model;
 
+import org.veupathdb.service.edass.Resources;
+
 import static org.gusdb.fgputil.FormatUtil.NL;
 import static org.veupathdb.service.edass.model.RdbmsColumnNames.*;
 
@@ -23,7 +25,7 @@ public abstract class Filter {
   private String getSqlWithAncestors() {
 
     return "  SELECT " + entity.getAllPksSelectList("t", "a") + NL
-        + "  FROM " + entity.getTallTableName() + " t, " + entity.getAncestorsTableName() + " a" + NL
+        + "  FROM " + Resources.getAppDbSchema() + entity.getTallTableName() + " t, " + Resources.getAppDbSchema() + entity.getAncestorsTableName() + " a" + NL
         + "  WHERE t." + entity.getPKColName() + " = a." + entity.getPKColName() + NL
         + "  AND " + TT_VARIABLE_ID_COL_NAME + " = '" + variableId + "'" + NL
         + getAndClausesSql();
@@ -32,7 +34,7 @@ public abstract class Filter {
   private String getSqlNoAncestors() {
     
     return "  SELECT " + entity.getPKColName() + NL
-        + "  FROM " + entity.getTallTableName() + NL
+        + "  FROM " + Resources.getAppDbSchema() + entity.getTallTableName() + NL
         + "  WHERE " + TT_VARIABLE_ID_COL_NAME + " = '" + variableId + "'" + NL
         + getAndClausesSql();
   }

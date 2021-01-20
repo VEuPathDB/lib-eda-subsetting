@@ -27,6 +27,7 @@ import org.gusdb.fgputil.db.stream.ResultSets;
 import org.gusdb.fgputil.functional.TreeNode;
 import org.gusdb.fgputil.iterator.GroupingIterator;
 import org.gusdb.fgputil.iterator.IteratorUtil;
+import org.veupathdb.service.edass.Resources;
 import org.veupathdb.service.edass.model.Variable.VariableType;
 
 import static org.veupathdb.service.edass.model.RdbmsColumnNames.TT_VARIABLE_ID_COL_NAME;
@@ -218,7 +219,7 @@ public class StudySubsettingUtils {
     String selectCols = String.join(", ", selectColsList);
     
     // default WITH body assumes no filters. we use the ancestor table because it is small
-    String withBody = "  SELECT " + selectCols + " FROM " + entity.getAncestorsTableName() + NL;
+    String withBody = "  SELECT " + selectCols + " FROM " + Resources.getAppDbSchema() + entity.getAncestorsTableName() + NL;
     
     List<Filter> filtersOnThisEntity = filters.stream().filter(f -> f.getEntity().getId().equals(entity.getId())).collect(Collectors.toList());
 
@@ -248,12 +249,12 @@ public class StudySubsettingUtils {
   }
   
   static String generateDistributionFromClause(Entity outputEntity) {
-    return "FROM " + outputEntity.getTallTableName();
+    return "FROM " + Resources.getAppDbSchema() + outputEntity.getTallTableName();
   }
   
   static String generateTabularFromClause(Entity outputEntity, String entityTblNm, String ancestorTblNm) {
-    return "FROM " + outputEntity.getTallTableName() + " " + entityTblNm + ", " +
-        outputEntity.getAncestorsTableName() + " " + ancestorTblNm;
+    return "FROM " + Resources.getAppDbSchema() + outputEntity.getTallTableName() + " " + entityTblNm + ", " +
+        Resources.getAppDbSchema() + outputEntity.getAncestorsTableName() + " " + ancestorTblNm;
   }
   
   static String generateTabularWhereClause(List<Variable> outputVariables, String entityPkCol, String entityTblNm, String ancestorTblNm) {

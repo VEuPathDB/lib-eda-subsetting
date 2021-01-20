@@ -2,6 +2,7 @@ package org.veupathdb.service.edass.model;
 
 import org.gusdb.fgputil.db.runner.SQLRunner;
 import org.gusdb.fgputil.functional.TreeNode;
+import org.veupathdb.service.edass.Resources;
 import org.veupathdb.service.edass.generated.model.APIFilter;
 
 import javax.sql.DataSource;
@@ -25,7 +26,7 @@ public class Study {
         "select " + RdbmsColumnNames.STUDY_ID_COL_NAME +
                 ", " + RdbmsColumnNames.DISPLAY_NAME_COL_NAME +
                 ", " + RdbmsColumnNames.STUDY_ABBREV_COL_NAME +
-        " from " + RdbmsColumnNames.STUDY_TABLE_NAME;
+        " from " + Resources.getAppDbSchema() + RdbmsColumnNames.STUDY_TABLE_NAME;
     return new SQLRunner(datasource, sql).executeQuery(rs -> {
       List<StudyOverview> studyOverviews = new ArrayList<>();
       while (rs.next()) {
@@ -60,7 +61,7 @@ public class Study {
             "select " + RdbmsColumnNames.STUDY_ID_COL_NAME +
                     ", " + RdbmsColumnNames.DISPLAY_NAME_COL_NAME +
                     ", " + RdbmsColumnNames.STUDY_ABBREV_COL_NAME +
-                    " from " + RdbmsColumnNames.STUDY_TABLE_NAME +
+                    " from " + Resources.getAppDbSchema() + RdbmsColumnNames.STUDY_TABLE_NAME +
                      " where " + RdbmsColumnNames.STUDY_ID_COL_NAME + " = '" + studyId + "'";
     return new SQLRunner(datasource, sql).executeQuery(rs -> {
       rs.next();

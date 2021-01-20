@@ -1,5 +1,7 @@
 package org.veupathdb.service.edass;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.veupathdb.lib.container.jaxrs.config.Options;
 import org.veupathdb.lib.container.jaxrs.server.ContainerResources;
 import org.veupathdb.lib.container.jaxrs.utils.db.DbManager;
@@ -16,12 +18,17 @@ import javax.sql.DataSource;
  */
 public class Resources extends ContainerResources {
 
-  private static final boolean USE_IN_MEMORY_TEST_DATABASE = true;
+  private static final Logger LOG = LogManager.getLogger(Resources.class);
+
+  private static final boolean USE_IN_MEMORY_TEST_DATABASE = false;
 
   public Resources(Options opts) {
     super(opts);
-    if (!USE_IN_MEMORY_TEST_DATABASE)
+    if (!USE_IN_MEMORY_TEST_DATABASE) {
       DbManager.initApplicationDatabase(opts);
+      LOG.info("Using application DB connection URL: " +
+          DbManager.getInstance().getApplicationDatabase().getConfig().getConnectionUrl());
+    }
   }
 
   /**

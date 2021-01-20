@@ -13,13 +13,13 @@ class RdbmsColumnNames {
   static final String DISPLAY_NAME_PLURAL_COL_NAME = "display_name_plural";
 
   // Study table
-  static final String STUDY_TABLE_NAME = "study";
+  static final String STUDY_TABLE_NAME = "apidb.study";
   static final String STUDY_ID_COL_NAME = "stable_id";
   static final String STUDY_NAME_COL_NAME = "display_name";
   static final String STUDY_ABBREV_COL_NAME = "internal_abbrev";
 
   // Entity table and EntityName table
-  static final String ENTITY_TABLE_NAME = "EntityTypeGraph";
+  static final String ENTITY_TABLE_NAME = "apidb.EntityTypeGraph";
   static final String ENTITY_ID_COL_NAME = "stable_id";
   static final String ENTITY_STUDY_ID_COL_NAME = "study_stable_id";
   static final String ENTITY_PARENT_ID_COL_NAME = "parent_stable_id";

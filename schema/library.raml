@@ -23,12 +23,10 @@ types:
     type: object
     properties:
       id: string
-      name: string
   API_StudyDetail:
     type: object
     properties:
       id: string
-      name: string
       rootEntity: API_Entity
   API_Entity:
     type: object
@@ -46,7 +44,7 @@ types:
       id: string
       providerLabel: string
       displayName: string
-      parentId: string
+      parentId?: string
       type: API_VariableType
       isMultiValued: boolean
       displayType: API_VariableDisplayType
@@ -65,7 +63,7 @@ types:
       - continuous
       - categorical
       - ordinal
-      - two-valued
+      - binary
   API_VariableDisplayType:
     type: string
     enum:

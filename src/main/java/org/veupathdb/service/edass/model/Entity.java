@@ -132,7 +132,7 @@ public class Entity {
  
   void addVariable(Variable var) {
     if (variablesMap.containsKey(var.getId()))
-      throw new RuntimeException("Trying to add duplicate variable: " + var.getId());
+      throw new RuntimeException("In Entity '" + getId() + "', trying to add duplicate variable: " + var.getId());
     variablesMap.put(var.getId(), var);
     variablesList.add(var);
   }

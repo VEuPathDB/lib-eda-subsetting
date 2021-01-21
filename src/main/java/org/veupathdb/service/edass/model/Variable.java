@@ -47,7 +47,7 @@ public class Variable {
     }
 
     public static VariableType fromString(String str) {
-      if (str.equals(STRING.typeString)) return STRING;
+      if (str.equals(STRING.typeString) || str.equals("boolean")) return STRING;  // TODO remove boolean hack
       else if (str.equals(NUMBER.typeString)) return NUMBER;
       else if (str.equals(DATE.typeString)) return DATE;
       else throw new RuntimeException("Illegal variable type string: " + str);
@@ -66,7 +66,7 @@ public class Variable {
   private final static String CONT_STR = "continuous";
   private final static String CAT_STR = "categorical";
   private final static String ORD_STR = "ordinal";
-  private final static String TWO_STR = "two-valued";
+  private final static String TWO_STR = "binary";
 
   public enum VariableDataShape {
     CONTINUOUS(CONT_STR),
@@ -122,17 +122,47 @@ public class Variable {
     public String getType() { return type; }
   }
 
+  /*
+  Construct a variable that does have values
+   */
   public Variable(String providerLabel, String id, Entity entity, VariableType type, VariableDataShape dataShape,
-                  VariableDisplayType displayType, boolean hasValues, String units, Integer precision, String displayName, String parentId) {
+                  VariableDisplayType displayType, String units, Integer precision, String displayName, String parentId) {
+
+    String errPrefix = "In entity " + entity.getId() + " variable " + id + " has a null ";
+    if (type == null) throw new RuntimeException(errPrefix + "data type");
+    if (dataShape == null) throw new RuntimeException(errPrefix + "data shape");
+    if (displayType == null) throw new RuntimeException(errPrefix + "display type");
+    if (type.equals(VariableType.NUMBER)) {
+      if (units == null) throw new RuntimeException(errPrefix + "units");
+      if (precision == null) throw new RuntimeException(errPrefix + "precision");
+    }
+
     this.providerLabel = providerLabel;
     this.id = id;
     this.entity = entity;
     this.type = type;
     this.dataShape = dataShape;
     this.displayType = displayType;
-    this.hasValues = hasValues;
+    this.hasValues = true;
     this.units = units;
     this.precision = precision;
+    this.displayName = displayName;
+    this.parentId = parentId;
+  }
+
+  /*
+  Construct a variable that does not have values
+   */
+  public Variable(String providerLabel, String id, Entity entity, String displayName, String parentId) {
+    this.providerLabel = providerLabel;
+    this.id = id;
+    this.entity = entity;
+    this.type = null;
+    this.dataShape = null;
+    this.displayType = null;
+    this.hasValues = false;
+    this.units = null;
+    this.precision = null;
     this.displayName = displayName;
     this.parentId = parentId;
 

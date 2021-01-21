@@ -47,4 +47,17 @@ class RdbmsColumnNames {
       throw new RuntimeException("Found a null for variable column: " + colName);
     return rs.getString(colName);
   }
+
+  static String getRsStringWithDefault(ResultSet rs, String colName, String defaultVal) throws SQLException {
+    String val = rs.getString(colName);
+    if (val == null) val = defaultVal;
+    return val;
+  }
+
+  static Integer getRsIntegerWithDefault(ResultSet rs, String colName, Integer defaultVal) throws SQLException {
+    Integer val = rs.getInt(colName);
+    if (val == null) val = defaultVal;
+    return val;
+  }
+
 }

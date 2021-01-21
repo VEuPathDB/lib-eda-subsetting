@@ -83,11 +83,10 @@ public class EntityResultSetUtils {
     try {
       String name = getRsStringNotNull(rs, DISPLAY_NAME_COL_NAME);
       String namePlural = rs.getString(DISPLAY_NAME_PLURAL_COL_NAME);
-      if (namePlural == null) namePlural = name + "s";
+      if (namePlural == null) namePlural = name + "s";  // TODO remove this hack when db has plurals
       String id = getRsStringNotNull(rs, ENTITY_ID_COL_NAME);
       String studyAbbrev = getRsStringNotNull(rs, STDY_ABBRV_COL_NM);
-      String descrip = rs.getString(DESCRIP_COL_NAME);
-      if (descrip == null) descrip = "";
+      String descrip = getRsStringWithDefault(rs, DESCRIP_COL_NAME, "No Entity Description available");
       String abbrev = getRsStringNotNull(rs, ENTITY_ABBREV_COL_NAME);
 
       return new Entity(id, studyAbbrev, name, namePlural, descrip, abbrev);

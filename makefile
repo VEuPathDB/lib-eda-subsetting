@@ -94,9 +94,9 @@ gen-docs: api.raml merge-raml
 
 merge-raml:
 	@echo "Downloading dependencies..."
-	curl https://raw.githubusercontent.com/VEuPathDB/EdaCommon/new-schema/schema/study.raml > schema/url/study.raml
-	curl https://raw.githubusercontent.com/VEuPathDB/EdaCommon/new-schema/schema/filter.raml > schema/url/filter.raml
-	curl https://raw.githubusercontent.com/VEuPathDB/EdaCommon/new-schema/schema/query.raml > schema/url/query.raml
+	curl https://raw.githubusercontent.com/VEuPathDB/EdaCommon/main/schema/study.raml > schema/url/study.raml
+	curl https://raw.githubusercontent.com/VEuPathDB/EdaCommon/main/schema/filter.raml > schema/url/filter.raml
+	curl https://raw.githubusercontent.com/VEuPathDB/EdaCommon/main/schema/query.raml > schema/url/query.raml
 	@$(BIN_DIR)/merge-raml schema > schema/library.raml
 	rm schema/url/study.raml schema/url/filter.raml schema/url/query.raml
 

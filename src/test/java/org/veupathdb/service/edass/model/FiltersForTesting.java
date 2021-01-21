@@ -26,14 +26,14 @@ public class FiltersForTesting {
     Entity participant = study.getEntity("GEMS_Part").orElseThrow();
     Entity observation = study.getEntity("GEMS_PartObs").orElseThrow();
 
-    Variable city = household.getVariable("var-18").orElseThrow();
-    Variable watersupply = householdObs.getVariable("var-19").orElseThrow();
-    Variable haircolor = participant.getVariable("var-17").orElseThrow();
-    Variable weight = observation.getVariable("var-12").orElseThrow();
-    Variable favNumber = observation.getVariable("var-13").orElseThrow();
-    Variable startDate = observation.getVariable("var-14").orElseThrow();
-    Variable visitDate = observation.getVariable("var-15").orElseThrow();
-    Variable mood = observation.getVariable("var-16").orElseThrow();
+    Variable city = household.getVariable("var_18").orElseThrow();
+    Variable watersupply = householdObs.getVariable("var_19").orElseThrow();
+    Variable haircolor = participant.getVariable("var_17").orElseThrow();
+    Variable weight = observation.getVariable("var_12").orElseThrow();
+    Variable favNumber = observation.getVariable("var_13").orElseThrow();
+    Variable startDate = observation.getVariable("var_14").orElseThrow();
+    Variable visitDate = observation.getVariable("var_15").orElseThrow();
+    Variable mood = observation.getVariable("var_16").orElseThrow();
 
     List<String> haircolors = Arrays.asList("blond", "green");
     partHairFilter = new StringSetFilter(participant, haircolor.getId(), haircolors);

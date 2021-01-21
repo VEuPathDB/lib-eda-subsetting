@@ -75,17 +75,19 @@ public class EntityResultSetUtils {
         + "FROM " + Resources.getAppDbSchema() + ENTITY_TABLE_NAME + " e," + Resources.getAppDbSchema() + STUDY_TABLE_NAME + " s " + NL
         + "WHERE s." + STUDY_ID_COL_NAME + " = '" + studyId + "'" + NL
         + "AND e." + ENTITY_STUDY_ID_COL_NAME + " = s." + STUDY_ID_COL_NAME  + NL
-        + "ORDER BY " + ENTITY_ID_COL_NAME;  // stable ordering supports unit testing
+        + "ORDER BY e." + ENTITY_ID_COL_NAME;  // stable ordering supports unit testing
   }
 
   static Entity createEntityFromResultSet(ResultSet rs) {
 
     try {
       String name = getRsStringNotNull(rs, DISPLAY_NAME_COL_NAME);
-      String namePlural = getRsStringNotNull(rs, DISPLAY_NAME_PLURAL_COL_NAME);
+      String namePlural = rs.getString(DISPLAY_NAME_PLURAL_COL_NAME);
+      if (namePlural == null) namePlural = name + "s";
       String id = getRsStringNotNull(rs, ENTITY_ID_COL_NAME);
       String studyAbbrev = getRsStringNotNull(rs, STDY_ABBRV_COL_NM);
-      String descrip = getRsStringNotNull(rs, DESCRIP_COL_NAME);
+      String descrip = rs.getString(DESCRIP_COL_NAME);
+      if (descrip == null) descrip = "";
       String abbrev = getRsStringNotNull(rs, ENTITY_ABBREV_COL_NAME);
 
       return new Entity(id, studyAbbrev, name, namePlural, descrip, abbrev);

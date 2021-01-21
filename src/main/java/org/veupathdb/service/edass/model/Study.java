@@ -30,7 +30,7 @@ public class Study {
       List<StudyOverview> studyOverviews = new ArrayList<>();
       while (rs.next()) {
         String id = rs.getString(1);
-        String abbrev = rs.getString(3);
+        String abbrev = rs.getString(2);
         StudyOverview study = new StudyOverview(id, abbrev);
         studyOverviews.add(study);
       }

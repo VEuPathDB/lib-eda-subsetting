@@ -78,12 +78,12 @@ public class LoadStudyTest {
     });
 
    // --(stable_id, ontology_term_id, parent_stable_id, provider_label, display_name, term_type, has_value, data_type, has_multiple_values_per_entity, data_shape, unit, unit_ontology_term_id, precision)
-   // insert into Attribute_ds2324_Prtcpnt values ('var-10', 300, null, '_networth', 'Net worth', null, 1, 'number', 0, 'continuous', 'dollars', null, 2);
+   // insert into Attribute_ds2324_Prtcpnt values ('var_10', 300, null, '_networth', 'Net worth', null, 1, 'number', 0, 'continuous', 'dollars', null, 2);
 
 
-    //insert into variable values ('var-10', 300, 'GEMS-Part', null, '_networth', 'Net worth', 1, 1, 'dollars', null);
+    //insert into variable values ('var_10', 300, 'GEMS-Part', null, '_networth', 'Net worth', 1, 1, 'dollars', null);
 
-    assertEquals("var-10", var.getId());
+    assertEquals("var_10", var.getId());
     assertEquals("Net worth", var.getDisplayName());
     assertEquals("GEMS_Part", var.getEntityId());
     assertEquals(Variable.VariableDataShape.CONTINUOUS, var.getDataShape());

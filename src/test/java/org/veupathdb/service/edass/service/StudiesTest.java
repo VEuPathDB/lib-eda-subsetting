@@ -104,7 +104,7 @@ public class StudiesTest {
     String entityId = "GEMS_Part";
     Entity entity = study.getEntity(entityId).orElseThrow();
 
-    String varId = "var-17";
+    String varId = "var_17";
     Variable var = entity.getVariable(varId).orElseThrow();
 
     List<Filter> filters = Collections.emptyList();
@@ -129,7 +129,7 @@ public class StudiesTest {
     String entityId = "GEMS_Part";
     Entity entity = study.getEntity(entityId).orElseThrow();
 
-    String varId = "var-17";
+    String varId = "var_17";
     Variable var = entity.getVariable(varId).orElseThrow();
 
     List<Filter> filters = new ArrayList<>();

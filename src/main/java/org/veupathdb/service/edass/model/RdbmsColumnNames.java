@@ -15,7 +15,6 @@ class RdbmsColumnNames {
   // Study table
   static final String STUDY_TABLE_NAME = "study";
   static final String STUDY_ID_COL_NAME = "stable_id";
-  static final String STUDY_NAME_COL_NAME = "display_name";
   static final String STUDY_ABBREV_COL_NAME = "internal_abbrev";
 
   // Entity table and EntityName table
@@ -32,7 +31,7 @@ class RdbmsColumnNames {
   static final String DATA_SHAPE_COL_NAME = "data_shape";
   static final String DISPLAY_TYPE_COL_NAME = "term_type";
   static final String HAS_VALUES_COL_NAME = "has_values";
-  static final String MULTIVALUED_COL_NAME = "has_multiple_values_per_entity";
+  static final String MULTIVALUED_COL_NAME = "is_multi_valued";
   static final String UNITS_COL_NAME = "unit";
   static final String PRECISION_COL_NAME = "precision";
   static final String VARIABLE_PARENT_ID_COL_NAME = "parent_stable_id";

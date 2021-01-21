@@ -45,7 +45,6 @@ public class Studies implements org.veupathdb.service.edass.generated.resources.
       for (Study.StudyOverview overview : overviews) {
         APIStudyOverview study = new APIStudyOverviewImpl();
         study.setId(overview.getId());
-        study.setName(overview.getDisplayName());
         apiStudyOverviews.put(study.getId(), study);
       }
     }

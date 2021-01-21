@@ -70,7 +70,7 @@ public class LoadStudyTest {
 
     Entity entity = entityIdMap.get("GEMS_Part");
     
-    String sql = VariableResultSetUtils.generateStudyVariablesListSql("Attribute_ds2324_Prtcpnt");
+    String sql = VariableResultSetUtils.generateStudyVariablesListSql("AttributeGraph_ds2324_Prtcpnt");
     
     Variable var = new SQLRunner(datasource, sql).executeQuery(rs -> {
       rs.next();

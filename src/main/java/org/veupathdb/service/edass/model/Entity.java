@@ -62,7 +62,7 @@ public class Entity {
     return description;
   }
 
-  public String getVariablesTableName() { return "Attribute_" + getStudyAbbrev() + "_" + getAbbreviation(); }
+  public String getVariablesTableName() { return "AttributeGraph_" + getStudyAbbrev() + "_" + getAbbreviation(); }
 
   public String getTallTableName() {
     return "AttributeValue_" + getStudyAbbrev() + "_" + getAbbreviation();

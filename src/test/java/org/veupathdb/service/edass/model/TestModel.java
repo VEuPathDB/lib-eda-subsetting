@@ -50,7 +50,7 @@ public class TestModel {
   
   public TestModel() {
     createTestEntities();
-    Study.StudyOverview overview = new Study.StudyOverview("GEMS", "555555", "gems");
+    Study.StudyOverview overview = new Study.StudyOverview("GEMS", "555555");
     study = new Study(overview, constructEntityTree(), createIdMap());
     constructVariables();
     createFilters();

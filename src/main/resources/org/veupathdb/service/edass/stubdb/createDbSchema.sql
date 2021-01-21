@@ -33,7 +33,7 @@ ALTER TABLE EntityTypeGraph
 --    Ancestors_XXXXX_YYYYY
 --  where XXXXX is the study internal_abbrev and YYYYY is the entity's internal_abbrev
 --------------------------------------------------------------------------------------------------
-create table Attribute_ds2324_Hshld (
+create table AttributeGraph_ds2324_Hshld (
   stable_id varchar(30),
   ontology_term_id integer,
   parent_stable_id varchar(30),
@@ -42,7 +42,7 @@ create table Attribute_ds2324_Hshld (
   term_type varchar(20),
   has_values integer,
   data_type varchar(10),
-  has_multiple_values_per_entity integer,
+  is_multi_valued integer,
   data_shape varchar(20),
   unit varchar (30),
   unit_ontology_term_id integer,
@@ -58,7 +58,7 @@ create table AttributeValue_ds2324_Hshld (
   date_value varchar(30),
 );
 ALTER TABLE AttributeValue_ds2324_Hshld
-   ADD FOREIGN KEY (attribute_stable_id) REFERENCES Attribute_ds2324_Hshld (stable_id);
+   ADD FOREIGN KEY (attribute_stable_id) REFERENCES AttributeGraph_ds2324_Hshld (stable_id);
 CREATE INDEX AttributeValue_ds2324_Hshld_i1
 ON AttributeValue_ds2324_Hshld (attribute_stable_id, hshld_id, number_value, string_value, date_value);
 -- for test db only
@@ -70,7 +70,7 @@ create table Ancestors_ds2324_Hshld (
 );
 
 -----------------------------------------------------------------------------
-create table Attribute_ds2324_HshldObsrvtn (
+create table AttributeGraph_ds2324_HshldObsrvtn (
   stable_id varchar(30),
   ontology_term_id integer,
   parent_stable_id varchar(30),
@@ -79,7 +79,7 @@ create table Attribute_ds2324_HshldObsrvtn (
   term_type varchar(20),
   has_values integer,
   data_type varchar(10),
-  has_multiple_values_per_entity integer,
+  is_multi_valued integer,
   data_shape varchar(20),
   unit varchar (30),
   unit_ontology_term_id integer,
@@ -95,7 +95,7 @@ create table AttributeValue_ds2324_HshldObsrvtn (
   date_value varchar(30),
 );
 ALTER TABLE AttributeValue_ds2324_HshldObsrvtn
-   ADD FOREIGN KEY (attribute_stable_id) REFERENCES Attribute_ds2324_HshldObsrvtn (stable_id);
+   ADD FOREIGN KEY (attribute_stable_id) REFERENCES AttributeGraph_ds2324_HshldObsrvtn (stable_id);
 CREATE INDEX AttributeValue_ds2324_HshldObsrvtn_i1
 ON AttributeValue_ds2324_HshldObsrvtn (attribute_stable_id, HshldObsrvtn_id, number_value, string_value, date_value);
 -- for test db only
@@ -108,7 +108,7 @@ create table Ancestors_ds2324_HshldObsrvtn (
 );
 
 -----------------------------------------------------------------------------
-create table Attribute_ds2324_Prtcpnt (
+create table AttributeGraph_ds2324_Prtcpnt (
   stable_id varchar(30),
   ontology_term_id integer,
   parent_stable_id varchar(30),
@@ -117,7 +117,7 @@ create table Attribute_ds2324_Prtcpnt (
   term_type varchar(20),
   has_values integer,
   data_type varchar(10),
-  has_multiple_values_per_entity integer,
+  is_multi_valued integer,
   data_shape varchar(20),
   unit varchar (30),
   unit_ontology_term_id integer,
@@ -132,7 +132,7 @@ create table AttributeValue_ds2324_Prtcpnt (
   date_value varchar(30),
 );
 ALTER TABLE AttributeValue_ds2324_Prtcpnt
-   ADD FOREIGN KEY (attribute_stable_id) REFERENCES Attribute_ds2324_Prtcpnt (stable_id);
+   ADD FOREIGN KEY (attribute_stable_id) REFERENCES AttributeGraph_ds2324_Prtcpnt (stable_id);
 CREATE INDEX AttributeValue_ds2324_Prtcpnt_i1
 ON AttributeValue_ds2324_Prtcpnt (attribute_stable_id, prtcpnt_id, number_value, string_value, date_value);
 -- for test db only
@@ -145,7 +145,7 @@ create table Ancestors_ds2324_Prtcpnt (
 );
 
 -----------------------------------------------------------------------------
-create table Attribute_ds2324_PrtcpntObsrvtn (
+create table AttributeGraph_ds2324_PrtcpntObsrvtn (
   stable_id varchar(30),
   ontology_term_id integer,
   parent_stable_id varchar(30),
@@ -154,7 +154,7 @@ create table Attribute_ds2324_PrtcpntObsrvtn (
   term_type varchar(20),
   has_values integer,
   data_type varchar(10),
-  has_multiple_values_per_entity integer,
+  is_multi_valued integer,
   data_shape varchar(20),
   unit varchar (30),
   unit_ontology_term_id integer,
@@ -170,7 +170,7 @@ create table AttributeValue_ds2324_PrtcpntObsrvtn (
   date_value varchar(30),
 );
 ALTER TABLE AttributeValue_ds2324_PrtcpntObsrvtn
-   ADD FOREIGN KEY (attribute_stable_id) REFERENCES Attribute_ds2324_PrtcpntObsrvtn (stable_id);
+   ADD FOREIGN KEY (attribute_stable_id) REFERENCES AttributeGraph_ds2324_PrtcpntObsrvtn (stable_id);
 CREATE INDEX AttributeValue_ds2324_PrtcpntObsrvtn_i1
 ON AttributeValue_ds2324_PrtcpntObsrvtn (attribute_stable_id, PrtcpntObsrvtn_id, number_value, string_value, date_value);
 -- for test db only
@@ -183,7 +183,7 @@ create table Ancestors_ds2324_PrtcpntObsrvtn (
   PRIMARY KEY (PrtcpntObsrvtn_id)
 );
 
-create table Attribute_ds2324_Smpl (
+create table AttributeGraph_ds2324_Smpl (
   stable_id varchar(30),
   ontology_term_id integer,
   parent_stable_id varchar(30),
@@ -192,7 +192,7 @@ create table Attribute_ds2324_Smpl (
   term_type varchar(20),
   has_values integer,
   data_type varchar(10),
-  has_multiple_values_per_entity integer,
+  is_multi_valued integer,
   data_shape varchar(20),
   unit varchar (30),
   unit_ontology_term_id integer,
@@ -200,7 +200,7 @@ create table Attribute_ds2324_Smpl (
   PRIMARY KEY (stable_id)
 );
 
-create table Attribute_ds2324_Trtmnt (
+create table AttributeGraph_ds2324_Trtmnt (
   stable_id varchar(30),
   ontology_term_id integer,
   parent_stable_id varchar(30),
@@ -209,7 +209,7 @@ create table Attribute_ds2324_Trtmnt (
   term_type varchar(20),
   has_values integer,
   data_type varchar(10),
-  has_multiple_values_per_entity integer,
+  is_multi_valued integer,
   data_shape varchar(20),
   unit varchar (30),
   unit_ontology_term_id integer,

@@ -24,16 +24,14 @@ public class Study {
   public static List<StudyOverview> getStudyOverviews(DataSource datasource) {
     String sql =
         "select " + RdbmsColumnNames.STUDY_ID_COL_NAME +
-                ", " + RdbmsColumnNames.DISPLAY_NAME_COL_NAME +
                 ", " + RdbmsColumnNames.STUDY_ABBREV_COL_NAME +
         " from " + Resources.getAppDbSchema() + RdbmsColumnNames.STUDY_TABLE_NAME;
     return new SQLRunner(datasource, sql).executeQuery(rs -> {
       List<StudyOverview> studyOverviews = new ArrayList<>();
       while (rs.next()) {
         String id = rs.getString(1);
-        String displayName = rs.getString(2);
         String abbrev = rs.getString(3);
-        StudyOverview study = new StudyOverview(id, displayName, abbrev);
+        StudyOverview study = new StudyOverview(id, abbrev);
         studyOverviews.add(study);
       }
       return studyOverviews;
@@ -59,16 +57,14 @@ public class Study {
   public static StudyOverview getStudyOverview(DataSource datasource, String studyId) {
     String sql =
             "select " + RdbmsColumnNames.STUDY_ID_COL_NAME +
-                    ", " + RdbmsColumnNames.DISPLAY_NAME_COL_NAME +
                     ", " + RdbmsColumnNames.STUDY_ABBREV_COL_NAME +
                     " from " + Resources.getAppDbSchema() + RdbmsColumnNames.STUDY_TABLE_NAME +
                      " where " + RdbmsColumnNames.STUDY_ID_COL_NAME + " = '" + studyId + "'";
     return new SQLRunner(datasource, sql).executeQuery(rs -> {
       rs.next();
       String id = rs.getString(1);
-      String displayName = rs.getString(2);
-      String abbrev = rs.getString(3);
-      return new StudyOverview(id, displayName, abbrev);
+      String abbrev = rs.getString(2);
+      return new StudyOverview(id, abbrev);
     });
   }
 
@@ -146,18 +142,12 @@ public class Study {
 
   /* a brief version of the study */
   public static class StudyOverview {
-    private final String displayName;
     private final String id;
     private final String internalAbbrev;
 
-    public StudyOverview(String id, String displayName, String internalAbbrev) {
-      this.displayName = displayName;
+    public StudyOverview(String id, String internalAbbrev) {
       this.id = id;
       this.internalAbbrev = internalAbbrev;
-    }
-
-    public String getDisplayName() {
-      return displayName;
     }
 
     public String getId() {

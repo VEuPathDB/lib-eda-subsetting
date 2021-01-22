@@ -51,7 +51,7 @@ create table AttributeGraph_ds2324_Hshld (
 );
 
 create table AttributeValue_ds2324_Hshld (
-  hshld_id varchar(20),
+  hshld_stable_id varchar(20),
   attribute_stable_id varchar(30),
   number_value integer, 
   string_value varchar(100),
@@ -60,13 +60,13 @@ create table AttributeValue_ds2324_Hshld (
 ALTER TABLE AttributeValue_ds2324_Hshld
    ADD FOREIGN KEY (attribute_stable_id) REFERENCES AttributeGraph_ds2324_Hshld (stable_id);
 CREATE INDEX AttributeValue_ds2324_Hshld_i1
-ON AttributeValue_ds2324_Hshld (attribute_stable_id, hshld_id, number_value, string_value, date_value);
+ON AttributeValue_ds2324_Hshld (attribute_stable_id, hshld_stable_id, number_value, string_value, date_value);
 -- for test db only
-CREATE unique INDEX AttributeValue_ds2324_Hshld_i2 ON AttributeValue_ds2324_Hshld (attribute_stable_id, hshld_id);
+CREATE unique INDEX AttributeValue_ds2324_Hshld_i2 ON AttributeValue_ds2324_Hshld (attribute_stable_id, hshld_stable_id);
 
 create table Ancestors_ds2324_Hshld (
-  hshld_id integer,
-  PRIMARY KEY (Hshld_id)
+  hshld_stable_id integer,
+  PRIMARY KEY (Hshld_stable_id)
 );
 
 -----------------------------------------------------------------------------
@@ -88,7 +88,7 @@ create table AttributeGraph_ds2324_HshldObsrvtn (
 );
 
 create table AttributeValue_ds2324_HshldObsrvtn (
-  HshldObsrvtn_id integer,
+  HshldObsrvtn_stable_id integer,
   attribute_stable_id varchar(30),
   number_value integer, 
   string_value varchar(100),
@@ -97,14 +97,14 @@ create table AttributeValue_ds2324_HshldObsrvtn (
 ALTER TABLE AttributeValue_ds2324_HshldObsrvtn
    ADD FOREIGN KEY (attribute_stable_id) REFERENCES AttributeGraph_ds2324_HshldObsrvtn (stable_id);
 CREATE INDEX AttributeValue_ds2324_HshldObsrvtn_i1
-ON AttributeValue_ds2324_HshldObsrvtn (attribute_stable_id, HshldObsrvtn_id, number_value, string_value, date_value);
+ON AttributeValue_ds2324_HshldObsrvtn (attribute_stable_id, HshldObsrvtn_stable_id, number_value, string_value, date_value);
 -- for test db only
-CREATE unique INDEX AttributeValue_ds2324_HshldObsrvtn_i2 ON AttributeValue_ds2324_HshldObsrvtn (attribute_stable_id, HshldObsrvtn_id);
+CREATE unique INDEX AttributeValue_ds2324_HshldObsrvtn_i2 ON AttributeValue_ds2324_HshldObsrvtn (attribute_stable_id, HshldObsrvtn_stable_id);
 
 create table Ancestors_ds2324_HshldObsrvtn (
-  HshldObsrvtn_id integer,
-  Hshld_id integer,
-  PRIMARY KEY (Hshld_id)
+  HshldObsrvtn_stable_id integer,
+  Hshld_stable_id integer,
+  PRIMARY KEY (Hshld_stable_id)
 );
 
 -----------------------------------------------------------------------------
@@ -125,7 +125,7 @@ create table AttributeGraph_ds2324_Prtcpnt (
   PRIMARY KEY (stable_id)
 );
 create table AttributeValue_ds2324_Prtcpnt (
-  prtcpnt_id integer,
+  prtcpnt_stable_id integer,
   attribute_stable_id varchar(30),
   number_value integer,
   string_value varchar(100),
@@ -134,14 +134,14 @@ create table AttributeValue_ds2324_Prtcpnt (
 ALTER TABLE AttributeValue_ds2324_Prtcpnt
    ADD FOREIGN KEY (attribute_stable_id) REFERENCES AttributeGraph_ds2324_Prtcpnt (stable_id);
 CREATE INDEX AttributeValue_ds2324_Prtcpnt_i1
-ON AttributeValue_ds2324_Prtcpnt (attribute_stable_id, prtcpnt_id, number_value, string_value, date_value);
+ON AttributeValue_ds2324_Prtcpnt (attribute_stable_id, prtcpnt_stable_id, number_value, string_value, date_value);
 -- for test db only
-CREATE unique INDEX AttributeValue_ds2324_Prtcpnt_i2 ON AttributeValue_ds2324_Prtcpnt (attribute_stable_id, prtcpnt_id);
+CREATE unique INDEX AttributeValue_ds2324_Prtcpnt_i2 ON AttributeValue_ds2324_Prtcpnt (attribute_stable_id, prtcpnt_stable_id);
 
 create table Ancestors_ds2324_Prtcpnt (
-  prtcpnt_id integer,
-  hshld_id integer,
-  PRIMARY KEY (prtcpnt_id)
+  prtcpnt_stable_id integer,
+  hshld_stable_id integer,
+  PRIMARY KEY (prtcpnt_stable_id)
 );
 
 -----------------------------------------------------------------------------
@@ -163,7 +163,7 @@ create table AttributeGraph_ds2324_PrtcpntObsrvtn (
 );
 
 create table AttributeValue_ds2324_PrtcpntObsrvtn (
-  PrtcpntObsrvtn_id integer,
+  PrtcpntObsrvtn_stable_id integer,
   attribute_stable_id varchar(30),
   number_value integer, 
   string_value varchar(100),
@@ -172,15 +172,15 @@ create table AttributeValue_ds2324_PrtcpntObsrvtn (
 ALTER TABLE AttributeValue_ds2324_PrtcpntObsrvtn
    ADD FOREIGN KEY (attribute_stable_id) REFERENCES AttributeGraph_ds2324_PrtcpntObsrvtn (stable_id);
 CREATE INDEX AttributeValue_ds2324_PrtcpntObsrvtn_i1
-ON AttributeValue_ds2324_PrtcpntObsrvtn (attribute_stable_id, PrtcpntObsrvtn_id, number_value, string_value, date_value);
+ON AttributeValue_ds2324_PrtcpntObsrvtn (attribute_stable_id, PrtcpntObsrvtn_stable_id, number_value, string_value, date_value);
 -- for test db only
-CREATE unique INDEX AttributeValue_ds2324_PrtcpntObsrvtn_i2 ON AttributeValue_ds2324_PrtcpntObsrvtn (attribute_stable_id, PrtcpntObsrvtn_id);
+CREATE unique INDEX AttributeValue_ds2324_PrtcpntObsrvtn_i2 ON AttributeValue_ds2324_PrtcpntObsrvtn (attribute_stable_id, PrtcpntObsrvtn_stable_id);
 
 create table Ancestors_ds2324_PrtcpntObsrvtn (
-  PrtcpntObsrvtn_id integer,
-  Prtcpnt_id integer,
-  Hshld_id integer,
-  PRIMARY KEY (PrtcpntObsrvtn_id)
+  PrtcpntObsrvtn_stable_id integer,
+  Prtcpnt_stable_id integer,
+  Hshld_stable_id integer,
+  PRIMARY KEY (PrtcpntObsrvtn_stable_id)
 );
 
 create table AttributeGraph_ds2324_Smpl (

@@ -401,7 +401,7 @@ public class StudySubsettingUtilsTest {
     StudySubsettingUtils.produceTabularSubset(_dataSource, study, entity,
         variables, filters, outStream);
     String[] expected = {
-    "Prtcpnt_id", "Hshld_id", "var_17",  "var_20",
+    "Prtcpnt_stable_id", "Hshld_stable_id", "var_17",  "var_20",
     "201", "101",     "blond",   "Martin",
     "202", "101",     "blond",   "Abe",
     "203", "102",     "brown",   "Gladys",
@@ -432,7 +432,7 @@ public class StudySubsettingUtilsTest {
     StudySubsettingUtils.produceTabularSubset(_dataSource, study, entity,
         variables, filters, outStream);
     String[] expected = {
-    "Prtcpnt_id", "Hshld_id", "var_17",  "var_20",
+    "Prtcpnt_stable_id", "Hshld_stable_id", "var_17",  "var_20",
     "201", "101",     "blond",   "Martin",
     "202", "101",     "blond",   "Abe",
 //    "203", "102",     "brown",   "Gladys",

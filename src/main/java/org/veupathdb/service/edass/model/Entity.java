@@ -69,7 +69,7 @@ public class Entity {
   }
 
   public String getPKColName() {
-    return getAbbreviation() + "_id";
+    return getAbbreviation() + "_stable_id";
   }
   
   public String getFullPKColName() {

@@ -54,6 +54,13 @@ securitySchemes:
           entity-id:
             description: ID of the entity of interest
             type: string
+        get:
+          description: Returns entity details, not including its children (which it may or may not have; see study endpoint)
+          responses:
+            200:
+              body:
+                application/json:
+                  type: lib.EntityIdGetResponse
 
         /count:
           post:

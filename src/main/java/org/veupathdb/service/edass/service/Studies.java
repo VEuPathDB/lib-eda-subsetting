@@ -3,6 +3,7 @@ package org.veupathdb.service.edass.service;
 import com.fasterxml.jackson.core.JsonEncoding;
 import com.fasterxml.jackson.core.JsonFactory;
 import com.fasterxml.jackson.core.JsonGenerator;
+import java.util.Optional;
 import org.gusdb.fgputil.Tuples.TwoTuple;
 import org.gusdb.fgputil.functional.TreeNode;
 import org.veupathdb.service.edass.Resources;
@@ -59,6 +60,34 @@ public class Studies implements org.veupathdb.service.edass.generated.resources.
     response.setStudy(apiStudyDetail);
     
     return GetStudiesByStudyIdResponse.respond200WithApplicationJson(response);
+  }
+
+  @Override
+  public GetStudiesEntitiesByStudyIdAndEntityIdResponse getStudiesEntitiesByStudyIdAndEntityId(String studyId, String entityId) {
+    APIStudyDetail apiStudyDetail = getApiStudyDetail(studyId);
+    APIEntity entity = findEntityById(apiStudyDetail.getRootEntity(), entityId).orElseThrow(() -> new NotFoundException());
+    EntityIdGetResponse response = new EntityIdGetResponseImpl();
+    // copy properties of found entity, skipping children
+    response.setId(entity.getId());
+    response.setDescription(entity.getDescription());
+    response.setDisplayName(entity.getDisplayName());
+    response.setDisplayNamePlural(entity.getDisplayNamePlural());
+    response.setVariables(entity.getVariables());
+    for (Map.Entry<String,Object> prop : entity.getAdditionalProperties().entrySet()) {
+      response.setAdditionalProperties(prop.getKey(), prop.getValue());
+    }
+    return GetStudiesEntitiesByStudyIdAndEntityIdResponse.respond200WithApplicationJson(response);
+  }
+
+  private static Optional<APIEntity> findEntityById(APIEntity entity, String entityId) {
+    if (entity.getId().equals(entityId)) {
+      return Optional.of(entity);
+    }
+    for (APIEntity child : entity.getChildren()){
+      Optional<APIEntity> foundEntity = findEntityById(child, entityId);
+      if (foundEntity.isPresent()) return foundEntity;
+    }
+    return Optional.empty();
   }
 
   public static APIStudyDetail getApiStudyDetail(String studyId) {

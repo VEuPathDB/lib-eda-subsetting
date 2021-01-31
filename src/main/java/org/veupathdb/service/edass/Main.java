@@ -8,8 +8,11 @@ import org.veupathdb.lib.container.jaxrs.server.Server;
 
 public class Main extends Server {
   public static void main(String[] args) {
-    QueryLogger.initialize(new QueryLogConfig(){});
     new Main().start(args);
+  }
+
+  public Main() {
+    QueryLogger.initialize(new QueryLogConfig(){});
   }
 
   @Override

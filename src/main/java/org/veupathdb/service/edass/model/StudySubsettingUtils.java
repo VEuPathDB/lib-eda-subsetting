@@ -32,6 +32,7 @@ import org.veupathdb.service.edass.model.Variable.VariableType;
 
 import static org.veupathdb.service.edass.model.RdbmsColumnNames.TT_VARIABLE_ID_COL_NAME;
 
+import org.apache.logging.log4j.Logger;
 
 /**
  * A class to perform subsetting operations on a study entity
@@ -85,9 +86,11 @@ public class StudySubsettingUtils {
   
   private static void writeWideRows(ResultSet rs, Writer writer, List<String> outputColumns, Entity outputEntity) throws IOException {
 
+    // an interator of maps, each representing a single row in the tall table
     Iterator<Map<String, String>> tallRowsIterator = new ResultSetIterator<>(rs,
         row -> Optional.of(EntityResultSetUtils.resultSetToTallRowMap(outputEntity, rs)));
 
+    // an iterator of lists of maps, each list being the rows of the tall table returned for a single entity id
     String pkCol = outputEntity.getPKColName();
     Iterator<List<Map<String, String>>> groupedTallRowsIterator = new GroupingIterator<>(
         tallRowsIterator, (row1, row2) -> row1.get(pkCol).equals(row2.get(pkCol)));

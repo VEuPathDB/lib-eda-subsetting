@@ -30,7 +30,7 @@ public class Variable {
   public enum VariableType {
     STRING ("string_value", rs -> rs.getString("string_value"), "string"),  
     NUMBER ("number_value", rs -> String.valueOf(rs.getDouble("number_value")), "number"),
-    DATE   ("date_value", rs -> FormatUtil.formatDate(new Date(rs.getTimestamp("date_value").getTime())), "date");
+    DATE   ("date_value", rs -> FormatUtil.formatDateTime(new Date(rs.getTimestamp("date_value").getTime())), "date");
 
     private final String tallTableColumnName;
     private final String typeString;

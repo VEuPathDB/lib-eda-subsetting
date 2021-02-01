@@ -9,85 +9,6 @@
 ################################################################################
 
 types:
-  API_Filter:
-    type: object
-    discriminator: type
-    properties:
-      entityId: string
-      variableId: string
-      type: API_FilterType
-  API_FilterType:
-    type: string
-    enum:
-      - stringSet
-      - numberSet
-      - dateSet
-      - numberRange
-      - dateRange
-  API_StringSetFilter:
-    type: API_Filter
-    discriminatorValue: 'stringSet'
-    properties:
-      stringSet: string[]
-  API_NumberSetFilter:
-    type: API_Filter
-    discriminatorValue: 'numberSet'
-    properties:
-      numberSet: number[]
-  API_DateSetFilter:
-    type: API_Filter
-    discriminatorValue: 'dateSet'
-    properties:
-      dateSet: string[] # how to constrain this to a date?
-  API_NumberRangeFilter:
-    type: API_Filter
-    discriminatorValue: 'numberRange'
-    properties:
-      min: number
-      max: number
-  API_DateRangeFilter:
-    type: API_Filter
-    discriminatorValue: 'dateRange'
-    properties:
-      min: string
-      max: string
-  EntityCountPostRequest:
-    type: object
-    additionalProperties: false
-    properties:
-      filters: API_Filter[]
-  EntityCountPostResponse:
-    type: object
-    additionalProperties: false
-    properties:
-      count: integer
-  VariableDistributionPostRequest:
-    type: object
-    additionalProperties: false
-    properties:
-      filters: API_Filter[]
-  VariableDistributionPostResponse:
-    type: object
-    additionalProperties: false
-    properties:
-      entitiesCount:
-        type: integer
-        minimum: 0
-      distribution:
-        type: object
-        properties:
-          //: integer
-  EntityTabularPostRequest:
-    type: object
-    additionalProperties: false
-    properties:
-      outputVariableIds: string[]
-      filters: API_Filter[]
-  EntityTabularPostResponse:
-    type: object
-    additionalProperties: false
-    properties:
-      counts: string[][]
   StudiesGetResponse:
     type: object
     additionalProperties: false
@@ -164,4 +85,89 @@ types:
   API_DateVariable:
     type: API_Variable
     discriminatorValue: date
+  API_Filter:
+    type: object
+    discriminator: type
+    properties:
+      entityId: string
+      variableId: string
+      type: API_FilterType
+  API_FilterType:
+    type: string
+    enum:
+      - stringSet
+      - numberSet
+      - dateSet
+      - numberRange
+      - dateRange
+  API_StringSetFilter:
+    type: API_Filter
+    discriminatorValue: 'stringSet'
+    properties:
+      stringSet: string[]
+  API_NumberSetFilter:
+    type: API_Filter
+    discriminatorValue: 'numberSet'
+    properties:
+      numberSet: number[]
+  API_DateSetFilter:
+    type: API_Filter
+    discriminatorValue: 'dateSet'
+    properties:
+      dateSet: string[] # how to constrain this to a date?
+  API_NumberRangeFilter:
+    type: API_Filter
+    discriminatorValue: 'numberRange'
+    properties:
+      min: number
+      max: number
+  API_DateRangeFilter:
+    type: API_Filter
+    discriminatorValue: 'dateRange'
+    properties:
+      min: string
+      max: string
+  VariableSpec:
+    type: object
+    additionalProperties: false
+    properties:
+      entityId: string
+      variableId: string
+  EntityCountPostRequest:
+    type: object
+    additionalProperties: false
+    properties:
+      filters: API_Filter[]
+  EntityCountPostResponse:
+    type: object
+    additionalProperties: false
+    properties:
+      count: integer
+  VariableDistributionPostRequest:
+    type: object
+    additionalProperties: false
+    properties:
+      filters: API_Filter[]
+  VariableDistributionPostResponse:
+    type: object
+    additionalProperties: false
+    properties:
+      entitiesCount:
+        type: integer
+        minimum: 0
+      distribution:
+        type: object
+        properties:
+          //: integer
+  EntityTabularPostRequest:
+    type: object
+    additionalProperties: false
+    properties:
+      outputVariableIds: string[]
+      filters: API_Filter[]
+  EntityTabularPostResponse:
+    type: object
+    additionalProperties: false
+    properties:
+      counts: string[][]
 

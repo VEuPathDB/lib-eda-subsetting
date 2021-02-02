@@ -343,7 +343,7 @@ public class Studies implements org.veupathdb.service.edass.generated.resources.
   
   static LocalDateTime convertDate(String dateStr) {
     try {
-      DateTimeFormatter formatter = DateTimeFormatter.ISO_LOCAL_DATE_TIME;
+      DateTimeFormatter formatter = DateTimeFormatter.ISO_DATE_TIME;
       return LocalDateTime.parse(dateStr, formatter);
     }
     catch (DateTimeParseException e) {

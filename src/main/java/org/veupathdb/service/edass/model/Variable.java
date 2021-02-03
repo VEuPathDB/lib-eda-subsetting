@@ -48,7 +48,7 @@ public class Variable {
 
     public static VariableType fromString(String str) {
       if (str.equals(STRING.typeString) || str.equals("boolean")) return STRING;  // TODO remove boolean hack
-      else if (str.equals(NUMBER.typeString) || str.equals("longitude")) return NUMBER;
+      else if (str.equals(NUMBER.typeString) || str.equals("longitude")) return NUMBER; // TODO remove longitude hack
       else if (str.equals(DATE.typeString)) return DATE;
       else throw new RuntimeException("Illegal variable type string: " + str);
     }

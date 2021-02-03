@@ -108,6 +108,7 @@ public class Studies implements org.veupathdb.service.edass.generated.resources.
       apiEntity.setDescription(entity.getDescription());
       apiEntity.setDisplayName(entity.getDisplayName());
       apiEntity.setId(entity.getId());
+      apiEntity.setIdColumnName(entity.getPKColName());
       apiEntity.setChildren(mappedChildren);
       
       List<APIVariable> apiVariables = new ArrayList<>();

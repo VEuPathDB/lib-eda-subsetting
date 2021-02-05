@@ -64,8 +64,8 @@ class VariableResultSetUtils {
               Variable.VariableType.fromString(getRsStringNotNull(rs, VARIABLE_TYPE_COL_NAME)),
               Variable.VariableDataShape.fromString(getRsStringNotNull(rs, DATA_SHAPE_COL_NAME)),
               Variable.VariableDisplayType.fromString(getRsStringWithDefault(rs, DISPLAY_TYPE_COL_NAME, "default")),
-              getRsStringWithDefault(rs, UNITS_COL_NAME, "No Units Available"), // TODO remove hack
-              getRsIntegerWithDefault(rs, PRECISION_COL_NAME, 1), // TODO remove hack
+              getRsStringWithDefault(rs, UNITS_COL_NAME, "No Units Available"), // TODO remove hack default
+              getRsIntegerWithDefault(rs, PRECISION_COL_NAME, 1), // TODO remove hack default
               displayName,
               parentId
       );

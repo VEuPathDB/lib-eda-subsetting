@@ -181,13 +181,13 @@ public class StudySubsettingUtilsTest {
         "  AND " + TT_VARIABLE_ID_COL_NAME + " = '" + _model.weight.getId() + "'" + NL +
         "  AND " + NUMBER_VALUE_COL_NAME + " >= 10 AND " + NUMBER_VALUE_COL_NAME + " <= 20" + NL +
         "INTERSECT" + NL +
-        obsBase + 
+        obsBase +
         "  AND " + TT_VARIABLE_ID_COL_NAME + " = '" + _model.favNewYears.getId() + "'" + NL +
-        "  AND " + DATE_VALUE_COL_NAME + " IN ('2019-03-21T00:00', '2019-03-28T00:00', '2019-06-12T00:00')" + NL +
+        "  AND " + DATE_VALUE_COL_NAME + " IN (TO_DATE('2019-03-21T00:00:00', 'YYYY-MM-DD\"T\"HH:MI:SS'), TO_DATE('2019-03-28T00:00:00', 'YYYY-MM-DD\"T\"HH:MI:SS'), TO_DATE('2019-06-12T00:00:00', 'YYYY-MM-DD\"T\"HH:MI:SS'))" + NL +
         "INTERSECT" + NL +
         obsBase + 
         "  AND " + TT_VARIABLE_ID_COL_NAME + " = '" + _model.birthDate.getId() + "'" + NL +
-        "  AND " + DATE_VALUE_COL_NAME + " >= '2019-03-21T00:00' AND " + DATE_VALUE_COL_NAME + " <= '2019-03-28T00:00'" + NL +
+        "  AND " + DATE_VALUE_COL_NAME + " >= TO_DATE('2019-03-21T00:00:00', 'YYYY-MM-DD\"T\"HH:MI:SS') AND " + DATE_VALUE_COL_NAME + " <= TO_DATE('2019-03-28T00:00:00', 'YYYY-MM-DD\"T\"HH:MI:SS')" + NL +
         "INTERSECT" + NL +
         obsBase + 
         "  AND " + TT_VARIABLE_ID_COL_NAME + " = '" + _model.mood.getId() + "'" + NL +

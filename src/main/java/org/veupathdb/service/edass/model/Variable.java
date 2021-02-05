@@ -4,7 +4,6 @@ import org.gusdb.fgputil.FormatUtil;
 import org.gusdb.fgputil.functional.FunctionalInterfaces.FunctionWithException;
 
 import java.sql.ResultSet;
-import java.util.Date;
 
 public class Variable {
   private final String providerLabel;
@@ -30,7 +29,8 @@ public class Variable {
   public enum VariableType {
     STRING ("string_value", rs -> rs.getString("string_value"), "string"),  
     NUMBER ("number_value", rs -> String.valueOf(rs.getDouble("number_value")), "number"),
-    DATE   ("date_value", rs -> FormatUtil.formatDateTime(new Date(rs.getTimestamp("date_value").getTime())), "date");
+    DATE   ("date_value", rs -> FormatUtil.formatDateTimeTimezoneFree(rs.getDate("date_value")), "date"),
+    LONGITUDE ("number_value", rs -> String.valueOf(rs.getDouble("number_value")), "longitude");
 
     private final String tallTableColumnName;
     private final String typeString;
@@ -48,7 +48,8 @@ public class Variable {
 
     public static VariableType fromString(String str) {
       if (str.equals(STRING.typeString) || str.equals("boolean")) return STRING;  // TODO remove boolean hack
-      else if (str.equals(NUMBER.typeString) || str.equals("longitude")) return NUMBER; // TODO remove longitude hack
+      else if (str.equals(NUMBER.typeString)) return NUMBER;
+      else if (str.equals(LONGITUDE.typeString)) return LONGITUDE;
       else if (str.equals(DATE.typeString)) return DATE;
       else throw new RuntimeException("Illegal variable type string: " + str);
     }

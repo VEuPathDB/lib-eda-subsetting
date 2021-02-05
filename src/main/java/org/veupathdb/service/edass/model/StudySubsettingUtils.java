@@ -6,12 +6,7 @@ import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.io.Writer;
 import java.sql.ResultSet;
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Optional;
+import java.util.*;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -235,7 +230,7 @@ public class StudySubsettingUtils {
   }
   
   static String generateTabularSelectClause(Entity outputEntity, String tallTblAbbrev, String ancestorTblAbbrev) {
-    List<String> valColNames = new ArrayList<>();
+    Set<String> valColNames = new HashSet<>();
     for (VariableType varType : VariableType.values()) valColNames.add(varType.getTallTableColumnName());
 
     return "SELECT " + outputEntity.getAllPksSelectList(tallTblAbbrev, ancestorTblAbbrev) + ", " + 

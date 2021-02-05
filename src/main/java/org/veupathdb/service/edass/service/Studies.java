@@ -149,8 +149,15 @@ public class Studies implements org.veupathdb.service.edass.generated.resources.
       setApiVarProps(apiVar, var);
       return apiVar;
     }
+    else if (var.getType() == VariableType.LONGITUDE) {
+      APILongitudeVariable apiVar = new APILongitudeVariableImpl();
+      apiVar.setDataShape(APIVariableDataShape.valueOf(var.getDataShape().toString()));
+      apiVar.setDisplayType(APIVariableDisplayType.valueOf(var.getDisplayType().toString()));
+      setApiVarProps(apiVar, var);
+      return apiVar;
+    }
     else {
-      throw new RuntimeException("Impossible enum value");
+      throw new RuntimeException("Invalid variable type " + var.getType());
     }
   }
   
@@ -320,6 +327,9 @@ public class Studies implements org.veupathdb.service.edass.generated.resources.
       } else if (apiFilter instanceof APINumberSetFilter) {
         APINumberSetFilter f = (APINumberSetFilter)apiFilter;
         newFilter = new NumberSetFilter(entity, varId, f.getNumberSet());
+      } else if (apiFilter instanceof APILongitudeRangeFilter) {
+        APILongitudeRangeFilter f = (APILongitudeRangeFilter)apiFilter;
+        newFilter = new LongitudeRangeFilter(entity, varId, f.getLeft(), f.getRight());
       } else if (apiFilter instanceof APIStringSetFilter) {
         APIStringSetFilter f = (APIStringSetFilter)apiFilter;
         newFilter = new StringSetFilter(entity, varId, f.getStringSet());

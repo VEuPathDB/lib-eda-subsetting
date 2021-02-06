@@ -111,7 +111,8 @@ public class StudySubsettingUtils {
       Variable distributionVariable, List<Filter> filters) {
     String sql = generateDistributionSql(outputEntity, distributionVariable, filters, prunedEntityTree);
     return ResultSets.openStream(datasource, sql, row -> Optional.of(
-        new TwoTuple<>(row.getString(VALUE_COLUMN_NAME), row.getInt(COUNT_COLUMN_NAME))));
+
+        new TwoTuple<>(distributionVariable.getType().convertRowValueToStringValue(row), row.getInt(COUNT_COLUMN_NAME))));
   }
 
   public static int getVariableCount(
@@ -184,7 +185,7 @@ public class StudySubsettingUtils {
         + generateDistributionWhereClause(distributionVariable) + NL
         + generateInClause(prunedEntityTree, outputEntity, outputEntity.getTallTableName()) + NL
         + generateDistributionGroupByClause(distributionVariable) + NL
-        + "ORDER BY " + VALUE_COLUMN_NAME + " ASC";
+        + "ORDER BY " + distributionVariable.getType().getTallTableColumnName() + " ASC";
    }
   
   /**
@@ -239,7 +240,8 @@ public class StudySubsettingUtils {
   }
     
   static String generateDistributionSelectClause(Variable distributionVariable) {
-    return "SELECT " + distributionVariable.getType().getTallTableColumnName() + " as " + VALUE_COLUMN_NAME + ", count(" + distributionVariable.getEntity().getPKColName() + ") as " + COUNT_COLUMN_NAME;
+   // return "SELECT " + distributionVariable.getType().getTallTableColumnName() + " as " + VALUE_COLUMN_NAME + ", count(" + distributionVariable.getEntity().getPKColName() + ") as " + COUNT_COLUMN_NAME;
+    return "SELECT " + distributionVariable.getType().getTallTableColumnName() + ", count(" + distributionVariable.getEntity().getPKColName() + ") as " + COUNT_COLUMN_NAME;
   }
   
   static String generateVariableCountSelectClause(Variable variable) {

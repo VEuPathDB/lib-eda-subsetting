@@ -25,6 +25,6 @@ public class DateRangeFilter extends Filter {
 
   static String dbDateTimeIsoValue(LocalDateTime dateTime) {
     String str = dateTime.format(DateTimeFormatter.ISO_DATE_TIME);
-    return "TO_DATE('" + str + "', 'YYYY-MM-DD\"T\"HH:MI:SS')";
+    return "TO_DATE('" + str + "', 'YYYY-MM-DD\"T\"HH24:MI:SS')";
   }
 }

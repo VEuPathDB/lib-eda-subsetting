@@ -6,12 +6,7 @@ import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.io.Writer;
 import java.sql.ResultSet;
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Optional;
+import java.util.*;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -116,7 +111,8 @@ public class StudySubsettingUtils {
       Variable distributionVariable, List<Filter> filters) {
     String sql = generateDistributionSql(outputEntity, distributionVariable, filters, prunedEntityTree);
     return ResultSets.openStream(datasource, sql, row -> Optional.of(
-        new TwoTuple<>(row.getString(VALUE_COLUMN_NAME), row.getInt(COUNT_COLUMN_NAME))));
+
+        new TwoTuple<>(distributionVariable.getType().convertRowValueToStringValue(row), row.getInt(COUNT_COLUMN_NAME))));
   }
 
   public static int getVariableCount(
@@ -189,7 +185,7 @@ public class StudySubsettingUtils {
         + generateDistributionWhereClause(distributionVariable) + NL
         + generateInClause(prunedEntityTree, outputEntity, outputEntity.getTallTableName()) + NL
         + generateDistributionGroupByClause(distributionVariable) + NL
-        + "ORDER BY " + VALUE_COLUMN_NAME + " ASC";
+        + "ORDER BY " + distributionVariable.getType().getTallTableColumnName() + " ASC";
    }
   
   /**
@@ -235,7 +231,7 @@ public class StudySubsettingUtils {
   }
   
   static String generateTabularSelectClause(Entity outputEntity, String tallTblAbbrev, String ancestorTblAbbrev) {
-    List<String> valColNames = new ArrayList<>();
+    Set<String> valColNames = new HashSet<>();
     for (VariableType varType : VariableType.values()) valColNames.add(varType.getTallTableColumnName());
 
     return "SELECT " + outputEntity.getAllPksSelectList(tallTblAbbrev, ancestorTblAbbrev) + ", " + 
@@ -244,7 +240,8 @@ public class StudySubsettingUtils {
   }
     
   static String generateDistributionSelectClause(Variable distributionVariable) {
-    return "SELECT " + distributionVariable.getType().getTallTableColumnName() + " as " + VALUE_COLUMN_NAME + ", count(" + distributionVariable.getEntity().getPKColName() + ") as " + COUNT_COLUMN_NAME;
+   // return "SELECT " + distributionVariable.getType().getTallTableColumnName() + " as " + VALUE_COLUMN_NAME + ", count(" + distributionVariable.getEntity().getPKColName() + ") as " + COUNT_COLUMN_NAME;
+    return "SELECT " + distributionVariable.getType().getTallTableColumnName() + ", count(" + distributionVariable.getEntity().getPKColName() + ") as " + COUNT_COLUMN_NAME;
   }
   
   static String generateVariableCountSelectClause(Variable variable) {

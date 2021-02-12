@@ -315,7 +315,9 @@ public class StudySubsettingUtils {
   }
   
   static String generateTabularOrderByClause(Entity outputEntity) {
-    return "ORDER BY " + outputEntity.getPKColName();
+    List<String> cols = new ArrayList<>(outputEntity.getAncestorPkColNames());
+    cols.add(outputEntity.getPKColName());
+    return "ORDER BY " + String.join(", ", cols);
   }
   
   static String generateDistributionGroupByClause(Variable outputVariable) {

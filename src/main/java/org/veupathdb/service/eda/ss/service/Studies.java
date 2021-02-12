@@ -8,11 +8,7 @@ import java.io.IOException;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
-import java.util.ArrayList;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 import java.util.function.Supplier;
 import java.util.stream.Stream;
 import javax.sql.DataSource;
@@ -76,7 +72,16 @@ import org.veupathdb.service.eda.ss.model.Variable.VariableType;
 import static org.gusdb.fgputil.functional.Functions.cSwallow;
 
 public class Studies implements org.veupathdb.service.eda.generated.resources.Studies {
-  Map<String, APIStudyOverview> apiStudyOverviews;  // cache the overviews
+  static Map<String, APIStudyOverview> apiStudyOverviews;  // cache the overviews
+  static Map<String, Study> studies = new HashMap<>(); // cache the studies
+
+  // TODO: use proper cache
+  private Study getStudy(String studyId){
+    if (!studies.containsKey(studyId)) {
+      studies.put(studyId, Study.loadStudy(Resources.getApplicationDataSource(), studyId));
+    }
+    return studies.get(studyId);
+  }
 
   @Override
   public GetStudiesResponse getStudies() {
@@ -100,8 +105,8 @@ public class Studies implements org.veupathdb.service.eda.generated.resources.St
 
   @Override
   public GetStudiesByStudyIdResponse getStudiesByStudyId(String studyId) {
-
-    APIStudyDetail apiStudyDetail = getApiStudyDetail(studyId);
+    Study study = getStudy(studyId);
+    APIStudyDetail apiStudyDetail = getApiStudyDetail(study);
     StudyIdGetResponse response = new StudyIdGetResponseImpl();
     response.setStudy(apiStudyDetail);
     
@@ -110,8 +115,8 @@ public class Studies implements org.veupathdb.service.eda.generated.resources.St
 
   @Override
   public GetStudiesEntitiesByStudyIdAndEntityIdResponse getStudiesEntitiesByStudyIdAndEntityId(String studyId, String entityId) {
-    APIStudyDetail apiStudyDetail = getApiStudyDetail(studyId);
-    APIEntity entity = findEntityById(apiStudyDetail.getRootEntity(), entityId).orElseThrow(() -> new NotFoundException());
+    APIStudyDetail apiStudyDetail = getApiStudyDetail(getStudy(studyId));
+    APIEntity entity = findEntityById(apiStudyDetail.getRootEntity(), entityId).orElseThrow(NotFoundException::new);
     EntityIdGetResponse response = new EntityIdGetResponseImpl();
     // copy properties of found entity, skipping children
     response.setId(entity.getId());
@@ -125,7 +130,7 @@ public class Studies implements org.veupathdb.service.eda.generated.resources.St
     return GetStudiesEntitiesByStudyIdAndEntityIdResponse.respond200WithApplicationJson(response);
   }
 
-  private static Optional<APIEntity> findEntityById(APIEntity entity, String entityId) {
+  private  Optional<APIEntity> findEntityById(APIEntity entity, String entityId) {
     if (entity.getId().equals(entityId)) {
       return Optional.of(entity);
     }
@@ -136,13 +141,12 @@ public class Studies implements org.veupathdb.service.eda.generated.resources.St
     return Optional.empty();
   }
 
-  public static APIStudyDetail getApiStudyDetail(String studyId) {
-    Study study = Study.loadStudy(Resources.getApplicationDataSource(), studyId);
+  public static APIStudyDetail getApiStudyDetail(Study study) {
 
     APIEntity apiEntityTree = entityTreeToAPITree(study.getEntityTree());
 
     APIStudyDetail apiStudyDetail = new APIStudyDetailImpl();
-    apiStudyDetail.setId(studyId);
+    apiStudyDetail.setId(study.getStudyId());
     apiStudyDetail.setRootEntity(apiEntityTree);
     // TODO: lose or fill in study.setName() prop
     return apiStudyDetail;
@@ -219,18 +223,23 @@ public class Studies implements org.veupathdb.service.eda.generated.resources.St
   postStudiesEntitiesVariablesDistributionByStudyIdAndEntityIdAndVariableId(
       String studyId, String entityId, String variableId, VariableDistributionPostRequest request) {
 
+  //  long start = System.currentTimeMillis();
     DataSource datasource = Resources.getApplicationDataSource();
+   // System.out.println("---------------- 1: " + String.valueOf(System.currentTimeMillis() - start));
     
     // unpack data from API input to model objects
     List<String> vars = new ArrayList<>();
     vars.add(variableId);  // force into a list for the unpacker
     UnpackedRequest unpacked = unpack(datasource, studyId, entityId, request.getFilters(), vars);
+   // System.out.println("---------------- 2: " + String.valueOf(System.currentTimeMillis() - start));
 
     Variable var = unpacked.getTargetEntity().getVariable(variableId)
         .orElseThrow(() -> new NotFoundException("Variable ID not found: " + variableId));
+   // System.out.println("---------------- 3: " + String.valueOf(System.currentTimeMillis() - start));
 
     VariableDistributionPostResponseStream streamer = getDistributionResponseStreamer(
         datasource, unpacked.getStudy(), unpacked.getTargetEntity(), unpacked.getFilters(), var);
+   // System.out.println("---------------- 4: " + String.valueOf(System.currentTimeMillis() - start));
 
     return PostStudiesEntitiesVariablesDistributionByStudyIdAndEntityIdAndVariableIdResponse.
         respond200WithApplicationJson(streamer);
@@ -320,7 +329,7 @@ public class Studies implements org.veupathdb.service.eda.generated.resources.St
     if (!validateStudyId(datasource, studyId))
       throw new NotFoundException(studIdStr + " is not found.");
    
-    Study study = Study.loadStudy(datasource, studyId);
+    Study study = getStudy(studyId);
     Entity entity = study.getEntity(entityId).orElseThrow(() -> new NotFoundException("In " + studIdStr + " Entity ID not found: " + entityId));
     
     List<Variable> variables = getEntityVariables(entity, variableIds);

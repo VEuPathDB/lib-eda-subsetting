@@ -18,7 +18,7 @@ class VariableResultSetUtils {
     
     String sql = generateStudyVariablesListSql(entity.getVariablesTableName());
     
-    return new SQLRunner(datasource, sql).executeQuery(rs -> {
+    return new SQLRunner(datasource, sql, "Get entity variables metadata for: '" + entity.getDisplayName() + "'").executeQuery(rs -> {
       List<Variable> variables = new ArrayList<>();
       while (rs.next()) {
         variables.add(createVariableFromResultSet(rs, entity));

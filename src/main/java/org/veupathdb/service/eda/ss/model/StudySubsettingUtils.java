@@ -64,7 +64,7 @@ public class StudySubsettingUtils {
     outputColumns.addAll(outputEntity.getAncestorPkColNames());
     outputColumns.addAll(outputVariableIds);
 
-    new SQLRunner(datasource, sql).executeQuery(rs -> {
+    new SQLRunner(datasource, sql, "Produce tabular subset").executeQuery(rs -> {
       try (BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(outputStream))) {
 
         writer.write(String.join(TAB, outputColumns) + NL);
@@ -109,7 +109,7 @@ public class StudySubsettingUtils {
       DataSource datasource, TreeNode<Entity> prunedEntityTree, Entity outputEntity,
       Variable distributionVariable, List<Filter> filters) {
     String sql = generateDistributionSql(outputEntity, distributionVariable, filters, prunedEntityTree);
-    return ResultSets.openStream(datasource, sql, row -> Optional.of(
+    return ResultSets.openStream(datasource, sql, "Produce variable distribution", row -> Optional.of(
 
         new TwoTuple<>(distributionVariable.getType().convertRowValueToStringValue(row), row.getInt(COUNT_COLUMN_NAME))));
   }
@@ -118,13 +118,13 @@ public class StudySubsettingUtils {
       DataSource datasource, TreeNode<Entity> prunedEntityTree, Entity outputEntity,
       Variable distributionVariable, List<Filter> filters) {
     String sql = generateVariableCountSql(outputEntity, distributionVariable, filters, prunedEntityTree);
-    return new SQLRunner(datasource, sql).executeQuery(new SingleIntResultSetHandler());
+    return new SQLRunner(datasource, sql, "Get variable count for distribution").executeQuery(new SingleIntResultSetHandler());
   }
 
   public static int getEntityCount(
       DataSource datasource, TreeNode<Entity> prunedEntityTree, Entity targetEntity, List<Filter> filters) {
     String sql = generateEntityCountSql(targetEntity, filters, prunedEntityTree);
-    return new SQLRunner(datasource, sql).executeQuery(new SingleIntResultSetHandler());
+    return new SQLRunner(datasource, sql, "Get entity count").executeQuery(new SingleIntResultSetHandler());
   }
 
   /**

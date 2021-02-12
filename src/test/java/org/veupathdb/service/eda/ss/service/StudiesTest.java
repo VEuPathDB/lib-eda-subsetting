@@ -51,7 +51,7 @@ public class StudiesTest {
   @Test
   @DisplayName("Test get study details")
   void testGetStudyDetails() {
-    APIStudyDetail studyDetail = Studies.getApiStudyDetail("DS-2324");
+    APIStudyDetail studyDetail = Studies.getApiStudyDetail(_study);
     assertNotNull(studyDetail);
   }
 

@@ -34,7 +34,7 @@ public class EntityResultSetUtils {
     // entityID -> list of child entities
     Map<String, List<Entity>> simpleTree = new HashMap<>();
     
-    Entity rootEntity = new SQLRunner(datasource, sql).executeQuery(rs -> {
+    Entity rootEntity = new SQLRunner(datasource, sql, "Get entity tree").executeQuery(rs -> {
       Entity root = null;
       while (rs.next()) {
         Entity entity = createEntityFromResultSet(rs);

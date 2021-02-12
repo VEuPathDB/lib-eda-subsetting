@@ -30,7 +30,7 @@ public class Study {
         "select " + RdbmsColumnNames.STUDY_ID_COL_NAME +
                 ", " + RdbmsColumnNames.STUDY_ABBREV_COL_NAME +
         " from " + Resources.getAppDbSchema() + RdbmsColumnNames.STUDY_TABLE_NAME;
-    return new SQLRunner(datasource, sql).executeQuery(rs -> {
+    return new SQLRunner(datasource, sql, "Get list of study overviews").executeQuery(rs -> {
       List<StudyOverview> studyOverviews = new ArrayList<>();
       while (rs.next()) {
         String id = rs.getString(1);
@@ -64,7 +64,7 @@ public class Study {
                     ", " + RdbmsColumnNames.STUDY_ABBREV_COL_NAME +
                     " from " + Resources.getAppDbSchema() + RdbmsColumnNames.STUDY_TABLE_NAME +
                      " where " + RdbmsColumnNames.STUDY_ID_COL_NAME + " = '" + studyId + "'";
-    return new SQLRunner(datasource, sql).executeQuery(rs -> {
+    return new SQLRunner(datasource, sql, "Get study overview").executeQuery(rs -> {
       rs.next();
       String id = rs.getString(1);
       String abbrev = rs.getString(2);

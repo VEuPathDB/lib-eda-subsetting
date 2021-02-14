@@ -5,7 +5,6 @@ import org.apache.logging.log4j.Logger;
 import org.veupathdb.lib.container.jaxrs.config.Options;
 import org.veupathdb.lib.container.jaxrs.server.ContainerResources;
 import org.veupathdb.lib.container.jaxrs.utils.db.DbManager;
-import org.veupathdb.service.eda.common.client.ClientUtil;
 import org.veupathdb.service.eda.ss.service.Studies;
 import org.veupathdb.service.eda.ss.stubdb.StubDb;
 

@@ -110,9 +110,11 @@ public class EntityResultSetUtils {
       }
       tallRow.put(entity.getPKColName(), rs.getString(entity.getPKColName()));
       tallRow.put(TT_VARIABLE_ID_COL_NAME, rs.getString(TT_VARIABLE_ID_COL_NAME));
-      
-      Variable var = entity.getVariable(rs.getString(TT_VARIABLE_ID_COL_NAME))
-          .orElseThrow(() -> new RuntimeException("Can't find column in tall table result set: " + TT_VARIABLE_ID_COL_NAME));
+
+      String variableId = rs.getString(TT_VARIABLE_ID_COL_NAME);
+      Variable var = entity.getVariable(variableId)
+          .orElseThrow(() -> new RuntimeException(
+              "Metadata does not have variable found in tall table result set: " + variableId));
 
       tallRow.put(VARIABLE_VALUE_COL_NAME, var.getType().convertRowValueToStringValue(rs));
       

@@ -14,6 +14,8 @@ import javax.sql.DataSource;
 import static org.gusdb.fgputil.FormatUtil.NL;
 import static org.gusdb.fgputil.FormatUtil.TAB;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.gusdb.fgputil.Tuples.TwoTuple;
 import org.gusdb.fgputil.db.runner.SQLRunner;
 import org.gusdb.fgputil.db.runner.SingleIntResultSetHandler;
@@ -26,6 +28,7 @@ import org.veupathdb.service.eda.ss.Resources;
 import org.veupathdb.service.eda.ss.model.Variable.VariableType;
 import org.veupathdb.service.eda.ss.model.filter.Filter;
 
+import static org.gusdb.fgputil.iterator.IteratorUtil.toIterable;
 import static org.veupathdb.service.eda.ss.model.RdbmsColumnNames.TT_VARIABLE_ID_COL_NAME;
 
 /**
@@ -57,18 +60,13 @@ public class StudySubsettingUtils {
 
     String sql = generateTabularSql(outputVariables, outputEntity, filters, prunedEntityTree);
 
-    List<String> outputVariableIds = outputVariables.stream().map(Variable::getId).collect(Collectors.toList());
-
-    List<String> outputColumns = new ArrayList<>();
-    outputColumns.add(outputEntity.getPKColName());
-    outputColumns.addAll(outputEntity.getAncestorPkColNames());
-    outputColumns.addAll(outputVariableIds);
+    List<String> outputColumns = getTabularOutputColumns(outputEntity, outputVariables);
 
     new SQLRunner(datasource, sql, "Produce tabular subset").executeQuery(rs -> {
       try (BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(outputStream))) {
 
         writer.write(String.join(TAB, outputColumns) + NL);
-        writeWideRows(rs, writer, outputColumns, outputEntity);
+        writeWideRows(convertTallRowsResultSet(rs, outputEntity), writer, outputColumns, outputEntity);
         writer.flush();
         return null;
       }
@@ -77,20 +75,37 @@ public class StudySubsettingUtils {
       }
     });
   }
-  
-  private static void writeWideRows(ResultSet rs, Writer writer, List<String> outputColumns, Entity outputEntity) throws IOException {
 
-    // an interator of maps, each representing a single row in the tall table
-    Iterator<Map<String, String>> tallRowsIterator = new ResultSetIterator<>(rs,
-        row -> Optional.of(EntityResultSetUtils.resultSetToTallRowMap(outputEntity, rs)));
+  static List<String> getTabularOutputColumns(Entity outputEntity, List<Variable> outputVariables) {
+    List<String> outputVariableIds = outputVariables.stream().map(Variable::getId).collect(Collectors.toList());
+    List<String> outputColumns = new ArrayList<>();
+    outputColumns.add(outputEntity.getPKColName());
+    outputColumns.addAll(outputEntity.getAncestorPkColNames());
+    outputColumns.addAll(outputVariableIds);
+    return outputColumns;
+  }
+
+  /**
+   * @return an interator of maps, each representing a single row in the tall table
+   */
+  private static Iterator<Map<String, String>> convertTallRowsResultSet(ResultSet rs, Entity outputEntity) {
+    return new ResultSetIterator<>(rs, row -> Optional.of(EntityResultSetUtils.resultSetToTallRowMap(outputEntity, rs)));
+  }
+
+  static void writeWideRows(Iterator<Map<String, String>> tallRowsIterator,
+      Writer writer, List<String> outputColumns, Entity outputEntity) throws IOException {
 
     // an iterator of lists of maps, each list being the rows of the tall table returned for a single entity id
     String pkCol = outputEntity.getPKColName();
     Iterator<List<Map<String, String>>> groupedTallRowsIterator = new GroupingIterator<>(
-        tallRowsIterator, (row1, row2) -> row1.get(pkCol).equals(row2.get(pkCol)));
+        tallRowsIterator, (row1, row2) -> {
+          return row1.get(pkCol).equals(row2.get(pkCol));
+        }
+    );
 
     // iterate through groups and format into strings to be written to stream
-    for (List<Map<String, String>> group : IteratorUtil.toIterable(groupedTallRowsIterator)) {
+    int numGroups = 0;
+    for (List<Map<String, String>> group : toIterable(groupedTallRowsIterator)) {
       Map<String, String> wideRowMap = EntityResultSetUtils.getTallToWideFunction(outputEntity).apply(group);
       List<String> wideRow = new ArrayList<>();
       for (String colName : outputColumns) {

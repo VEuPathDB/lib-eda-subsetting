@@ -5,10 +5,13 @@ import org.apache.logging.log4j.Logger;
 import org.veupathdb.lib.container.jaxrs.config.Options;
 import org.veupathdb.lib.container.jaxrs.server.ContainerResources;
 import org.veupathdb.lib.container.jaxrs.utils.db.DbManager;
+import org.veupathdb.service.eda.common.client.ClientUtil;
 import org.veupathdb.service.eda.ss.service.Studies;
 import org.veupathdb.service.eda.ss.stubdb.StubDb;
 
 import javax.sql.DataSource;
+
+import static org.gusdb.fgputil.runtime.Environment.getOptionalVar;
 
 /**
  * Service Resource Registration.
@@ -20,6 +23,9 @@ public class Resources extends ContainerResources {
 
   private static final Logger LOG = LogManager.getLogger(Resources.class);
 
+  private static final boolean DEVELOPMENT_MODE =
+      Boolean.valueOf(getOptionalVar("DEVELOPMENT_MODE", "true"));
+
   // use in-memory test DB unless "real" application DB is configured
   private static boolean USE_IN_MEMORY_TEST_DATABASE = true;
 
@@ -30,11 +36,24 @@ public class Resources extends ContainerResources {
       // application database configured; use it
       USE_IN_MEMORY_TEST_DATABASE = false;
     }
+    if (DEVELOPMENT_MODE) {
+      enableJerseyTrace();
+    }
     if (!USE_IN_MEMORY_TEST_DATABASE) {
       DbManager.initApplicationDatabase(opts);
       LOG.info("Using application DB connection URL: " +
           DbManager.getInstance().getApplicationDatabase().getConfig().getConnectionUrl());
     }
+  }
+
+  public static DataSource getApplicationDataSource() {
+    return USE_IN_MEMORY_TEST_DATABASE
+      ? StubDb.getDataSource()
+      : DbManager.applicationDatabase().getDataSource();
+  }
+
+  public static String getAppDbSchema() {
+    return USE_IN_MEMORY_TEST_DATABASE ? "" : "apidb.";
   }
 
   /**
@@ -47,15 +66,5 @@ public class Resources extends ContainerResources {
     return new Object[] {
       Studies.class,
     };
-  }
-
-  public static DataSource getApplicationDataSource() {
-    return USE_IN_MEMORY_TEST_DATABASE
-      ? StubDb.getDataSource()
-      : DbManager.applicationDatabase().getDataSource();
-  }
-
-  public static String getAppDbSchema() {
-    return USE_IN_MEMORY_TEST_DATABASE ? "" : "apidb.";
   }
 }

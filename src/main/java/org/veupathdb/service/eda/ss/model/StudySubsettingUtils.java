@@ -5,7 +5,9 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.io.Writer;
+import java.sql.Connection;
 import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.*;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
@@ -38,6 +40,8 @@ import static org.veupathdb.service.eda.ss.model.RdbmsColumnNames.TT_VARIABLE_ID
  *
  */
 public class StudySubsettingUtils {
+
+  private static final int FETCH_SIZE_FOR_TABULAR_QUERIES = 2000;
 
   private static final String VALUE_COLUMN_NAME = "value";
   private static final String COUNT_COLUMN_NAME = "count";
@@ -73,7 +77,7 @@ public class StudySubsettingUtils {
       catch (IOException e) {
         throw new RuntimeException(e);
       }
-    });
+    }, FETCH_SIZE_FOR_TABULAR_QUERIES);
   }
 
   static List<String> getTabularOutputColumns(Entity outputEntity, List<Variable> outputVariables) {

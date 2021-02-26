@@ -13,11 +13,30 @@ public class Main extends Server {
   }
 
   public Main() {
-    QueryLogger.initialize(new QueryLogConfig(){});
+    QueryLogger.initialize(new QLF(){});
   }
 
   @Override
   protected ContainerResources newResourceConfig(Options options) {
     return new Resources(options);
   }
+
+  public static class QLF implements QueryLogConfig {
+    public double getBaseline() {
+      return 0.05D;
+    }
+
+    public double getSlow() {
+      return 1.0D;
+    }
+
+    public boolean isIgnoredSlow(String sql) {
+      return false;
+    }
+
+    public boolean isIgnoredBaseline(String sql) {
+      return false;
+    }
+  }
+
 }

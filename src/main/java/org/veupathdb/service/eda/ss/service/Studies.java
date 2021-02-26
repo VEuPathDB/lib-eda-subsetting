@@ -97,6 +97,7 @@ public class Studies implements org.veupathdb.service.eda.generated.resources.St
       for (Study.StudyOverview overview : overviews) {
         APIStudyOverview study = new APIStudyOverviewImpl();
         study.setId(overview.getId());
+        study.setDatasetId(overview.getDatasetId());
         apiStudyOverviews.put(study.getId(), study);
       }
     }
@@ -147,6 +148,7 @@ public class Studies implements org.veupathdb.service.eda.generated.resources.St
 
     APIStudyDetail apiStudyDetail = new APIStudyDetailImpl();
     apiStudyDetail.setId(study.getStudyId());
+    apiStudyDetail.setDatasetId(study.getDatasetId());
     apiStudyDetail.setRootEntity(apiEntityTree);
     // TODO: lose or fill in study.setName() prop
     return apiStudyDetail;
@@ -186,7 +188,6 @@ public class Studies implements org.veupathdb.service.eda.generated.resources.St
     else if (var.getType() == VariableType.NUMBER) {
       APINumberVariable apiVar = new APINumberVariableImpl();
       setApiVarProps(apiVar, var);
-      apiVar.setPrecision(var.getPrecision());
       apiVar.setUnits(var.getUnits());
       apiVar.setDataShape(APIVariableDataShape.valueOf(var.getDataShape().toString()));
       apiVar.setDisplayType(APIVariableDisplayType.valueOf(var.getDisplayType().toString()));

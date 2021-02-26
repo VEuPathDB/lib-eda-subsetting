@@ -26,16 +26,14 @@ public class Study {
   }
 
   public static List<StudyOverview> getStudyOverviews(DataSource datasource) {
-    String sql =
-        "select " + RdbmsColumnNames.STUDY_ID_COL_NAME +
-                ", " + RdbmsColumnNames.STUDY_ABBREV_COL_NAME +
-        " from " + Resources.getAppDbSchema() + RdbmsColumnNames.STUDY_TABLE_NAME;
+    String sql = getStudyOverviewSql(null);
     return new SQLRunner(datasource, sql, "Get list of study overviews").executeQuery(rs -> {
       List<StudyOverview> studyOverviews = new ArrayList<>();
       while (rs.next()) {
         String id = rs.getString(1);
-        String abbrev = rs.getString(2);
-        StudyOverview study = new StudyOverview(id, abbrev);
+        String datasetId = rs.getString(2);
+        String abbrev = rs.getString(3);
+        StudyOverview study = new StudyOverview(id, datasetId, abbrev);
         studyOverviews.add(study);
       }
       return studyOverviews;
@@ -59,17 +57,29 @@ public class Study {
   }
 
   public static StudyOverview getStudyOverview(DataSource datasource, String studyId) {
-    String sql =
-            "select " + RdbmsColumnNames.STUDY_ID_COL_NAME +
-                    ", " + RdbmsColumnNames.STUDY_ABBREV_COL_NAME +
-                    " from " + Resources.getAppDbSchema() + RdbmsColumnNames.STUDY_TABLE_NAME +
-                     " where " + RdbmsColumnNames.STUDY_ID_COL_NAME + " = '" + studyId + "'";
+    String sql = getStudyOverviewSql(studyId);
+
     return new SQLRunner(datasource, sql, "Get study overview").executeQuery(rs -> {
       rs.next();
       String id = rs.getString(1);
-      String abbrev = rs.getString(2);
-      return new StudyOverview(id, abbrev);
+      String datasetId = rs.getString(2);
+      String abbrev = rs.getString(3);
+      return new StudyOverview(id, datasetId, abbrev);
     });
+  }
+
+  // studyId is optional. if provided, constrain returned studies to that one study id.
+  private static String getStudyOverviewSql(String studyId) {
+    String andClause = "";
+    if (studyId != null) andClause = " and s." + RdbmsColumnNames.STUDY_ID_COL_NAME + " = '" + studyId + "'";
+    return
+    "select s." + RdbmsColumnNames.STUDY_ID_COL_NAME +
+            ", d." + RdbmsColumnNames.STUDY_DATASET_ID_COL_NAME +
+            ", s." + RdbmsColumnNames.STUDY_ABBREV_COL_NAME +
+            " from " + Resources.getAppDbSchema() + RdbmsColumnNames.STUDY_TABLE_NAME + " s, " +
+                       Resources.getAppDbSchema() + RdbmsColumnNames.STUDY_DATASET_TABLE_NAME + " d" +
+            " where s." + RdbmsColumnNames.STUDY_ID_COL_NAME + " = d." + RdbmsColumnNames.STUDY_DATASET_STUDY_ID_COL_NAME +
+            andClause;
   }
 
   /**
@@ -101,6 +111,10 @@ public class Study {
 
   public String getStudyId() {
     return overview.id;
+  }
+
+  public String getDatasetId() {
+    return overview.datasetId;
   }
 
   public Optional<Entity> getEntity(String entityId) {
@@ -147,15 +161,21 @@ public class Study {
   /* a brief version of the study */
   public static class StudyOverview {
     private final String id;
+    private final String datasetId;
     private final String internalAbbrev;
 
-    public StudyOverview(String id, String internalAbbrev) {
+    public StudyOverview(String id, String datasetId, String internalAbbrev) {
       this.id = id;
+      this.datasetId = datasetId;
       this.internalAbbrev = internalAbbrev;
     }
 
     public String getId() {
       return id;
+    }
+
+    public String getDatasetId() {
+      return datasetId;
     }
 
     public String getInternalAbbrev() {

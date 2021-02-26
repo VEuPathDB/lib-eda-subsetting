@@ -17,6 +17,11 @@ public class RdbmsColumnNames {
   static final String STUDY_ID_COL_NAME = "stable_id";
   static final String STUDY_ABBREV_COL_NAME = "internal_abbrev";
 
+  // StudyIdDatasetId table
+  static final String STUDY_DATASET_TABLE_NAME = "StudyIdDatasetId";
+  static final String STUDY_DATASET_ID_COL_NAME = "dataset_id";
+  static final String STUDY_DATASET_STUDY_ID_COL_NAME = "study_stable_id";
+
   // Entity table and EntityName table
   static final String ENTITY_TABLE_NAME = "EntityTypeGraph";
   static final String ENTITY_ID_COL_NAME = "stable_id";

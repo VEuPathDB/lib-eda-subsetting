@@ -12,6 +12,8 @@
 --(stable_id, display_nme, internal_abbrev)
 insert into study values ('DS-2324', 'GEMS', 'ds2324');
 
+insert into StudyIdDatasetId values('DS-2324', 'datasetid_2222');
+
 --(stable_id, study_stable_id, parent_stable_id, internal_abbrev, display_name, display_name_plural, description)
 insert into entityTypeGraph values ('GEMS_House', 'DS-2324', null, 'Hshld', 'Household', 'Households', 'Households in the study');
 insert into entityTypeGraph values ('GEMS_HouseObs', 'DS-2324', 'GEMS_House', 'HshldObsrvtn', 'Household Observation', 'Household Observations', 'Observations about households in the study');

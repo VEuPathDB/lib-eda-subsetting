@@ -96,7 +96,7 @@ gen-docs: api.raml merge-raml
 
 merge-raml:
 	@echo "Downloading dependencies..."
-	curl https://raw.githubusercontent.com/VEuPathDB/EdaCommon/v$(EDA_COMMON_VERSION)/schema/library.raml > schema/url/eda-common-lib.raml
+	curl https://raw.githubusercontent.com/VEuPathDB/EdaCommon/main/schema/library.raml > schema/url/eda-common-lib.raml
 	@$(BIN_DIR)/merge-raml schema > schema/library.raml
 	rm schema/url/eda-common-lib.raml
 

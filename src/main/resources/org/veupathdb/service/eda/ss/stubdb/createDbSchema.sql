@@ -10,6 +10,11 @@ create table Study (
 alter table Study add unique (display_name);
 alter table Study add unique (internal_abbrev);;
 
+create table StudyIdDatasetId (
+  study_stable_id varchar(50) not null,
+  dataset_id varchar(50) not null,
+)
+
 -- The entities types per study, eg Participants, and their tree relationships
 CREATE TABLE EntityTypeGraph (
   stable_id varchar(50) not null,

@@ -186,7 +186,7 @@ public class Studies implements org.veupathdb.service.eda.generated.resources.St
     else if (var.getType() == VariableType.NUMBER) {
       APINumberVariable apiVar = new APINumberVariableImpl();
       setApiVarProps(apiVar, var);
-      apiVar.setPrecision(var.getPrecision());
+      //apiVar.setPrecision(var.getPrecision());
       apiVar.setUnits(var.getUnits());
       apiVar.setDataShape(APIVariableDataShape.valueOf(var.getDataShape().toString()));
       apiVar.setDisplayType(APIVariableDisplayType.valueOf(var.getDisplayType().toString()));

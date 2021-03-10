@@ -29,18 +29,18 @@ insert into entityTypeGraph values ('GEMS_Treat', 'DS-2324', 'GEMS_PartObs', 'Tr
 -- households
 insert into AttributeGraph_ds2324_Hshld values ('var_18', 200, null, '_address', 'City', 'default', 1, 'string', 0, 'categorical', null, null, null);
 
-insert into Ancestors_ds2324_Hshld values (101);
-insert into AttributeValue_ds2324_Hshld values (101, 'var_18', null, 'Miami', null);
-insert into Ancestors_ds2324_Hshld values (102);
-insert into AttributeValue_ds2324_Hshld values (102, 'var_18', null, 'Boston', null);
+insert into Ancestors_ds2324_Hshld values ('101');
+insert into AttributeValue_ds2324_Hshld values ('101', 'var_18', null, 'Miami', null);
+insert into Ancestors_ds2324_Hshld values ('102');
+insert into AttributeValue_ds2324_Hshld values ('102', 'var_18', null, 'Boston', null);
 
 -- household observations
 insert into AttributeGraph_ds2324_HshldObsrvtn values ('var_19', 200, null, '_watersupply', 'Water supply', 'default', 1, 'string', 0, 'categorical', null, null, null);
 
-insert into Ancestors_ds2324_HshldObsrvtn values (301, 101);
-insert into AttributeValue_ds2324_HshldObsrvtn values (301, 'var_19', null, 'piped', null);
-insert into Ancestors_ds2324_HshldObsrvtn values (302, 102);
-insert into AttributeValue_ds2324_HshldObsrvtn values (302, 'var_19', null, 'well', null);
+insert into Ancestors_ds2324_HshldObsrvtn values ('301', '101');
+insert into AttributeValue_ds2324_HshldObsrvtn values ('301', 'var_19', null, 'piped', null);
+insert into Ancestors_ds2324_HshldObsrvtn values ('302', '102');
+insert into AttributeValue_ds2324_HshldObsrvtn values ('302', 'var_19', null, 'well', null);
 
 -- participants
 
@@ -50,25 +50,25 @@ insert into AttributeGraph_ds2324_Prtcpnt values ('var_11', 300, null, '_shoesiz
 insert into AttributeGraph_ds2324_Prtcpnt values ('var_20', 200, null, '_name', 'Name', 'default', 1, 'string', 0, 'categorical', null, null, null);
 insert into AttributeGraph_ds2324_Prtcpnt values ('var_17', 200, null, '_haircolor', 'Hair color', 'default', 1, 'string', 0,  'categorical', null, null, null);
 
-insert into Ancestors_ds2324_Prtcpnt values (201, 101);
-insert into AttributeValue_ds2324_Prtcpnt values (201, 'var_20', null, 'Martin', null);
-insert into AttributeValue_ds2324_Prtcpnt values (201, 'var_11', 11.5, null, null);
-insert into AttributeValue_ds2324_Prtcpnt values (201, 'var_17', null, 'blond', null);
+insert into Ancestors_ds2324_Prtcpnt values ('201', '101');
+insert into AttributeValue_ds2324_Prtcpnt values ('201', 'var_20', null, 'Martin', null);
+insert into AttributeValue_ds2324_Prtcpnt values ('201', 'var_11', 11.5, null, null);
+insert into AttributeValue_ds2324_Prtcpnt values ('201', 'var_17', null, 'blond', null);
 
-insert into Ancestors_ds2324_Prtcpnt values (202, 101);
-insert into AttributeValue_ds2324_Prtcpnt values (202, 'var_20', null, 'Abe', null);
-insert into AttributeValue_ds2324_Prtcpnt values (202, 'var_11', 10, null, null);
-insert into AttributeValue_ds2324_Prtcpnt values (202, 'var_17', null, 'blond', null);
+insert into Ancestors_ds2324_Prtcpnt values ('202', '101');
+insert into AttributeValue_ds2324_Prtcpnt values ('202', 'var_20', null, 'Abe', null);
+insert into AttributeValue_ds2324_Prtcpnt values ('202', 'var_11', 10, null, null);
+insert into AttributeValue_ds2324_Prtcpnt values ('202', 'var_17', null, 'blond', null);
 
-insert into Ancestors_ds2324_Prtcpnt values (203, 102);
-insert into AttributeValue_ds2324_Prtcpnt values (203, 'var_20', null, 'Gladys', null);
-insert into AttributeValue_ds2324_Prtcpnt values (203, 'var_11', 11.5, null, null);
-insert into AttributeValue_ds2324_Prtcpnt values (203, 'var_17', null, 'brown', null);
+insert into Ancestors_ds2324_Prtcpnt values ('203', '102');
+insert into AttributeValue_ds2324_Prtcpnt values ('203', 'var_20', null, 'Gladys', null);
+insert into AttributeValue_ds2324_Prtcpnt values ('203', 'var_11', 11.5, null, null);
+insert into AttributeValue_ds2324_Prtcpnt values ('203', 'var_17', null, 'brown', null);
 
-insert into Ancestors_ds2324_Prtcpnt values (204, 102);
-insert into AttributeValue_ds2324_Prtcpnt values (204, 'var_20', null, 'Susan', null);
-insert into AttributeValue_ds2324_Prtcpnt values (204, 'var_11', 10, null, null);
-insert into AttributeValue_ds2324_Prtcpnt values (204, 'var_17', null, 'silver', null);
+insert into Ancestors_ds2324_Prtcpnt values ('204', '102');
+insert into AttributeValue_ds2324_Prtcpnt values ('204', 'var_20', null, 'Susan', null);
+insert into AttributeValue_ds2324_Prtcpnt values ('204', 'var_11', 10, null, null);
+insert into AttributeValue_ds2324_Prtcpnt values ('204', 'var_17', null, 'silver', null);
 
 -- participant observations
 

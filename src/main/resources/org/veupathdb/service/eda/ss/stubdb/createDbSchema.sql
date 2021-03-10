@@ -70,7 +70,7 @@ ON AttributeValue_ds2324_Hshld (attribute_stable_id, hshld_stable_id, number_val
 CREATE unique INDEX AttributeValue_ds2324_Hshld_i2 ON AttributeValue_ds2324_Hshld (attribute_stable_id, hshld_stable_id);
 
 create table Ancestors_ds2324_Hshld (
-  hshld_stable_id integer,
+  hshld_stable_id varchar(30),
   PRIMARY KEY (Hshld_stable_id)
 );
 
@@ -107,8 +107,8 @@ ON AttributeValue_ds2324_HshldObsrvtn (attribute_stable_id, HshldObsrvtn_stable_
 CREATE unique INDEX AttributeValue_ds2324_HshldObsrvtn_i2 ON AttributeValue_ds2324_HshldObsrvtn (attribute_stable_id, HshldObsrvtn_stable_id);
 
 create table Ancestors_ds2324_HshldObsrvtn (
-  HshldObsrvtn_stable_id integer,
-  Hshld_stable_id integer,
+  HshldObsrvtn_stable_id varchar(30),
+  Hshld_stable_id varchar(30),
   PRIMARY KEY (Hshld_stable_id)
 );
 
@@ -144,8 +144,8 @@ ON AttributeValue_ds2324_Prtcpnt (attribute_stable_id, prtcpnt_stable_id, number
 CREATE unique INDEX AttributeValue_ds2324_Prtcpnt_i2 ON AttributeValue_ds2324_Prtcpnt (attribute_stable_id, prtcpnt_stable_id);
 
 create table Ancestors_ds2324_Prtcpnt (
-  prtcpnt_stable_id integer,
-  hshld_stable_id integer,
+  prtcpnt_stable_id varchar(30),
+  hshld_stable_id varchar(30),
   PRIMARY KEY (prtcpnt_stable_id)
 );
 
@@ -182,9 +182,9 @@ ON AttributeValue_ds2324_PrtcpntObsrvtn (attribute_stable_id, PrtcpntObsrvtn_sta
 CREATE unique INDEX AttributeValue_ds2324_PrtcpntObsrvtn_i2 ON AttributeValue_ds2324_PrtcpntObsrvtn (attribute_stable_id, PrtcpntObsrvtn_stable_id);
 
 create table Ancestors_ds2324_PrtcpntObsrvtn (
-  PrtcpntObsrvtn_stable_id integer,
-  Prtcpnt_stable_id integer,
-  Hshld_stable_id integer,
+  PrtcpntObsrvtn_stable_id varchar(30),
+  Prtcpnt_stable_id varchar(30),
+  Hshld_stable_id varchar(30),
   PRIMARY KEY (PrtcpntObsrvtn_stable_id)
 );
 

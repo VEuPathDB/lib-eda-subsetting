@@ -93,7 +93,7 @@ create table AttributeGraph_ds2324_HshldObsrvtn (
 );
 
 create table AttributeValue_ds2324_HshldObsrvtn (
-  HshldObsrvtn_stable_id integer,
+  HshldObsrvtn_stable_id varchar(30),
   attribute_stable_id varchar(30),
   number_value integer, 
   string_value varchar(100),
@@ -130,7 +130,7 @@ create table AttributeGraph_ds2324_Prtcpnt (
   PRIMARY KEY (stable_id)
 );
 create table AttributeValue_ds2324_Prtcpnt (
-  prtcpnt_stable_id integer,
+  prtcpnt_stable_id varchar(30),
   attribute_stable_id varchar(30),
   number_value integer,
   string_value varchar(100),
@@ -168,7 +168,7 @@ create table AttributeGraph_ds2324_PrtcpntObsrvtn (
 );
 
 create table AttributeValue_ds2324_PrtcpntObsrvtn (
-  PrtcpntObsrvtn_stable_id integer,
+  PrtcpntObsrvtn_stable_id varchar(30),
   attribute_stable_id varchar(30),
   number_value integer, 
   string_value varchar(100),

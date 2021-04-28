@@ -206,9 +206,9 @@ public class StudySubsettingUtilsTest {
   void testGenerateTabularSelectClause() {
     
     String selectClause = StudySubsettingUtils.generateTabularSelectClause(_model.observation, "t", "a");
-    String expectedSelectClause = "SELECT a." + _model.household.getPKColName() +
+    String expectedSelectClause = "SELECT t." + _model.observation.getPKColName() +
         ", a." + _model.participant.getPKColName() +
-        ", t." + _model.observation.getPKColName() +
+        ", a." + _model.household.getPKColName() +
         ", " + TT_VARIABLE_ID_COL_NAME + ", " + STRING_VALUE_COL_NAME + ", " + NUMBER_VALUE_COL_NAME + ", " + DATE_VALUE_COL_NAME;
     assertEquals(expectedSelectClause, selectClause);
   }

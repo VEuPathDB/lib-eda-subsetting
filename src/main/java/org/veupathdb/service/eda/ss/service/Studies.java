@@ -9,6 +9,7 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Supplier;
 import java.util.stream.Stream;
 import javax.sql.DataSource;
@@ -72,15 +73,13 @@ import org.veupathdb.service.eda.ss.model.Variable.VariableType;
 import static org.gusdb.fgputil.functional.Functions.cSwallow;
 
 public class Studies implements org.veupathdb.service.eda.generated.resources.Studies {
-  static Map<String, APIStudyOverview> apiStudyOverviews;  // cache the overviews
-  static Map<String, Study> studies = new HashMap<>(); // cache the studies
 
-  // TODO: use proper cache
+  static Map<String, APIStudyOverview> apiStudyOverviews;  // cache the overviews
+  static Map<String, Study> studies = new ConcurrentHashMap<>(); // cache the studies
+
   private Study getStudy(String studyId){
-    if (!studies.containsKey(studyId)) {
-      studies.put(studyId, Study.loadStudy(Resources.getApplicationDataSource(), studyId));
-    }
-    return studies.get(studyId);
+    return studies.computeIfAbsent(studyId, id ->
+        Study.loadStudy(Resources.getApplicationDataSource(), id));
   }
 
   @Override
@@ -93,13 +92,14 @@ public class Studies implements org.veupathdb.service.eda.generated.resources.St
   private List<APIStudyOverview> getStudyOverviews(DataSource datasource) {
     if (apiStudyOverviews == null) {
       List<Study.StudyOverview> overviews = Study.getStudyOverviews(datasource);
-      apiStudyOverviews = new LinkedHashMap<>();
+      Map<String, APIStudyOverview> tmp = new LinkedHashMap<>();
       for (Study.StudyOverview overview : overviews) {
         APIStudyOverview study = new APIStudyOverviewImpl();
         study.setId(overview.getId());
         study.setDatasetId(overview.getDatasetId());
-        apiStudyOverviews.put(study.getId(), study);
+        tmp.put(study.getId(), study);
       }
+      apiStudyOverviews = tmp;
     }
     return new ArrayList<>( apiStudyOverviews.values() );
   }

@@ -107,47 +107,68 @@ public class TestModel {
   }
   
   private void constructVariables() {
-
-    //  public Variable(String providerLabel, String id, Entity entity, VariableType type, VariableDataShape dataShape,
+/*
+		public Variable(String providerLabel, String id, Entity entity, VariableType type, VariableDataShape dataShape,
+				VariableDisplayType displayType, String units, Integer precision, String displayName, String parentId,
+				String definition, List<String> vocabulary, Number displayRangeMin, Number displayRangeMax,
+				Number displayOrder, Number rangeMin, Number rangeMax, Number binWidthOverride, Number binWidthComputed,
+				boolean isTemporal, boolean isFeatured, boolean isMergeKey, boolean isRepeated, Number distinctValuesCount,
+				boolean isMultiValued) 
+				
+ public Variable(String providerLabel, String id, Entity entity, VariableType type, VariableDataShape dataShape,
+                  VariableDisplayType displayType, String units, Integer precision, String displayName, String parentId) {
+				
+*/	  
+	//  public Variable(String providerLabel, String id, Entity entity, VariableType type, VariableDataShape dataShape,
     //                  VariableDisplayType displayType, boolean hasValues, String units, Integer precision, String displayName, String parentId) {
     roof = new Variable("roof", "var_10", household, VariableType.STRING, VariableDataShape.CATEGORICAL,
-            Variable.VariableDisplayType.DEFAULT, "", 1, "Roof", null);
+            Variable.VariableDisplayType.DEFAULT, "", 1, "Roof", null,
+            "", null, null, null, null, null, null, null, null, null, null, null, null, null, null);
     household.addVariable(roof);
     
     shoesize = new Variable("shoesize", "var_11", participant, VariableType.NUMBER, VariableDataShape.CATEGORICAL,
-            Variable.VariableDisplayType.DEFAULT, "", 1, "Roof", null);
+            Variable.VariableDisplayType.DEFAULT, "", 1, "Roof", null,
+            "", null, null, null, null, null, null, null, null, null, null, null, null, null, null);
     participant.addVariable(shoesize);
 
     haircolor = new Variable("haircolor", "var_17", participant, VariableType.STRING, Variable.VariableDataShape.CATEGORICAL,
-            Variable.VariableDisplayType.DEFAULT, "", 1, "Roof", null);
+            Variable.VariableDisplayType.DEFAULT, "", 1, "Roof", null,
+            "", null, null, null, null, null, null, null, null, null, null, null, null, null, null);
     participant.addVariable(haircolor);
 
     networth = new Variable("networth", "var_18", participant, VariableType.NUMBER, VariableDataShape.CONTINUOUS,
-            Variable.VariableDisplayType.DEFAULT, "", 1, "Roof", null);
+            Variable.VariableDisplayType.DEFAULT, "", 1, "Roof", null,
+            "", null, null, null, null, null, null, null, null, null, null, null, null, null, null);
     participant.addVariable(networth);
 
     weight = new Variable("weight", "var_12", observation, VariableType.NUMBER, Variable.VariableDataShape.CONTINUOUS,
-            Variable.VariableDisplayType.DEFAULT, "", 1, "Roof", null);
+            Variable.VariableDisplayType.DEFAULT, "", 1, "Roof", null,
+            "", null, null, null, null, null, null, null, null, null, null, null, null, null, null);
     observation.addVariable(weight);
     
     favNumber = new Variable("favNumber", "var_13", observation, VariableType.NUMBER, Variable.VariableDataShape.CATEGORICAL,
-            Variable.VariableDisplayType.DEFAULT, "", 1, "Roof", null);
+            Variable.VariableDisplayType.DEFAULT, "", 1, "Roof", null,
+            "", null, null, null, null, null, null, null, null, null, null, null, null, null, null);
     observation.addVariable(favNumber);
     
     birthDate  = new Variable("birthDate", "var_14", observation, VariableType.DATE, Variable.VariableDataShape.CONTINUOUS,
-            Variable.VariableDisplayType.DEFAULT, "", 1, "Roof", null);
+            Variable.VariableDisplayType.DEFAULT, "", 1, "Roof", null,
+            "", null, null, null, null, null, null, null, null, null, null, null, null, null, null);
     observation.addVariable(birthDate);
     
     favNewYears = new Variable("favNewYears", "var_15", observation, VariableType.DATE, Variable.VariableDataShape.CATEGORICAL,
-            Variable.VariableDisplayType.DEFAULT, "", 1, "Roof", null);
+            Variable.VariableDisplayType.DEFAULT, "", 1, "Roof", null,
+            "", null, null, null, null, null, null, null, null, null, null, null, null, null, null);
     observation.addVariable(favNewYears);
     
     mood  = new Variable("mood", "var_16", observation, VariableType.STRING, VariableDataShape.CATEGORICAL,
-            Variable.VariableDisplayType.DEFAULT,"", 1, "Roof", null);
+            Variable.VariableDisplayType.DEFAULT,"", 1, "Roof", null,
+            "", null, null, null, null, null, null, null, null, null, null, null, null, null, null);
     observation.addVariable(mood);
 
     waterSupply  = new Variable("waterSupply", "var_19", householdObs, VariableType.STRING, VariableDataShape.CATEGORICAL,
-            Variable.VariableDisplayType.DEFAULT, "", 1, "Roof", null);
+            Variable.VariableDisplayType.DEFAULT, "", 1, "Roof", null,
+            "", null, null, null, null, null, null, null, null, null, null, null, null, null, null);
     householdObs.addVariable(waterSupply);
 
   }

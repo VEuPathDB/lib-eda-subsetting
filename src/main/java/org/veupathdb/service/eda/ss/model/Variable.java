@@ -4,8 +4,10 @@ import org.gusdb.fgputil.FormatUtil;
 import org.gusdb.fgputil.functional.FunctionalInterfaces.FunctionWithException;
 
 import java.sql.ResultSet;
+import java.util.List;
 
-public class Variable {
+public class Variable {	
+	
   private final String providerLabel;
   private final String id;
   private final Entity entity;
@@ -18,6 +20,21 @@ public class Variable {
   private final String displayName;
   private final String parentId;
 
+private final String definition;
+  private final List<String> vocabulary;
+  private final Number displayRangeMin;
+  private final Number displayRangeMax;
+  private final Number displayOrder;
+  private final Number rangeMin;
+  private final Number rangeMax;
+  private final Number binWidthOverride;
+  private final Number binWidthComputed;
+  private final Boolean isTemporal;
+  private final Boolean isFeatured;
+  private final Boolean isMergeKey;
+  private final Boolean isRepeated;
+  private final Number distinctValuesCount;
+  private final Boolean isMultiValued;
   public boolean getHasValues() {
     return hasValues;
   }
@@ -128,8 +145,12 @@ public class Variable {
   /*
   Construct a variable that does have values
    */
-  public Variable(String providerLabel, String id, Entity entity, VariableType type, VariableDataShape dataShape,
-                  VariableDisplayType displayType, String units, Integer precision, String displayName, String parentId) {
+	public Variable(String providerLabel, String id, Entity entity, VariableType type, VariableDataShape dataShape,
+			VariableDisplayType displayType, String units, Integer precision, String displayName, String parentId,
+			String definition, List<String> vocabulary, Number displayRangeMin, Number displayRangeMax,
+			Number displayOrder, Number rangeMin, Number rangeMax, Number binWidthOverride, Number binWidthComputed,
+			Boolean isTemporal, Boolean isFeatured, Boolean isMergeKey, Boolean isRepeated, Number distinctValuesCount,
+			Boolean isMultiValued) {
 
     String errPrefix = "In entity " + entity.getId() + " variable " + id + " has a null ";
     if (type == null) throw new RuntimeException(errPrefix + "data type");
@@ -151,6 +172,22 @@ public class Variable {
     this.precision = precision;
     this.displayName = displayName;
     this.parentId = parentId;
+    this.definition= definition;
+    this.vocabulary = vocabulary;
+    this.displayRangeMin = displayRangeMin;
+    this.displayRangeMax = displayRangeMax;
+    this.displayOrder = displayOrder;
+    this.rangeMin = rangeMin;
+    this.rangeMax = rangeMax;
+    this.binWidthOverride = binWidthOverride;
+    this.binWidthComputed = binWidthComputed;
+    this.isTemporal = isTemporal;
+    this.isFeatured = isFeatured;
+    this.isMergeKey = isMergeKey;
+    this.isRepeated = isRepeated;
+    this.distinctValuesCount = distinctValuesCount;
+    this.isMultiValued = isMultiValued;
+
   }
 
   /*
@@ -168,7 +205,21 @@ public class Variable {
     this.precision = null;
     this.displayName = displayName;
     this.parentId = parentId;
-
+    this.definition= null;
+    this.vocabulary = null;
+    this.displayRangeMin = null;
+    this.displayRangeMax = null;
+    this.displayOrder = null;
+    this.rangeMin = null;
+    this.rangeMax = null;
+    this.binWidthOverride = null;
+    this.binWidthComputed = null;
+    this.isTemporal = null;
+    this.isFeatured = null;
+    this.isMergeKey = null;
+    this.isRepeated = null;
+    this.distinctValuesCount = null;
+    this.isMultiValued = null;
   }
 
   public String getProviderLabel() {
@@ -210,4 +261,65 @@ public class Variable {
   public VariableType getType() {
     return type;
   }
+  
+  public String getDefinition() {
+		return definition;
+	}
+
+	public List<String> getVocabulary() {
+		return vocabulary;
+	}
+
+	public Number getDisplayRangeMin() {
+		return displayRangeMin;
+	}
+
+	public Number getDisplayRangeMax() {
+		return displayRangeMax;
+	}
+
+	public Number getDisplayOrder() {
+		return displayOrder;
+	}
+
+	public Number getRangeMin() {
+		return rangeMin;
+	}
+
+	public Number getRangeMax() {
+		return rangeMax;
+	}
+
+	public Number getBinWidthOverride() {
+		return binWidthOverride;
+	}
+
+	public Number getBinWidthComputed() {
+		return binWidthComputed;
+	}
+
+	public Boolean getIsTemporal() {
+		return isTemporal;
+	}
+
+	public Boolean getIsFeatured() {
+		return isFeatured;
+	}
+
+	public Boolean getIsMergeKey() {
+		return isMergeKey;
+	}
+
+	public Boolean getIsRepeated() {
+		return isRepeated;
+	}
+
+	public Number getDistinctValuesCount() {
+		return distinctValuesCount;
+	}
+
+	public Boolean getIsMultiValued() {
+		return isMultiValued;
+	}
+
 }

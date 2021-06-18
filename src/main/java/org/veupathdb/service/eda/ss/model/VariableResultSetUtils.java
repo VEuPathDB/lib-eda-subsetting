@@ -29,7 +29,14 @@ class VariableResultSetUtils {
 
   static String generateStudyVariablesListSql(String variablesTableName) {
     String[] selectCols = {VARIABLE_ID_COL_NAME, VARIABLE_TYPE_COL_NAME,
-            DATA_SHAPE_COL_NAME, DISPLAY_TYPE_COL_NAME, HAS_VALUES_COL_NAME, UNITS_COL_NAME, MULTIVALUED_COL_NAME, PRECISION_COL_NAME, PROVIDER_LABEL_COL_NAME, DISPLAY_NAME_COL_NAME, VARIABLE_PARENT_ID_COL_NAME};
+            DATA_SHAPE_COL_NAME, DISPLAY_TYPE_COL_NAME, HAS_VALUES_COL_NAME, UNITS_COL_NAME, MULTIVALUED_COL_NAME, 
+            PRECISION_COL_NAME, PROVIDER_LABEL_COL_NAME, DISPLAY_NAME_COL_NAME, VARIABLE_PARENT_ID_COL_NAME,
+            DEFINITION_COL_NAME, VOCABULARY_COL_NAME, DISPLAY_ORDER_COL_NAME, DISPLAY_RANGE_MIN_COL_NAME, DISPLAY_RANGE_MAX_COL_NAME,
+            RANGE_MIN_COL_NAME, RANGE_MAX_COL_NAME, BIN_WIDTH_OVERRIDE_COL_NAME, BIN_WIDTH_COMPUTED_COL_NAME, 
+            IS_TEMPORAL_COL_NAME, IS_FEATURED_COL_NAME, IS_MERGE_KEY_COL_NAME, IS_REPEATED_COL_NAME,
+            DISTINCT_VALUES_COUNT_COL_NAME, IS_MULTI_VALUED_COL_NAME
+            };
+
 
 //    return "SELECT " + String.join(", ", selectCols) + NL
     return "SELECT distinct " + String.join(", ", selectCols) + NL  // TODO: remove hack distinct
@@ -57,6 +64,7 @@ class VariableResultSetUtils {
                                               String id, String displayName, String parentId) {
 
     try {
+    	//rs.getString(VOCABULARY_COL_NAME)
      return new Variable(
               providerLabel,
               id,
@@ -64,10 +72,25 @@ class VariableResultSetUtils {
               Variable.VariableType.fromString(getRsStringNotNull(rs, VARIABLE_TYPE_COL_NAME)),
               Variable.VariableDataShape.fromString(getRsStringNotNull(rs, DATA_SHAPE_COL_NAME)),
               Variable.VariableDisplayType.fromString(getRsStringWithDefault(rs, DISPLAY_TYPE_COL_NAME, "default")),
-              getRsStringWithDefault(rs, UNITS_COL_NAME, "No Units Available"), // TODO remove hack default
-              getRsIntegerWithDefault(rs, PRECISION_COL_NAME, 1), // TODO remove hack default
+              getRsStringWithDefault(rs, UNITS_COL_NAME, ""), 
+              getRsIntegerWithDefault(rs, PRECISION_COL_NAME, 1),
               displayName,
-              parentId
+              parentId,
+              getRsStringWithDefault(rs, DEFINITION_COL_NAME, ""),
+              null,
+              rs.getInt(DISPLAY_RANGE_MIN_COL_NAME), 
+              rs.getInt(DISPLAY_RANGE_MAX_COL_NAME),
+              rs.getInt(DISPLAY_ORDER_COL_NAME),
+              rs.getInt(RANGE_MIN_COL_NAME),
+              rs.getInt(RANGE_MAX_COL_NAME),
+              rs.getInt(BIN_WIDTH_OVERRIDE_COL_NAME),
+              rs.getInt(BIN_WIDTH_COMPUTED_COL_NAME),
+              rs.getBoolean(IS_TEMPORAL_COL_NAME),
+              rs.getBoolean(IS_FEATURED_COL_NAME),
+              rs.getBoolean(IS_MERGE_KEY_COL_NAME),
+              rs.getBoolean(IS_REPEATED_COL_NAME),
+              rs.getInt(DISTINCT_VALUES_COUNT_COL_NAME),
+              rs.getBoolean(IS_MULTI_VALUED_COL_NAME)
       );
     }
     catch (SQLException e) {

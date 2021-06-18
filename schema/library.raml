@@ -7,6 +7,35 @@
 ################################################################################
 
 types:
+  VariableSpec:
+    type: object
+    additionalProperties: false
+    properties:
+      entityId: string
+      variableId: string
+  DerivationType:
+    type: string
+    enum:
+      - transform
+      - reduction
+  DerivedVariable:
+    type: VariableSpec
+    properties:
+      variableType: API_VariableType
+      variableDataShape: API_VariableDataShape
+      derivationType: DerivationType
+      functionName: string
+      inputVars: VariableSpec[]
+      config: object # TBD
+  MergedEntityTabularPostRequest:
+    type: object
+    additionalProperties: false
+    properties:
+      studyId: string
+      filters: API_Filter[]
+      entityId: string
+      outputVariables: VariableSpec[]
+      derivedVariables: DerivedVariable[]
   EntityCountPostRequest:
     type: object
     additionalProperties: false
@@ -81,12 +110,20 @@ types:
     discriminator: type
     properties:
       id: string
+      parentId?: string
       providerLabel: string
       displayName: string
-      parentId?: string
-      type: API_VariableType
-      isMultiValued: boolean
+      definition: string
+      vocabulary?: string[]
       displayType: API_VariableDisplayType
+      displayOrder?: number
+      isTemporal: boolean
+      isFeatured: boolean
+      isMergeKey: boolean
+      isRepeated: boolean
+      type: API_VariableType
+      distinctValuesCount: number
+      isMultiValued: boolean
       dataShape: API_VariableDataShape
   API_VariableType:
     type: string
@@ -120,9 +157,23 @@ types:
     discriminatorValue: number
     properties:
       units: string
+      precision: number
+      displayRangeMin?: number
+      displayRangeMax?: number
+      rangeMin?: number
+      rangeMax?: number
+      binWidthOverride?: number
+      binWidthComputed?: number
   API_DateVariable:
     type: API_Variable
     discriminatorValue: date
+    properties:
+      displayRangeMin?: number
+      displayRangeMax?: number
+      rangeMin?: number
+      rangeMax?: number
+      binWidthOverride?: number
+      binWidthComputed?: number
   API_LongitudeVariable:
     type: API_Variable
     discriminatorValue: longitude
@@ -175,33 +226,4 @@ types:
     properties:
       left: number
       right: number
-  VariableSpec:
-    type: object
-    additionalProperties: false
-    properties:
-      entityId: string
-      variableId: string
-  DerivationType:
-    type: string
-    enum:
-      - transform
-      - reduction
-  DerivedVariable:
-    type: VariableSpec
-    properties:
-      variableType: API_VariableType
-      variableDataShape: API_VariableDataShape
-      derivationType: DerivationType
-      functionName: string
-      inputVars: VariableSpec[]
-      config: object # TBD
-  MergedEntityTabularPostRequest:
-    type: object
-    additionalProperties: false
-    properties:
-      studyId: string
-      filters: API_Filter[]
-      entityId: string
-      outputVariables: VariableSpec[]
-      derivedVariables: DerivedVariable[]
 

@@ -183,6 +183,13 @@ public class Studies implements org.veupathdb.service.eda.generated.resources.St
       setApiVarProps(apiVar, var);
       apiVar.setDataShape(APIVariableDataShape.valueOf(var.getDataShape().toString()));
       apiVar.setDisplayType(APIVariableDisplayType.valueOf(var.getDisplayType().toString()));
+      apiVar.setBinWidthComputed(var.getBinWidthComputed());
+      apiVar.setBinWidthOverride(var.getBinWidthOverride());
+      apiVar.setDisplayRangeMin(var.getDisplayRangeMin());
+      apiVar.setDisplayRangeMax(var.getDisplayRangeMax());
+      apiVar.setRangeMin(var.getRangeMin());
+      apiVar.setRangeMax(var.getRangeMax());
+      apiVar.setVocabulary(var.getVocabulary());
       return apiVar;
     }
     else if (var.getType() == VariableType.NUMBER) {
@@ -191,6 +198,13 @@ public class Studies implements org.veupathdb.service.eda.generated.resources.St
       apiVar.setUnits(var.getUnits());
       apiVar.setDataShape(APIVariableDataShape.valueOf(var.getDataShape().toString()));
       apiVar.setDisplayType(APIVariableDisplayType.valueOf(var.getDisplayType().toString()));
+      apiVar.setBinWidthComputed(var.getBinWidthComputed());
+      apiVar.setBinWidthOverride(var.getBinWidthOverride());
+      apiVar.setDisplayRangeMin(var.getDisplayRangeMin());
+      apiVar.setDisplayRangeMax(var.getDisplayRangeMax());
+      apiVar.setRangeMin(var.getRangeMin());
+      apiVar.setRangeMax(var.getRangeMax());
+      apiVar.setVocabulary(var.getVocabulary());
       return apiVar;
     }
     else if (var.getType() == VariableType.STRING) {
@@ -198,6 +212,7 @@ public class Studies implements org.veupathdb.service.eda.generated.resources.St
       apiVar.setDataShape(APIVariableDataShape.valueOf(var.getDataShape().toString()));
       apiVar.setDisplayType(APIVariableDisplayType.valueOf(var.getDisplayType().toString()));
       setApiVarProps(apiVar, var);
+      apiVar.setVocabulary(var.getVocabulary());
       return apiVar;
     }
     else if (var.getType() == VariableType.LONGITUDE) {
@@ -217,6 +232,14 @@ public class Studies implements org.veupathdb.service.eda.generated.resources.St
     apiVar.setDisplayName(var.getDisplayName());
     apiVar.setProviderLabel(var.getProviderLabel());
     apiVar.setParentId(var.getParentId());
+    apiVar.setDefinition(var.getDefinition());
+    apiVar.setDisplayOrder(var.getDisplayOrder());
+    apiVar.setDistinctValuesCount(var.getDistinctValuesCount());
+    apiVar.setIsFeatured(var.getIsFeatured());
+    apiVar.setIsMergeKey(var.getIsMergeKey());
+    apiVar.setIsMultiValued(var.getIsMultiValued());
+    apiVar.setIsRepeated(var.getIsRepeated());
+    apiVar.setIsTemporal(var.getIsTemporal());
   }
 
   @Override

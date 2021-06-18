@@ -1,14 +1,17 @@
 package org.veupathdb.service.eda.ss.model;
 
 import org.gusdb.fgputil.db.runner.SQLRunner;
+import org.gusdb.fgputil.json.JsonUtil;
 
 import javax.sql.DataSource;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import org.veupathdb.service.eda.ss.Resources;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import static org.gusdb.fgputil.FormatUtil.NL;
 import static org.veupathdb.service.eda.ss.model.RdbmsColumnNames.*;
 
@@ -64,8 +67,11 @@ class VariableResultSetUtils {
                                               String id, String displayName, String parentId) {
 
     try {
-    	//rs.getString(VOCABULARY_COL_NAME)
-     return new Variable(
+    	// first, parse vocabulary json string
+    	String vocabString = rs.getString(VOCABULARY_COL_NAME);
+    	List<String> vocab = rs.wasNull()? null : Arrays.asList(JsonUtil.Jackson.readValue(vocabString, String[].class));
+
+    	return new Variable(
               providerLabel,
               id,
               entity,
@@ -77,7 +83,7 @@ class VariableResultSetUtils {
               displayName,
               parentId,
               getRsStringWithDefault(rs, DEFINITION_COL_NAME, ""),
-              null,
+              vocab,
               rs.getInt(DISPLAY_RANGE_MIN_COL_NAME), 
               rs.getInt(DISPLAY_RANGE_MAX_COL_NAME),
               rs.getInt(DISPLAY_ORDER_COL_NAME),
@@ -93,7 +99,7 @@ class VariableResultSetUtils {
               rs.getBoolean(IS_MULTI_VALUED_COL_NAME)
       );
     }
-    catch (SQLException e) {
+    catch (SQLException | JsonProcessingException e) {
       throw new RuntimeException("Entity:  " + entity.getId() + " variable: " + id, e);
     }
   }

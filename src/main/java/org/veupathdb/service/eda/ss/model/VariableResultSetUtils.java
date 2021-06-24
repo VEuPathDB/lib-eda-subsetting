@@ -10,6 +10,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import org.veupathdb.service.eda.ss.Resources;
+import org.veupathdb.service.eda.ss.model.Variable.VariableType;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import static org.gusdb.fgputil.FormatUtil.NL;
@@ -71,37 +72,86 @@ class VariableResultSetUtils {
     	String vocabString = rs.getString(VOCABULARY_COL_NAME);
     	List<String> vocab = rs.wasNull()? null : Arrays.asList(JsonUtil.Jackson.readValue(vocabString, String[].class));
 
-    	return new Variable(
-              providerLabel,
-              id,
-              entity,
-              Variable.VariableType.fromString(getRsStringNotNull(rs, VARIABLE_TYPE_COL_NAME)),
-              Variable.VariableDataShape.fromString(getRsStringNotNull(rs, DATA_SHAPE_COL_NAME)),
-              Variable.VariableDisplayType.fromString(getRsStringWithDefault(rs, DISPLAY_TYPE_COL_NAME, "default")),
-              getRsStringWithDefault(rs, UNITS_COL_NAME, ""), 
-              getRsIntegerWithDefault(rs, PRECISION_COL_NAME, 1),
-              displayName,
-              parentId,
-              getRsStringWithDefault(rs, DEFINITION_COL_NAME, ""),
-              vocab,
-              rs.getInt(DISPLAY_RANGE_MIN_COL_NAME), 
-              rs.getInt(DISPLAY_RANGE_MAX_COL_NAME),
-              rs.getInt(DISPLAY_ORDER_COL_NAME),
-              rs.getInt(RANGE_MIN_COL_NAME),
-              rs.getInt(RANGE_MAX_COL_NAME),
-              rs.getInt(BIN_WIDTH_OVERRIDE_COL_NAME),
-              rs.getInt(BIN_WIDTH_COMPUTED_COL_NAME),
-              rs.getBoolean(IS_TEMPORAL_COL_NAME),
-              rs.getBoolean(IS_FEATURED_COL_NAME),
-              rs.getBoolean(IS_MERGE_KEY_COL_NAME),
-              rs.getBoolean(IS_REPEATED_COL_NAME),
-              rs.getInt(DISTINCT_VALUES_COUNT_COL_NAME),
-              rs.getBoolean(IS_MULTI_VALUED_COL_NAME)
-      );
+        VariableType type = Variable.VariableType.fromString(getRsStringNotNull(rs, VARIABLE_TYPE_COL_NAME));
+
+    	if (type == VariableType.NUMBER || type == VariableType.LONGITUDE) return new NumberVariable(
+                providerLabel,
+                id,
+                entity,
+                type == VariableType.LONGITUDE,
+                Variable.VariableDataShape.fromString(getRsStringNotNull(rs, DATA_SHAPE_COL_NAME)),
+                Variable.VariableDisplayType.fromString(getRsStringWithDefault(rs, DISPLAY_TYPE_COL_NAME, "default")),
+                rs.getInt(DISPLAY_ORDER_COL_NAME),
+                getRsStringWithDefault(rs, UNITS_COL_NAME, ""), 
+                getRsIntegerWithDefault(rs, PRECISION_COL_NAME, 1),
+                displayName,
+                parentId,
+                getRsStringWithDefault(rs, DEFINITION_COL_NAME, ""),
+                vocab,
+                getNumberFromStringColumn(rs.getString(DISPLAY_RANGE_MIN_COL_NAME)), 
+                getNumberFromStringColumn(rs.getString(DISPLAY_RANGE_MAX_COL_NAME)),
+                getNumberFromStringColumn(rs.getString(RANGE_MIN_COL_NAME)),
+                getNumberFromStringColumn(rs.getString(RANGE_MAX_COL_NAME)),
+                getNumberFromStringColumn(rs.getString(BIN_WIDTH_OVERRIDE_COL_NAME)),
+                getNumberFromStringColumn(rs.getString(BIN_WIDTH_COMPUTED_COL_NAME)),
+                rs.getBoolean(IS_TEMPORAL_COL_NAME),
+                rs.getBoolean(IS_FEATURED_COL_NAME),
+                rs.getBoolean(IS_MERGE_KEY_COL_NAME),
+                rs.getInt(DISTINCT_VALUES_COUNT_COL_NAME),
+                rs.getBoolean(IS_MULTI_VALUED_COL_NAME)
+        );
+    	
+    	
+    	if (type == VariableType.DATE) return new DateVariable(
+                providerLabel,
+                id,
+                entity,
+                Variable.VariableDataShape.fromString(getRsStringNotNull(rs, DATA_SHAPE_COL_NAME)),
+                Variable.VariableDisplayType.fromString(getRsStringWithDefault(rs, DISPLAY_TYPE_COL_NAME, "default")),
+                getRsStringWithDefault(rs, UNITS_COL_NAME, ""), 
+                displayName,
+                rs.getInt(DISPLAY_ORDER_COL_NAME),
+                parentId,
+                getRsStringWithDefault(rs, DEFINITION_COL_NAME, ""),
+                vocab,
+                rs.getString(DISPLAY_RANGE_MIN_COL_NAME), 
+                rs.getString(DISPLAY_RANGE_MAX_COL_NAME),
+                rs.getString(RANGE_MIN_COL_NAME),
+                rs.getString(RANGE_MAX_COL_NAME),
+                rs.getString(BIN_WIDTH_OVERRIDE_COL_NAME),
+                rs.getString(BIN_WIDTH_COMPUTED_COL_NAME),
+                rs.getBoolean(IS_TEMPORAL_COL_NAME),
+                rs.getBoolean(IS_FEATURED_COL_NAME),
+                rs.getBoolean(IS_MERGE_KEY_COL_NAME),
+                rs.getInt(DISTINCT_VALUES_COUNT_COL_NAME),
+                rs.getBoolean(IS_MULTI_VALUED_COL_NAME)
+        );
+    	
+    	return new StringVariable(
+                providerLabel,
+                id,
+                entity,
+                Variable.VariableDataShape.fromString(getRsStringNotNull(rs, DATA_SHAPE_COL_NAME)),
+                Variable.VariableDisplayType.fromString(getRsStringWithDefault(rs, DISPLAY_TYPE_COL_NAME, "default")),
+                displayName,
+                rs.getInt(DISPLAY_ORDER_COL_NAME),
+                parentId,
+                getRsStringWithDefault(rs, DEFINITION_COL_NAME, ""),
+                vocab,
+                rs.getBoolean(IS_TEMPORAL_COL_NAME),
+                rs.getBoolean(IS_FEATURED_COL_NAME),
+                rs.getBoolean(IS_MERGE_KEY_COL_NAME),
+                rs.getInt(DISTINCT_VALUES_COUNT_COL_NAME),
+                rs.getBoolean(IS_MULTI_VALUED_COL_NAME)
+        );   	
     }
     catch (SQLException | JsonProcessingException e) {
       throw new RuntimeException("Entity:  " + entity.getId() + " variable: " + id, e);
     }
   }
 
+  private static Number getNumberFromStringColumn(String colValue) {
+	  if (colValue == null) return null;
+	  return Float.parseFloat(colValue);
+  }
 }

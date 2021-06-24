@@ -59,7 +59,9 @@ import org.veupathdb.service.eda.generated.model.VariableDistributionPostRespons
 import org.veupathdb.service.eda.ss.Resources;
 import org.veupathdb.service.eda.ss.model.filter.DateRangeFilter;
 import org.veupathdb.service.eda.ss.model.filter.DateSetFilter;
+import org.veupathdb.service.eda.ss.model.DateVariable;
 import org.veupathdb.service.eda.ss.model.Entity;
+import org.veupathdb.service.eda.ss.model.NumberVariable;
 import org.veupathdb.service.eda.ss.model.filter.Filter;
 import org.veupathdb.service.eda.ss.model.filter.LongitudeRangeFilter;
 import org.veupathdb.service.eda.ss.model.filter.NumberRangeFilter;
@@ -179,46 +181,38 @@ public class Studies implements org.veupathdb.service.eda.generated.resources.St
       return apiVar;
     }
     if (var.getType() == VariableType.DATE) {
+      DateVariable dateVar = (DateVariable)var;
       APIDateVariable apiVar = new APIDateVariableImpl();
       setApiVarProps(apiVar, var);
-      apiVar.setDataShape(APIVariableDataShape.valueOf(var.getDataShape().toString()));
-      apiVar.setDisplayType(APIVariableDisplayType.valueOf(var.getDisplayType().toString()));
-      apiVar.setBinWidthComputed(var.getBinWidthComputed());
-      apiVar.setBinWidthOverride(var.getBinWidthOverride());
-      apiVar.setDisplayRangeMin(var.getDisplayRangeMin());
-      apiVar.setDisplayRangeMax(var.getDisplayRangeMax());
-      apiVar.setRangeMin(var.getRangeMin());
-      apiVar.setRangeMax(var.getRangeMax());
+      apiVar.setBinWidth(dateVar.getBinWidth());
+      apiVar.setBinWidthOverride(dateVar.getBinWidthOverride());
+      apiVar.setDisplayRangeMin(dateVar.getDisplayRangeMin());
+      apiVar.setDisplayRangeMax(dateVar.getDisplayRangeMax());
+      apiVar.setRangeMin(dateVar.getRangeMin());
+      apiVar.setRangeMax(dateVar.getRangeMax());
       apiVar.setVocabulary(var.getVocabulary());
       return apiVar;
     }
     else if (var.getType() == VariableType.NUMBER) {
-      APINumberVariable apiVar = new APINumberVariableImpl();
+      NumberVariable numVar = (NumberVariable)var;	
+      APINumberVariable apiVar = new APINumberVariableImpl();   	  
       setApiVarProps(apiVar, var);
-      apiVar.setUnits(var.getUnits());
-      apiVar.setDataShape(APIVariableDataShape.valueOf(var.getDataShape().toString()));
-      apiVar.setDisplayType(APIVariableDisplayType.valueOf(var.getDisplayType().toString()));
-      apiVar.setBinWidthComputed(var.getBinWidthComputed());
-      apiVar.setBinWidthOverride(var.getBinWidthOverride());
-      apiVar.setDisplayRangeMin(var.getDisplayRangeMin());
-      apiVar.setDisplayRangeMax(var.getDisplayRangeMax());
-      apiVar.setRangeMin(var.getRangeMin());
-      apiVar.setRangeMax(var.getRangeMax());
-      apiVar.setVocabulary(var.getVocabulary());
+      apiVar.setUnits(numVar.getUnits());
+      apiVar.setBinWidth(numVar.getBinWidth());
+      apiVar.setBinWidthOverride(numVar.getBinWidthOverride());
+      apiVar.setDisplayRangeMin(numVar.getDisplayRangeMin());
+      apiVar.setDisplayRangeMax(numVar.getDisplayRangeMax());
+      apiVar.setRangeMin(numVar.getRangeMin());
+      apiVar.setRangeMax(numVar.getRangeMax());
       return apiVar;
     }
     else if (var.getType() == VariableType.STRING) {
       APIStringVariable apiVar = new APIStringVariableImpl();
-      apiVar.setDataShape(APIVariableDataShape.valueOf(var.getDataShape().toString()));
-      apiVar.setDisplayType(APIVariableDisplayType.valueOf(var.getDisplayType().toString()));
       setApiVarProps(apiVar, var);
-      apiVar.setVocabulary(var.getVocabulary());
       return apiVar;
     }
     else if (var.getType() == VariableType.LONGITUDE) {
       APILongitudeVariable apiVar = new APILongitudeVariableImpl();
-      apiVar.setDataShape(APIVariableDataShape.valueOf(var.getDataShape().toString()));
-      apiVar.setDisplayType(APIVariableDisplayType.valueOf(var.getDisplayType().toString()));
       setApiVarProps(apiVar, var);
       return apiVar;
     }
@@ -229,6 +223,8 @@ public class Studies implements org.veupathdb.service.eda.generated.resources.St
   
   private static void setApiVarProps(APIVariable apiVar, Variable var) {
     apiVar.setId(var.getId());
+    apiVar.setDataShape(APIVariableDataShape.valueOf(var.getDataShape().toString()));
+    apiVar.setDisplayType(APIVariableDisplayType.valueOf(var.getDisplayType().toString()));
     apiVar.setDisplayName(var.getDisplayName());
     apiVar.setProviderLabel(var.getProviderLabel());
     apiVar.setParentId(var.getParentId());
@@ -238,8 +234,8 @@ public class Studies implements org.veupathdb.service.eda.generated.resources.St
     apiVar.setIsFeatured(var.getIsFeatured());
     apiVar.setIsMergeKey(var.getIsMergeKey());
     apiVar.setIsMultiValued(var.getIsMultiValued());
-    apiVar.setIsRepeated(var.getIsRepeated());
     apiVar.setIsTemporal(var.getIsTemporal());
+    apiVar.setVocabulary(var.getVocabulary());
   }
 
   @Override

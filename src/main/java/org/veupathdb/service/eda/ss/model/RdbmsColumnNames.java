@@ -41,7 +41,7 @@ public class RdbmsColumnNames {
   static final String PRECISION_COL_NAME = "precision";
   static final String VARIABLE_PARENT_ID_COL_NAME = "parent_stable_id";
   static final String DEFINITION_COL_NAME = "definition";
-  static final String VOCABULARY_COL_NAME = "ordinal_values";
+  static final String VOCABULARY_COL_NAME = "vocabulary";
   static final String DISPLAY_ORDER_COL_NAME = "display_order";
   static final String DISPLAY_RANGE_MIN_COL_NAME = "display_range_min";
   static final String DISPLAY_RANGE_MAX_COL_NAME = "display_range_max";

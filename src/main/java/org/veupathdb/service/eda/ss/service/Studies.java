@@ -177,7 +177,12 @@ public class Studies implements org.veupathdb.service.eda.generated.resources.St
   private static APIVariable variableToAPIVariable(Variable var) {
     if (!var.getHasValues()) {
       APIVariablesCategory apiVar = new APIVariablesCategoryImpl();
-      setApiVarProps(apiVar, var);
+      apiVar.setId(var.getId());
+      apiVar.setDisplayName(var.getDisplayName());
+      apiVar.setProviderLabel(var.getProviderLabel());
+      apiVar.setParentId(var.getParentId());
+      apiVar.setDefinition(var.getDefinition());
+      apiVar.setDisplayOrder(var.getDisplayOrder());
       return apiVar;
     }
     if (var.getType() == VariableType.DATE) {

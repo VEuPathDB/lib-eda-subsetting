@@ -62,6 +62,7 @@ import org.veupathdb.service.eda.ss.model.filter.DateSetFilter;
 import org.veupathdb.service.eda.ss.model.DateVariable;
 import org.veupathdb.service.eda.ss.model.Entity;
 import org.veupathdb.service.eda.ss.model.NumberVariable;
+import org.veupathdb.service.eda.ss.model.StringVariable;
 import org.veupathdb.service.eda.ss.model.filter.Filter;
 import org.veupathdb.service.eda.ss.model.filter.LongitudeRangeFilter;
 import org.veupathdb.service.eda.ss.model.filter.NumberRangeFilter;
@@ -161,6 +162,7 @@ public class Studies implements org.veupathdb.service.eda.generated.resources.St
       APIEntity apiEntity = new APIEntityImpl();
       apiEntity.setDescription(entity.getDescription());
       apiEntity.setDisplayName(entity.getDisplayName());
+      apiEntity.setDisplayNamePlural(entity.getDisplayNamePlural());
       apiEntity.setId(entity.getId());
       apiEntity.setIdColumnName(entity.getPKColName());
       apiEntity.setChildren(mappedChildren);
@@ -195,8 +197,12 @@ public class Studies implements org.veupathdb.service.eda.generated.resources.St
       apiVar.setDisplayRangeMax(dateVar.getDisplayRangeMax());
       apiVar.setRangeMin(dateVar.getRangeMin());
       apiVar.setRangeMax(dateVar.getRangeMax());
-      apiVar.setVocabulary(var.getVocabulary());
-      return apiVar;
+      apiVar.setVocabulary(dateVar.getVocabulary());
+      apiVar.setDistinctValuesCount(dateVar.getDistinctValuesCount());
+      apiVar.setIsFeatured(dateVar.getIsFeatured());
+      apiVar.setIsMergeKey(dateVar.getIsMergeKey());
+      apiVar.setIsMultiValued(dateVar.getIsMultiValued());
+      apiVar.setIsTemporal(dateVar.getIsTemporal());      return apiVar;
     }
     else if (var.getType() == VariableType.NUMBER) {
       NumberVariable numVar = (NumberVariable)var;	
@@ -209,12 +215,24 @@ public class Studies implements org.veupathdb.service.eda.generated.resources.St
       apiVar.setDisplayRangeMax(numVar.getDisplayRangeMax());
       apiVar.setRangeMin(numVar.getRangeMin());
       apiVar.setRangeMax(numVar.getRangeMax());
+      apiVar.setDistinctValuesCount(numVar.getDistinctValuesCount());
+      apiVar.setIsFeatured(numVar.getIsFeatured());
+      apiVar.setIsMergeKey(numVar.getIsMergeKey());
+      apiVar.setIsMultiValued(numVar.getIsMultiValued());
+      apiVar.setIsTemporal(numVar.getIsTemporal());
+      apiVar.setVocabulary(numVar.getVocabulary());
       return apiVar;
     }
     else if (var.getType() == VariableType.STRING) {
+      StringVariable strVar = (StringVariable)var;	
       APIStringVariable apiVar = new APIStringVariableImpl();
       setApiVarProps(apiVar, var);
-      return apiVar;
+      apiVar.setDistinctValuesCount(strVar.getDistinctValuesCount());
+      apiVar.setIsFeatured(strVar.getIsFeatured());
+      apiVar.setIsMergeKey(strVar.getIsMergeKey());
+      apiVar.setIsMultiValued(strVar.getIsMultiValued());
+      apiVar.setIsTemporal(strVar.getIsTemporal());
+      apiVar.setVocabulary(strVar.getVocabulary());      return apiVar;
     }
     else if (var.getType() == VariableType.LONGITUDE) {
       APILongitudeVariable apiVar = new APILongitudeVariableImpl();
@@ -235,12 +253,6 @@ public class Studies implements org.veupathdb.service.eda.generated.resources.St
     apiVar.setParentId(var.getParentId());
     apiVar.setDefinition(var.getDefinition());
     apiVar.setDisplayOrder(var.getDisplayOrder());
-    apiVar.setDistinctValuesCount(var.getDistinctValuesCount());
-    apiVar.setIsFeatured(var.getIsFeatured());
-    apiVar.setIsMergeKey(var.getIsMergeKey());
-    apiVar.setIsMultiValued(var.getIsMultiValued());
-    apiVar.setIsTemporal(var.getIsTemporal());
-    apiVar.setVocabulary(var.getVocabulary());
   }
 
   @Override

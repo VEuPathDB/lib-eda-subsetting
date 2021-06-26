@@ -2,7 +2,7 @@ package org.veupathdb.service.eda.ss.model;
 
 import java.util.List;
 
-public class StringVariable extends Variable {
+public class StringVariable extends VariableWithValues {
 
 	public StringVariable(String providerLabel, String id, Entity entity, 
 			VariableDataShape dataShape, VariableDisplayType displayType, String displayName, Integer displayOrder, String parentId,

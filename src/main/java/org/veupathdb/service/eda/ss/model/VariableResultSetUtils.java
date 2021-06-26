@@ -10,6 +10,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import org.veupathdb.service.eda.ss.Resources;
+import org.veupathdb.service.eda.ss.model.Variable.VariableDisplayType;
 import org.veupathdb.service.eda.ss.model.Variable.VariableType;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -57,8 +58,11 @@ class VariableResultSetUtils {
       String id = getRsStringNotNull(rs, VARIABLE_ID_COL_NAME);
       String displayName = getRsStringNotNull(rs, DISPLAY_NAME_COL_NAME);
       String parentId = rs.getString(VARIABLE_PARENT_ID_COL_NAME);
-      return hasValues ? createValueVarFromResultSet(rs, entity, providerLabel, id, displayName, parentId) :
-              new Variable(providerLabel, id, entity, displayName, parentId);
+      VariableDisplayType displayType = Variable.VariableDisplayType.fromString(getRsStringWithDefault(rs, DISPLAY_TYPE_COL_NAME, "default"));
+
+      return hasValues ? 
+        createValueVarFromResultSet(rs, entity, providerLabel, id, displayName, parentId) :
+        new Variable(providerLabel, id, entity, displayType, displayName, rs.getInt(DISPLAY_ORDER_COL_NAME), parentId);
     } catch (SQLException e) {
       throw new RuntimeException(e);
     }
@@ -143,7 +147,8 @@ class VariableResultSetUtils {
                 rs.getBoolean(IS_MERGE_KEY_COL_NAME),
                 rs.getInt(DISTINCT_VALUES_COUNT_COL_NAME),
                 rs.getBoolean(IS_MULTI_VALUED_COL_NAME)
-        );   	
+        );  
+    	
     }
     catch (SQLException | JsonProcessingException e) {
       throw new RuntimeException("Entity:  " + entity.getId() + " variable: " + id, e);

@@ -2,7 +2,7 @@ package org.veupathdb.service.eda.ss.model;
 
 import java.util.List;
 
-public class DateVariable extends Variable {
+public class DateVariable extends VariableWithValues {
 	private final String displayRangeMin;
 	private final String displayRangeMax;
 	private final String rangeMin;

@@ -2,9 +2,7 @@ package org.veupathdb.service.eda.ss.model;
 
 import org.gusdb.fgputil.FormatUtil;
 import org.gusdb.fgputil.functional.FunctionalInterfaces.FunctionWithException;
-
 import java.sql.ResultSet;
-import java.util.List;
 
 public class Variable {	
 	
@@ -17,13 +15,8 @@ public class Variable {
   private final String displayName;
   private final String parentId;
   private final String definition;
-  private final List<String> vocabulary;
   private final boolean hasValues;
-  private final Boolean isTemporal;
-  private final Boolean isFeatured;
-  private final Boolean isMergeKey;
-  private final Number distinctValuesCount;
-  private final Boolean isMultiValued;
+
   private final Integer displayOrder;
   
   public enum VariableType {
@@ -126,60 +119,33 @@ public class Variable {
   }
 
   /*
-  Construct a variable that does have values
+  Construct a variable that has values
    */
-	public Variable(String providerLabel, String id, Entity entity, VariableType type, VariableDataShape dataShape,
-			VariableDisplayType displayType, String displayName, Integer displayOrder, String parentId,
-			String definition, List<String> vocabulary, Boolean isTemporal, Boolean isFeatured, Boolean isMergeKey, 
-			Number distinctValuesCount, Boolean isMultiValued) {
-
-    String errPrefix = "In entity " + entity.getId() + " variable " + id + " has a null ";
-    if (type == null) throw new RuntimeException(errPrefix + "data type");
-    if (dataShape == null) throw new RuntimeException(errPrefix + "data shape");
-    if (displayType == null) throw new RuntimeException(errPrefix + "display type");
-
-    this.providerLabel = providerLabel;
-    this.id = id;
-    this.entity = entity;
-    this.type = type;
-    this.dataShape = dataShape;
-    this.displayType = displayType;
-    this.displayOrder = displayOrder;
-    this.hasValues = true;
-    this.displayName = displayName;
-    this.parentId = parentId;
-    this.definition= definition;
-    this.vocabulary = vocabulary;
-    this.isTemporal = isTemporal;
-    this.isFeatured = isFeatured;
-    this.isMergeKey = isMergeKey;;
-    this.distinctValuesCount = distinctValuesCount;
-    this.isMultiValued = isMultiValued;
+  public Variable(String providerLabel, String id, Entity entity, VariableType type, VariableDataShape shape, VariableDisplayType displayType, String displayName, Integer displayOrder, String parentId, String definition) {
+	  this(providerLabel, id, entity, true, type, shape, displayType, displayName, displayOrder, parentId, definition);
   }
 
   /*
   Construct a variable that does not have values
    */
-  public Variable(String providerLabel, String id, Entity entity, String displayName, String parentId) {
-    this.providerLabel = providerLabel;
-    this.id = id;
-    this.entity = entity;
-    this.type = null;
-    this.dataShape = null;
-    this.displayType = null;
-    this.hasValues = false;
-    this.displayName = displayName;
-    this.displayOrder = null;
-    this.parentId = parentId;
-    this.definition= null;
-    this.vocabulary = null;
-    this.isTemporal = null;
-    this.isFeatured = null;
-    this.isMergeKey = null;
-    this.distinctValuesCount = null;
-    this.isMultiValued = null;
+  public Variable(String providerLabel, String id, Entity entity, VariableDisplayType displayType, String displayName, Integer displayOrder, String parentId) {
+	  this(providerLabel, id, entity, false, null, null, displayType, displayName, displayOrder, parentId, null);
   }
 
+  private Variable(String providerLabel, String id, Entity entity, boolean hasValues, VariableType type, VariableDataShape shape, VariableDisplayType displayType, String displayName, Integer displayOrder, String parentId, String definition) {
+	    this.providerLabel = providerLabel;
+	    this.id = id;
+	    this.entity = entity;
+	    this.type = type;
+	    this.dataShape = shape;
+	    this.displayType = displayType;
+	    this.hasValues = hasValues;
+	    this.displayName = displayName;
+	    this.displayOrder = displayOrder;
+	    this.parentId = parentId;
+	    this.definition= definition;
+	  }
+  
   public String getProviderLabel() {
     return providerLabel;
   }
@@ -222,30 +188,6 @@ public class Variable {
   
   public String getDefinition() {
 		return definition;
-	}
-
-	public List<String> getVocabulary() {
-		return vocabulary;
-	}
-
-	public Boolean getIsTemporal() {
-		return isTemporal;
-	}
-
-	public Boolean getIsFeatured() {
-		return isFeatured;
-	}
-
-	public Boolean getIsMergeKey() {
-		return isMergeKey;
-	}
-
-	public Number getDistinctValuesCount() {
-		return distinctValuesCount;
-	}
-
-	public Boolean getIsMultiValued() {
-		return isMultiValued;
 	}
 
 	public Integer getDisplayOrder() {

@@ -2,7 +2,7 @@ package org.veupathdb.service.eda.ss.model;
 
 import java.util.List;
 
-public class NumberVariable extends Variable {
+public class NumberVariable extends VariableWithValues {
 	private final String units;
 	private final Integer precision;
 	private final Number displayRangeMin;
@@ -19,7 +19,6 @@ public class NumberVariable extends Variable {
 			Number binWidth, Boolean isTemporal, Boolean isFeatured, Boolean isMergeKey,
 			Number distinctValuesCount, Boolean isMultiValued) {
 		
-
 		super(providerLabel, id, entity, isLongitude? VariableType.LONGITUDE : VariableType.NUMBER, dataShape, displayType, displayName, displayOrder, parentId, definition,
 				vocabulary, isTemporal, isFeatured, isMergeKey, distinctValuesCount, isMultiValued);
 

@@ -39,6 +39,7 @@ import org.veupathdb.service.eda.generated.model.APIStudyDetail;
 import org.veupathdb.service.eda.generated.model.APIStudyDetailImpl;
 import org.veupathdb.service.eda.generated.model.APIStudyOverview;
 import org.veupathdb.service.eda.generated.model.APIStudyOverviewImpl;
+import org.veupathdb.service.eda.generated.model.APITabularReportConfig;
 import org.veupathdb.service.eda.generated.model.APIVariable;
 import org.veupathdb.service.eda.generated.model.APIVariableDataShape;
 import org.veupathdb.service.eda.generated.model.APIVariableDisplayType;
@@ -67,6 +68,7 @@ import org.veupathdb.service.eda.ss.model.filter.NumberSetFilter;
 import org.veupathdb.service.eda.ss.model.filter.StringSetFilter;
 import org.veupathdb.service.eda.ss.model.Study;
 import org.veupathdb.service.eda.ss.model.StudySubsettingUtils;
+import org.veupathdb.service.eda.ss.model.TabularReportConfig;
 import org.veupathdb.service.eda.ss.model.Variable;
 import org.veupathdb.service.eda.ss.model.Variable.VariableType;
 
@@ -231,7 +233,7 @@ public class Studies implements org.veupathdb.service.eda.generated.resources.St
     // unpack data from API input to model objects
     List<String> vars = new ArrayList<>();
     vars.add(variableId);  // force into a list for the unpacker
-    UnpackedRequest unpacked = unpack(datasource, studyId, entityId, request.getFilters(), vars);
+    UnpackedRequest unpacked = unpack(datasource, studyId, entityId, request.getFilters(), vars, null);
    // System.out.println("---------------- 2: " + String.valueOf(System.currentTimeMillis() - start));
 
     Variable var = unpacked.getTargetEntity().getVariable(variableId)
@@ -293,11 +295,13 @@ public class Studies implements org.veupathdb.service.eda.generated.resources.St
     
     DataSource datasource = Resources.getApplicationDataSource();
     
-    UnpackedRequest request = unpack(datasource, studyId, entityId, requestBody.getFilters(), requestBody.getOutputVariableIds());
+    UnpackedRequest request = unpack(datasource, studyId, entityId, requestBody.getFilters(), 
+    		requestBody.getOutputVariableIds(), requestBody.getReportConfig());
     
     EntityTabularPostResponseStream streamer = new EntityTabularPostResponseStream
         (outStream -> StudySubsettingUtils.produceTabularSubset(datasource, request.getStudy(),
-            request.getTargetEntity(), request.getRequestedVariables(), request.getFilters(), outStream));
+            request.getTargetEntity(), request.getRequestedVariables(), request.getFilters(),
+            request.getReportConfig(), outStream));
 
     return PostStudiesEntitiesTabularByStudyIdAndEntityIdResponse
         .respond200WithTextPlain(streamer);
@@ -311,7 +315,7 @@ public class Studies implements org.veupathdb.service.eda.generated.resources.St
 
     // unpack data from API input to model objects
     List<String> vars = new ArrayList<>();
-    UnpackedRequest request = unpack(datasource, studyId, entityId, rawRequest.getFilters(), vars);
+    UnpackedRequest request = unpack(datasource, studyId, entityId, rawRequest.getFilters(), vars, null);
 
     TreeNode<Entity> prunedEntityTree = StudySubsettingUtils.pruneTree(
         request.getStudy().getEntityTree(), request.getFilters(), request.getTargetEntity());
@@ -325,7 +329,8 @@ public class Studies implements org.veupathdb.service.eda.generated.resources.St
     return  PostStudiesEntitiesCountByStudyIdAndEntityIdResponse.respond200WithApplicationJson(response);
   }
   
-  private UnpackedRequest unpack(DataSource datasource, String studyId, String entityId, List<APIFilter> apiFilters, List<String> variableIds) {
+  private UnpackedRequest unpack(DataSource datasource, String studyId, String entityId, List<APIFilter> apiFilters, 
+		  List<String> variableIds, APITabularReportConfig apiReportConfig) {
     String studIdStr = "Study ID " + studyId;
     if (!validateStudyId(datasource, studyId))
       throw new NotFoundException(studIdStr + " is not found.");
@@ -336,8 +341,10 @@ public class Studies implements org.veupathdb.service.eda.generated.resources.St
     List<Variable> variables = getEntityVariables(entity, variableIds);
 
     List<Filter> filters = constructFiltersFromAPIFilters(study, apiFilters);
+    
+    TabularReportConfig reportConfig = constructTabularReportConfigFromAPIReportConfig(apiReportConfig);
   
-    return new UnpackedRequest(study, entity, variables, filters);
+    return new UnpackedRequest(study, entity, variables, filters, reportConfig);
   }
   /*
    * return true if valid study id
@@ -417,6 +424,12 @@ public class Studies implements org.veupathdb.service.eda.generated.resources.St
       throw new BadRequestException("Can't parse date string: " + dateStr);
     }
   }
+  
+  static TabularReportConfig constructTabularReportConfigFromAPIReportConfig(APITabularReportConfig apiConfig) {
+	  return new TabularReportConfig(apiConfig.getSortingVariableIds(), apiConfig.getPagingConfig().getNumRows(),
+			  apiConfig.getPagingConfig().getOffset());
+			  
+  }
 
   static class UnpackedRequest {
 
@@ -424,15 +437,22 @@ public class Studies implements org.veupathdb.service.eda.generated.resources.St
     private final List<Filter> _filters;
     private final Entity _targetEntity;
     private final List<Variable> _requestedVariables;
+    private final TabularReportConfig _reportConfig;
 
-    UnpackedRequest(Study study, Entity targetEntity, List<Variable> requestedVariables, List<Filter> filters) {
+    UnpackedRequest(Study study, Entity targetEntity, List<Variable> requestedVariables, 
+    		List<Filter> filters, TabularReportConfig reportConfig) {
       _study = study;
       _targetEntity = targetEntity;
       _filters = filters;
       _requestedVariables = requestedVariables;
+      _reportConfig = reportConfig;
     }
 
-    public Study getStudy() {
+    public TabularReportConfig getReportConfig() {
+		return _reportConfig;
+	}
+
+	public Study getStudy() {
       return _study;
     }
 

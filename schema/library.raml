@@ -111,12 +111,23 @@ types:
         type: object
         properties:
           //: integer
+  API_PagingConfig:
+    type: object
+    properties:
+      numRows: integer
+      offset: integer
+  API_TabularReportConfig:
+    type: object
+    properties:
+      sortingVariableIds?: string[]
+      pagingConfig?: API_PagingConfig
   EntityTabularPostRequest:
     type: object
     additionalProperties: false
     properties:
       filters: API_Filter[]
       outputVariableIds: string[]
+      reportConfig?: API_TabularReportConfig
   EntityTabularPostResponse:
     type: object
     additionalProperties: false

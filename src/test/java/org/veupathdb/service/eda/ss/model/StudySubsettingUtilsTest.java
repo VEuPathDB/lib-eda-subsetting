@@ -144,7 +144,7 @@ public class StudySubsettingUtilsTest {
     List<Filter> filters = new ArrayList<>();
     filters.add(_model.obsWeightFilter);
     filters.add(_model.obsFavNewYearsFilter);
-    String withClause = StudySubsettingUtils.generateWithClause(_model.householdObs, filters);
+    String withClause = StudySubsettingUtils.generateFilterWithClause(_model.householdObs, filters);
     String expectedWithClause = _model.householdObs.getWithClauseName() + " as (" + NL +
         "  SELECT " + _model.household.getPKColName() + ", " + _model.householdObs.getPKColName() + " FROM " + _model.householdObs.getAncestorsTableName() + NL +
         ")";
@@ -162,7 +162,7 @@ public class StudySubsettingUtilsTest {
     filters.add(_model.obsMoodFilter);
     filters.add(_model.obsFavNumberFilter);
     filters.add(_model.houseRoofFilter);
-    String withClause = StudySubsettingUtils.generateWithClause(_model.observation, filters);
+    String withClause = StudySubsettingUtils.generateFilterWithClause(_model.observation, filters);
  
     List<String> selectColsList = new ArrayList<>();
     selectColsList.add("t." + _model.observation.getPKColName());
@@ -281,7 +281,7 @@ public class StudySubsettingUtilsTest {
     TreeNode<Entity> prunedTree = StudySubsettingUtils.pruneTree(_model.study.getEntityTree(), filters, outputEntity);
 
     List<String> from = Arrays.asList(_model.household.getWithClauseName(), _model.householdObs.getWithClauseName(), _model.observation.getWithClauseName());
-    String inClause = StudySubsettingUtils.generateInClause(prunedTree, outputEntity, "t");
+    String inClause = StudySubsettingUtils.generateSubsetInClause(prunedTree, outputEntity, "t");
     String expected = "AND t." + _model.householdObs.getPKColName() + " IN (" + NL +
         "  SELECT " + _model.householdObs.getFullPKColName() + NL +
         "  FROM " + String.join(", ", from) + NL +
@@ -400,7 +400,7 @@ public class StudySubsettingUtilsTest {
     ByteArrayOutputStream outStream = new ByteArrayOutputStream();
 
     StudySubsettingUtils.produceTabularSubset(_dataSource, study, entity,
-        variables, filters, outStream);
+        variables, filters, null, outStream);
     String[] expected = {
     "Prtcpnt_stable_id", "Hshld_stable_id", "var_17",  "var_20",
     "201", "101",     "blond",   "Martin",
@@ -431,7 +431,7 @@ public class StudySubsettingUtilsTest {
     ByteArrayOutputStream outStream = new ByteArrayOutputStream();
 
     StudySubsettingUtils.produceTabularSubset(_dataSource, study, entity,
-        variables, filters, outStream);
+        variables, filters, null, outStream);
     String[] expected = {
     "Prtcpnt_stable_id", "Hshld_stable_id", "var_17",  "var_20",
     "201", "101",     "blond",   "Martin",

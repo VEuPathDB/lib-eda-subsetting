@@ -107,7 +107,7 @@ public class LoadStudyTest {
 
     List<Variable> variables = VariableResultSetUtils.getEntityVariables(datasource, entity);
     
-    assertEquals(4, variables.size());
+    assertEquals(5, variables.size());
   }
   
   @Test

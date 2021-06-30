@@ -112,9 +112,9 @@ public class Entity {
     return "id: " + getId() + " name: " + getDisplayName() + " (" + super.toString() + ")";
   }
   
-  public String getAllPksSelectList(String entityTableName, String ancestorTableName) {
+  public String getAllPksSelectList(String ancestorTableName) {
     List<String> selectColsList = new ArrayList<>();
-    selectColsList.add(entityTableName + "." + getPKColName());
+    selectColsList.add(ancestorTableName + "." + getPKColName());
     for (String name : getAncestorPkColNames())
       selectColsList.add(ancestorTableName + "." + name);
     return String.join(", ", selectColsList);

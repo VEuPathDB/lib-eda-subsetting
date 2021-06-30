@@ -45,32 +45,36 @@ insert into Ancestors_ds2324_HshldObsrvtn values ('302', '102');
 insert into AttributeValue_ds2324_HshldObsrvtn values ('302', 'var_19', null, 'well', null);
 
 -- participants
-
 -- stable_id, parent_stable_id, provider_label, display_name, definition, ordinal_values, display_type, display_order, display_range_min, display_range_max, range_min, range_max, bin_width_override, bin_width_computed, is_temporal, is_featured, is_merge_key, is_repeated, has_values, data_type, distinct_values_count, is_multi_valued, data_shape, unit, precision
 insert into AttributeGraph_ds2324_Prtcpnt values ('var_10', null, '_networth', 'Net worth', 'Their net worth', null, 'default', 1, null, null, null, null, null, null, 0, 0, 0, 0, 1, 'number', 10, 0, 'continuous', 'dollars', 2);
 insert into AttributeGraph_ds2324_Prtcpnt values ('var_11', null, '_shoesize', 'Shoe size', 'Their shoe size', null, 'default', 1, null, null, null, null, null, null, 0, 0, 0, 0, 1, 'number', 10, 0, 'categorical', 'size', 1);
 insert into AttributeGraph_ds2324_Prtcpnt values ('var_20', null, '_name', 'Name', 'Their name', null, 'default', 1, null, null, null, null, null, null, 0, 0, 0, 0, 1, 'string', 10, 0, 'categorical', null, null);
 insert into AttributeGraph_ds2324_Prtcpnt values ('var_17', null, '_haircolor', 'Hair color', 'Their hair color', null, 'default', 1, null, null, null, null, null, null, 0, 0, 0, 0, 1, 'string', 10, 0, 'categorical', null, null);
+insert into AttributeGraph_ds2324_Prtcpnt values ('var_18', null, '_earsize', 'Ear size', 'Their ear size', null, 'default', 1, null, null, null, null, null, null, 0, 0, 0, 0,1, 'string', 10, 0,  'categorical', null, null);
 
 insert into Ancestors_ds2324_Prtcpnt values ('201', '101');
 insert into AttributeValue_ds2324_Prtcpnt values ('201', 'var_20', null, 'Martin', null);
 insert into AttributeValue_ds2324_Prtcpnt values ('201', 'var_11', 11.5, null, null);
 insert into AttributeValue_ds2324_Prtcpnt values ('201', 'var_17', null, 'blond', null);
+insert into AttributeValue_ds2324_Prtcpnt values ('201', 'var_18', null, 'small', null);
 
 insert into Ancestors_ds2324_Prtcpnt values ('202', '101');
 insert into AttributeValue_ds2324_Prtcpnt values ('202', 'var_20', null, 'Abe', null);
 insert into AttributeValue_ds2324_Prtcpnt values ('202', 'var_11', 10, null, null);
 insert into AttributeValue_ds2324_Prtcpnt values ('202', 'var_17', null, 'blond', null);
+insert into AttributeValue_ds2324_Prtcpnt values ('202', 'var_18', null, 'medium', null);
 
 insert into Ancestors_ds2324_Prtcpnt values ('203', '102');
 insert into AttributeValue_ds2324_Prtcpnt values ('203', 'var_20', null, 'Gladys', null);
 insert into AttributeValue_ds2324_Prtcpnt values ('203', 'var_11', 11.5, null, null);
 insert into AttributeValue_ds2324_Prtcpnt values ('203', 'var_17', null, 'brown', null);
+insert into AttributeValue_ds2324_Prtcpnt values ('203', 'var_18', null, 'large', null);
 
 insert into Ancestors_ds2324_Prtcpnt values ('204', '102');
 insert into AttributeValue_ds2324_Prtcpnt values ('204', 'var_20', null, 'Susan', null);
 insert into AttributeValue_ds2324_Prtcpnt values ('204', 'var_11', 10, null, null);
 insert into AttributeValue_ds2324_Prtcpnt values ('204', 'var_17', null, 'silver', null);
+-- intentionally omit var_18 to test left join logic
 
 -- participant observations
 -- stable_id, parent_stable_id, provider_label, display_name, definition, ordinal_values, display_type, display_order, display_range_min, display_range_max, range_min, range_max, bin_width_override, bin_width_computed, is_temporal, is_featured, is_merge_key, is_repeated, has_values, data_type, distinct_values_count, is_multi_valued, data_shape, unit, precision

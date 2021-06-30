@@ -185,6 +185,9 @@ public class StudySubsettingUtils {
         // select
         generateTabularSelectClause(outputEntity, ancestorTblAbbrev) + NL
         + generateTabularFromClause(outputEntity, prunedEntityTree, ancestorTblAbbrev) + NL
+        // left join to attributes table so we always get at least one row per subset
+        //   record, even if no data exists for requested vars (or no vars requested).
+        // null rows will be handled in the tall-to-wide rows conversion
         + generateLeftJoin(outputEntity, outputVariables, ancestorTblAbbrev, tallTblAbbrev) + NL
         + generateTabularOrderByClause(outputEntity) + NL;
   }

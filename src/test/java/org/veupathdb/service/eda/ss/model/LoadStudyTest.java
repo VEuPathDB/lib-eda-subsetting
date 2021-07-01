@@ -88,11 +88,9 @@ public class LoadStudyTest {
     assertEquals("GEMS_Part", var.getEntityId());
     assertEquals(Variable.VariableDataShape.CONTINUOUS, var.getDataShape());
     assertNull(var.getParentId());
-    assertEquals(2, var.getPrecision());
     assertEquals("_networth", var.getProviderLabel());
     assertEquals(VariableType.NUMBER, var.getType());
     assertEquals(Variable.VariableDisplayType.DEFAULT, var.getDisplayType());
-    assertEquals("dollars", var.getUnits());
     assertTrue(var.getHasValues());
 
   }
@@ -109,7 +107,7 @@ public class LoadStudyTest {
 
     List<Variable> variables = VariableResultSetUtils.getEntityVariables(datasource, entity);
     
-    assertEquals(4, variables.size());
+    assertEquals(5, variables.size());
   }
   
   @Test

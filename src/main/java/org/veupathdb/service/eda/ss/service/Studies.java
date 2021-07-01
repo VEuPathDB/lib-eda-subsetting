@@ -60,7 +60,10 @@ import org.veupathdb.service.eda.generated.model.VariableDistributionPostRespons
 import org.veupathdb.service.eda.ss.Resources;
 import org.veupathdb.service.eda.ss.model.filter.DateRangeFilter;
 import org.veupathdb.service.eda.ss.model.filter.DateSetFilter;
+import org.veupathdb.service.eda.ss.model.DateVariable;
 import org.veupathdb.service.eda.ss.model.Entity;
+import org.veupathdb.service.eda.ss.model.NumberVariable;
+import org.veupathdb.service.eda.ss.model.StringVariable;
 import org.veupathdb.service.eda.ss.model.filter.Filter;
 import org.veupathdb.service.eda.ss.model.filter.LongitudeRangeFilter;
 import org.veupathdb.service.eda.ss.model.filter.NumberRangeFilter;
@@ -161,6 +164,7 @@ public class Studies implements org.veupathdb.service.eda.generated.resources.St
       APIEntity apiEntity = new APIEntityImpl();
       apiEntity.setDescription(entity.getDescription());
       apiEntity.setDisplayName(entity.getDisplayName());
+      apiEntity.setDisplayNamePlural(entity.getDisplayNamePlural());
       apiEntity.setId(entity.getId());
       apiEntity.setIdColumnName(entity.getPKColName());
       apiEntity.setChildren(mappedChildren);
@@ -177,35 +181,63 @@ public class Studies implements org.veupathdb.service.eda.generated.resources.St
   private static APIVariable variableToAPIVariable(Variable var) {
     if (!var.getHasValues()) {
       APIVariablesCategory apiVar = new APIVariablesCategoryImpl();
-      setApiVarProps(apiVar, var);
+      apiVar.setId(var.getId());
+      apiVar.setDisplayName(var.getDisplayName());
+      apiVar.setProviderLabel(var.getProviderLabel());
+      apiVar.setParentId(var.getParentId());
+      apiVar.setDefinition(var.getDefinition());
+      apiVar.setDisplayOrder(var.getDisplayOrder());
       return apiVar;
     }
     if (var.getType() == VariableType.DATE) {
+      DateVariable dateVar = (DateVariable)var;
       APIDateVariable apiVar = new APIDateVariableImpl();
       setApiVarProps(apiVar, var);
-      apiVar.setDataShape(APIVariableDataShape.valueOf(var.getDataShape().toString()));
-      apiVar.setDisplayType(APIVariableDisplayType.valueOf(var.getDisplayType().toString()));
-      return apiVar;
+      apiVar.setBinWidth(dateVar.getBinWidth());
+      apiVar.setBinWidthOverride(dateVar.getBinWidthOverride());
+      apiVar.setDisplayRangeMin(dateVar.getDisplayRangeMin());
+      apiVar.setDisplayRangeMax(dateVar.getDisplayRangeMax());
+      apiVar.setRangeMin(dateVar.getRangeMin());
+      apiVar.setRangeMax(dateVar.getRangeMax());
+      apiVar.setVocabulary(dateVar.getVocabulary());
+      apiVar.setDistinctValuesCount(dateVar.getDistinctValuesCount());
+      apiVar.setIsFeatured(dateVar.getIsFeatured());
+      apiVar.setIsMergeKey(dateVar.getIsMergeKey());
+      apiVar.setIsMultiValued(dateVar.getIsMultiValued());
+      apiVar.setIsTemporal(dateVar.getIsTemporal());      return apiVar;
     }
     else if (var.getType() == VariableType.NUMBER) {
-      APINumberVariable apiVar = new APINumberVariableImpl();
+      NumberVariable numVar = (NumberVariable)var;	
+      APINumberVariable apiVar = new APINumberVariableImpl();   	  
       setApiVarProps(apiVar, var);
-      apiVar.setUnits(var.getUnits());
-      apiVar.setDataShape(APIVariableDataShape.valueOf(var.getDataShape().toString()));
-      apiVar.setDisplayType(APIVariableDisplayType.valueOf(var.getDisplayType().toString()));
+      apiVar.setUnits(numVar.getUnits());
+      apiVar.setBinWidth(numVar.getBinWidth());
+      apiVar.setBinWidthOverride(numVar.getBinWidthOverride());
+      apiVar.setDisplayRangeMin(numVar.getDisplayRangeMin());
+      apiVar.setDisplayRangeMax(numVar.getDisplayRangeMax());
+      apiVar.setRangeMin(numVar.getRangeMin());
+      apiVar.setRangeMax(numVar.getRangeMax());
+      apiVar.setDistinctValuesCount(numVar.getDistinctValuesCount());
+      apiVar.setIsFeatured(numVar.getIsFeatured());
+      apiVar.setIsMergeKey(numVar.getIsMergeKey());
+      apiVar.setIsMultiValued(numVar.getIsMultiValued());
+      apiVar.setIsTemporal(numVar.getIsTemporal());
+      apiVar.setVocabulary(numVar.getVocabulary());
       return apiVar;
     }
     else if (var.getType() == VariableType.STRING) {
+      StringVariable strVar = (StringVariable)var;	
       APIStringVariable apiVar = new APIStringVariableImpl();
-      apiVar.setDataShape(APIVariableDataShape.valueOf(var.getDataShape().toString()));
-      apiVar.setDisplayType(APIVariableDisplayType.valueOf(var.getDisplayType().toString()));
       setApiVarProps(apiVar, var);
-      return apiVar;
+      apiVar.setDistinctValuesCount(strVar.getDistinctValuesCount());
+      apiVar.setIsFeatured(strVar.getIsFeatured());
+      apiVar.setIsMergeKey(strVar.getIsMergeKey());
+      apiVar.setIsMultiValued(strVar.getIsMultiValued());
+      apiVar.setIsTemporal(strVar.getIsTemporal());
+      apiVar.setVocabulary(strVar.getVocabulary());      return apiVar;
     }
     else if (var.getType() == VariableType.LONGITUDE) {
       APILongitudeVariable apiVar = new APILongitudeVariableImpl();
-      apiVar.setDataShape(APIVariableDataShape.valueOf(var.getDataShape().toString()));
-      apiVar.setDisplayType(APIVariableDisplayType.valueOf(var.getDisplayType().toString()));
       setApiVarProps(apiVar, var);
       return apiVar;
     }
@@ -216,9 +248,13 @@ public class Studies implements org.veupathdb.service.eda.generated.resources.St
   
   private static void setApiVarProps(APIVariable apiVar, Variable var) {
     apiVar.setId(var.getId());
+    apiVar.setDataShape(APIVariableDataShape.valueOf(var.getDataShape().toString()));
+    apiVar.setDisplayType(APIVariableDisplayType.valueOf(var.getDisplayType().toString()));
     apiVar.setDisplayName(var.getDisplayName());
     apiVar.setProviderLabel(var.getProviderLabel());
     apiVar.setParentId(var.getParentId());
+    apiVar.setDefinition(var.getDefinition());
+    apiVar.setDisplayOrder(var.getDisplayOrder());
   }
 
   @Override

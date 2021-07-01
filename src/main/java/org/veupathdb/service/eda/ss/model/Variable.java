@@ -2,30 +2,23 @@ package org.veupathdb.service.eda.ss.model;
 
 import org.gusdb.fgputil.FormatUtil;
 import org.gusdb.fgputil.functional.FunctionalInterfaces.FunctionWithException;
-
 import java.sql.ResultSet;
 
-public class Variable {
+public class Variable {	
+	
   private final String providerLabel;
   private final String id;
   private final Entity entity;
   private final VariableType type;
   private final VariableDataShape dataShape;
   private final VariableDisplayType displayType;
-  private final boolean hasValues;
-  private final String units;
-  private final Integer precision;
   private final String displayName;
   private final String parentId;
+  private final String definition;
+  private final boolean hasValues;
 
-  public boolean getHasValues() {
-    return hasValues;
-  }
-
-  public VariableDisplayType getDisplayType() {
-    return displayType;
-  }
-
+  private final Integer displayOrder;
+  
   public enum VariableType {
     STRING ("string_value", rs -> rs.getString("string_value"), "string"),  
     NUMBER ("number_value", rs -> String.valueOf(rs.getDouble("number_value")), "number"),
@@ -126,57 +119,47 @@ public class Variable {
   }
 
   /*
-  Construct a variable that does have values
+  Construct a variable that has values
    */
-  public Variable(String providerLabel, String id, Entity entity, VariableType type, VariableDataShape dataShape,
-                  VariableDisplayType displayType, String units, Integer precision, String displayName, String parentId) {
-
-    String errPrefix = "In entity " + entity.getId() + " variable " + id + " has a null ";
-    if (type == null) throw new RuntimeException(errPrefix + "data type");
-    if (dataShape == null) throw new RuntimeException(errPrefix + "data shape");
-    if (displayType == null) throw new RuntimeException(errPrefix + "display type");
-    if (type.equals(VariableType.NUMBER)) {
-      if (units == null) throw new RuntimeException(errPrefix + "units");
-      if (precision == null) throw new RuntimeException(errPrefix + "precision");
-    }
-
-    this.providerLabel = providerLabel;
-    this.id = id;
-    this.entity = entity;
-    this.type = type;
-    this.dataShape = dataShape;
-    this.displayType = displayType;
-    this.hasValues = true;
-    this.units = units;
-    this.precision = precision;
-    this.displayName = displayName;
-    this.parentId = parentId;
+  public Variable(String providerLabel, String id, Entity entity, VariableType type, VariableDataShape shape, VariableDisplayType displayType, String displayName, Integer displayOrder, String parentId, String definition) {
+	  this(providerLabel, id, entity, true, type, shape, displayType, displayName, displayOrder, parentId, definition);
   }
 
   /*
   Construct a variable that does not have values
    */
-  public Variable(String providerLabel, String id, Entity entity, String displayName, String parentId) {
-    this.providerLabel = providerLabel;
-    this.id = id;
-    this.entity = entity;
-    this.type = null;
-    this.dataShape = null;
-    this.displayType = null;
-    this.hasValues = false;
-    this.units = null;
-    this.precision = null;
-    this.displayName = displayName;
-    this.parentId = parentId;
-
+  public Variable(String providerLabel, String id, Entity entity, VariableDisplayType displayType, String displayName, Integer displayOrder, String parentId) {
+	  this(providerLabel, id, entity, false, null, null, displayType, displayName, displayOrder, parentId, null);
   }
 
+  private Variable(String providerLabel, String id, Entity entity, boolean hasValues, VariableType type, VariableDataShape shape, VariableDisplayType displayType, String displayName, Integer displayOrder, String parentId, String definition) {
+	    this.providerLabel = providerLabel;
+	    this.id = id;
+	    this.entity = entity;
+	    this.type = type;
+	    this.dataShape = shape;
+	    this.displayType = displayType;
+	    this.hasValues = hasValues;
+	    this.displayName = displayName;
+	    this.displayOrder = displayOrder;
+	    this.parentId = parentId;
+	    this.definition= definition;
+	  }
+  
   public String getProviderLabel() {
     return providerLabel;
   }
 
   public String getId() {
     return id;
+  }
+
+  public boolean getHasValues() {
+	return hasValues;
+  }
+
+  public VariableDisplayType getDisplayType() {
+	return displayType;
   }
 
   public String getEntityId() {
@@ -191,14 +174,6 @@ public class Variable {
     return dataShape;
   }
   
-  public String getUnits() {
-    return units;
-  }
-
-  public Integer getPrecision() {
-    return precision;
-  }
-
   public String getDisplayName() {
     return displayName;
   }
@@ -210,4 +185,13 @@ public class Variable {
   public VariableType getType() {
     return type;
   }
+  
+  public String getDefinition() {
+		return definition;
+	}
+
+	public Integer getDisplayOrder() {
+		return displayOrder;
+	}
+
 }

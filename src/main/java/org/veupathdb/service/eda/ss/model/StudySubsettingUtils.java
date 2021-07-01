@@ -51,7 +51,6 @@ public class StudySubsettingUtils {
   /**
    * Writes to the passed output stream tab delimited records containing
    * the requested variables of the specified entity, reduced to the
-   * subset created by applying the given filters.
    *
    * @param datasource DB to run against
    * @param study study context
@@ -177,6 +176,8 @@ public class StudySubsettingUtils {
 
     String tallTblAbbrev = "t"; 
     String ancestorTblAbbrev = "a";
+    LOG.debug("--------------------- generateTabularSql ------------------");
+
 
         return
         // with clauses create an entity-named filtered result for each relevant entity
@@ -234,6 +235,7 @@ order by CMO_0000289
    */
   static String generateTabularSqlWithPagingSorting(List<Variable> outputVariables, Entity outputEntity, List<Filter> filters, 
 		  TabularReportConfig reportConfig, TreeNode<Entity> prunedEntityTree) {
+	    LOG.debug("--------------------- generateTabularSql paging sorting ------------------");
 
     String wideTabularWithClauseName = "wide_tabular"; 
     

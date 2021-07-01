@@ -462,8 +462,15 @@ public class Studies implements org.veupathdb.service.eda.generated.resources.St
   }
   
   static TabularReportConfig constructTabularReportConfigFromAPIReportConfig(APITabularReportConfig apiConfig) {
-	  return new TabularReportConfig(apiConfig.getSortingVariableIds(), apiConfig.getPagingConfig().getNumRows(),
-			  apiConfig.getPagingConfig().getOffset());
+	  if (apiConfig == null) return null;
+	  Integer numRows = null;
+	  Integer offset = null;
+	  if (apiConfig.getPagingConfig() != null) {
+		  numRows = apiConfig.getPagingConfig().getNumRows();
+		  offset = apiConfig.getPagingConfig().getOffset();
+	  }
+	  return new TabularReportConfig(apiConfig.getSortingVariableIds(), numRows,
+			  offset);
 			  
   }
 

@@ -6,6 +6,7 @@ import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.io.Writer;
 import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.*;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
@@ -65,8 +66,8 @@ public class StudySubsettingUtils {
     TreeNode<Entity> prunedEntityTree = pruneTree(study.getEntityTree(), filters, outputEntity);
 
     String sql = reportConfig == null?
-    		generateTabularSql(outputVariables, outputEntity, filters, prunedEntityTree) : 
-        		generateTabularSqlWithPagingSorting(outputVariables, outputEntity, filters, reportConfig, prunedEntityTree);
+    		generateTabularSqlNoReportConfig(outputVariables, outputEntity, filters, prunedEntityTree) : 
+        		generateTabularSqlWithReportConfig(outputVariables, outputEntity, filters, reportConfig, prunedEntityTree);
     LOG.debug("Generated the following tabular SQL: " + sql);
 
     List<String> outputColumns = getTabularOutputColumns(outputEntity, outputVariables);
@@ -75,7 +76,11 @@ public class StudySubsettingUtils {
       try (BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(outputStream))) {
 
         writer.write(String.join(TAB, outputColumns) + NL);
-        writeWideRows(convertTallRowsResultSet(rs, outputEntity), writer, outputColumns, outputEntity);
+        if (reportConfig == null)
+        	writeWideRowsNoReportConfig(convertTallRowsResultSet(rs, outputEntity), writer, outputColumns, outputEntity);
+        else         
+        	writeWideRowsWithReportConfig(rs, writer, outputColumns, outputEntity);
+
         writer.flush();
         return null;
       }
@@ -102,7 +107,7 @@ public class StudySubsettingUtils {
     return new ResultSetIterator<>(rs, row -> Optional.of(EntityResultSetUtils.resultSetToTallRowMap(outputEntity, rs)));
   }
 
-  static void writeWideRows(Iterator<Map<String, String>> tallRowsIterator,
+  static void writeWideRowsNoReportConfig(Iterator<Map<String, String>> tallRowsIterator,
       Writer writer, List<String> outputColumns, Entity outputEntity) throws IOException {
 
     // an iterator of lists of maps, each list being the rows of the tall table returned for a single entity id
@@ -123,6 +128,18 @@ public class StudySubsettingUtils {
       writer.write(String.join(TAB, wideRow) + NL);
     }
   }
+  
+	static void writeWideRowsWithReportConfig(ResultSet rs, Writer writer, List<String> outputColumns,
+			Entity outputEntity) throws IOException, SQLException {
+
+		while (rs.next()) {
+			List<String> wideRow = new ArrayList<>();
+			for (String colName : outputColumns) {
+				wideRow.add(rs.getString(colName));
+			}
+			writer.write(String.join(TAB, wideRow) + NL);
+		}
+	}
 
   /**
    * NOTE! This stream MUST be closed by the caller once the stream has been processed.
@@ -172,7 +189,7 @@ public class StudySubsettingUtils {
   /**
    * Generate SQL to produce a multi-column tabular output (the requested variables), for the specified subset.
    */
-  static String generateTabularSql(List<Variable> outputVariables, Entity outputEntity, List<Filter> filters, TreeNode<Entity> prunedEntityTree) {
+  static String generateTabularSqlNoReportConfig(List<Variable> outputVariables, Entity outputEntity, List<Filter> filters, TreeNode<Entity> prunedEntityTree) {
 
     String tallTblAbbrev = "t"; 
     String ancestorTblAbbrev = "a";
@@ -217,54 +234,66 @@ WITH
       AND GEMS_House.Hshld_id = GEMS_Part.Hshld_id
       AND GEMS_Part.Prtcpnt_id = GEMS_PartObs.Prtcpnt_id
     )
-    raw_tabular as (
+    wide_tabular as (
       select json_query(atts, '$.EUPATH_0010077') as EUPATH_0010077
       , json_query(atts, '$.CMO_0000289') as CMO_0000289
       , json_query(atts, '$.EUPATH_0015125') as EUPATH_0015125
-      , ea.stable_id, rownum as row
+      , ea.stable_id, rownum as r
       from apidb.entityattributes ea
       where ea.stable_id in (
           select * from subset
         )
     )
-select stable_id, EUPATH_0010077, CMO_0000289, EUPATH_0015125
-from raw_tabular 
-where row > 0 and row < 20
+select pa.Hshld_id, stable_id, EUPATH_0010077, CMO_0000289, EUPATH_0015125
+from wide_tabular wt, GEMS_Part_Ancestors a
+where r > 0 and r < 20
+and pa.Participant_id = stable_id
 order by CMO_0000289
 ;
    */
-  static String generateTabularSqlWithPagingSorting(List<Variable> outputVariables, Entity outputEntity, List<Filter> filters, 
+  static String generateTabularSqlWithReportConfig(List<Variable> outputVariables, Entity outputEntity, List<Filter> filters, 
 		  TabularReportConfig reportConfig, TreeNode<Entity> prunedEntityTree) {
 	    LOG.debug("--------------------- generateTabularSql paging sorting ------------------");
 
     String wideTabularWithClauseName = "wide_tabular"; 
+    String subsetWithClauseName = "subset"; 
+    String rowColName = "r";
     
+    // build up WITH clauses
     List<String> filterWithClauses = prunedEntityTree.flatten().stream().map(e -> generateFilterWithClause(e, filters)).collect(Collectors.toList());
     List<String> withClausesList = new ArrayList<String>(filterWithClauses);
-    // ths guy needs that include ancestor flag
-    withClausesList.add(generateSubsetSelectClause(prunedEntityTree, outputEntity, false));
-    withClausesList.add(generateRawWideTabularStmt(outputVariables, wideTabularWithClauseName));
+    withClausesList.add(subsetWithClauseName + " AS (" + NL + generateSubsetSelectClause(prunedEntityTree, outputEntity, false) + ")");
+    withClausesList.add(wideTabularWithClauseName + " AS (" + NL + generateRawWideTabularStmt(outputVariables, subsetWithClauseName, rowColName) + ")");
     String withClauses = joinWithClauses(withClausesList);
     
-    List<String> outputVarIds = new ArrayList<String>();
-    for (Variable v : outputVariables) outputVarIds.add(v.getId());
+    //
+    // final select 
+    //
+    
+    // include entity id and ancestor ids
+    List<String> outputCols = ListBuilder.asList(outputEntity.getFullPKColName());
+    outputCols.addAll(outputEntity.getAncestorPkColNames());
+    
+    // include output variable IDs
+    for (Variable v : outputVariables) outputCols.add(v.getId());
 
     return withClauses + NL
-        + "select stable_id " + String.join(", ", outputVarIds) + NL
-        + "from "+ wideTabularWithClauseName + NL
-        + pagingConfigToWhereClause(reportConfig) + NL
+        + "select " + String.join(", ", outputCols) + NL
+        + "from "+ wideTabularWithClauseName + " wt, " + outputEntity.getAncestorsTableName() + " a"+ NL
+        + pagingConfigToWhereClause(reportConfig, rowColName) + NL
+        + "and wt.stable_id = a." + outputEntity.getFullPKColName() + NL
         + pagingConfigToOrderByClause(reportConfig) + NL;
   }
   
-  static String pagingConfigToWhereClause(TabularReportConfig config) {
+  static String pagingConfigToWhereClause(TabularReportConfig config, String rowColName) {
 	  if (config == null || (config.getOffset() == null && config.getNumRows() == null)) 
 		  return "";
 	  
 	  int start = 0;
 	  if (config.getOffset() != null) start = config.getOffset();
-	  String whereClause = "where row > " + start;
+	  String whereClause = "where " + rowColName + " > " + start;
 	  if (config.getNumRows() != null) {
-		  whereClause += " and row < " + (start + config.getNumRows());
+		  whereClause += " and " + rowColName + " < " + (start + config.getNumRows());
 	  }
 	  return whereClause;
   }
@@ -285,7 +314,7 @@ order by CMO_0000289
           select * from subset
         )
    */
-  static String generateRawWideTabularStmt(List<Variable> outputVariables, String subsetWithClauseName) {
+  static String generateRawWideTabularStmt(List<Variable> outputVariables, String subsetWithClauseName, String rowColName) {
 	 List<String> columns = new ArrayList<String>();
      for (Variable var : outputVariables) {
     	 String oracleJsonQuery = "json_query(atts, '$." + var.getId() + "') as " + var.getId();
@@ -293,7 +322,7 @@ order by CMO_0000289
     	 columns.add(col);
      }
      columns.add("ea.stable_id");
-     columns.add("rownum as row");
+     columns.add("rownum as " + rowColName);
      return "select " + String.join(", " + NL, columns) + NL +
     		 "from apidb.entityattributes ea" + NL +
     		 "where ea.stable_id in (select * from " + subsetWithClauseName + ")";

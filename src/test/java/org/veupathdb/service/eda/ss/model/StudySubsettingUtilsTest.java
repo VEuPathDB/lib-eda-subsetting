@@ -308,7 +308,7 @@ public class StudySubsettingUtilsTest {
 
     TreeNode<Entity> prunedTree = StudySubsettingUtils.pruneTree(_model.study.getEntityTree(), filters, _model.participant);
 
-    String sql = StudySubsettingUtils.generateTabularSql(outputVariables, _model.participant, filters, prunedTree);
+    String sql = StudySubsettingUtils.generateTabularSqlNoReportConfig(outputVariables, _model.participant, filters, prunedTree);
     assertNotEquals("", sql);
     System.out.println("Tabular SQL:" + "\n" + sql);
   }

@@ -263,7 +263,7 @@ order by CMO_0000289
     List<String> filterWithClauses = prunedEntityTree.flatten().stream().map(e -> generateFilterWithClause(e, filters)).collect(Collectors.toList());
     List<String> withClausesList = new ArrayList<String>(filterWithClauses);
     withClausesList.add(subsetWithClauseName + " AS (" + NL + generateSubsetSelectClause(prunedEntityTree, outputEntity, false) + ")");
-    withClausesList.add(wideTabularWithClauseName + " AS (" + NL + generateRawWideTabularStmt(outputVariables, subsetWithClauseName, rowColName) + ")");
+    withClausesList.add(wideTabularWithClauseName + " AS (" + NL + generateRawWideTabularStmt(outputVariables, subsetWithClauseName, rowColName) + NL + ")");
     String withClauses = joinWithClauses(withClausesList);
     
     //
@@ -271,7 +271,7 @@ order by CMO_0000289
     //
     
     // include entity id and ancestor ids
-    List<String> outputCols = ListBuilder.asList(outputEntity.getFullPKColName());
+    List<String> outputCols = ListBuilder.asList(outputEntity.getPKColName());
     outputCols.addAll(outputEntity.getAncestorPkColNames());
     
     // include output variable IDs
@@ -279,19 +279,19 @@ order by CMO_0000289
 
     return withClauses + NL
         + "select " + String.join(", ", outputCols) + NL
-        + "from "+ wideTabularWithClauseName + " wt, " + outputEntity.getAncestorsTableName() + " a"+ NL
-        + pagingConfigToWhereClause(reportConfig, rowColName) + NL
-        + "and wt.stable_id = a." + outputEntity.getFullPKColName() + NL
-        + pagingConfigToOrderByClause(reportConfig) + NL;
+        + "from "+ wideTabularWithClauseName + " wt, " + Resources.getAppDbSchema() + outputEntity.getAncestorsTableName() + " a"+ NL
+        + "where wt.stable_id = a." + outputEntity.getPKColName() + NL
+        + pagingConfigToAndClause(reportConfig, rowColName) + NL
+         + pagingConfigToOrderByClause(reportConfig) + NL;
   }
   
-  static String pagingConfigToWhereClause(TabularReportConfig config, String rowColName) {
+  static String pagingConfigToAndClause(TabularReportConfig config, String rowColName) {
 	  if (config == null || (config.getOffset() == null && config.getNumRows() == null)) 
 		  return "";
 	  
 	  int start = 0;
 	  if (config.getOffset() != null) start = config.getOffset();
-	  String whereClause = "where " + rowColName + " > " + start;
+	  String whereClause = "and " + rowColName + " > " + start;
 	  if (config.getNumRows() != null) {
 		  whereClause += " and " + rowColName + " < " + (start + config.getNumRows());
 	  }
@@ -323,9 +323,9 @@ order by CMO_0000289
      }
      columns.add("ea.stable_id");
      columns.add("rownum as " + rowColName);
-     return "select " + String.join(", " + NL, columns) + NL +
-    		 "from apidb.entityattributes ea" + NL +
-    		 "where ea.stable_id in (select * from " + subsetWithClauseName + ")";
+     return "  select " + String.join(", " + NL + "  ", columns) + NL +
+    		 "  from apidb.entityattributes ea" + NL +
+    		 "  where ea.stable_id in (select * from " + subsetWithClauseName + ")";
   }
   
   static String jsonQuery(String oracleQuery, String postgresQuery) {

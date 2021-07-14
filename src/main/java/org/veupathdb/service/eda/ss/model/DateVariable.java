@@ -9,14 +9,15 @@ public class DateVariable extends VariableWithValues {
 	private final String displayRangeMax;
 	private final String rangeMin;
 	private final String rangeMax;
-	private final BinUnits binUnitsOverride;
+	private final Integer binSize;
 	private final BinUnits binUnits;
+	private final BinUnits binUnitsOverride;
 
 	public DateVariable(String providerLabel, String id, Entity entity,
 			VariableDataShape dataShape, VariableDisplayType displayType,
 			String displayName, Integer displayOrder, String parentId, String definition, List<String> vocabulary, String displayRangeMin,
 			String displayRangeMax, String rangeMin, String rangeMax, String binUnitsOverride,
-			String binUnits, Boolean isTemporal, Boolean isFeatured, Boolean isMergeKey,
+			String binUnits, Integer binSize, Boolean isTemporal, Boolean isFeatured, Boolean isMergeKey,
 			Number distinctValuesCount, Boolean isMultiValued) {
 
 		super(providerLabel, id, entity, VariableType.DATE, dataShape, displayType, displayName, displayOrder, parentId, definition,
@@ -26,12 +27,13 @@ public class DateVariable extends VariableWithValues {
 
 		if (dataShape == VariableDataShape.CONTINUOUS) {
       this.binUnits = BinUnits.valueOf(binUnits.toUpperCase());
-      this.binUnitsOverride = binUnitsOverride == null ? null :
-          BinUnits.valueOf(binUnitsOverride.toUpperCase());
+      this.binUnitsOverride = binUnitsOverride == null ? null : BinUnits.valueOf(binUnitsOverride.toUpperCase());
+      this.binSize = binSize;
     }
 		else {
 		  this.binUnits = null;
 		  this.binUnitsOverride = null;
+		  this.binSize = null;
     }
 
     this.displayRangeMin = displayRangeMin;
@@ -64,6 +66,10 @@ public class DateVariable extends VariableWithValues {
 	public BinUnits getBinUnits() {
 		return binUnits;
 	}
+
+	public Integer getBinSize() {
+	  return binSize;
+  }
 
 	public BinUnits getDefaultBinUnits() {
 	  return binUnitsOverride != null ? binUnitsOverride : binUnits;

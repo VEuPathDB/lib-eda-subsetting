@@ -2,14 +2,15 @@ package org.veupathdb.service.eda.ss.model.distribution;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.function.Supplier;
 import javax.sql.DataSource;
 import javax.ws.rs.BadRequestException;
-import org.veupathdb.service.eda.generated.model.BinSpec;
+import org.veupathdb.service.eda.generated.model.BinSpecWithRange;
 import org.veupathdb.service.eda.generated.model.HistogramBin;
 import org.veupathdb.service.eda.generated.model.HistogramStats;
 import org.veupathdb.service.eda.generated.model.HistogramStatsImpl;
-import org.veupathdb.service.eda.generated.model.VariableDistributionPostRequest.ValueSpecType;
+import org.veupathdb.service.eda.generated.model.ValueSpec;
 import org.veupathdb.service.eda.ss.model.Entity;
 import org.veupathdb.service.eda.ss.model.NumberVariable;
 import org.veupathdb.service.eda.ss.model.Study;
@@ -21,7 +22,7 @@ public class NumberBinDistribution extends AbstractBinDistribution<NumberVariabl
   private final double _binWidth;
 
   public NumberBinDistribution(DataSource ds, Study study, Entity targetEntity, NumberVariable var,
-                               List<Filter> filters, ValueSpecType valueSpec, BinSpec binSpec) {
+                               List<Filter> filters, ValueSpec valueSpec, BinSpecWithRange binSpec) {
     super(ds, study, targetEntity, var, filters, valueSpec, binSpec.getDisplayRangeMin(), binSpec.getDisplayRangeMax());
     _binWidth = binSpec.getBinWidth().doubleValue();
   }
@@ -79,28 +80,13 @@ public class NumberBinDistribution extends AbstractBinDistribution<NumberVariabl
 
   @Override
   protected NumberBin getFirstBin() {
-    double start = Math.min(
-        _variable.getDisplayRangeMin().doubleValue(),
-        _variable.getRangeMin().doubleValue());
-    return new NumberBin(start, start + _binWidth);
+    return getNextBin(new NumberBin(null, _displayMin)).orElseThrow();
   }
 
   @Override
-  protected NumberBin getNextBin(NumberBin currentBin) {
-    return new NumberBin(currentBin._end, currentBin._end + _binWidth);
-  }
-
-  @Override
-  protected List<HistogramBin> getExtraBins(NumberBin currentBin) {
-    double end = Math.max(
-        _variable.getDisplayRangeMax().doubleValue(),
-        _variable.getRangeMax().doubleValue());
-    List<HistogramBin> extraBins = new ArrayList<>();
-    while (currentBin._end < end) {
-      currentBin = new NumberBin(currentBin._end, currentBin._end + _binWidth);
-      extraBins.add(currentBin.toHistogramBin());
-    }
-    return extraBins;
+  protected Optional<NumberBin> getNextBin(NumberBin currentBin) {
+    return _displayMax < currentBin._end ? Optional.empty() :
+        Optional.of(new NumberBin(currentBin._end, currentBin._end + _binWidth));
   }
 
 }

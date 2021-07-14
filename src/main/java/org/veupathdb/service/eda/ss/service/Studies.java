@@ -26,8 +26,8 @@ import org.veupathdb.service.eda.generated.model.APIVariableDataShape;
 import org.veupathdb.service.eda.generated.model.APIVariableDisplayType;
 import org.veupathdb.service.eda.generated.model.APIVariablesCategory;
 import org.veupathdb.service.eda.generated.model.APIVariablesCategoryImpl;
-import org.veupathdb.service.eda.generated.model.BinSpec;
-import org.veupathdb.service.eda.generated.model.BinSpecImpl;
+import org.veupathdb.service.eda.generated.model.BinSpecWithRange;
+import org.veupathdb.service.eda.generated.model.BinSpecWithRangeImpl;
 import org.veupathdb.service.eda.generated.model.BinUnits;
 import org.veupathdb.service.eda.generated.model.EntityCountPostRequest;
 import org.veupathdb.service.eda.generated.model.EntityCountPostResponse;
@@ -41,6 +41,7 @@ import org.veupathdb.service.eda.generated.model.HistogramStats;
 import org.veupathdb.service.eda.generated.model.StudiesGetResponseImpl;
 import org.veupathdb.service.eda.generated.model.StudyIdGetResponse;
 import org.veupathdb.service.eda.generated.model.StudyIdGetResponseImpl;
+import org.veupathdb.service.eda.generated.model.ValueSpec;
 import org.veupathdb.service.eda.generated.model.VariableDistributionPostRequest;
 import org.veupathdb.service.eda.generated.model.VariableDistributionPostResponse;
 import org.veupathdb.service.eda.generated.model.VariableDistributionPostResponseImpl;
@@ -154,8 +155,9 @@ public class Studies implements org.veupathdb.service.eda.generated.resources.St
       DateVariable dateVar = (DateVariable)var;
       APIDateVariable apiVar = new APIDateVariableImpl();
       setApiVarProps(apiVar, var);
-      apiVar.setBinWidth(dateVar.getBinUnits().getValue());
-      apiVar.setBinWidthOverride(Optional.ofNullable(dateVar.getBinUnitsOverride()).map(BinUnits::getValue).orElse(null));
+      apiVar.setBinWidth(dateVar.getBinSize());
+      apiVar.setBinWidthOverride(null);
+      apiVar.setBinUnits(dateVar.getBinUnits());
       apiVar.setDisplayRangeMin(dateVar.getDisplayRangeMin());
       apiVar.setDisplayRangeMax(dateVar.getDisplayRangeMax());
       apiVar.setRangeMin(dateVar.getRangeMin());
@@ -203,6 +205,7 @@ public class Studies implements org.veupathdb.service.eda.generated.resources.St
     else if (var.getType() == VariableType.LONGITUDE) {
       APILongitudeVariable apiVar = new APILongitudeVariableImpl();
       setApiVarProps(apiVar, var);
+      apiVar.setDistinctValuesCount(apiVar.getDistinctValuesCount());
       return apiVar;
     }
     else {
@@ -244,11 +247,11 @@ public class Studies implements org.veupathdb.service.eda.generated.resources.St
   }
 
   static DistributionResult processDistributionRequest(DataSource ds, Study study, Entity targetEntity,
-                                                       VariableWithValues var, List<Filter> filters, VariableDistributionPostRequest.ValueSpecType valueSpec, Optional<BinSpec> incomingBinSpec) {
+      VariableWithValues var, List<Filter> filters, ValueSpec valueSpec, Optional<BinSpecWithRange> incomingBinSpec) {
     // inspect requested variable and select appropriate distribution
     AbstractDistribution<?> distribution;
     if (var.getDataShape() == Variable.VariableDataShape.CONTINUOUS) {
-      BinSpec binSpec = validateVarAndBinSpec(var, incomingBinSpec);
+      BinSpecWithRange binSpec = validateVarAndBinSpec(var, incomingBinSpec);
       distribution = switch(var.getType()) {
         case NUMBER -> new NumberBinDistribution(ds, study, targetEntity,
             (NumberVariable)var, filters, valueSpec, binSpec);
@@ -279,7 +282,7 @@ public class Studies implements org.veupathdb.service.eda.generated.resources.St
     return (VariableWithValues)var;
   }
 
-  private static BinSpec validateVarAndBinSpec(Variable var, Optional<BinSpec> submittedBinSpec) {
+  private static BinSpecWithRange validateVarAndBinSpec(Variable var, Optional<BinSpecWithRange> submittedBinSpec) {
     // bin spec is needed; type determined by var type
     switch(var.getType()) {
       case STRING:
@@ -290,16 +293,20 @@ public class Studies implements org.veupathdb.service.eda.generated.resources.St
         DateVariable dateVar = (DateVariable)var;
         if (submittedBinSpec.isEmpty()) {
           // use defaults
-          BinSpec binSpec = new BinSpecImpl();
-          binSpec.setDisplayRangeMin(dateVar.getDisplayRangeMin());
-          binSpec.setDisplayRangeMax(dateVar.getDisplayRangeMax());
+          BinSpecWithRange binSpec = new BinSpecWithRangeImpl();
+          binSpec.setDisplayRangeMin(dateVar.getRangeMin());
+          binSpec.setDisplayRangeMax(dateVar.getRangeMax());
           binSpec.setBinUnits(dateVar.getDefaultBinUnits());
+          binSpec.setBinWidth(dateVar.getBinSize());
           return binSpec;
         }
         else {
-          BinSpec binSpec = submittedBinSpec.get();
-          if (binSpec.getBinUnits() == null || binSpec.getBinWidth() != null) {
-            throw new BadRequestException("For date variables, only binUnits should be submitted (not binWidth).");
+          BinSpecWithRange binSpec = submittedBinSpec.get();
+          if (binSpec.getBinUnits() == null) {
+            throw new BadRequestException("binUnits is required for date variable distributions");
+          }
+          if (binSpec.getBinWidth().intValue() <= 0) {
+            throw new BadRequestException("binWidth must be a positive integer for date variable distributions");
           }
           return binSpec;
         }
@@ -307,16 +314,19 @@ public class Studies implements org.veupathdb.service.eda.generated.resources.St
         NumberVariable numberVar = (NumberVariable)var;
         if (submittedBinSpec.isEmpty()) {
           // use defaults
-          BinSpec binSpec = new BinSpecImpl();
+          BinSpecWithRange binSpec = new BinSpecWithRangeImpl();
           binSpec.setDisplayRangeMin(numberVar.getDisplayRangeMin());
           binSpec.setDisplayRangeMax(numberVar.getDisplayRangeMax());
           binSpec.setBinWidth(numberVar.getDefaultBinWidth());
           return binSpec;
         }
         else {
-          BinSpec binSpec = submittedBinSpec.get();
+          BinSpecWithRange binSpec = submittedBinSpec.get();
           if (binSpec.getBinUnits() != null || binSpec.getBinWidth() == null) {
             throw new BadRequestException("For number variables, only binWidth should be submitted (not binUnits).");
+          }
+          if (binSpec.getBinWidth().doubleValue() <= 0) {
+            throw new BadRequestException("binWidth must be a positive number for number variable distributions");
           }
           return binSpec;
         }

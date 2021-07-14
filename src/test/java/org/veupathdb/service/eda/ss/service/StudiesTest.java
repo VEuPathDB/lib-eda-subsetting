@@ -1,31 +1,40 @@
 package org.veupathdb.service.eda.ss.service;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import javax.ws.rs.core.Request;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import javax.sql.DataSource;
+import javax.ws.rs.InternalServerErrorException;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
-import org.veupathdb.service.eda.generated.model.VariableDistributionPostRequest.ValueSpecType;
+import org.veupathdb.service.eda.generated.model.APIEntity;
+import org.veupathdb.service.eda.generated.model.APIFilter;
+import org.veupathdb.service.eda.generated.model.APIFilterImpl;
+import org.veupathdb.service.eda.generated.model.APINumberRangeFilter;
+import org.veupathdb.service.eda.generated.model.APINumberRangeFilterImpl;
+import org.veupathdb.service.eda.generated.model.APIStringSetFilter;
+import org.veupathdb.service.eda.generated.model.APIStringSetFilterImpl;
+import org.veupathdb.service.eda.generated.model.APIStudyDetail;
+import org.veupathdb.service.eda.generated.model.HistogramBin;
+import org.veupathdb.service.eda.generated.model.ValueSpec;
 import org.veupathdb.service.eda.ss.Resources;
 import org.veupathdb.service.eda.ss.model.Entity;
-import org.veupathdb.service.eda.ss.model.VariableWithValues;
-import org.veupathdb.service.eda.ss.model.distribution.DistributionResult;
-import org.veupathdb.service.eda.ss.model.filter.Filter;
 import org.veupathdb.service.eda.ss.model.FiltersForTesting;
 import org.veupathdb.service.eda.ss.model.Study;
 import org.veupathdb.service.eda.ss.model.TestModel;
-import org.veupathdb.service.eda.ss.model.Variable;
-import org.veupathdb.service.eda.generated.model.*;
+import org.veupathdb.service.eda.ss.model.VariableWithValues;
+import org.veupathdb.service.eda.ss.model.distribution.DistributionResult;
+import org.veupathdb.service.eda.ss.model.filter.Filter;
 import org.veupathdb.service.eda.ss.stubdb.StubDb;
 
-import javax.sql.DataSource;
-import javax.ws.rs.InternalServerErrorException;
-import javax.ws.rs.core.StreamingOutput;
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.util.*;
-
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 public class StudiesTest {
 
@@ -160,7 +169,7 @@ public class StudiesTest {
       List<Filter> filters, int expectedVariableCount, Map<String, Integer> expectedDistribution) throws IOException {
 
     DistributionResult result = Studies.processDistributionRequest(
-        _dataSource, study, entity, var, filters, ValueSpecType.COUNT, Optional.empty());
+        _dataSource, study, entity, var, filters, ValueSpec.COUNT, Optional.empty());
 
     // check variable count
     assertEquals(expectedVariableCount, result.getStatistics().getNumDistinctEntityRecords());

@@ -4,20 +4,17 @@ import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 import java.time.temporal.ChronoUnit;
 import java.time.temporal.TemporalUnit;
-import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import javax.sql.DataSource;
 import javax.ws.rs.BadRequestException;
-import org.veupathdb.service.eda.generated.model.BinSpec;
-import org.veupathdb.service.eda.generated.model.BinUnits;
-import org.veupathdb.service.eda.generated.model.HistogramBin;
+import org.veupathdb.service.eda.generated.model.BinSpecWithRange;
 import org.veupathdb.service.eda.generated.model.HistogramStats;
 import org.veupathdb.service.eda.generated.model.HistogramStatsImpl;
-import org.veupathdb.service.eda.generated.model.VariableDistributionPostRequest.ValueSpecType;
+import org.veupathdb.service.eda.generated.model.ValueSpec;
 import org.veupathdb.service.eda.ss.model.DateVariable;
 import org.veupathdb.service.eda.ss.model.Entity;
 import org.veupathdb.service.eda.ss.model.Study;
-import org.veupathdb.service.eda.ss.model.distribution.BinHelpers.Bin;
 import org.veupathdb.service.eda.ss.model.distribution.BinHelpers.DateBin;
 import org.veupathdb.service.eda.ss.model.filter.Filter;
 import org.veupathdb.service.eda.ss.service.RequestBundle;
@@ -25,9 +22,10 @@ import org.veupathdb.service.eda.ss.service.RequestBundle;
 public class DateBinDistribution extends AbstractBinDistribution<DateVariable, LocalDateTime, DateBin> {
 
   private final TemporalUnit _binUnits;
+  private final int _binSize;
 
   public DateBinDistribution(DataSource ds, Study study, Entity targetEntity, DateVariable var,
-                             List<Filter> filters, ValueSpecType valueSpec, BinSpec binSpec) {
+                             List<Filter> filters, ValueSpec valueSpec, BinSpecWithRange binSpec) {
     super(ds, study, targetEntity, var, filters, valueSpec, binSpec.getDisplayRangeMin(), binSpec.getDisplayRangeMax());
     _binUnits = switch(binSpec.getBinUnits()) {
       case DAY -> ChronoUnit.DAYS;
@@ -35,6 +33,7 @@ public class DateBinDistribution extends AbstractBinDistribution<DateVariable, L
       case MONTH -> ChronoUnit.MONTHS;
       case YEAR -> ChronoUnit.YEARS;
     };
+    _binSize = binSpec.getBinWidth().intValue();
   }
 
   @Override
@@ -82,30 +81,16 @@ public class DateBinDistribution extends AbstractBinDistribution<DateVariable, L
 
   @Override
   protected DateBin getFirstBin() {
-    LocalDateTime displayRangeMin = RequestBundle.parseDate(_variable.getDisplayRangeMin());
-    LocalDateTime rangeMin = RequestBundle.parseDate(_variable.getRangeMin());
-    LocalDateTime binStart = displayRangeMin.isBefore(rangeMin) ? displayRangeMin : rangeMin;
-    binStart = binStart.truncatedTo(ChronoUnit.DAYS);
-    // TODO: adjust binStart to be the beginning of the range for month, year
-    return new DateBin(binStart, binStart.plus(1, _binUnits));
+    // truncate display min as necessary
+    LocalDateTime firstBinStart = _displayMin.truncatedTo(ChronoUnit.DAYS);
+    // TODO: adjust firstBinStart to be the beginning of the range for month, year
+    return getNextBin(new DateBin(null, firstBinStart)).orElseThrow();
   }
 
   @Override
-  protected DateBin getNextBin(DateBin currentBin) {
-    return new DateBin(currentBin._end, currentBin._end.plus(1, _binUnits));
-  }
-
-  @Override
-  protected List<HistogramBin> getExtraBins(DateBin currentBin) {
-    LocalDateTime displayRangeMax = RequestBundle.parseDate(_variable.getDisplayRangeMax());
-    LocalDateTime rangeMax = RequestBundle.parseDate(_variable.getRangeMax());
-    LocalDateTime end = displayRangeMax.isAfter(rangeMax) ? displayRangeMax : rangeMax;
-    List<HistogramBin> extraBins = new ArrayList<>();
-    while (currentBin._end.isBefore(end)) {
-      currentBin = new DateBin(currentBin._end, currentBin._end.plus(1, _binUnits));
-      extraBins.add(currentBin.toHistogramBin());
-    }
-    return extraBins;
+  protected Optional<DateBin> getNextBin(DateBin currentBin) {
+    return _displayMax.isBefore(currentBin._end) ? Optional.empty() :
+        Optional.of(new DateBin(currentBin._end, currentBin._end.plus(_binSize, _binUnits)));
   }
 
 }

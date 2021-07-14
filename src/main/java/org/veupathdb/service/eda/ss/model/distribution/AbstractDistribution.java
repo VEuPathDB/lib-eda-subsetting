@@ -5,7 +5,7 @@ import java.util.stream.Stream;
 import javax.sql.DataSource;
 import org.gusdb.fgputil.Tuples.TwoTuple;
 import org.gusdb.fgputil.functional.TreeNode;
-import org.veupathdb.service.eda.generated.model.VariableDistributionPostRequest.ValueSpecType;
+import org.veupathdb.service.eda.generated.model.ValueSpec;
 import org.veupathdb.service.eda.ss.model.Entity;
 import org.veupathdb.service.eda.ss.model.Study;
 import org.veupathdb.service.eda.ss.model.StudySubsettingUtils;
@@ -22,7 +22,7 @@ public abstract class AbstractDistribution<T extends VariableWithValues> {
   private final List<Filter> _filters;
 
   // used to tailor the response to either count or proportion values
-  protected final ValueSpecType _valueSpec;
+  protected final ValueSpec _valueSpec;
 
   /**
    * Build a distribution result from the passed stream; unique entity count is provided
@@ -34,7 +34,7 @@ public abstract class AbstractDistribution<T extends VariableWithValues> {
       Stream<TwoTuple<String, Long>> distributionStream, int variableCount);
 
   public AbstractDistribution(DataSource ds, Study study, Entity targetEntity, T variable,
-      List<Filter> filters, ValueSpecType valueSpec) {
+      List<Filter> filters, ValueSpec valueSpec) {
     _ds = ds;
     _study = study;
     _targetEntity = targetEntity;
@@ -58,7 +58,7 @@ public abstract class AbstractDistribution<T extends VariableWithValues> {
       // create a stream of distribution tuples converted from a database result
       Stream<TwoTuple<String, Long>> distributionStream =
           StudySubsettingUtils.produceVariableDistribution(
-            _ds, prunedEntityTree, _targetEntity, _variable, _filters);
+            _ds, prunedEntityTree, _targetEntity, _variable, _filters)
     ) {
       return processDistributionStream(distributionStream, uniqueEntityCount);
     }

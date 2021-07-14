@@ -1,8 +1,6 @@
 package org.veupathdb.service.eda.ss.model.distribution;
 
 import java.time.LocalDateTime;
-import java.time.temporal.ChronoUnit;
-import java.time.temporal.TemporalUnit;
 import org.veupathdb.service.eda.generated.model.HistogramBin;
 import org.veupathdb.service.eda.generated.model.HistogramBinImpl;
 import org.veupathdb.service.eda.ss.service.RequestBundle;
@@ -10,29 +8,32 @@ import org.veupathdb.service.eda.ss.service.RequestBundle;
 public class BinHelpers {
 
   public interface Bin<T> {
+    boolean startsAfter(T value);
     boolean accept(T value, Long count);
     HistogramBin toHistogramBin();
   }
 
   public static class NumberBin implements Bin<Double> {
 
-    public final double _start;
-    public final double _end;
+    public final Double _start;
+    public final Double _end;
 
     private long _binCount = 0;
 
-    public NumberBin(double start, double end) {
+    public NumberBin(Double start, Double end) {
       _start = start;
       _end = end;
     }
 
     @Override
+    public boolean startsAfter(Double value) {
+      return (value < _start);
+    }
+
+    @Override
     public boolean accept(Double value, Long count) {
-      if (value < _start) {
-        // values should be arriving in ascending order; throw here to avoid infinite loop
-        throw new RuntimeException("Distribution value " + value + " is less than this bin's min; this should not happen.");
-      }
-      if (value < _end) { // end is exclusive
+      // start inclusive, end exclusive
+      if (value >= _start && value < _end) {
         _binCount += count;
         return true;
       }
@@ -63,13 +64,14 @@ public class BinHelpers {
     }
 
     @Override
+    public boolean startsAfter(LocalDateTime value) {
+      return _start.isAfter(value);
+    }
+
+    @Override
     public boolean accept(LocalDateTime value, Long count) {
-      if (value.isBefore(_start)) {
-        // values should be arriving in ascending order; throw here to avoid infinite loop
-        throw new RuntimeException("Distribution value " + RequestBundle.formatDate(value) +
-            " is less than this bin's min; this should not happen.");
-      }
-      if (value.isBefore(_end)) { // end is exclusive
+      // start inclusive, end exclusive
+      if (!value.isBefore(_start) && value.isBefore(_end)) {
         _binCount += count;
         return true;
       }

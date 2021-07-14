@@ -123,6 +123,7 @@ class VariableResultSetUtils {
                 rs.getString(RANGE_MAX_COL_NAME),
                 rs.getString(BIN_WIDTH_OVERRIDE_COL_NAME),
                 rs.getString(BIN_WIDTH_COMPUTED_COL_NAME),
+                1,
                 rs.getBoolean(IS_TEMPORAL_COL_NAME),
                 rs.getBoolean(IS_FEATURED_COL_NAME),
                 rs.getBoolean(IS_MERGE_KEY_COL_NAME),

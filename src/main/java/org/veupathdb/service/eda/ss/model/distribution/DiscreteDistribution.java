@@ -10,7 +10,7 @@ import org.veupathdb.service.eda.generated.model.HistogramBin;
 import org.veupathdb.service.eda.generated.model.HistogramBinImpl;
 import org.veupathdb.service.eda.generated.model.HistogramStats;
 import org.veupathdb.service.eda.generated.model.HistogramStatsImpl;
-import org.veupathdb.service.eda.generated.model.VariableDistributionPostRequest.ValueSpecType;
+import org.veupathdb.service.eda.generated.model.ValueSpec;
 import org.veupathdb.service.eda.ss.model.Entity;
 import org.veupathdb.service.eda.ss.model.Study;
 import org.veupathdb.service.eda.ss.model.VariableWithValues;
@@ -19,7 +19,7 @@ import org.veupathdb.service.eda.ss.model.filter.Filter;
 public class DiscreteDistribution extends AbstractDistribution<VariableWithValues> {
 
   public DiscreteDistribution(DataSource ds, Study study, Entity targetEntity,
-                              VariableWithValues var, List<Filter> filters, ValueSpecType valueSpec) {
+                              VariableWithValues var, List<Filter> filters, ValueSpec valueSpec) {
     super(ds, study, targetEntity, var, filters, valueSpec);
   }
 

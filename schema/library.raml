@@ -7,35 +7,6 @@
 ################################################################################
 
 types:
-  VariableSpec:
-    type: object
-    additionalProperties: false
-    properties:
-      entityId: string
-      variableId: string
-  DerivationType:
-    type: string
-    enum:
-      - transform
-      - reduction
-  DerivedVariable:
-    type: VariableSpec
-    properties:
-      variableType: API_VariableType
-      variableDataShape: API_VariableDataShape
-      derivationType: DerivationType
-      functionName: string
-      inputVars: VariableSpec[]
-      config: object # TBD
-  MergedEntityTabularPostRequest:
-    type: object
-    additionalProperties: false
-    properties:
-      studyId: string
-      filters: API_Filter[]
-      entityId: string
-      outputVariables: VariableSpec[]
-      derivedVariables: DerivedVariable[]
   EntityCountPostRequest:
     type: object
     additionalProperties: false
@@ -64,25 +35,26 @@ types:
       - week
       - month
       - year
-  BinSpec:
+  BinSpecWithRange:
     type: object
     additionalProperties: false
     properties:
       displayRangeMin: any
       displayRangeMax: any
-      binWidth?: number
+      binWidth: number
       binUnits?: BinUnits
+  ValueSpec:
+    type: string
+    enum:
+      - count
+      - proportion
   VariableDistributionPostRequest:
     type: object
     additionalProperties: false
     properties:
       filters: API_Filter[]
-      binSpec?: BinSpec
-      valueSpec:
-        type: string
-        enum:
-          - count
-          - proportion
+      binSpec?: BinSpecWithRange
+      valueSpec: ValueSpec
   HistogramBin:
     type: object
     additionalProperties: false
@@ -99,6 +71,7 @@ types:
       subsetMax?: any
       subsetMean?: any
       numVarValues: integer
+      numDistinctValues: integer
       numDistinctEntityRecords: integer
       numMissingCases: integer
   VariableDistributionPostResponse:
@@ -211,8 +184,9 @@ types:
       displayRangeMax?: string
       rangeMin?: string
       rangeMax?: string
-      binWidthOverride?: string
-      binWidth?: string
+      binWidthOverride?: number
+      binWidth?: number
+      binUnits?: BinUnits
       distinctValuesCount: number
       isTemporal: boolean
       isFeatured: boolean
@@ -276,4 +250,33 @@ types:
     properties:
       left: number
       right: number
+  VariableSpec:
+    type: object
+    additionalProperties: false
+    properties:
+      entityId: string
+      variableId: string
+  DerivationType:
+    type: string
+    enum:
+      - transform
+      - reduction
+  DerivedVariable:
+    type: VariableSpec
+    properties:
+      variableType: API_VariableType
+      variableDataShape: API_VariableDataShape
+      derivationType: DerivationType
+      functionName: string
+      inputVars: VariableSpec[]
+      config: object # TBD
+  MergedEntityTabularPostRequest:
+    type: object
+    additionalProperties: false
+    properties:
+      studyId: string
+      filters: API_Filter[]
+      entityId: string
+      outputVariables: VariableSpec[]
+      derivedVariables: DerivedVariable[]
 

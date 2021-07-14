@@ -469,7 +469,7 @@ public class Studies implements org.veupathdb.service.eda.generated.resources.St
 		  numRows = apiConfig.getPagingConfig().getNumRows();
 		  offset = apiConfig.getPagingConfig().getOffset();
 	  }
-	  return new TabularReportConfig(apiConfig.getSortingVariableIds(), numRows,
+	  return new TabularReportConfig(apiConfig.getSortingColumns(), numRows,
 			  offset);
 			  
   }

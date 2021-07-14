@@ -92,8 +92,9 @@ public class StudySubsettingUtils {
   
 
   static List<String> getTabularOutputColumns(Entity outputEntity, List<Variable> outputVariables) {
-    List<String> outputVariableIds = outputVariables.stream().map(Variable::getId).collect(Collectors.toList());
-    List<String> outputColumns = new ArrayList<>();
+	List<String> outputColumns = new ArrayList<>();
+	    
+	List<String> outputVariableIds = outputVariables.stream().map(Variable::getId).collect(Collectors.toList());
     outputColumns.add(outputEntity.getPKColName());
     outputColumns.addAll(outputEntity.getAncestorPkColNames());
     outputColumns.addAll(outputVariableIds);
@@ -259,11 +260,17 @@ order by CMO_0000289
     String subsetWithClauseName = "subset"; 
     String rowColName = "r";
     
+    //
     // build up WITH clauses
+    //
+    String wideTabularInnerStmt = generateRawWideTabularInnerStmt(outputEntity, outputVariables, subsetWithClauseName, reportConfig);
+    String wideTabularStmt = generateRawWideTabularOuterStmt(wideTabularInnerStmt);
+    String subsetSelectClause = generateSubsetSelectClause(prunedEntityTree, outputEntity, false);
+
     List<String> filterWithClauses = prunedEntityTree.flatten().stream().map(e -> generateFilterWithClause(e, filters)).collect(Collectors.toList());
     List<String> withClausesList = new ArrayList<String>(filterWithClauses);
-    withClausesList.add(subsetWithClauseName + " AS (" + NL + generateSubsetSelectClause(prunedEntityTree, outputEntity, false) + ")");
-    withClausesList.add(wideTabularWithClauseName + " AS (" + NL + generateRawWideTabularStmt(outputVariables, subsetWithClauseName, rowColName) + NL + ")");
+    withClausesList.add(subsetWithClauseName + " AS (" + NL + subsetSelectClause + ")");
+    withClausesList.add(wideTabularWithClauseName + " AS (" + NL + wideTabularStmt + NL + ")");
     String withClauses = joinWithClauses(withClausesList);
     
     //
@@ -271,37 +278,32 @@ order by CMO_0000289
     //
     
     // include entity id and ancestor ids
-    List<String> outputCols = ListBuilder.asList(outputEntity.getPKColName());
-    outputCols.addAll(outputEntity.getAncestorPkColNames());
-    
-    // include output variable IDs
-    for (Variable v : outputVariables) outputCols.add(v.getId());
+    List<String> outputCols = getTabularOutputColumns(outputEntity, outputVariables);
 
     return withClauses + NL
         + "select " + String.join(", ", outputCols) + NL
-        + "from "+ wideTabularWithClauseName + " wt, " + Resources.getAppDbSchema() + outputEntity.getAncestorsTableName() + " a"+ NL
-        + "where wt.stable_id = a." + outputEntity.getPKColName() + NL
-        + pagingConfigToAndClause(reportConfig, rowColName) + NL
-         + pagingConfigToOrderByClause(reportConfig) + NL;
+        + "from "+ wideTabularWithClauseName + NL
+        + reportConfigPagingWhereClause(reportConfig, rowColName) + NL
+		+ reportConfigOrderByClause(reportConfig, "");
   }
-  
-  static String pagingConfigToAndClause(TabularReportConfig config, String rowColName) {
+    
+  static String reportConfigPagingWhereClause(TabularReportConfig config, String rowColName) {
 	  if (config == null || (config.getOffset() == null && config.getNumRows() == null)) 
 		  return "";
 	  
 	  int start = 0;
 	  if (config.getOffset() != null) start = config.getOffset();
-	  String whereClause = "and " + rowColName + " > " + start;
+	  String whereClause = "where " + rowColName + " > " + start;
 	  if (config.getNumRows() != null) {
-		  whereClause += " and " + rowColName + " < " + (start + config.getNumRows());
+		  whereClause += " and " + rowColName + " <= " + (start + config.getNumRows());
 	  }
 	  return whereClause;
   }
 
-  static String pagingConfigToOrderByClause(TabularReportConfig config) {
-	  if (config == null || (config.getSortingVariableIds() == null))
+  static String reportConfigOrderByClause(TabularReportConfig config, String indent) {
+	  if (config == null || (config.getSortingColumns() == null))
 		  return "";
-	  return "order by " + String.join(", ", config.getSortingVariableIds());
+	  return indent + "order by " + String.join(", ", config.getSortingColumns());
   }
   
   /*
@@ -314,20 +316,35 @@ order by CMO_0000289
           select * from subset
         )
    */
-  static String generateRawWideTabularStmt(List<Variable> outputVariables, String subsetWithClauseName, String rowColName) {
-	 List<String> columns = new ArrayList<String>();
-     for (Variable var : outputVariables) {
-    	 String oracleJsonQuery = "json_query(atts, '$." + var.getId() + "') as " + var.getId();
-    	 String col = jsonQuery(oracleJsonQuery, null);
-    	 columns.add(col);
-     }
-     columns.add("ea.stable_id");
-     columns.add("rownum as " + rowColName);
-     return "  select " + String.join(", " + NL + "  ", columns) + NL +
-    		 "  from apidb.entityattributes ea" + NL +
-    		 "  where ea.stable_id in (select * from " + subsetWithClauseName + ")";
+	static String generateRawWideTabularInnerStmt(Entity outputEntity, List<Variable> outputVariables,
+			String subsetWithClauseName, TabularReportConfig reportConfig) {
+		
+		String schema = Resources.getAppDbSchema(); 
+		
+		List<String> columns = new ArrayList<String>();
+		columns.add(outputEntity.getPKColName());
+		columns.addAll(outputEntity.getAncestorPkColNames());
+		for (Variable var : outputVariables) {
+			String oracleJsonQuery = "json_query(atts, '$." + var.getId() + "') as " + var.getId();
+			String col = jsonQuery(oracleJsonQuery, null);
+			columns.add(col);
+		}
+		columns.add("ea.stable_id");
+	    return "    select " + String.join(", " + NL + "  ", columns) + NL +
+    		 "    from " + schema + "entityattributes ea, " + schema + outputEntity.getAncestorsTableName() + " a" + NL + 
+    		 "    where ea.stable_id in (select * from " + subsetWithClauseName + ")" + NL +
+    		 "    and ea.stable_id = a." + outputEntity.getPKColName() + NL +
+    		 reportConfigOrderByClause(reportConfig, "    ");
   }
   
+  static String generateRawWideTabularOuterStmt(String innerStmt) {
+		return "  select rownum as r, wt.*" + NL +
+			   "  from (" + NL +
+			   innerStmt +
+			   "  ) wt";			   
+  }
+
+	
   static String jsonQuery(String oracleQuery, String postgresQuery) {
 	  return oracleQuery != null? oracleQuery : postgresQuery;
   }

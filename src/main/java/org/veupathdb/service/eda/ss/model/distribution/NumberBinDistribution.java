@@ -1,20 +1,17 @@
 package org.veupathdb.service.eda.ss.model.distribution;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.function.Supplier;
 import javax.sql.DataSource;
 import javax.ws.rs.BadRequestException;
 import org.veupathdb.service.eda.generated.model.BinSpecWithRange;
-import org.veupathdb.service.eda.generated.model.HistogramBin;
 import org.veupathdb.service.eda.generated.model.HistogramStats;
 import org.veupathdb.service.eda.generated.model.HistogramStatsImpl;
 import org.veupathdb.service.eda.generated.model.ValueSpec;
 import org.veupathdb.service.eda.ss.model.Entity;
 import org.veupathdb.service.eda.ss.model.NumberVariable;
 import org.veupathdb.service.eda.ss.model.Study;
-import org.veupathdb.service.eda.ss.model.distribution.BinHelpers.NumberBin;
 import org.veupathdb.service.eda.ss.model.filter.Filter;
 
 public class NumberBinDistribution extends AbstractBinDistribution<NumberVariable, Double, NumberBin> {
@@ -54,6 +51,7 @@ public class NumberBinDistribution extends AbstractBinDistribution<NumberVariabl
       private Double _subsetMin;
       private Double _subsetMax;
       private long _numValues = 0;
+      private long _numDistinctValues = 0;
       private double _sumOfValues = 0;
 
       @Override
@@ -61,6 +59,7 @@ public class NumberBinDistribution extends AbstractBinDistribution<NumberVariabl
         if (_subsetMin == null) _subsetMin = value;
         _subsetMax = value;
         _numValues += count;
+        _numDistinctValues++;
         _sumOfValues += (count * value);
       }
 
@@ -71,6 +70,7 @@ public class NumberBinDistribution extends AbstractBinDistribution<NumberVariabl
         stats.setSubsetMax(_subsetMax);
         stats.setSubsetMean(_sumOfValues / _numValues);
         stats.setNumVarValues((int)_numValues); // FIXME: int cast ok here?
+        stats.setNumDistinctValues((int)_numDistinctValues); // FIXME: int cast ok here?
         stats.setNumDistinctEntityRecords(uniqueEntityCount);
         stats.setNumMissingCases(0); // FIXME: get from null tuple?
         return stats;
@@ -80,13 +80,13 @@ public class NumberBinDistribution extends AbstractBinDistribution<NumberVariabl
 
   @Override
   protected NumberBin getFirstBin() {
-    return getNextBin(new NumberBin(null, _displayMin)).orElseThrow();
+    return getNextBin(new NumberBin(null, _displayMin, false)).orElseThrow();
   }
 
   @Override
   protected Optional<NumberBin> getNextBin(NumberBin currentBin) {
-    return _displayMax < currentBin._end ? Optional.empty() :
-        Optional.of(new NumberBin(currentBin._end, currentBin._end + _binWidth));
+    return _displayMax <= currentBin._end ? Optional.empty() :
+        Optional.of(new NumberBin(currentBin._end, currentBin._end + _binWidth, _displayMax == currentBin._end + _binWidth));
   }
 
 }

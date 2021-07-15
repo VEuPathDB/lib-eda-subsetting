@@ -1,9 +1,9 @@
 package org.veupathdb.service.eda.ss.model.distribution;
 
 import java.time.LocalDateTime;
+import java.time.Month;
 import java.time.ZoneOffset;
 import java.time.temporal.ChronoUnit;
-import java.time.temporal.TemporalUnit;
 import java.util.List;
 import java.util.Optional;
 import javax.sql.DataSource;
@@ -15,13 +15,12 @@ import org.veupathdb.service.eda.generated.model.ValueSpec;
 import org.veupathdb.service.eda.ss.model.DateVariable;
 import org.veupathdb.service.eda.ss.model.Entity;
 import org.veupathdb.service.eda.ss.model.Study;
-import org.veupathdb.service.eda.ss.model.distribution.BinHelpers.DateBin;
 import org.veupathdb.service.eda.ss.model.filter.Filter;
 import org.veupathdb.service.eda.ss.service.RequestBundle;
 
 public class DateBinDistribution extends AbstractBinDistribution<DateVariable, LocalDateTime, DateBin> {
 
-  private final TemporalUnit _binUnits;
+  private final ChronoUnit _binUnits;
   private final int _binSize;
 
   public DateBinDistribution(DataSource ds, Study study, Entity targetEntity, DateVariable var,
@@ -34,6 +33,29 @@ public class DateBinDistribution extends AbstractBinDistribution<DateVariable, L
       case YEAR -> ChronoUnit.YEARS;
     };
     _binSize = binSpec.getBinWidth().intValue();
+  }
+
+  protected LocalDateTime adjustMin(LocalDateTime displayMin) {
+    switch(_binUnits) {
+      case MONTHS:
+        // truncate to the beginning of the month
+        return LocalDateTime.of(displayMin.getYear(), displayMin.getMonth(), 1, 0, 0);
+      case YEARS:
+        // truncate to the beginning of the year
+        return LocalDateTime.of(displayMin.getYear(), Month.JANUARY, 1, 0, 0);
+      default:
+        // for days and weeks, truncate to the beginning of the day
+        return displayMin.truncatedTo(ChronoUnit.DAYS);
+    }
+  }
+
+  protected LocalDateTime adjustMax(LocalDateTime displayMax) {
+    // truncate to the day (floor), then add 1 day and subtract 1 second
+    //    this way all values on that day fall before the max, but none after
+    return displayMax
+        .truncatedTo(ChronoUnit.DAYS)
+        .plus(1, ChronoUnit.DAYS)
+        .minus(1, ChronoUnit.SECONDS);
   }
 
   @Override
@@ -54,6 +76,7 @@ public class DateBinDistribution extends AbstractBinDistribution<DateVariable, L
       private LocalDateTime _subsetMin;
       private LocalDateTime _subsetMax;
       private long _numValues = 0;
+      private long _numDistinctValues = 0;
       private long _sumOfValues = 0;
 
       @Override
@@ -61,6 +84,7 @@ public class DateBinDistribution extends AbstractBinDistribution<DateVariable, L
         if (_subsetMin == null) _subsetMin = value;
         _subsetMax = value;
         _numValues += count;
+        _numDistinctValues++;
         _sumOfValues += (count * value.toEpochSecond(ZoneOffset.UTC));
       }
 
@@ -72,6 +96,7 @@ public class DateBinDistribution extends AbstractBinDistribution<DateVariable, L
         stats.setSubsetMean(RequestBundle.formatDate(
             LocalDateTime.ofEpochSecond(_sumOfValues / _numValues, 0, ZoneOffset.UTC)));
         stats.setNumVarValues((int)_numValues); // FIXME: int cast ok here?
+        stats.setNumDistinctValues((int)_numDistinctValues); // FIXME: int cast ok here?
         stats.setNumDistinctEntityRecords(uniqueEntityCount);
         stats.setNumMissingCases(0); // FIXME: get from null tuple?
         return stats;
@@ -81,16 +106,13 @@ public class DateBinDistribution extends AbstractBinDistribution<DateVariable, L
 
   @Override
   protected DateBin getFirstBin() {
-    // truncate display min as necessary
-    LocalDateTime firstBinStart = _displayMin.truncatedTo(ChronoUnit.DAYS);
-    // TODO: adjust firstBinStart to be the beginning of the range for month, year
-    return getNextBin(new DateBin(null, firstBinStart)).orElseThrow();
+    return getNextBin(new DateBin(null, _displayMin, _binUnits, _binSize)).orElseThrow();
   }
 
   @Override
   protected Optional<DateBin> getNextBin(DateBin currentBin) {
     return _displayMax.isBefore(currentBin._end) ? Optional.empty() :
-        Optional.of(new DateBin(currentBin._end, currentBin._end.plus(_binSize, _binUnits)));
+        Optional.of(new DateBin(currentBin._end, currentBin._end.plus(_binSize, _binUnits), _binUnits, _binSize));
   }
 
 }

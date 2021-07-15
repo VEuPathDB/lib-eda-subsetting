@@ -26,6 +26,7 @@ public class DiscreteDistribution extends AbstractDistribution<VariableWithValue
   @Override
   protected DistributionResult processDistributionStream(Stream<TwoTuple<String,Long>> distributionStream, int variableCount) {
     List<HistogramBin> bins = new ArrayList<>();
+    long distinctValueCount = 0;
     long totalValueCount = 0;
     for (TwoTuple<String,Long> tuple : IteratorUtil.toIterable(distributionStream.iterator())) {
       HistogramBin bin = new HistogramBinImpl();
@@ -33,11 +34,13 @@ public class DiscreteDistribution extends AbstractDistribution<VariableWithValue
       bin.setBinEnd(tuple.getKey());
       bin.setBinLabel(tuple.getKey());
       bin.setValue(tuple.getValue());
+      distinctValueCount++;
       totalValueCount += tuple.getValue();
       bins.add(bin);
     }
     HistogramStats stats = new HistogramStatsImpl();
     stats.setNumMissingCases(0);
+    stats.setNumDistinctValues((int)distinctValueCount); // FIXME: int ok here?
     stats.setNumVarValues((int)totalValueCount); // FIXME: int ok here?
     stats.setNumDistinctEntityRecords(variableCount);
     return new DistributionResult(bins, stats);

@@ -13,12 +13,18 @@ import org.veupathdb.service.eda.generated.model.ValueSpec;
 import org.veupathdb.service.eda.ss.model.Entity;
 import org.veupathdb.service.eda.ss.model.Study;
 import org.veupathdb.service.eda.ss.model.VariableWithValues;
-import org.veupathdb.service.eda.ss.model.distribution.BinHelpers.Bin;
+import org.veupathdb.service.eda.ss.model.distribution.AbstractBinDistribution.Bin;
 import org.veupathdb.service.eda.ss.model.filter.Filter;
 
 public abstract class AbstractBinDistribution<T extends VariableWithValues, S, R extends Bin<S>> extends AbstractDistribution<T> {
 
   protected enum ValueSource { CONFIG, DB }
+
+  public interface Bin<T> {
+    boolean startsAfter(T value);
+    boolean accept(T value, Long count);
+    HistogramBin toHistogramBin();
+  }
 
   protected abstract class StatsCollector {
     abstract void accept(S value, Long count);
@@ -37,8 +43,16 @@ public abstract class AbstractBinDistribution<T extends VariableWithValues, S, R
                                  T variable, List<Filter> filters, ValueSpec valueSpec,
                                  Object displayMin, Object displayMax) {
     super(ds, study, targetEntity, variable, filters, valueSpec);
-    _displayMin = getTypedObject("displayMin", displayMin, ValueSource.CONFIG);
-    _displayMax = getTypedObject("displayMax", displayMax, ValueSource.CONFIG);
+    _displayMin = adjustMin(getTypedObject("displayMin", displayMin, ValueSource.CONFIG));
+    _displayMax = adjustMax(getTypedObject("displayMax", displayMax, ValueSource.CONFIG));
+  }
+
+  protected S adjustMin(S displayMin) {
+    return displayMin; // no adjustment by default
+  }
+
+  protected S adjustMax(S displayMax) {
+    return displayMax; // no adjustment by default
   }
 
   @Override

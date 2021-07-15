@@ -27,11 +27,11 @@ public abstract class AbstractDistribution<T extends VariableWithValues> {
   /**
    * Build a distribution result from the passed stream; unique entity count is provided
    * @param distributionStream stream of tuples for processing
-   * @param variableCount unique entity count (one of the required values)
+   * @param subsetEntityCount number of entities in the subset
    * @return distribution result
    */
   protected abstract DistributionResult processDistributionStream(
-      Stream<TwoTuple<String, Long>> distributionStream, int variableCount);
+      Stream<TwoTuple<String, Long>> distributionStream, int subsetEntityCount);
 
   public AbstractDistribution(DataSource ds, Study study, Entity targetEntity, T variable,
       List<Filter> filters, ValueSpec valueSpec) {
@@ -49,10 +49,9 @@ public abstract class AbstractDistribution<T extends VariableWithValues> {
     TreeNode<Entity> prunedEntityTree = StudySubsettingUtils.pruneTree(
         _study.getEntityTree(), _filters, _targetEntity);
 
-    // get variable count (may do in parallel later)
-    //  TODO: verify that this is really the unique entity count
-    int uniqueEntityCount = StudySubsettingUtils.getVariableCount(
-        _ds, prunedEntityTree, _targetEntity, _variable, _filters);
+    // get the number of entities in the subset
+    int subsetEntityCount = StudySubsettingUtils.getEntityCount(
+        _ds, prunedEntityTree, _targetEntity, _filters);
 
     try(
       // create a stream of distribution tuples converted from a database result
@@ -60,7 +59,7 @@ public abstract class AbstractDistribution<T extends VariableWithValues> {
           StudySubsettingUtils.produceVariableDistribution(
             _ds, prunedEntityTree, _targetEntity, _variable, _filters)
     ) {
-      return processDistributionStream(distributionStream, uniqueEntityCount);
+      return processDistributionStream(distributionStream, subsetEntityCount);
     }
   }
 }

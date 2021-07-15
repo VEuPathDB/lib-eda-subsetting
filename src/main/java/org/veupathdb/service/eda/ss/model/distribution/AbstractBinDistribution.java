@@ -29,7 +29,7 @@ public abstract class AbstractBinDistribution<T extends VariableWithValues, S, R
 
   protected abstract class StatsCollector {
     abstract void accept(S value, Long count);
-    abstract HistogramStats toHistogramStats(int uniqueEntityCount);
+    abstract HistogramStats toHistogramStats(long subsetEntityCount, long missingCasesCount);
   }
 
   protected final S _displayMin;
@@ -57,13 +57,20 @@ public abstract class AbstractBinDistribution<T extends VariableWithValues, S, R
   }
 
   @Override
-  protected DistributionResult processDistributionStream(Stream<TwoTuple<String, Long>> distributionStream, int uniqueEntityCount) {
+  protected DistributionResult processDistributionStream(Stream<TwoTuple<String, Long>> distributionStream, int subsetEntityCount) {
     StatsCollector stats = getStatsCollector();
+    long missingCasesCount = 0;
     R currentBin = getFirstBin();
     boolean beforeFirstBin = true;
     boolean afterLastBin = false;
     List<HistogramBin> bins = new ArrayList<>();
     for (TwoTuple<String,Long> tuple : IteratorUtil.toIterable(distributionStream.iterator())) {
+
+      // handle missing cases (not added to stats)
+      if (tuple.getKey() == null) {
+        missingCasesCount = tuple.getValue();
+        continue;
+      }
 
       // convert value to comparable object
       S value = getTypedObject("value", tuple.getKey(), ValueSource.DB);
@@ -104,7 +111,7 @@ public abstract class AbstractBinDistribution<T extends VariableWithValues, S, R
     }
 
     // return result
-    return new DistributionResult(bins, stats.toHistogramStats(uniqueEntityCount));
+    return new DistributionResult(bins, stats.toHistogramStats(subsetEntityCount, missingCasesCount));
   }
 
 }

@@ -24,11 +24,16 @@ public class DiscreteDistribution extends AbstractDistribution<VariableWithValue
   }
 
   @Override
-  protected DistributionResult processDistributionStream(Stream<TwoTuple<String,Long>> distributionStream, int variableCount) {
+  protected DistributionResult processDistributionStream(Stream<TwoTuple<String,Long>> distributionStream, int subsetEntityCount) {
     List<HistogramBin> bins = new ArrayList<>();
     long distinctValueCount = 0;
     long totalValueCount = 0;
+    long missingCasesCount = 0;
     for (TwoTuple<String,Long> tuple : IteratorUtil.toIterable(distributionStream.iterator())) {
+      if (tuple.getKey() == null) {
+        missingCasesCount = tuple.getValue();
+        continue;
+      }
       HistogramBin bin = new HistogramBinImpl();
       bin.setBinStart(tuple.getKey());
       bin.setBinEnd(tuple.getKey());
@@ -39,10 +44,11 @@ public class DiscreteDistribution extends AbstractDistribution<VariableWithValue
       bins.add(bin);
     }
     HistogramStats stats = new HistogramStatsImpl();
-    stats.setNumMissingCases(0);
-    stats.setNumDistinctValues((int)distinctValueCount); // FIXME: int ok here?
-    stats.setNumVarValues((int)totalValueCount); // FIXME: int ok here?
-    stats.setNumDistinctEntityRecords(variableCount);
+    // FIXME: int casts ok here?
+    stats.setNumMissingCases((int)missingCasesCount);
+    stats.setNumDistinctValues((int)distinctValueCount);
+    stats.setNumVarValues((int)totalValueCount);
+    stats.setNumDistinctEntityRecords((int)(subsetEntityCount - missingCasesCount));
     return new DistributionResult(bins, stats);
   }
 }

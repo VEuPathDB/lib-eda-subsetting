@@ -100,16 +100,17 @@ public class DateBinDistribution extends AbstractBinDistribution<DateVariable, L
       }
 
       @Override
-      HistogramStats toHistogramStats(int uniqueEntityCount) {
+      HistogramStats toHistogramStats(long subsetEntityCount, long missingCasesCount) {
         HistogramStats stats = new HistogramStatsImpl();
         stats.setSubsetMin(RequestBundle.formatDate(_subsetMin));
         stats.setSubsetMax(RequestBundle.formatDate(_subsetMax));
         stats.setSubsetMean(RequestBundle.formatDate(
             LocalDateTime.ofEpochSecond(_sumOfValues / _numValues, 0, ZoneOffset.UTC)));
-        stats.setNumVarValues((int)_numValues); // FIXME: int cast ok here?
-        stats.setNumDistinctValues((int)_numDistinctValues); // FIXME: int cast ok here?
-        stats.setNumDistinctEntityRecords(uniqueEntityCount);
-        stats.setNumMissingCases(0); // FIXME: get from null tuple?
+        // FIXME: int casts ok here?
+        stats.setNumVarValues((int)_numValues);
+        stats.setNumDistinctValues((int)_numDistinctValues);
+        stats.setNumDistinctEntityRecords((int)(subsetEntityCount - missingCasesCount));
+        stats.setNumMissingCases((int)missingCasesCount);
         return stats;
       }
     };

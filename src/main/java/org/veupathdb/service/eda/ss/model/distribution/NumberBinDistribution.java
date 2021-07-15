@@ -64,15 +64,16 @@ public class NumberBinDistribution extends AbstractBinDistribution<NumberVariabl
       }
 
       @Override
-      HistogramStats toHistogramStats(int uniqueEntityCount) {
+      HistogramStats toHistogramStats(long subsetEntityCount, long missingCasesCount) {
         HistogramStats stats = new HistogramStatsImpl();
         stats.setSubsetMin(_subsetMin);
         stats.setSubsetMax(_subsetMax);
         stats.setSubsetMean(_sumOfValues / _numValues);
-        stats.setNumVarValues((int)_numValues); // FIXME: int cast ok here?
-        stats.setNumDistinctValues((int)_numDistinctValues); // FIXME: int cast ok here?
-        stats.setNumDistinctEntityRecords(uniqueEntityCount);
-        stats.setNumMissingCases(0); // FIXME: get from null tuple?
+        // FIXME: int cast ok here?
+        stats.setNumVarValues((int)_numValues);
+        stats.setNumDistinctValues((int)_numDistinctValues);
+        stats.setNumDistinctEntityRecords((int)(subsetEntityCount - missingCasesCount));
+        stats.setNumMissingCases((int)missingCasesCount);
         return stats;
       }
     };

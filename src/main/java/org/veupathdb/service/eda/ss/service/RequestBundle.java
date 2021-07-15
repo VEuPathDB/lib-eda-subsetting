@@ -120,7 +120,7 @@ public class RequestBundle {
       return LocalDateTime.parse(dateStr, formatter);
     }
     catch (DateTimeParseException e) {
-      throw new BadRequestException("Can't parse date string: " + dateStr);
+      throw new BadRequestException("Can't parse date/time string: " + dateStr);
     }
   }
 

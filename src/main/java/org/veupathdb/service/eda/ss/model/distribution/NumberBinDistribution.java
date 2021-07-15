@@ -20,7 +20,7 @@ public class NumberBinDistribution extends AbstractBinDistribution<NumberVariabl
 
   public NumberBinDistribution(DataSource ds, Study study, Entity targetEntity, NumberVariable var,
                                List<Filter> filters, ValueSpec valueSpec, BinSpecWithRange binSpec) {
-    super(ds, study, targetEntity, var, filters, valueSpec, binSpec.getDisplayRangeMin(), binSpec.getDisplayRangeMax());
+    super(ds, study, targetEntity, var, filters, valueSpec, binSpec.getDisplayRangeMin(), binSpec.getDisplayRangeMax(), binSpec);
     _binWidth = binSpec.getBinWidth().doubleValue();
   }
 

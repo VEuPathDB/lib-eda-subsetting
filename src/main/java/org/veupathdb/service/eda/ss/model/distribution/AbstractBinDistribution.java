@@ -7,6 +7,7 @@ import java.util.stream.Stream;
 import javax.sql.DataSource;
 import org.gusdb.fgputil.Tuples.TwoTuple;
 import org.gusdb.fgputil.iterator.IteratorUtil;
+import org.veupathdb.service.eda.generated.model.BinSpecWithRange;
 import org.veupathdb.service.eda.generated.model.HistogramBin;
 import org.veupathdb.service.eda.generated.model.HistogramStats;
 import org.veupathdb.service.eda.generated.model.ValueSpec;
@@ -41,17 +42,17 @@ public abstract class AbstractBinDistribution<T extends VariableWithValues, S, R
 
   public AbstractBinDistribution(DataSource ds, Study study, Entity targetEntity,
                                  T variable, List<Filter> filters, ValueSpec valueSpec,
-                                 Object displayMin, Object displayMax) {
+                                 Object displayMin, Object displayMax, BinSpecWithRange binSpec) {
     super(ds, study, targetEntity, variable, filters, valueSpec);
-    _displayMin = adjustMin(getTypedObject("displayMin", displayMin, ValueSource.CONFIG));
-    _displayMax = adjustMax(getTypedObject("displayMax", displayMax, ValueSource.CONFIG));
+    _displayMin = adjustMin(getTypedObject("displayMin", displayMin, ValueSource.CONFIG), binSpec);
+    _displayMax = adjustMax(getTypedObject("displayMax", displayMax, ValueSource.CONFIG), binSpec);
   }
 
-  protected S adjustMin(S displayMin) {
+  protected S adjustMin(S displayMin, BinSpecWithRange binSpec) {
     return displayMin; // no adjustment by default
   }
 
-  protected S adjustMax(S displayMax) {
+  protected S adjustMax(S displayMax, BinSpecWithRange binSpec) {
     return displayMax; // no adjustment by default
   }
 

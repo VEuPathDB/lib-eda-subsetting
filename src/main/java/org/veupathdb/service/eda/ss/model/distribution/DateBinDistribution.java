@@ -8,7 +8,10 @@ import java.util.List;
 import java.util.Optional;
 import javax.sql.DataSource;
 import javax.ws.rs.BadRequestException;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.veupathdb.service.eda.generated.model.BinSpecWithRange;
+import org.veupathdb.service.eda.generated.model.BinUnits;
 import org.veupathdb.service.eda.generated.model.HistogramStats;
 import org.veupathdb.service.eda.generated.model.HistogramStatsImpl;
 import org.veupathdb.service.eda.generated.model.ValueSpec;
@@ -20,23 +23,30 @@ import org.veupathdb.service.eda.ss.service.RequestBundle;
 
 public class DateBinDistribution extends AbstractBinDistribution<DateVariable, LocalDateTime, DateBin> {
 
+  private static final Logger LOG = LogManager.getLogger(DateBinDistribution.class);
+
   private final ChronoUnit _binUnits;
   private final int _binSize;
 
   public DateBinDistribution(DataSource ds, Study study, Entity targetEntity, DateVariable var,
                              List<Filter> filters, ValueSpec valueSpec, BinSpecWithRange binSpec) {
-    super(ds, study, targetEntity, var, filters, valueSpec, binSpec.getDisplayRangeMin(), binSpec.getDisplayRangeMax());
-    _binUnits = switch(binSpec.getBinUnits()) {
+    super(ds, study, targetEntity, var, filters, valueSpec, binSpec.getDisplayRangeMin(), binSpec.getDisplayRangeMax(), binSpec);
+    _binUnits = calculateChronoUnit(binSpec.getBinUnits());
+    _binSize = binSpec.getBinWidth().intValue();
+  }
+
+  private ChronoUnit calculateChronoUnit(BinUnits binUnits) {
+    return switch(binUnits) {
       case DAY -> ChronoUnit.DAYS;
       case WEEK -> ChronoUnit.WEEKS;
       case MONTH -> ChronoUnit.MONTHS;
       case YEAR -> ChronoUnit.YEARS;
     };
-    _binSize = binSpec.getBinWidth().intValue();
   }
 
-  protected LocalDateTime adjustMin(LocalDateTime displayMin) {
-    switch(_binUnits) {
+  @Override
+  protected LocalDateTime adjustMin(LocalDateTime displayMin, BinSpecWithRange binSpec) {
+    switch(calculateChronoUnit(binSpec.getBinUnits())) {
       case MONTHS:
         // truncate to the beginning of the month
         return LocalDateTime.of(displayMin.getYear(), displayMin.getMonth(), 1, 0, 0);
@@ -49,7 +59,8 @@ public class DateBinDistribution extends AbstractBinDistribution<DateVariable, L
     }
   }
 
-  protected LocalDateTime adjustMax(LocalDateTime displayMax) {
+  @Override
+  protected LocalDateTime adjustMax(LocalDateTime displayMax, BinSpecWithRange binSpec) {
     // truncate to the day (floor), then add 1 day and subtract 1 second
     //    this way all values on that day fall before the max, but none after
     return displayMax

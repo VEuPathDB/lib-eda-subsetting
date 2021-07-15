@@ -1,14 +1,18 @@
 package org.veupathdb.service.eda.ss.service;
 
-import java.util.*;
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
 import java.util.stream.Collectors;
 import javax.sql.DataSource;
 import javax.ws.rs.BadRequestException;
 import javax.ws.rs.NotFoundException;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.gusdb.fgputil.ListBuilder;
-import org.gusdb.fgputil.Tuples;
-import org.gusdb.fgputil.Tuples.TwoTuple;
 import org.gusdb.fgputil.functional.TreeNode;
+import org.gusdb.fgputil.json.JsonUtil;
 import org.veupathdb.service.eda.generated.model.APIDateVariable;
 import org.veupathdb.service.eda.generated.model.APIDateVariableImpl;
 import org.veupathdb.service.eda.generated.model.APIEntity;
@@ -28,7 +32,6 @@ import org.veupathdb.service.eda.generated.model.APIVariablesCategory;
 import org.veupathdb.service.eda.generated.model.APIVariablesCategoryImpl;
 import org.veupathdb.service.eda.generated.model.BinSpecWithRange;
 import org.veupathdb.service.eda.generated.model.BinSpecWithRangeImpl;
-import org.veupathdb.service.eda.generated.model.BinUnits;
 import org.veupathdb.service.eda.generated.model.EntityCountPostRequest;
 import org.veupathdb.service.eda.generated.model.EntityCountPostResponse;
 import org.veupathdb.service.eda.generated.model.EntityCountPostResponseImpl;
@@ -36,8 +39,6 @@ import org.veupathdb.service.eda.generated.model.EntityIdGetResponse;
 import org.veupathdb.service.eda.generated.model.EntityIdGetResponseImpl;
 import org.veupathdb.service.eda.generated.model.EntityTabularPostRequest;
 import org.veupathdb.service.eda.generated.model.EntityTabularPostResponseStream;
-import org.veupathdb.service.eda.generated.model.HistogramBin;
-import org.veupathdb.service.eda.generated.model.HistogramStats;
 import org.veupathdb.service.eda.generated.model.StudiesGetResponseImpl;
 import org.veupathdb.service.eda.generated.model.StudyIdGetResponse;
 import org.veupathdb.service.eda.generated.model.StudyIdGetResponseImpl;
@@ -46,24 +47,26 @@ import org.veupathdb.service.eda.generated.model.VariableDistributionPostRequest
 import org.veupathdb.service.eda.generated.model.VariableDistributionPostResponse;
 import org.veupathdb.service.eda.generated.model.VariableDistributionPostResponseImpl;
 import org.veupathdb.service.eda.ss.Resources;
-import org.veupathdb.service.eda.ss.model.MetadataCache;
-import org.veupathdb.service.eda.ss.model.VariableWithValues;
-import org.veupathdb.service.eda.ss.model.distribution.AbstractDistribution;
-import org.veupathdb.service.eda.ss.model.distribution.DateBinDistribution;
-import org.veupathdb.service.eda.ss.model.distribution.DiscreteDistribution;
-import org.veupathdb.service.eda.ss.model.distribution.DistributionResult;
-import org.veupathdb.service.eda.ss.model.distribution.NumberBinDistribution;
 import org.veupathdb.service.eda.ss.model.DateVariable;
 import org.veupathdb.service.eda.ss.model.Entity;
+import org.veupathdb.service.eda.ss.model.MetadataCache;
 import org.veupathdb.service.eda.ss.model.NumberVariable;
 import org.veupathdb.service.eda.ss.model.StringVariable;
 import org.veupathdb.service.eda.ss.model.Study;
 import org.veupathdb.service.eda.ss.model.StudySubsettingUtils;
 import org.veupathdb.service.eda.ss.model.Variable;
 import org.veupathdb.service.eda.ss.model.Variable.VariableType;
+import org.veupathdb.service.eda.ss.model.VariableWithValues;
+import org.veupathdb.service.eda.ss.model.distribution.AbstractDistribution;
+import org.veupathdb.service.eda.ss.model.distribution.DateBinDistribution;
+import org.veupathdb.service.eda.ss.model.distribution.DiscreteDistribution;
+import org.veupathdb.service.eda.ss.model.distribution.DistributionResult;
+import org.veupathdb.service.eda.ss.model.distribution.NumberBinDistribution;
 import org.veupathdb.service.eda.ss.model.filter.Filter;
 
 public class Studies implements org.veupathdb.service.eda.generated.resources.Studies {
+
+  private static final Logger LOG = LogManager.getLogger(Studies.class);
 
   @Override
   public GetStudiesClearMetadataCacheResponse getStudiesClearMetadataCache() {
@@ -252,6 +255,7 @@ public class Studies implements org.veupathdb.service.eda.generated.resources.St
     AbstractDistribution<?> distribution;
     if (var.getDataShape() == Variable.VariableDataShape.CONTINUOUS) {
       BinSpecWithRange binSpec = validateVarAndBinSpec(var, incomingBinSpec);
+      LOG.debug("Found var of type: " + var.getType() + ", will use bin spec: " + JsonUtil.serializeObject(binSpec));
       distribution = switch(var.getType()) {
         case NUMBER -> new NumberBinDistribution(ds, study, targetEntity,
             (NumberVariable)var, filters, valueSpec, binSpec);

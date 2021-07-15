@@ -214,43 +214,33 @@ public class StudySubsettingUtils {
    * Generate SQL to produce a multi-column tabular output (the requested variables), for the specified subset.
    * 
    * 
-WITH 
-    GEMS_House as (
-      SELECT Hshld_id
-      FROM AttributeValue_555555_Hshld
-      WHERE attribute_stable_id = 'var-10'
-      AND string_value IN ('metal', 'tile')
-    ),
-    GEMS_HouseObs as (
-      SELECT a.Hshld_id, t.HshldObsvtn_id
-      FROM AttributeValue_555555_HshldObsvtn t, Ancestors_555555_HshldObsvtn a
-      WHERE t.HshldObsvtn_id = a.HshldObsvtn_id
-      AND attribute_stable_id = 'var-19'
-      AND string_value IN ('piped', 'well')
-    ),
-    subset as (
-      SELECT GEMS_Part.Prtcpnt_id
-      FROM GEMS_House, GEMS_HouseObs, GEMS_Part, GEMS_PartObs
-      WHERE GEMS_House.Hshld_id = GEMS_HouseObs.Hshld_id
-      AND GEMS_House.Hshld_id = GEMS_Part.Hshld_id
-      AND GEMS_Part.Prtcpnt_id = GEMS_PartObs.Prtcpnt_id
-    )
-    wide_tabular as (
-      select json_query(atts, '$.EUPATH_0010077') as EUPATH_0010077
-      , json_query(atts, '$.CMO_0000289') as CMO_0000289
-      , json_query(atts, '$.EUPATH_0015125') as EUPATH_0015125
-      , ea.stable_id, rownum as r
-      from apidb.entityattributes ea
-      where ea.stable_id in (
-          select * from subset
-        )
-    )
-select pa.Hshld_id, stable_id, EUPATH_0010077, CMO_0000289, EUPATH_0015125
-from wide_tabular wt, GEMS_Part_Ancestors a
-where r > 0 and r < 20
-and pa.Participant_id = stable_id
-order by CMO_0000289
-;
+WITH
+EUPATH_0000609 as (
+  SELECT Observation_stable_id, Participant_stable_id, Household_stable_id, Sample_stable_id FROM apidb.Ancestors_GEMSCC0003_1_Sample
+),
+subset AS (
+  SELECT EUPATH_0000609.Sample_stable_id
+  FROM EUPATH_0000609
+),
+wide_tabular AS (
+  select rownum as r, wt.*
+  from (
+    select Sample_stable_id, 
+    Observation_stable_id, 
+    Participant_stable_id, 
+    Household_stable_id, 
+    json_query(atts, '$.EUPATH_0000711') as EUPATH_0000711, 
+    ea.stable_id
+    from apidb.entityattributes ea, apidb.Ancestors_GEMSCC0003_1_Sample a
+    where ea.stable_id in (select * from subset)
+    and ea.stable_id = a.Sample_stable_id
+    order by Sample_stable_id
+  ) wt
+)
+select Sample_stable_id, Observation_stable_id, Participant_stable_id, Household_stable_id, EUPATH_0000711
+from wide_tabular
+where r > 2 and r <= 8
+order by Sample_stable_id
    */
   static String generateTabularSqlWithReportConfig(List<Variable> outputVariables, Entity outputEntity, List<Filter> filters, 
 		  TabularReportConfig reportConfig, TreeNode<Entity> prunedEntityTree) {
@@ -276,10 +266,7 @@ order by CMO_0000289
     //
     // final select 
     //
-    
-    // include entity id and ancestor ids
     List<String> outputCols = getTabularOutputColumns(outputEntity, outputVariables);
-
     return withClauses + NL
         + "select " + String.join(", ", outputCols) + NL
         + "from "+ wideTabularWithClauseName + NL
@@ -330,7 +317,7 @@ order by CMO_0000289
 			columns.add(col);
 		}
 		columns.add("ea.stable_id");
-	    return "    select " + String.join(", " + NL + "  ", columns) + NL +
+	    return "    select " + String.join(", " + NL + "    ", columns) + NL +
     		 "    from " + schema + "entityattributes ea, " + schema + outputEntity.getAncestorsTableName() + " a" + NL + 
     		 "    where ea.stable_id in (select * from " + subsetWithClauseName + ")" + NL +
     		 "    and ea.stable_id = a." + outputEntity.getPKColName() + NL +
@@ -340,7 +327,7 @@ order by CMO_0000289
   static String generateRawWideTabularOuterStmt(String innerStmt) {
 		return "  select rownum as r, wt.*" + NL +
 			   "  from (" + NL +
-			   innerStmt +
+			   innerStmt + NL +
 			   "  ) wt";			   
   }
 

@@ -102,7 +102,7 @@ public class StudySubsettingUtils {
   }
 
   /**
-   * @return an interator of maps, each representing a single row in the tall table
+   * @return an iterator of maps, each representing a single row in the tall table
    */
   private static Iterator<Map<String, String>> convertTallRowsResultSet(ResultSet rs, Entity outputEntity) {
     return new ResultSetIterator<>(rs, row -> Optional.of(EntityResultSetUtils.resultSetToTallRowMap(outputEntity, rs)));
@@ -147,13 +147,13 @@ public class StudySubsettingUtils {
    * The easiest way to do this is with a try-with-resources around this method's call.
    * @return stream of distribution tuples
    */
-  public static Stream<TwoTuple<String,Integer>> produceVariableDistribution(
+  public static Stream<TwoTuple<String,Long>> produceVariableDistribution(
       DataSource datasource, TreeNode<Entity> prunedEntityTree, Entity outputEntity,
       Variable distributionVariable, List<Filter> filters) {
     String sql = generateDistributionSql(outputEntity, distributionVariable, filters, prunedEntityTree);
+    LOG.info("Generated the following distribution SQL: " + NL + sql + NL);
     return ResultSets.openStream(datasource, sql, "Produce variable distribution", row -> Optional.of(
-
-        new TwoTuple<>(distributionVariable.getType().convertRowValueToStringValue(row), row.getInt(COUNT_COLUMN_NAME))));
+        new TwoTuple<>(distributionVariable.getType().convertRowValueToStringValue(row), row.getLong(COUNT_COLUMN_NAME))));
   }
 
   public static int getVariableCount(
@@ -366,19 +366,6 @@ order by Sample_stable_id
   }
   
   /**
-   * Generate SQL to produce a distribution for a single variable, for the specified subset.
-   */
-  static String generateDistributionSql(Entity outputEntity, Variable distributionVariable, List<Filter> filters, TreeNode<Entity> prunedEntityTree) {
-    return generateFilterWithClauses(prunedEntityTree, filters) + NL
-        + generateDistributionSelectClause(distributionVariable) + NL
-        + generateDistributionFromClause(outputEntity) + NL
-        + generateDistributionWhereClause(distributionVariable) + NL
-        + generateSubsetInClause(prunedEntityTree, outputEntity, outputEntity.getTallTableName()) + NL
-        + generateDistributionGroupByClause(distributionVariable) + NL
-        + "ORDER BY " + distributionVariable.getType().getTallTableColumnName() + " ASC";
-   }
-  
-  /**
    * Generate SQL to produce a count of the entities that have a value for a variable, for the specified subset.
    */
   static String generateVariableCountSql(Entity outputEntity, Variable variable, List<Filter> filters, TreeNode<Entity> prunedEntityTree) {
@@ -431,16 +418,30 @@ order by Sample_stable_id
     return "SELECT " + outputEntity.getAllPksSelectList(ancestorTblAbbrev) + ", " +
         TT_VARIABLE_ID_COL_NAME + ", " + String.join(", ", valColNames);
   }
-    
-  static String generateDistributionSelectClause(Variable distributionVariable) {
-   // return "SELECT " + distributionVariable.getType().getTallTableColumnName() + " as " + VALUE_COLUMN_NAME + ", count(" + distributionVariable.getEntity().getPKColName() + ") as " + COUNT_COLUMN_NAME;
-    return "SELECT " + distributionVariable.getType().getTallTableColumnName() + ", count(" + distributionVariable.getEntity().getPKColName() + ") as " + COUNT_COLUMN_NAME;
-  }
-  
+
   static String generateVariableCountSelectClause(Variable variable) {
     return "SELECT count(distinct " + variable.getEntity().getPKColName() + ") as " + COUNT_COLUMN_NAME;
   }
-  
+
+  /**
+   * Generate SQL to produce a distribution for a single variable, for the specified subset.
+   */
+  static String generateDistributionSql(Entity outputEntity, Variable distributionVariable, List<Filter> filters, TreeNode<Entity> prunedEntityTree) {
+    return generateFilterWithClauses(prunedEntityTree, filters) + NL
+        + generateDistributionSelectClause(distributionVariable) + NL
+        + generateDistributionFromClause(outputEntity) + NL
+        + generateDistributionWhereClause(distributionVariable) + NL
+        + generateSubsetInClause(prunedEntityTree, outputEntity, outputEntity.getTallTableName()) + NL
+        + generateDistributionGroupByClause(distributionVariable) + NL
+        + "ORDER BY " + distributionVariable.getType().getTallTableColumnName() + " ASC";
+   }
+
+  static String generateDistributionSelectClause(Variable distributionVariable) {
+    return "SELECT " +
+        distributionVariable.getType().getTallTableColumnName() +
+        ", count(" + distributionVariable.getEntity().getPKColName() + ") as " + COUNT_COLUMN_NAME;
+  }
+
   static String generateDistributionFromClause(Entity outputEntity) {
     return "FROM " + Resources.getAppDbSchema() + outputEntity.getTallTableName();
   }
@@ -479,7 +480,10 @@ order by Sample_stable_id
   static String generateJoiningSelectClause(Entity outputEntity, boolean returnAncestorIds) {
     List<String> returnedCols = ListBuilder.asList(outputEntity.getFullPKColName());
     if (returnAncestorIds) {
-      returnedCols.addAll(outputEntity.getAncestorPkColNames());
+      returnedCols.addAll(
+          outputEntity.getAncestorPkColNames().stream()
+              .map(pk -> outputEntity.getId() + "." + pk)
+              .collect(Collectors.toList()));
     }
     return "  SELECT " + returnedCols.stream().collect(Collectors.joining(", "));
   }

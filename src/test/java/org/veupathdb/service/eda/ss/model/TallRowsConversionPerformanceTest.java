@@ -36,7 +36,7 @@ public class TallRowsConversionPerformanceTest {
     TallRowsGeneratedResultIterator iterator = new TallRowsGeneratedResultIterator(entity, NUM_RECORDS_TO_PROCESS, CACHE_SAMPLE_RECORD);
     try (BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(OUTPUT_STREAM_PROVIDER.get()))) {
       Timer t = new Timer();
-      StudySubsettingUtils.writeWideRows(iterator, writer, outputColumns, entity);
+      StudySubsettingUtils.writeWideRowsNoReportConfig(iterator, writer, outputColumns, entity);
       writer.flush();
       LOG.info("Time to dump " + NUM_RECORDS_TO_PROCESS + " entity records: " + t.getElapsedString());
     }

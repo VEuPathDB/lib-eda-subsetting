@@ -234,7 +234,7 @@ public class Studies implements org.veupathdb.service.eda.generated.resources.St
 
     // unpack data from API input to model objects
     DataSource ds = Resources.getApplicationDataSource();
-    RequestBundle req = RequestBundle.unpack(ds, studyId, entityId, request.getFilters(), ListBuilder.asList(variableId));
+    RequestBundle req = RequestBundle.unpack(ds, studyId, entityId, request.getFilters(), ListBuilder.asList(variableId), null);
     VariableWithValues var = getRequestedVariable(req);
 
     DistributionResult result = processDistributionRequest(ds, req.getStudy(),
@@ -345,11 +345,12 @@ public class Studies implements org.veupathdb.service.eda.generated.resources.St
     
     DataSource datasource = Resources.getApplicationDataSource();
     
-    RequestBundle request = RequestBundle.unpack(datasource, studyId, entityId, requestBody.getFilters(), requestBody.getOutputVariableIds());
+    RequestBundle request = RequestBundle.unpack(datasource, studyId, entityId, requestBody.getFilters(), requestBody.getOutputVariableIds(), requestBody.getReportConfig());
     
     EntityTabularPostResponseStream streamer = new EntityTabularPostResponseStream
         (outStream -> StudySubsettingUtils.produceTabularSubset(datasource, request.getStudy(),
-            request.getTargetEntity(), request.getRequestedVariables(), request.getFilters(), outStream));
+            request.getTargetEntity(), request.getRequestedVariables(), request.getFilters(),
+            request.getReportConfig(), outStream));
 
     return PostStudiesEntitiesTabularByStudyIdAndEntityIdResponse
         .respond200WithTextPlain(streamer);
@@ -362,7 +363,7 @@ public class Studies implements org.veupathdb.service.eda.generated.resources.St
     DataSource datasource = Resources.getApplicationDataSource();
 
     // unpack data from API input to model objects
-    RequestBundle request = RequestBundle.unpack(datasource, studyId, entityId, rawRequest.getFilters(), Collections.emptyList());
+	RequestBundle request = RequestBundle.unpack(datasource, studyId, entityId, rawRequest.getFilters(), Collections.emptyList(), null);
 
     TreeNode<Entity> prunedEntityTree = StudySubsettingUtils.pruneTree(
         request.getStudy().getEntityTree(), request.getFilters(), request.getTargetEntity());
@@ -375,5 +376,4 @@ public class Studies implements org.veupathdb.service.eda.generated.resources.St
 
     return  PostStudiesEntitiesCountByStudyIdAndEntityIdResponse.respond200WithApplicationJson(response);
   }
-
 }

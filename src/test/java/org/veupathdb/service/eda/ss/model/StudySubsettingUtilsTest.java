@@ -5,7 +5,6 @@ import org.apache.logging.log4j.Logger;
 import org.gusdb.fgputil.DelimitedDataParser;
 import org.gusdb.fgputil.FormatUtil;
 import org.gusdb.fgputil.Tuples.TwoTuple;
-import org.gusdb.fgputil.db.runner.SQLRunner;
 import org.gusdb.fgputil.functional.Functions;
 import org.gusdb.fgputil.functional.TreeNode;
 import org.gusdb.fgputil.iterator.IteratorUtil;
@@ -152,7 +151,7 @@ public class StudySubsettingUtilsTest {
     List<Filter> filters = new ArrayList<>();
     filters.add(_model.obsWeightFilter);
     filters.add(_model.obsFavNewYearsFilter);
-    String withClause = StudySubsettingUtils.generateWithClause(_model.householdObs, filters);
+    String withClause = StudySubsettingUtils.generateFilterWithClause(_model.householdObs, filters);
     String expectedWithClause = _model.householdObs.getWithClauseName() + " as (" + NL +
         "  SELECT " + _model.household.getPKColName() + ", " + _model.householdObs.getPKColName() + " FROM " + _model.householdObs.getAncestorsTableName() + NL +
         ")";
@@ -170,7 +169,7 @@ public class StudySubsettingUtilsTest {
     filters.add(_model.obsMoodFilter);
     filters.add(_model.obsFavNumberFilter);
     filters.add(_model.houseRoofFilter);
-    String withClause = StudySubsettingUtils.generateWithClause(_model.observation, filters);
+    String withClause = StudySubsettingUtils.generateFilterWithClause(_model.observation, filters);
  
     List<String> selectColsList = new ArrayList<>();
     selectColsList.add("a." + _model.observation.getPKColName());
@@ -288,7 +287,7 @@ public class StudySubsettingUtilsTest {
     TreeNode<Entity> prunedTree = StudySubsettingUtils.pruneTree(_model.study.getEntityTree(), filters, outputEntity);
 
     List<String> from = Arrays.asList(_model.household.getWithClauseName(), _model.householdObs.getWithClauseName(), _model.observation.getWithClauseName());
-    String inClause = StudySubsettingUtils.generateInClause(prunedTree, outputEntity, "t");
+    String inClause = StudySubsettingUtils.generateSubsetInClause(prunedTree, outputEntity, "t");
     String expected = "AND t." + _model.householdObs.getPKColName() + " IN (" + NL +
         "  SELECT " + _model.householdObs.getFullPKColName() + NL +
         "  FROM " + String.join(", ", from) + NL +
@@ -309,7 +308,7 @@ public class StudySubsettingUtilsTest {
 
     TreeNode<Entity> prunedTree = StudySubsettingUtils.pruneTree(_model.study.getEntityTree(), filters, _model.participant);
 
-    String sql = StudySubsettingUtils.generateTabularSql(outputVariables, _model.participant, filters, prunedTree);
+    String sql = StudySubsettingUtils.generateTabularSqlNoReportConfig(outputVariables, _model.participant, filters, prunedTree);
     assertNotEquals("", sql);
     System.out.println("Tabular SQL:" + "\n" + sql);
   }
@@ -407,7 +406,7 @@ public class StudySubsettingUtilsTest {
     ByteArrayOutputStream outStream = new ByteArrayOutputStream();
 
     StudySubsettingUtils.produceTabularSubset(_dataSource, study, entity,
-        variables, filters, outStream);
+        variables, filters, null, outStream);
     String[] expected = {
     "Prtcpnt_stable_id", "Hshld_stable_id", "var_17",  "var_20",
     "201", "101",     "blond",   "Martin",
@@ -438,7 +437,7 @@ public class StudySubsettingUtilsTest {
     ByteArrayOutputStream outStream = new ByteArrayOutputStream();
 
     StudySubsettingUtils.produceTabularSubset(_dataSource, study, entity,
-        variables, filters, outStream);
+        variables, filters, null, outStream);
     String[] expected = {
     "Prtcpnt_stable_id", "Hshld_stable_id", "var_17",  "var_20",
     "201", "101",     "blond",   "Martin",
@@ -613,7 +612,8 @@ public class StudySubsettingUtilsTest {
 
   private List<Map<String,String>> getTabularOutputRows(Entity entity, List<Variable> requestedVars) {
     ByteArrayOutputStream buffer = new ByteArrayOutputStream();
-    StudySubsettingUtils.produceTabularSubset(_dataSource, _model.study, entity, requestedVars, Collections.emptyList(), buffer);
+    StudySubsettingUtils.produceTabularSubset(_dataSource, _model.study, entity, requestedVars, 
+    		Collections.emptyList(), null, buffer);
     Scanner scanner = new Scanner(buffer.toString());
     if (!scanner.hasNextLine()) {
       throw new RuntimeException("Tabular output did not contain a header row.");

@@ -17,9 +17,11 @@ import org.veupathdb.service.eda.generated.model.APILongitudeRangeFilter;
 import org.veupathdb.service.eda.generated.model.APINumberRangeFilter;
 import org.veupathdb.service.eda.generated.model.APINumberSetFilter;
 import org.veupathdb.service.eda.generated.model.APIStringSetFilter;
+import org.veupathdb.service.eda.generated.model.APITabularReportConfig;
 import org.veupathdb.service.eda.ss.model.Entity;
 import org.veupathdb.service.eda.ss.model.MetadataCache;
 import org.veupathdb.service.eda.ss.model.Study;
+import org.veupathdb.service.eda.ss.model.TabularReportConfig;
 import org.veupathdb.service.eda.ss.model.Variable;
 import org.veupathdb.service.eda.ss.model.filter.DateRangeFilter;
 import org.veupathdb.service.eda.ss.model.filter.DateSetFilter;
@@ -31,7 +33,7 @@ import org.veupathdb.service.eda.ss.model.filter.StringSetFilter;
 
 public class RequestBundle {
 
-  static RequestBundle unpack(DataSource datasource, String studyId, String entityId, List<APIFilter> apiFilters, List<String> variableIds) {
+  static RequestBundle unpack(DataSource datasource, String studyId, String entityId, List<APIFilter> apiFilters, List<String> variableIds, APITabularReportConfig apiReportConfig) {
     String studIdStr = "Study ID " + studyId;
     if (!validateStudyId(datasource, studyId))
       throw new NotFoundException(studIdStr + " is not found.");
@@ -42,8 +44,10 @@ public class RequestBundle {
     List<Variable> variables = getEntityVariables(entity, variableIds);
 
     List<Filter> filters = constructFiltersFromAPIFilters(study, apiFilters);
+    
+    TabularReportConfig reportConfig = constructTabularReportConfigFromAPIReportConfig(apiReportConfig);
 
-    return new RequestBundle(study, entity, variables, filters);
+    return new RequestBundle(study, entity, variables, filters, reportConfig);
   }
 
   /*
@@ -113,6 +117,18 @@ public class RequestBundle {
     }
     return subsetFilters;
   }
+  
+  static TabularReportConfig constructTabularReportConfigFromAPIReportConfig(APITabularReportConfig apiConfig) {
+	  if (apiConfig == null) return null;
+	  Integer numRows = null;
+	  Integer offset = null;
+	  if (apiConfig.getPagingConfig() != null) {
+		  numRows = apiConfig.getPagingConfig().getNumRows();
+		  offset = apiConfig.getPagingConfig().getOffset();
+	  }
+	  return new TabularReportConfig(apiConfig.getSortingColumns(), numRows,
+			  offset);		  
+  }
 
   public static LocalDateTime parseDate(String dateStr) {
     try {
@@ -137,12 +153,14 @@ public class RequestBundle {
   private final List<Filter> _filters;
   private final Entity _targetEntity;
   private final List<Variable> _requestedVariables;
+  private final TabularReportConfig _reportConfig;
 
-  RequestBundle(Study study, Entity targetEntity, List<Variable> requestedVariables, List<Filter> filters) {
+  RequestBundle(Study study, Entity targetEntity, List<Variable> requestedVariables, List<Filter> filters, TabularReportConfig reportConfig) {
     _study = study;
     _targetEntity = targetEntity;
     _filters = filters;
     _requestedVariables = requestedVariables;
+    _reportConfig = reportConfig;
   }
 
   public Study getStudy() {
@@ -159,5 +177,9 @@ public class RequestBundle {
 
   public List<Variable> getRequestedVariables() {
     return _requestedVariables;
+  }
+  
+  public TabularReportConfig getReportConfig() {
+	  return _reportConfig;
   }
 }

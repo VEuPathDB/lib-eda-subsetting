@@ -2,7 +2,6 @@ package org.veupathdb.service.eda.ss.model;
 
 import java.util.List;
 
-
 public class VariableWithValues extends Variable {
 	  private final List<String> vocabulary;
 	  private final Boolean isTemporal;
@@ -45,5 +44,5 @@ public class VariableWithValues extends Variable {
 	public Boolean getIsMultiValued() {
 		return isMultiValued;
 	}
-
+	
 }

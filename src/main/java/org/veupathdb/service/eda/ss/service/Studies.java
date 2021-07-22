@@ -55,7 +55,7 @@ import org.veupathdb.service.eda.ss.model.StringVariable;
 import org.veupathdb.service.eda.ss.model.Study;
 import org.veupathdb.service.eda.ss.model.StudySubsettingUtils;
 import org.veupathdb.service.eda.ss.model.Variable;
-import org.veupathdb.service.eda.ss.model.Variable.VariableType;
+import org.veupathdb.service.eda.ss.model.VariableType;
 import org.veupathdb.service.eda.ss.model.VariableWithValues;
 import org.veupathdb.service.eda.ss.model.distribution.AbstractDistribution;
 import org.veupathdb.service.eda.ss.model.distribution.DateBinDistribution;

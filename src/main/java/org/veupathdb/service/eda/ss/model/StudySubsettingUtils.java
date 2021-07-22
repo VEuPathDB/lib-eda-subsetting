@@ -26,7 +26,6 @@ import org.gusdb.fgputil.db.stream.ResultSets;
 import org.gusdb.fgputil.functional.TreeNode;
 import org.gusdb.fgputil.iterator.GroupingIterator;
 import org.veupathdb.service.eda.ss.Resources;
-import org.veupathdb.service.eda.ss.model.Variable.VariableType;
 import org.veupathdb.service.eda.ss.model.filter.Filter;
 
 import static org.gusdb.fgputil.iterator.IteratorUtil.toIterable;
@@ -77,9 +76,9 @@ public class StudySubsettingUtils {
 
         writer.write(String.join(TAB, outputColumns) + NL);
         if (reportConfig == null)
-        	writeWideRowsNoReportConfig(convertTallRowsResultSet(rs, outputEntity), writer, outputColumns, outputEntity);
-        else         
-        	writeWideRowsWithReportConfig(rs, writer, outputColumns, outputEntity);
+          writeWideRowsNoReportConfig(convertTallRowsResultSet(rs, outputEntity), writer, outputColumns, outputEntity);
+        else
+          writeWideRowsWithReportConfig(rs, writer, outputColumns, outputEntity);
 
         writer.flush();
         return null;
@@ -192,22 +191,21 @@ public class StudySubsettingUtils {
    */
   static String generateTabularSqlNoReportConfig(List<Variable> outputVariables, Entity outputEntity, List<Filter> filters, TreeNode<Entity> prunedEntityTree) {
 
-    String tallTblAbbrev = "t"; 
-    String ancestorTblAbbrev = "a";
     LOG.debug("--------------------- generateTabularSql ------------------");
 
-
-        return
-        // with clauses create an entity-named filtered result for each relevant entity
-        generateFilterWithClauses(prunedEntityTree, filters) + NL +
-        // select
-        generateTabularSelectClause(outputEntity, ancestorTblAbbrev) + NL
-        + generateTabularFromClause(outputEntity, prunedEntityTree, ancestorTblAbbrev) + NL
-        // left join to attributes table so we always get at least one row per subset
-        //   record, even if no data exists for requested vars (or no vars requested).
-        // null rows will be handled in the tall-to-wide rows conversion
-        + generateLeftJoin(outputEntity, outputVariables, ancestorTblAbbrev, tallTblAbbrev) + NL
-        + generateTabularOrderByClause(outputEntity) + NL;
+    String tallTblAbbrev = "tall";
+    String ancestorTblAbbrev = "subset";
+    return
+      // with clauses create an entity-named filtered result for each relevant entity
+      generateFilterWithClauses(prunedEntityTree, filters) + NL +
+      // select
+      generateTabularSelectClause(outputEntity, ancestorTblAbbrev) + NL +
+      generateTabularFromClause(outputEntity, prunedEntityTree, ancestorTblAbbrev) + NL +
+      // left join to attributes table so we always get at least one row per subset
+      //   record, even if no data exists for requested vars (or no vars requested).
+      // null rows will be handled in the tall-to-wide rows conversion
+      generateLeftJoin(outputEntity, outputVariables, ancestorTblAbbrev, tallTblAbbrev) + NL +
+      generateTabularOrderByClause(outputEntity) + NL;
   }
 
   /**
@@ -426,14 +424,43 @@ order by Sample_stable_id
   /**
    * Generate SQL to produce a distribution for a single variable, for the specified subset.
    */
+  /*
+  -- WINNER!  This is the distribution SQL we want (includes null count)
+WITH
+EUPATH_0000096 as (
+  SELECT Household_stable_id, Participant_stable_id FROM apidb.Ancestors_UMSP00001_1_Participant
+)
+select number_value, count(Participant_stable_id) from (
+select subset.*, tall.number_value
+from EUPATH_0000096 subset
+left join (
+  select * from apidb.AttributeValue_UMSP00001_1_Participant
+  where attribute_stable_id = 'IAO_0000414'
+) tall
+on tall.Participant_stable_id = subset.Participant_stable_id
+)
+group by number_value
+order by number_value desc;
+   */
+
   static String generateDistributionSql(Entity outputEntity, Variable distributionVariable, List<Filter> filters, TreeNode<Entity> prunedEntityTree) {
-    return generateFilterWithClauses(prunedEntityTree, filters) + NL
-        + generateDistributionSelectClause(distributionVariable) + NL
-        + generateDistributionFromClause(outputEntity) + NL
-        + generateDistributionWhereClause(distributionVariable) + NL
-        + generateSubsetInClause(prunedEntityTree, outputEntity, outputEntity.getTallTableName()) + NL
-        + generateDistributionGroupByClause(distributionVariable) + NL
-        + "ORDER BY " + distributionVariable.getType().getTallTableColumnName() + " ASC";
+
+    String tallTblAbbrev = "tall";
+    String ancestorTblAbbrev = "subset";
+    return
+      // with clauses create an entity-named filtered result for each relevant entity
+      generateFilterWithClauses(prunedEntityTree, filters) + NL +
+      generateDistributionSelectClause(distributionVariable) + NL +
+      " FROM ( " + NL +
+        generateTabularSelectClause(outputEntity, ancestorTblAbbrev) + NL +
+        generateTabularFromClause(outputEntity, prunedEntityTree, ancestorTblAbbrev) + NL +
+        // left join to attributes table so we always get at least one row per subset
+        //   record, even if no data exists for requested vars (or no vars requested).
+        // null rows will be handled in the tall-to-wide rows conversion
+        generateLeftJoin(outputEntity, ListBuilder.asList(distributionVariable), ancestorTblAbbrev, tallTblAbbrev) + NL +
+      " ) " + NL +
+      generateDistributionGroupByClause(distributionVariable) + NL +
+      "ORDER BY " + distributionVariable.getType().getTallTableColumnName() + " ASC";
    }
 
   static String generateDistributionSelectClause(Variable distributionVariable) {

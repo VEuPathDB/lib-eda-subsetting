@@ -69,7 +69,8 @@ public class NumberBinDistribution extends AbstractBinDistribution<NumberVariabl
         stats.setSubsetMin(_subsetMin);
         stats.setSubsetMax(_subsetMax);
         stats.setSubsetMean(_sumOfValues / _numValues);
-        // FIXME: int cast ok here?
+        // FIXME: int casts ok here?
+        stats.setSubsetSize((int)subsetEntityCount);
         stats.setNumVarValues((int)_numValues);
         stats.setNumDistinctValues((int)_numDistinctValues);
         stats.setNumDistinctEntityRecords((int)(subsetEntityCount - missingCasesCount));

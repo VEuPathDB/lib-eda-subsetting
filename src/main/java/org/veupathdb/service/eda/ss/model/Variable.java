@@ -1,11 +1,7 @@
 package org.veupathdb.service.eda.ss.model;
 
-import org.gusdb.fgputil.FormatUtil;
-import org.gusdb.fgputil.functional.FunctionalInterfaces.FunctionWithException;
-import java.sql.ResultSet;
+public class Variable {
 
-public class Variable {	
-	
   private final String providerLabel;
   private final String id;
   private final Entity entity;
@@ -18,44 +14,6 @@ public class Variable {
   private final boolean hasValues;
 
   private final Integer displayOrder;
-  
-  public enum VariableType {
-    STRING ("string_value", rs -> rs.getString("string_value"), "string"),  
-    NUMBER ("number_value", rs -> String.valueOf(rs.getDouble("number_value")), "number"),
-    DATE   ("date_value", rs -> FormatUtil.formatDateTimeNoTimezone(rs.getDate("date_value")), "date"),
-    LONGITUDE ("number_value", rs -> String.valueOf(rs.getDouble("number_value")), "longitude");
-
-    private final String tallTableColumnName;
-    private final String typeString;
-    private final FunctionWithException<ResultSet, String> resultSetToStringValue;
-
-    VariableType(String tallTableColumnName, FunctionWithException<ResultSet, String> resultSetToStringValue, String typeString) {
-      this.tallTableColumnName = tallTableColumnName;
-      this.resultSetToStringValue = resultSetToStringValue;
-      this.typeString = typeString;
-    }
-    
-    public String getTallTableColumnName() {
-      return this.tallTableColumnName;
-    }
-
-    public static VariableType fromString(String str) {
-      if (str.equals(STRING.typeString) || str.equals("boolean")) return STRING;  // TODO remove boolean hack
-      else if (str.equals(NUMBER.typeString)) return NUMBER;
-      else if (str.equals(LONGITUDE.typeString)) return LONGITUDE;
-      else if (str.equals(DATE.typeString)) return DATE;
-      else throw new RuntimeException("Illegal variable type string: " + str);
-    }
-    
-    public String convertRowValueToStringValue(ResultSet rs) {
-      try {
-        return resultSetToStringValue.apply(rs);
-      }
-      catch (Exception e) {
-        throw new RuntimeException(e);
-      }
-    }
-  }
 
   private final static String CONT_STR = "continuous";
   private final static String CAT_STR = "categorical";

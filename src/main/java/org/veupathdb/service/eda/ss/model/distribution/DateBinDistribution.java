@@ -107,6 +107,7 @@ public class DateBinDistribution extends AbstractBinDistribution<DateVariable, L
         stats.setSubsetMean(RequestBundle.formatDate(
             LocalDateTime.ofEpochSecond(_sumOfValues / _numValues, 0, ZoneOffset.UTC)));
         // FIXME: int casts ok here?
+        stats.setSubsetSize((int)subsetEntityCount);
         stats.setNumVarValues((int)_numValues);
         stats.setNumDistinctValues((int)_numDistinctValues);
         stats.setNumDistinctEntityRecords((int)(subsetEntityCount - missingCasesCount));

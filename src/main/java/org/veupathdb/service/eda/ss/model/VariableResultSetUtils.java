@@ -11,7 +11,6 @@ import java.util.Arrays;
 import java.util.List;
 import org.veupathdb.service.eda.ss.Resources;
 import org.veupathdb.service.eda.ss.model.Variable.VariableDisplayType;
-import org.veupathdb.service.eda.ss.model.Variable.VariableType;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import static org.gusdb.fgputil.FormatUtil.NL;
@@ -76,7 +75,7 @@ class VariableResultSetUtils {
     	String vocabString = rs.getString(VOCABULARY_COL_NAME);
     	List<String> vocab = rs.wasNull()? null : Arrays.asList(JsonUtil.Jackson.readValue(vocabString, String[].class));
 
-        VariableType type = Variable.VariableType.fromString(getRsStringNotNull(rs, VARIABLE_TYPE_COL_NAME));
+        VariableType type = VariableType.fromString(getRsStringNotNull(rs, VARIABLE_TYPE_COL_NAME));
 
     	if (type == VariableType.NUMBER || type == VariableType.LONGITUDE) return new NumberVariable(
                 providerLabel,

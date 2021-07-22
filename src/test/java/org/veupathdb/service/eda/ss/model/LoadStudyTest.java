@@ -13,7 +13,6 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.veupathdb.service.eda.ss.Resources;
-import org.veupathdb.service.eda.ss.model.Variable.VariableType;
 
 import static org.junit.jupiter.api.Assertions.*;
 

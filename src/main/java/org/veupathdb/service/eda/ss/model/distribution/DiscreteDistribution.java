@@ -45,6 +45,7 @@ public class DiscreteDistribution extends AbstractDistribution<VariableWithValue
     }
     HistogramStats stats = new HistogramStatsImpl();
     // FIXME: int casts ok here?
+    stats.setSubsetSize(subsetEntityCount);
     stats.setNumMissingCases((int)missingCasesCount);
     stats.setNumDistinctValues((int)distinctValueCount);
     stats.setNumVarValues((int)totalValueCount);

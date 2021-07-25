@@ -7,7 +7,7 @@ import org.veupathdb.service.eda.ss.model.RdbmsColumnNames;
 
 import static org.gusdb.fgputil.FormatUtil.NL;
 
-public class NumberSetFilter extends Filter {
+public class NumberSetFilter extends SingleValueFilter {
 
   private List<Number> numberSet;
   
@@ -17,7 +17,7 @@ public class NumberSetFilter extends Filter {
   }
 
   @Override
-  public String getAndClausesSql() {
+  public String getFilteringAndClausesSql() {
     List<String> vals = numberSet.stream().map(String::valueOf).collect(Collectors.toList());
     return "  AND " + RdbmsColumnNames.NUMBER_VALUE_COL_NAME + " IN (" + String.join(", ", vals) + " )" + NL;
   }

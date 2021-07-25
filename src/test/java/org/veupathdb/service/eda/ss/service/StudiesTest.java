@@ -104,8 +104,7 @@ public class StudiesTest {
 
       afs.add(stringFilter);
 
-      // illegit... can't be the superclass
-      APIFilter nakedFilter = new APIFilterImpl();
+      APIStringSetFilter nakedFilter = new APIStringSetFilterImpl();
       nakedFilter.setEntityId(_model.observation.getId());
       nakedFilter.setVariableId(_model.weight.getId());
       afs.add(nakedFilter);

@@ -14,6 +14,8 @@ import org.veupathdb.service.eda.generated.model.APIDateRangeFilter;
 import org.veupathdb.service.eda.generated.model.APIDateSetFilter;
 import org.veupathdb.service.eda.generated.model.APIFilter;
 import org.veupathdb.service.eda.generated.model.APILongitudeRangeFilter;
+import org.veupathdb.service.eda.generated.model.APIMultiFilter;
+import org.veupathdb.service.eda.generated.model.APIMultiFilterSubFilter;
 import org.veupathdb.service.eda.generated.model.APINumberRangeFilter;
 import org.veupathdb.service.eda.generated.model.APINumberSetFilter;
 import org.veupathdb.service.eda.generated.model.APIStringSetFilter;
@@ -27,6 +29,9 @@ import org.veupathdb.service.eda.ss.model.filter.DateRangeFilter;
 import org.veupathdb.service.eda.ss.model.filter.DateSetFilter;
 import org.veupathdb.service.eda.ss.model.filter.Filter;
 import org.veupathdb.service.eda.ss.model.filter.LongitudeRangeFilter;
+import org.veupathdb.service.eda.ss.model.filter.MultiFilter;
+import org.veupathdb.service.eda.ss.model.filter.MultiFilter.MultiFilterOperation;
+import org.veupathdb.service.eda.ss.model.filter.MultiFilterSubFilter;
 import org.veupathdb.service.eda.ss.model.filter.NumberRangeFilter;
 import org.veupathdb.service.eda.ss.model.filter.NumberSetFilter;
 import org.veupathdb.service.eda.ss.model.filter.StringSetFilter;
@@ -85,31 +90,50 @@ public class RequestBundle {
       Entity entity = study.getEntity(apiFilter.getEntityId()).orElseThrow(excep);
 
       // validate filter's variable id
-      String varId = apiFilter.getVariableId();
-      entity.getVariable(varId).orElseThrow(() -> new BadRequestException("Variable '" + varId + "' is not found"));
 
       Filter newFilter;
       if (apiFilter instanceof APIDateRangeFilter) {
         APIDateRangeFilter f = (APIDateRangeFilter)apiFilter;
+        String varId = f.getVariableId();
+        entity.getVariable(varId).orElseThrow(() -> new BadRequestException("Variable '" + varId + "' is not found"));
         newFilter = new DateRangeFilter(entity, varId,
             parseDate(f.getMin()), parseDate(f.getMax()));
       } else if (apiFilter instanceof APIDateSetFilter) {
         APIDateSetFilter f = (APIDateSetFilter)apiFilter;
+        String varId = f.getVariableId();
+        entity.getVariable(varId).orElseThrow(() -> new BadRequestException("Variable '" + varId + "' is not found"));
         List<LocalDateTime> dateSet = new ArrayList<>();
         for (String dateStr : f.getDateSet()) dateSet.add(parseDate(dateStr));
         newFilter = new DateSetFilter(entity, varId, dateSet);
       } else if (apiFilter instanceof APINumberRangeFilter) {
         APINumberRangeFilter f = (APINumberRangeFilter)apiFilter;
+        String varId = f.getVariableId();
+        entity.getVariable(varId).orElseThrow(() -> new BadRequestException("Variable '" + varId + "' is not found"));
         newFilter = new NumberRangeFilter(entity, varId, f.getMin(), f.getMax());
       } else if (apiFilter instanceof APINumberSetFilter) {
         APINumberSetFilter f = (APINumberSetFilter)apiFilter;
+        String varId = f.getVariableId();
+        entity.getVariable(varId).orElseThrow(() -> new BadRequestException("Variable '" + varId + "' is not found"));
         newFilter = new NumberSetFilter(entity, varId, f.getNumberSet());
       } else if (apiFilter instanceof APILongitudeRangeFilter) {
         APILongitudeRangeFilter f = (APILongitudeRangeFilter)apiFilter;
+        String varId = f.getVariableId();
+        entity.getVariable(varId).orElseThrow(() -> new BadRequestException("Variable '" + varId + "' is not found"));
         newFilter = new LongitudeRangeFilter(entity, varId, f.getLeft(), f.getRight());
       } else if (apiFilter instanceof APIStringSetFilter) {
         APIStringSetFilter f = (APIStringSetFilter)apiFilter;
+        String varId = f.getVariableId();
+        entity.getVariable(varId).orElseThrow(() -> new BadRequestException("Variable '" + varId + "' is not found"));
         newFilter = new StringSetFilter(entity, varId, f.getStringSet());
+      } else if (apiFilter instanceof APIMultiFilter) {
+          APIMultiFilter f = (APIMultiFilter)apiFilter;
+          List<MultiFilterSubFilter> subFilters = new ArrayList<>();
+          for (APIMultiFilterSubFilter apiSubFilter : f.getSubFilters()) {
+        	  String variableId = apiSubFilter.getVariableId();
+        	  Variable var = entity.getVariable(variableId).orElseThrow(() -> new BadRequestException("Multifilter includes invalid variable ID: " + variableId));
+        	  subFilters.add(new MultiFilterSubFilter(var, apiSubFilter.getStringSet()));
+          }
+          newFilter = new MultiFilter(entity, subFilters,  MultiFilterOperation.fromString(f.getOperation().getValue()));
       } else
         throw new InternalServerErrorException("Input filter not an expected subclass of Filter");
 

@@ -1,49 +1,37 @@
 package org.veupathdb.service.eda.ss.model.filter;
 
+import static org.gusdb.fgputil.FormatUtil.NL;
 import org.veupathdb.service.eda.ss.Resources;
 import org.veupathdb.service.eda.ss.model.Entity;
 
-import static org.gusdb.fgputil.FormatUtil.NL;
-import static org.veupathdb.service.eda.ss.model.RdbmsColumnNames.*;
-
 public abstract class Filter {
   protected Entity entity;
-  protected String variableId;
   
-  public Filter(Entity entity, String variableId) {
+  public Filter(Entity entity) {
     if (entity == null) throw new RuntimeException("Null entity not allowed");
-    entity.getVariable(variableId).orElseThrow(() -> new RuntimeException("Entity " + entity.getId() + " does not contain variable " + variableId));
     this.entity = entity;
-    this.variableId = variableId;
   }
 
-  public String getSql() {
-    return entity.getAncestorPkColNames().isEmpty()?
-        getSqlNoAncestors() :
-          getSqlWithAncestors();
-  }
+  public abstract String getSql();
 
-  private String getSqlWithAncestors() {
-
-    return "  SELECT " + entity.getAllPksSelectList("a") + NL
-        + "  FROM " + Resources.getAppDbSchema() + entity.getTallTableName() + " t, " + Resources.getAppDbSchema() + entity.getAncestorsTableName() + " a" + NL
-        + "  WHERE t." + entity.getPKColName() + " = a." + entity.getPKColName() + NL
-        + "  AND " + TT_VARIABLE_ID_COL_NAME + " = '" + variableId + "'" + NL
-        + getAndClausesSql();
-  }
+	/*
+	 * Get SQL to perform the filter. Include ancestor IDs.
+	 */
+     protected String getSingleFilterCommonSqlWithAncestors() {
   
-  private String getSqlNoAncestors() {
-    
-    return "  SELECT " + entity.getPKColName() + NL
-        + "  FROM " + Resources.getAppDbSchema() + entity.getTallTableName() + NL
-        + "  WHERE " + TT_VARIABLE_ID_COL_NAME + " = '" + variableId + "'" + NL
-        + getAndClausesSql();
-  }
+	// join to ancestors table to get ancestor ID
 
-  /**
-   * subclasses provide AND clauses specific to their type
-   */
-  public abstract String getAndClausesSql();
+	    return "  SELECT " + entity.getAllPksSelectList("a") + NL
+	        + "  FROM " + Resources.getAppDbSchema() + entity.getTallTableName() + " t, " + Resources.getAppDbSchema() + entity.getAncestorsTableName() + " a" + NL
+	        + "  WHERE t." + entity.getPKColName() + " = a." + entity.getPKColName() + NL;
+	}
+
+	protected String SingleFilterCommonSqlNoAncestors() {
+
+		return "  SELECT " + entity.getPKColName() + NL
+				+ "  FROM " + Resources.getAppDbSchema() + entity.getTallTableName() + NL
+				+ "  WHERE 1 = 1 --no-op where clause for code generation simplicity" + NL;
+	}
 
   public Entity getEntity() {
     return entity;

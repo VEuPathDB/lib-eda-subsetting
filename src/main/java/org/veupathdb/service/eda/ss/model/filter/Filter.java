@@ -23,14 +23,14 @@ public abstract class Filter {
 
 	    return "  SELECT " + entity.getAllPksSelectList("a") + NL
 	        + "  FROM " + Resources.getAppDbSchema() + entity.getTallTableName() + " t, " + Resources.getAppDbSchema() + entity.getAncestorsTableName() + " a" + NL
-	        + "  WHERE t." + entity.getPKColName() + " = a." + entity.getPKColName() + NL;
+	        + "  WHERE t." + entity.getPKColName() + " = a." + entity.getPKColName();
 	}
 
 	protected String SingleFilterCommonSqlNoAncestors() {
 
 		return "  SELECT " + entity.getPKColName() + NL
 				+ "  FROM " + Resources.getAppDbSchema() + entity.getTallTableName() + NL
-				+ "  WHERE 1 = 1 --no-op where clause for code generation simplicity" + NL;
+				+ "  WHERE 1 = 1 --no-op where clause for code generation simplicity";
 	}
 
   public Entity getEntity() {

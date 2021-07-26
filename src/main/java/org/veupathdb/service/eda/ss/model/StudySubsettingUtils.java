@@ -64,9 +64,9 @@ public class StudySubsettingUtils {
 
     TreeNode<Entity> prunedEntityTree = pruneTree(study.getEntityTree(), filters, outputEntity);
 
-    String sql = reportConfig == null?
-    		generateTabularSqlNoReportConfig(outputVariables, outputEntity, filters, prunedEntityTree) : 
-        		generateTabularSqlWithReportConfig(outputVariables, outputEntity, filters, reportConfig, prunedEntityTree);
+    String sql = reportConfig == null
+        ? generateTabularSqlNoReportConfig(outputVariables, outputEntity, filters, prunedEntityTree)
+        : generateTabularSqlWithReportConfig(outputVariables, outputEntity, filters, reportConfig, prunedEntityTree);
     LOG.debug("Generated the following tabular SQL: " + sql);
 
     List<String> outputColumns = getTabularOutputColumns(outputEntity, outputVariables);
@@ -544,8 +544,9 @@ order by number_value desc;
   }
   
   static String generateTabularOrderByClause(Entity outputEntity) {
-    List<String> cols = new ArrayList<>(outputEntity.getAncestorPkColNames());
+    List<String> cols = new ArrayList<>();
     cols.add(outputEntity.getPKColName());
+    cols.addAll(outputEntity.getAncestorPkColNames());
     return "ORDER BY " + String.join(", ", cols);
   }
   

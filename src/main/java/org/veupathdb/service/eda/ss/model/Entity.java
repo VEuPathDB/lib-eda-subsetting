@@ -83,7 +83,11 @@ public class Entity {
   public String getWithClauseName() {
     return id;
   }
-  
+
+  /**
+   * @return primary key column names of this entities ancestors,
+   * ordered by parent first, then grandparent, etc. until the root entity
+   */
   public List<String> getAncestorPkColNames() {
     return Collections.unmodifiableList(ancestorPkColNames);
   }

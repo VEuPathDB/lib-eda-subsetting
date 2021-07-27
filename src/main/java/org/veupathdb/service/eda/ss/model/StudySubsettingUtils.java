@@ -542,11 +542,14 @@ order by number_value desc;
     return parentEntity.getWithClauseName() + "." + parentEntity.getPKColName() + " = " +
         childEntity.getWithClauseName() + "." + parentEntity.getPKColName();
   }
-  
+
+  // need to order by the root of the tree first, then by each ID down the branch to the output entity
   static String generateTabularOrderByClause(Entity outputEntity) {
     List<String> cols = new ArrayList<>();
+    // reverse the order of the ancestor pk cols to go root first, parent last
+    outputEntity.getAncestorPkColNames().stream().forEach(a -> cols.add(0, a));
+    // add output entity last
     cols.add(outputEntity.getPKColName());
-    cols.addAll(outputEntity.getAncestorPkColNames());
     return "ORDER BY " + String.join(", ", cols);
   }
   

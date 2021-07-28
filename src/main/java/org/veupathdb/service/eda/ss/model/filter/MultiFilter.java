@@ -43,7 +43,7 @@ public class MultiFilter extends Filter {
 		String subFiltersSql = String.join("  " + operation.getName() + NL, subFiltersSqlList);
 		return "  select * from ( -- START OF MULTIFILTER" + NL
 				+ subFiltersSql + NL
-				+ "  ) -- END OF MULTIFILTER";
+				+ "  ) -- END OF MULTIFILTER" + NL;
 	}
 
 	public MultiFilter(Entity entity, List<MultiFilterSubFilter> subFilters, MultiFilterOperation operation) {

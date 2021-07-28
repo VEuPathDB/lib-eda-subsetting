@@ -64,9 +64,9 @@ public class StudySubsettingUtils {
 
     TreeNode<Entity> prunedEntityTree = pruneTree(study.getEntityTree(), filters, outputEntity);
 
-    String sql = reportConfig == null?
-    		generateTabularSqlNoReportConfig(outputVariables, outputEntity, filters, prunedEntityTree) : 
-        		generateTabularSqlWithReportConfig(outputVariables, outputEntity, filters, reportConfig, prunedEntityTree);
+    String sql = reportConfig == null
+        ? generateTabularSqlNoReportConfig(outputVariables, outputEntity, filters, prunedEntityTree)
+        : generateTabularSqlWithReportConfig(outputVariables, outputEntity, filters, reportConfig, prunedEntityTree);
     LOG.debug("Generated the following tabular SQL: " + sql);
 
     List<String> outputColumns = getTabularOutputColumns(outputEntity, outputVariables);
@@ -542,9 +542,13 @@ order by number_value desc;
     return parentEntity.getWithClauseName() + "." + parentEntity.getPKColName() + " = " +
         childEntity.getWithClauseName() + "." + parentEntity.getPKColName();
   }
-  
+
+  // need to order by the root of the tree first, then by each ID down the branch to the output entity
   static String generateTabularOrderByClause(Entity outputEntity) {
-    List<String> cols = new ArrayList<>(outputEntity.getAncestorPkColNames());
+    List<String> cols = new ArrayList<>();
+    // reverse the order of the ancestor pk cols to go root first, parent last
+    outputEntity.getAncestorPkColNames().stream().forEach(a -> cols.add(0, a));
+    // add output entity last
     cols.add(outputEntity.getPKColName());
     return "ORDER BY " + String.join(", ", cols);
   }

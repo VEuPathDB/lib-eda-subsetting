@@ -23,8 +23,6 @@ public class DateVariable extends VariableWithValues {
 		super(providerLabel, id, entity, VariableType.DATE, dataShape, displayType, displayName, displayOrder, parentId, definition,
 				vocabulary, isTemporal, isFeatured, isMergeKey, distinctValuesCount, isMultiValued);
 
-		String errPrefix = "In entity " + entity.getId() + " variable " + id + " has a null ";
-
 		if (dataShape == VariableDataShape.CONTINUOUS) {
       this.binUnits = BinUnits.valueOf(binUnits.toUpperCase());
       this.binUnitsOverride = binUnitsOverride == null ? null : BinUnits.valueOf(binUnitsOverride.toUpperCase());

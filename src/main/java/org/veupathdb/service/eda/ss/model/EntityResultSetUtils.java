@@ -13,6 +13,7 @@ import javax.sql.DataSource;
 
 import org.gusdb.fgputil.db.runner.SQLRunner;
 import org.gusdb.fgputil.functional.TreeNode;
+import org.json.JSONArray;
 import org.veupathdb.service.eda.ss.Resources;
 
 import static org.gusdb.fgputil.FormatUtil.NL;
@@ -130,12 +131,14 @@ public class EntityResultSetUtils {
     }
   }
   /**
-   * Return a function that transforms a list of tall table rows to a single wide row.
+   * Return a function that transforms a list of tall table rows for a given entity ID to a single wide row.
    * 
    * Tall table rows look like this:
    *   ancestor1_pk, ancestor2_pk, pk, variableA_id, value
    *   ancestor1_pk, ancestor2_pk, pk, variableB_id, value
    *   ancestor1_pk, ancestor2_pk, pk, variableC_id, value
+   *   
+   *   (ordered by the ancestry IDs and then the variable ID)
    *   
    * Output wide row looks like this:
    *   ancestor1_pk, ancestor2_pk, pk, variableA_value, variableB_value, variableC_value
@@ -150,29 +153,73 @@ public class EntityResultSetUtils {
 
       Map<String,String> firstTallRow = tallRows.get(0);
       Map<String, String> wideRow = new HashMap<>();
-
-      // add entity PK to the wide row
       String tallRowEntityId = firstTallRow.get(entity.getPKColName());
-      wideRow.put(entity.getPKColName(), tallRowEntityId);
-
-      // add ancestor PKs to wide row
-      for (String ancestorPkColName : entity.getAncestorPkColNames()) {
-        if (!firstTallRow.containsKey(ancestorPkColName))
-          throw new RuntimeException(errPrefix + " does not contain column " + ancestorPkColName);
-        wideRow.put(ancestorPkColName, firstTallRow.get(ancestorPkColName));
-      }
+      
+      addPrimaryKeysToWideRow(firstTallRow, entity, wideRow, tallRowEntityId, errPrefix);
 
       // loop through all tall rows and add vars to wide row, validating along the way
+      // temporarily store any multi-values in a dedicated map.  (at the end, reduce them to JSON string)
+      Map<String, List<String>> multiValues = null;  // this map only contains variables that have multiple values
       for (Map<String, String> tallRow : tallRows) {
         String variableId = tallRow.get(TT_VARIABLE_ID_COL_NAME);
-        if (variableId != null) {
+        if (variableId == null) continue;
+        else {
           validateTallRow(entity, tallRow, errPrefix, tallRowEntityId, variableId);
-          wideRow.put(variableId, tallRow.get(VARIABLE_VALUE_COL_NAME));
+          
+          // if we've already seen this variable ID, handle it as a multi-valued variable.
+          // (this is a rare case, so only allocate the array if needed)
+          if (wideRow.get(variableId) != null) multiValues = updateMultiValuesMap(variableId, tallRow, multiValues);
+          
+          // else handle single valued variable
+          else wideRow.put(variableId, tallRow.get(VARIABLE_VALUE_COL_NAME));
         }
       }
+      
+      // reduce multi-values to JSON string, and stuff into wide row
+      if (multiValues != null) putMultiValuesAsJsonIntoWideRow(multiValues, wideRow, entity);
+      
       return wideRow;
     };
   }
+
+  private static void addPrimaryKeysToWideRow(Map<String,String> firstTallRow, 
+      Entity entity, Map<String, String> wideRow, String tallRowEntityId, String errPrefix) {
+    // add entity PK to the wide row
+     wideRow.put(entity.getPKColName(), tallRowEntityId);
+
+    // add ancestor PKs to wide row
+    for (String ancestorPkColName : entity.getAncestorPkColNames()) {
+      if (!firstTallRow.containsKey(ancestorPkColName))
+        throw new RuntimeException(errPrefix + " does not contain column " + ancestorPkColName);
+      wideRow.put(ancestorPkColName, firstTallRow.get(ancestorPkColName));
+    }
+  }
+  
+  // update provided map (side-effect) with a new multi-value for the given variable ID.
+  // if map passed in is null, create new map
+  private static Map<String, List<String>> updateMultiValuesMap(String variableId, Map<String, String> tallRow, Map<String, List<String>> multiValuesMap) {
+	  if (multiValuesMap == null)  multiValuesMap = new HashMap<String, List<String>>();
+	  if (!multiValuesMap.containsKey(variableId)) multiValuesMap.put(variableId, new ArrayList<String>());
+	  multiValuesMap.get(variableId).add(tallRow.get(VARIABLE_VALUE_COL_NAME));
+	  return multiValuesMap;
+  }
+  
+  // for those variables that have multi-values, transform the list of string values to 
+  // appropriate json array, and put that array into the wide row
+	private static void putMultiValuesAsJsonIntoWideRow(Map<String, List<String>> multiValues,
+			Map<String, String> wideRow, Entity entity) {
+	  
+		for (String multiValVarId : multiValues.keySet()) {
+			Variable var = entity.getVariable(multiValVarId).orElseThrow(
+					() -> new RuntimeException("Metadata does not have multi-valued variable: " + multiValVarId));
+			if (!(var instanceof VariableWithValues))
+				throw new RuntimeException("Multi-valued variable does not have values: " + multiValVarId);
+
+			VariableWithValues vwv = (VariableWithValues) var;
+			JSONArray jsonArray = vwv.getType().convertStringListToJsonArray(multiValues.get(multiValVarId));
+			wideRow.put(multiValVarId, jsonArray.toString());
+		}
+	}
   
   private static void validateTallRow(Entity entity, Map<String,String> tallRow, String errPrefix, String tallRowEnityId, String variableId) {
     // do some simple validation

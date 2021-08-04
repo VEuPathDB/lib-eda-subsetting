@@ -187,7 +187,7 @@ public class StudySubsettingUtils {
   }
 
   /**
-   * Generate SQL to produce a multi-column tabular output (the requested variables), for the specified subset.
+   * Generate SQL to produce a tall stream of Entity ID, ancestry IDs, variable ID and values.  
    */
   static String generateTabularSqlNoReportConfig(List<Variable> outputVariables, Entity outputEntity, List<Filter> filters, TreeNode<Entity> prunedEntityTree) {
 
@@ -543,7 +543,7 @@ order by number_value desc;
         childEntity.getWithClauseName() + "." + parentEntity.getPKColName();
   }
 
-  // need to order by the root of the tree first, then by each ID down the branch to the output entity
+  // need to order by the root of the tree first, then by each ID down the branch to the output entity,
   static String generateTabularOrderByClause(Entity outputEntity) {
     List<String> cols = new ArrayList<>();
     // reverse the order of the ancestor pk cols to go root first, parent last

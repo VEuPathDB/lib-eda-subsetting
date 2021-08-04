@@ -206,9 +206,14 @@ public class Studies implements org.veupathdb.service.eda.generated.resources.St
       return apiVar;
     }
     else if (var.getType() == VariableType.LONGITUDE) {
+      NumberVariable numVar = (NumberVariable)var;
       APILongitudeVariable apiVar = new APILongitudeVariableImpl();
       setApiVarProps(apiVar, var);
-      apiVar.setDistinctValuesCount(apiVar.getDistinctValuesCount());
+      apiVar.setDistinctValuesCount(numVar.getDistinctValuesCount());
+      apiVar.setIsFeatured(false);
+      apiVar.setIsMergeKey(false);
+      apiVar.setIsMultiValued(false);
+      apiVar.setIsTemporal(false);
       return apiVar;
     }
     else {

@@ -64,6 +64,8 @@ public class Entity {
 
   public String getVariablesTableName() { return "AttributeGraph_" + getStudyAbbrev() + "_" + getAbbreviation(); }
 
+  public String getWideTableName() { return "Attributes_" + getStudyAbbrev() + "_" + getAbbreviation(); }
+
   public String getTallTableName() {
     return "AttributeValue_" + getStudyAbbrev() + "_" + getAbbreviation();
   }

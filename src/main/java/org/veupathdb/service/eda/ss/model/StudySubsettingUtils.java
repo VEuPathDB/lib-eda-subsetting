@@ -309,14 +309,11 @@ order by Sample_stable_id
 		List<String> columns = new ArrayList<String>();
 		columns.add(outputEntity.getPKColName());
 		columns.addAll(outputEntity.getAncestorPkColNames());
-		for (Variable var : outputVariables) {
-			String oracleJsonQuery = "json_query(atts, '$." + var.getId() + "') as " + var.getId();
-			String col = jsonQuery(oracleJsonQuery, null);
-			columns.add(col);
-		}
+		for (Variable var : outputVariables) columns.add(var.getId());
+		
 		columns.add("ea.stable_id");
 	    return "    select " + String.join(", " + NL + "    ", columns) + NL +
-    		 "    from " + schema + "entityattributes ea, " + schema + outputEntity.getAncestorsTableName() + " a" + NL + 
+    		 "    from " + schema + outputEntity.getWideTableName() + " ea, " + schema + outputEntity.getAncestorsTableName() + " a" + NL + 
     		 "    where ea.stable_id in (select * from " + subsetWithClauseName + ")" + NL +
     		 "    and ea.stable_id = a." + outputEntity.getPKColName() + NL +
     		 reportConfigOrderByClause(reportConfig, "    ");

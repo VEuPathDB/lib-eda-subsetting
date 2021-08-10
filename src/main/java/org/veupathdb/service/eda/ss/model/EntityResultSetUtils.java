@@ -154,29 +154,35 @@ public class EntityResultSetUtils {
       Map<String,String> firstTallRow = tallRows.get(0);
       Map<String, String> wideRow = new HashMap<>();
       String tallRowEntityId = firstTallRow.get(entity.getPKColName());
+      Map<String, List<String>> multiValues = null;  // this map only contains variables that have multiple values
+      Map<String, VariableWithValues> variablesMap = new HashMap<String, VariableWithValues>(); // ID -> VariableWithValues
       
       addPrimaryKeysToWideRow(firstTallRow, entity, wideRow, tallRowEntityId, errPrefix);
 
       // loop through all tall rows and add vars to wide row, validating along the way
       // temporarily store any multi-values in a dedicated map.  (at the end, reduce them to JSON string)
-      Map<String, List<String>> multiValues = null;  // this map only contains variables that have multiple values
       for (Map<String, String> tallRow : tallRows) {
         String variableId = tallRow.get(TT_VARIABLE_ID_COL_NAME);
         if (variableId == null) continue;
         else {
-          validateTallRow(entity, tallRow, errPrefix, tallRowEntityId, variableId);
           
-          // if we've already seen this variable ID, handle it as a multi-valued variable.
+          // validate row, and add this var to variablesMap if not already there
+          validateTallRow(entity, tallRow, errPrefix, tallRowEntityId, variableId, variablesMap);
+          
+          // handle multi valued variable.
           // (this is a rare case, so only allocate the array if needed)
-          if (wideRow.get(variableId) != null) multiValues = updateMultiValuesMap(variableId, tallRow, multiValues);
+          if (variablesMap.get(variableId).getIsMultiValued()) multiValues = updateMultiValuesMap(variableId, tallRow, multiValues);
           
           // else handle single valued variable
-          else wideRow.put(variableId, tallRow.get(VARIABLE_VALUE_COL_NAME));
+          else {
+            if (wideRow.containsKey(variableId)) throw new RuntimeException("Variable found to incorrectly have multiple values: " + variableId);
+            wideRow.put(variableId, tallRow.get(VARIABLE_VALUE_COL_NAME));
+          }
         }
       }
       
       // reduce multi-values to JSON string, and stuff into wide row
-      if (multiValues != null) putMultiValuesAsJsonIntoWideRow(multiValues, wideRow, entity);
+      if (multiValues != null) putMultiValuesAsJsonIntoWideRow(multiValues, wideRow, entity, variablesMap);
       
       return wideRow;
     };
@@ -198,30 +204,39 @@ public class EntityResultSetUtils {
   // update provided map (side-effect) with a new multi-value for the given variable ID.
   // if map passed in is null, create new map
   private static Map<String, List<String>> updateMultiValuesMap(String variableId, Map<String, String> tallRow, Map<String, List<String>> multiValuesMap) {
-	  if (multiValuesMap == null)  multiValuesMap = new HashMap<String, List<String>>();
-	  if (!multiValuesMap.containsKey(variableId)) multiValuesMap.put(variableId, new ArrayList<String>());
-	  multiValuesMap.get(variableId).add(tallRow.get(VARIABLE_VALUE_COL_NAME));
+
+    // if this is our first multi-valued guy, create the empty map
+    if (multiValuesMap == null)  multiValuesMap = new HashMap<String, List<String>>();
+
+    String tallRowValue = tallRow.get(VARIABLE_VALUE_COL_NAME);
+	  
+    // we either get a single tall row with a null, if the data is missing for this entity
+    // or one or more rows with values.
+    if (tallRowValue == null) {
+      if (multiValuesMap.containsKey(variableId)) throw new RuntimeException("Unexpected null value for multi-valued variable: " + variableId);
+      multiValuesMap.put(variableId, null);
+    }
+    else {
+      if (!multiValuesMap.containsKey(variableId)) multiValuesMap.put(variableId, new ArrayList<String>());
+      multiValuesMap.get(variableId).add(tallRowValue);
+    }
 	  return multiValuesMap;
   }
   
   // for those variables that have multi-values, transform the list of string values to 
   // appropriate json array, and put that array into the wide row
-	private static void putMultiValuesAsJsonIntoWideRow(Map<String, List<String>> multiValues,
-			Map<String, String> wideRow, Entity entity) {
+	protected static void putMultiValuesAsJsonIntoWideRow(Map<String, List<String>> multiValues,
+			Map<String, String> wideRow, Entity entity, Map<String, VariableWithValues> variablesMap) {
 	  
 		for (String multiValVarId : multiValues.keySet()) {
-			Variable var = entity.getVariable(multiValVarId).orElseThrow(
-					() -> new RuntimeException("Metadata does not have multi-valued variable: " + multiValVarId));
-			if (!(var instanceof VariableWithValues))
-				throw new RuntimeException("Multi-valued variable does not have values: " + multiValVarId);
-
-			VariableWithValues vwv = (VariableWithValues) var;
+			VariableWithValues vwv = variablesMap.get(multiValVarId);
 			JSONArray jsonArray = vwv.getType().convertStringListToJsonArray(multiValues.get(multiValVarId));
 			wideRow.put(multiValVarId, jsonArray.toString());
 		}
 	}
   
-  private static void validateTallRow(Entity entity, Map<String,String> tallRow, String errPrefix, String tallRowEnityId, String variableId) {
+  private static void validateTallRow(Entity entity, Map<String,String> tallRow, String errPrefix, 
+      String tallRowEnityId, String variableId, Map<String, VariableWithValues> variablesMap) {
     // do some simple validation
     if (tallRow.size() != entity.getTallRowSize()) 
       throw new RuntimeException(errPrefix + " has an unexpected number of columns: (" + tallRow.size() + "): " + tallRow.keySet());
@@ -231,9 +246,16 @@ public class EntityResultSetUtils {
 
     if (!tallRow.containsKey(TT_VARIABLE_ID_COL_NAME) )
       throw new RuntimeException(errPrefix + " does not contain column " + TT_VARIABLE_ID_COL_NAME);
+    
+    if (!variablesMap.containsKey(variableId)) {
+      Variable var = entity.getVariable(variableId)
+          .orElseThrow(() -> new RuntimeException(errPrefix + " has an invalid variableId: " + variableId));
 
-    entity.getVariable(variableId)
-        .orElseThrow(() -> new RuntimeException(errPrefix + " has an invalid variableId: " + variableId));
+      if (!(var instanceof VariableWithValues))
+        throw new RuntimeException("Variable in tall result does not have values: " + variableId);
+
+      variablesMap.put(variableId, (VariableWithValues) var);
+    }
   }
   
 }

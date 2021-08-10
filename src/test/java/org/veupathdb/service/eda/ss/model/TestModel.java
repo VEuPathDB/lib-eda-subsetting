@@ -34,17 +34,17 @@ public class TestModel {
   public Entity sample;
   public Entity treatment;
   
-  public Variable roof;
-  public Variable shoesize;
-  public Variable weight;
-  public Variable favNumber;
-  public Variable birthDate;
-  public Variable favNewYears;
-  public Variable mood;
-  public Variable haircolor;
-  public Variable networth;
-  public Variable earsize;
-  public Variable waterSupply;
+  public VariableWithValues roof;
+  public VariableWithValues shoesize;
+  public VariableWithValues weight;
+  public VariableWithValues favNumber;
+  public VariableWithValues birthDate;
+  public VariableWithValues favNewYears;
+  public VariableWithValues mood;
+  public VariableWithValues haircolor;
+  public VariableWithValues networth;
+  public VariableWithValues earsize;
+  public VariableWithValues waterSupply;
   
   public Filter obsWeightFilter;
   public Filter houseRoofFilter;
@@ -119,9 +119,10 @@ public class TestModel {
             "Their roof", null, null, null, null, 12, false);
     household.addVariable(roof);
     
+    // multi-valued string var
     haircolor = new StringVariable("haircolor", "var_17", participant, Variable.VariableDataShape.CATEGORICAL,
             Variable.VariableDisplayType.DEFAULT, "Hair color", null, null,
-            "Their hair color", null, null, null, null, 21, false);
+            "Their hair color", null, null, null, null, 21, true);
     participant.addVariable(haircolor);
     
     mood  = new StringVariable("mood", "var_16", observation, VariableDataShape.CATEGORICAL,
@@ -148,9 +149,10 @@ public class TestModel {
 			Number distinctValuesCount, Boolean isMultiValued) {			
 */	  
 
+    // multi-valued number var (what can i say... left and right feet are different!)
     shoesize = new NumberVariable("shoesize", "var_11", participant, false, VariableDataShape.CATEGORICAL,
             Variable.VariableDisplayType.DEFAULT, null, "", 1, "Shoe size", null,
-            "their shoe size", null, null, null, null, null, null, null, null, null, null, 47, false);
+            "their shoe size", null, null, null, null, null, null, null, null, null, null, 47, true);
     participant.addVariable(shoesize);
 
     networth = new NumberVariable("networth", "var_10", participant, false, VariableDataShape.CONTINUOUS,

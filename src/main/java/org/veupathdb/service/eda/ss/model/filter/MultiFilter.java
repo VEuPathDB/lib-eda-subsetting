@@ -14,33 +14,30 @@ public class MultiFilter extends Filter {
 	public enum MultiFilterOperation {
 		UNION("UNION"), INTERSECT("INTERSECT");
 
-		private final String name;
+		private final String operation;
 
-		MultiFilterOperation(String name) {
-			this.name = name;
+		MultiFilterOperation(String operation) {
+			this.operation = operation;
 		}
 		
-		String getName() { return name; }
+		String getOperation() { return operation; }
 		
 	    public static MultiFilterOperation fromString(String operation) {
 
-	    	MultiFilterOperation o;
-
-	        switch (operation) {
-	          case "intersect" -> o = INTERSECT;
-	          case "union" -> o = UNION;
+	        return switch (operation) {
+	          case "intersect" -> INTERSECT;
+	          case "union" -> UNION;
 	          default -> throw new RuntimeException("Unrecognized multi-filter operation: " + operation);
-	        }
-	        return o;
-	      }
-
+	        
+	      };
+	    }   
 	}
 	
 	@Override
 	public String getSql() {
 		List<String> subFiltersSqlList = new ArrayList<String>();
 		for (MultiFilterSubFilter subFilter : subFilters) subFiltersSqlList.add(getSingleFilterSql(subFilter));
-		String subFiltersSql = String.join("  " + operation.getName() + NL, subFiltersSqlList);
+		String subFiltersSql = String.join("  " + operation.getOperation() + NL, subFiltersSqlList);
 		return "  select * from ( -- START OF MULTIFILTER" + NL
 				+ subFiltersSql + NL
 				+ "  ) -- END OF MULTIFILTER" + NL;

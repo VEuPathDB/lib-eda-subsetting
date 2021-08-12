@@ -26,7 +26,7 @@ public abstract class Filter {
 	        + "  WHERE t." + entity.getPKColName() + " = a." + entity.getPKColName();
 	}
 
-	protected String SingleFilterCommonSqlNoAncestors() {
+	protected String getSingleFilterCommonSqlNoAncestors() {
 
 		return "  SELECT " + entity.getPKColName() + NL
 				+ "  FROM " + Resources.getAppDbSchema() + entity.getTallTableName() + NL

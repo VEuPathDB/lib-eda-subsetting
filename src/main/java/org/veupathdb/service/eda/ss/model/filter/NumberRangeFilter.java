@@ -5,7 +5,7 @@ import org.veupathdb.service.eda.ss.model.RdbmsColumnNames;
 
 import static org.gusdb.fgputil.FormatUtil.NL;
 
-public class NumberRangeFilter extends Filter {
+public class NumberRangeFilter extends SingleValueFilter {
 
   private Number min;
   private Number max;
@@ -17,7 +17,7 @@ public class NumberRangeFilter extends Filter {
   }
 
   @Override
-  public String getAndClausesSql() {
+  public String getFilteringAndClausesSql() {
     return "  AND " + RdbmsColumnNames.NUMBER_VALUE_COL_NAME + " >= " + min + " AND " + RdbmsColumnNames.NUMBER_VALUE_COL_NAME + " <= " + max + NL;
   }
 

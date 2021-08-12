@@ -14,6 +14,8 @@ import org.veupathdb.service.eda.generated.model.APIDateRangeFilter;
 import org.veupathdb.service.eda.generated.model.APIDateSetFilter;
 import org.veupathdb.service.eda.generated.model.APIFilter;
 import org.veupathdb.service.eda.generated.model.APILongitudeRangeFilter;
+import org.veupathdb.service.eda.generated.model.APIMultiFilter;
+import org.veupathdb.service.eda.generated.model.APIMultiFilterSubFilter;
 import org.veupathdb.service.eda.generated.model.APINumberRangeFilter;
 import org.veupathdb.service.eda.generated.model.APINumberSetFilter;
 import org.veupathdb.service.eda.generated.model.APIStringSetFilter;
@@ -23,10 +25,14 @@ import org.veupathdb.service.eda.ss.model.MetadataCache;
 import org.veupathdb.service.eda.ss.model.Study;
 import org.veupathdb.service.eda.ss.model.TabularReportConfig;
 import org.veupathdb.service.eda.ss.model.Variable;
+import org.veupathdb.service.eda.ss.model.Variable.VariableDisplayType;
 import org.veupathdb.service.eda.ss.model.filter.DateRangeFilter;
 import org.veupathdb.service.eda.ss.model.filter.DateSetFilter;
 import org.veupathdb.service.eda.ss.model.filter.Filter;
 import org.veupathdb.service.eda.ss.model.filter.LongitudeRangeFilter;
+import org.veupathdb.service.eda.ss.model.filter.MultiFilter;
+import org.veupathdb.service.eda.ss.model.filter.MultiFilter.MultiFilterOperation;
+import org.veupathdb.service.eda.ss.model.filter.MultiFilterSubFilter;
 import org.veupathdb.service.eda.ss.model.filter.NumberRangeFilter;
 import org.veupathdb.service.eda.ss.model.filter.NumberSetFilter;
 import org.veupathdb.service.eda.ss.model.filter.StringSetFilter;
@@ -84,38 +90,103 @@ public class RequestBundle {
           () -> new BadRequestException(errPrfx + "entity ID: " + apiFilter.getEntityId());
       Entity entity = study.getEntity(apiFilter.getEntityId()).orElseThrow(excep);
 
-      // validate filter's variable id
-      String varId = apiFilter.getVariableId();
-      entity.getVariable(varId).orElseThrow(() -> new BadRequestException("Variable '" + varId + "' is not found"));
-
       Filter newFilter;
       if (apiFilter instanceof APIDateRangeFilter) {
-        APIDateRangeFilter f = (APIDateRangeFilter)apiFilter;
-        newFilter = new DateRangeFilter(entity, varId,
-            parseDate(f.getMin()), parseDate(f.getMax()));
+        newFilter = unpackDateRangeFilter(apiFilter, entity);
       } else if (apiFilter instanceof APIDateSetFilter) {
-        APIDateSetFilter f = (APIDateSetFilter)apiFilter;
-        List<LocalDateTime> dateSet = new ArrayList<>();
-        for (String dateStr : f.getDateSet()) dateSet.add(parseDate(dateStr));
-        newFilter = new DateSetFilter(entity, varId, dateSet);
+        newFilter = unpackDateSetFilter(apiFilter, entity);
       } else if (apiFilter instanceof APINumberRangeFilter) {
-        APINumberRangeFilter f = (APINumberRangeFilter)apiFilter;
-        newFilter = new NumberRangeFilter(entity, varId, f.getMin(), f.getMax());
+        newFilter = unpackNumberRangeFilter(apiFilter, entity);
       } else if (apiFilter instanceof APINumberSetFilter) {
-        APINumberSetFilter f = (APINumberSetFilter)apiFilter;
-        newFilter = new NumberSetFilter(entity, varId, f.getNumberSet());
+          newFilter = unpackNumberSetFilter(apiFilter, entity);
       } else if (apiFilter instanceof APILongitudeRangeFilter) {
-        APILongitudeRangeFilter f = (APILongitudeRangeFilter)apiFilter;
-        newFilter = new LongitudeRangeFilter(entity, varId, f.getLeft(), f.getRight());
+        newFilter = unpackLongitudeRangeFilter(apiFilter, entity);
       } else if (apiFilter instanceof APIStringSetFilter) {
-        APIStringSetFilter f = (APIStringSetFilter)apiFilter;
-        newFilter = new StringSetFilter(entity, varId, f.getStringSet());
+        newFilter = unpackStringSetFilter(apiFilter, entity);
+      } else if (apiFilter instanceof APIMultiFilter) {
+          newFilter = unpackMultiFilter(apiFilter, entity);
       } else
         throw new InternalServerErrorException("Input filter not an expected subclass of Filter");
 
       subsetFilters.add(newFilter);
     }
     return subsetFilters;
+  }
+  
+  private static DateRangeFilter unpackDateRangeFilter(APIFilter apiFilter, Entity entity) {
+      APIDateRangeFilter f = (APIDateRangeFilter)apiFilter;
+      String varId = f.getVariableId();
+      entity.getVariable(varId).orElseThrow(() -> new BadRequestException("Variable '" + varId + "' is not found"));
+      return new DateRangeFilter(entity, varId, parseDate(f.getMin()), parseDate(f.getMax()));
+  }
+  
+  private static DateSetFilter unpackDateSetFilter(APIFilter apiFilter, Entity entity) {
+      APIDateSetFilter f = (APIDateSetFilter)apiFilter;
+      String varId = f.getVariableId();
+      entity.getVariable(varId).orElseThrow(() -> new BadRequestException("Variable '" + varId + "' is not found"));
+      List<LocalDateTime> dateSet = new ArrayList<>();
+      for (String dateStr : f.getDateSet()) dateSet.add(parseDate(dateStr));
+      return new DateSetFilter(entity, varId, dateSet);
+  }
+  
+  private static NumberRangeFilter unpackNumberRangeFilter(APIFilter apiFilter, Entity entity) {
+      APINumberRangeFilter f = (APINumberRangeFilter)apiFilter;
+      String varId = f.getVariableId();
+      entity.getVariable(varId).orElseThrow(() -> new BadRequestException("Variable '" + varId + "' is not found"));
+      return new NumberRangeFilter(entity, varId, f.getMin(), f.getMax());
+  }
+  
+  private static NumberSetFilter unpackNumberSetFilter(APIFilter apiFilter, Entity entity) {
+      APINumberSetFilter f = (APINumberSetFilter)apiFilter;
+      String varId = f.getVariableId();
+      entity.getVariable(varId).orElseThrow(() -> new BadRequestException("Variable '" + varId + "' is not found"));
+      return new NumberSetFilter(entity, varId, f.getNumberSet());
+  }
+  
+  private static LongitudeRangeFilter unpackLongitudeRangeFilter(APIFilter apiFilter, Entity entity) {
+      APILongitudeRangeFilter f = (APILongitudeRangeFilter)apiFilter;
+      String varId = f.getVariableId();
+      entity.getVariable(varId).orElseThrow(() -> new BadRequestException("Variable '" + varId + "' is not found"));
+      return new LongitudeRangeFilter(entity, varId, f.getLeft(), f.getRight());
+  }
+  
+  private static StringSetFilter unpackStringSetFilter(APIFilter apiFilter, Entity entity) {
+      APIStringSetFilter f = (APIStringSetFilter)apiFilter;
+      String varId = f.getVariableId();
+      entity.getVariable(varId).orElseThrow(() -> new BadRequestException("Variable '" + varId + "' is not found"));
+      return new StringSetFilter(entity, varId, f.getStringSet());
+  }
+  
+  private static MultiFilter unpackMultiFilter(APIFilter apiFilter, Entity entity) {
+      APIMultiFilter f = (APIMultiFilter)apiFilter;
+      if (f.getSubFilters().isEmpty()) 
+    	  throw new BadRequestException("Multifilter may not have an empty list of subFilters");
+      String multiFilterParentId = getMultiFilterParentVariableId(entity, f);
+      
+      List<MultiFilterSubFilter> subFilters = new ArrayList<>();
+      for (APIMultiFilterSubFilter apiSubFilter : f.getSubFilters()) {
+    	  String variableId = apiSubFilter.getVariableId();
+    	  Variable var = entity.getVariable(variableId).orElseThrow(() -> new BadRequestException("Multifilter includes invalid variable ID: " + variableId));
+    	  if (!var.getParentId().equals(multiFilterParentId))
+    		  throw new BadRequestException("Multifilter includes variable with invalid parent.  Variable: " + variableId);
+    	  subFilters.add(new MultiFilterSubFilter(var, apiSubFilter.getStringSet()));
+      }
+      return new MultiFilter(entity, subFilters,  MultiFilterOperation.fromString(f.getOperation().getValue()));
+  }
+  
+  private static String getMultiFilterParentVariableId(Entity entity, APIMultiFilter apiFilter) {
+	  String firstVariableId = apiFilter.getSubFilters().get(0).getVariableId();
+	  Variable firstVariable = entity.getVariable(firstVariableId).orElseThrow(() -> 
+	    new BadRequestException("Multifilter includes invalid variable ID: " + firstVariableId));
+	  String parentId = firstVariable.getParentId();
+	  if (parentId == null)
+		  throw new BadRequestException("Multifilter includes variable with null parent ID: " + firstVariableId);
+	  Variable parentVariable = entity.getVariable(parentId) .orElseThrow(() -> 
+	    new BadRequestException("Multifilter includes invalid parent variable ID: " + parentId));
+	  if (parentVariable.getDisplayType() != VariableDisplayType.MULTIFILTER)
+		  throw new BadRequestException("Multifilter parent variable does not have display type 'multifilter': " + parentId);
+
+	  return parentId;
   }
   
   static TabularReportConfig constructTabularReportConfigFromAPIReportConfig(APITabularReportConfig apiConfig) {

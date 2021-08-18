@@ -148,6 +148,7 @@ public class Studies implements org.veupathdb.service.eda.generated.resources.St
       APIVariablesCategory apiVar = new APIVariablesCategoryImpl();
       apiVar.setId(var.getId());
       apiVar.setDisplayName(var.getDisplayName());
+      apiVar.setDisplayType(APIVariableDisplayType.valueOf(var.getDisplayType().toString()));
       apiVar.setProviderLabel(var.getProviderLabel());
       apiVar.setParentId(var.getParentId());
       apiVar.setDefinition(var.getDefinition());
@@ -157,7 +158,7 @@ public class Studies implements org.veupathdb.service.eda.generated.resources.St
     if (var.getType() == VariableType.DATE) {
       DateVariable dateVar = (DateVariable)var;
       APIDateVariable apiVar = new APIDateVariableImpl();
-      setApiVarProps(apiVar, var);
+      setApiValueVarProps(apiVar, var);
       apiVar.setBinWidth(dateVar.getBinSize());
       apiVar.setBinWidthOverride(null);
       apiVar.setBinUnits(dateVar.getBinUnits());
@@ -176,7 +177,7 @@ public class Studies implements org.veupathdb.service.eda.generated.resources.St
     else if (var.getType() == VariableType.NUMBER) {
       NumberVariable numVar = (NumberVariable)var;
       APINumberVariable apiVar = new APINumberVariableImpl();
-      setApiVarProps(apiVar, var);
+      setApiValueVarProps(apiVar, var);
       apiVar.setUnits(numVar.getUnits());
       apiVar.setPrecision(numVar.getPrecision());
       apiVar.setBinWidth(numVar.getBinWidth());
@@ -196,7 +197,7 @@ public class Studies implements org.veupathdb.service.eda.generated.resources.St
     else if (var.getType() == VariableType.STRING) {
       StringVariable strVar = (StringVariable)var;	
       APIStringVariable apiVar = new APIStringVariableImpl();
-      setApiVarProps(apiVar, var);
+      setApiValueVarProps(apiVar, var);
       apiVar.setDistinctValuesCount(strVar.getDistinctValuesCount());
       apiVar.setIsFeatured(strVar.getIsFeatured());
       apiVar.setIsMergeKey(strVar.getIsMergeKey());
@@ -208,7 +209,7 @@ public class Studies implements org.veupathdb.service.eda.generated.resources.St
     else if (var.getType() == VariableType.LONGITUDE) {
       NumberVariable numVar = (NumberVariable)var;
       APILongitudeVariable apiVar = new APILongitudeVariableImpl();
-      setApiVarProps(apiVar, var);
+      setApiValueVarProps(apiVar, var);
       apiVar.setDistinctValuesCount(numVar.getDistinctValuesCount());
       apiVar.setIsFeatured(false);
       apiVar.setIsMergeKey(false);
@@ -223,13 +224,17 @@ public class Studies implements org.veupathdb.service.eda.generated.resources.St
   
   private static void setApiVarProps(APIVariable apiVar, Variable var) {
     apiVar.setId(var.getId());
-    apiVar.setDataShape(APIVariableDataShape.valueOf(var.getDataShape().toString()));
-    apiVar.setDisplayType(APIVariableDisplayType.valueOf(var.getDisplayType().toString()));
     apiVar.setDisplayName(var.getDisplayName());
+    apiVar.setDisplayType(APIVariableDisplayType.valueOf(var.getDisplayType().toString()));
     apiVar.setProviderLabel(var.getProviderLabel());
     apiVar.setParentId(var.getParentId());
     apiVar.setDefinition(var.getDefinition());
     apiVar.setDisplayOrder(var.getDisplayOrder());
+  }
+  
+  private static void setApiValueVarProps(APIVariable apiVar, Variable var) {
+    setApiVarProps(apiVar, var);
+    apiVar.setDataShape(APIVariableDataShape.valueOf(var.getDataShape().toString()));
   }
 
   @Override

@@ -52,7 +52,7 @@ public class Variable {
   public enum VariableDisplayType {
     DEFAULT("default"),
     HIDDEN("hidden"),
-    MULTIFILTER("multifilter");
+    MULTIFILTER("multiFilter");
 
     String type;
 
@@ -64,9 +64,9 @@ public class Variable {
 
       VariableDisplayType t;
 
-      switch (displayType) {
+      switch (displayType.toLowerCase()) {
         case "default" -> t = DEFAULT;
-        case "multifilter" -> t = MULTIFILTER;
+        case "multifilter" -> t = MULTIFILTER; 
         case "hidden" -> t = HIDDEN;
         default -> throw new RuntimeException("Unrecognized variable display type: " + displayType);
       }

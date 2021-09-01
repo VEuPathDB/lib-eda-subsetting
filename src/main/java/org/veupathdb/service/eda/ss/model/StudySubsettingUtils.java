@@ -187,7 +187,7 @@ public class StudySubsettingUtils {
   }
 
   /**
-   * Generate SQL to produce a multi-column tabular output (the requested variables), for the specified subset.
+   * Generate SQL to produce a tall stream of Entity ID, ancestry IDs, variable ID and values.  
    */
   static String generateTabularSqlNoReportConfig(List<Variable> outputVariables, Entity outputEntity, List<Filter> filters, TreeNode<Entity> prunedEntityTree) {
 
@@ -309,14 +309,11 @@ order by Sample_stable_id
 		List<String> columns = new ArrayList<String>();
 		columns.add(outputEntity.getPKColName());
 		columns.addAll(outputEntity.getAncestorPkColNames());
-		for (Variable var : outputVariables) {
-			String oracleJsonQuery = "json_query(atts, '$." + var.getId() + "') as " + var.getId();
-			String col = jsonQuery(oracleJsonQuery, null);
-			columns.add(col);
-		}
+		for (Variable var : outputVariables) columns.add(var.getId());
+		
 		columns.add("ea.stable_id");
 	    return "    select " + String.join(", " + NL + "    ", columns) + NL +
-    		 "    from " + schema + "entityattributes ea, " + schema + outputEntity.getAncestorsTableName() + " a" + NL + 
+    		 "    from " + schema + outputEntity.getWideTableName() + " ea, " + schema + outputEntity.getAncestorsTableName() + " a" + NL + 
     		 "    where ea.stable_id in (select * from " + subsetWithClauseName + ")" + NL +
     		 "    and ea.stable_id = a." + outputEntity.getPKColName() + NL +
     		 reportConfigOrderByClause(reportConfig, "    ");
@@ -543,7 +540,7 @@ order by number_value desc;
         childEntity.getWithClauseName() + "." + parentEntity.getPKColName();
   }
 
-  // need to order by the root of the tree first, then by each ID down the branch to the output entity
+  // need to order by the root of the tree first, then by each ID down the branch to the output entity,
   static String generateTabularOrderByClause(Entity outputEntity) {
     List<String> cols = new ArrayList<>();
     // reverse the order of the ancestor pk cols to go root first, parent last

@@ -2,23 +2,39 @@ package org.veupathdb.service.eda.ss.model;
 
 import java.sql.Date;
 import java.sql.ResultSet;
+import java.util.ArrayList;
+import java.util.List;
+
 import org.gusdb.fgputil.FormatUtil;
 import org.gusdb.fgputil.functional.FunctionalInterfaces;
 import org.gusdb.fgputil.functional.Functions;
+import org.json.JSONArray;
 
 public enum VariableType {
-  STRING("string_value", rs -> rs.getString("string_value"), "string"),
-  NUMBER("number_value", rs -> doubleValueOrNull(rs, rs.getDouble("number_value")), "number"),
-  DATE("date_value", rs -> dateValueOrNull(rs.getDate("date_value")), "date"),
-  LONGITUDE("number_value", rs -> doubleValueOrNull(rs, rs.getDouble("number_value")), "longitude");
+  STRING("string_value", "string", rs -> rs.getString("string_value"), 
+		  strings -> StringListToJsonStringArray(strings)),
+
+  NUMBER("number_value", "number", rs -> doubleValueOrNull(rs, rs.getDouble("number_value")), 
+		  strings -> StringListToJsonNumberArray(strings)),
+  
+  DATE("date_value", "date", rs -> dateValueOrNull(rs.getDate("date_value")), 
+		  strings -> StringListToJsonStringArray(strings)),
+  
+  LONGITUDE("number_value", "longitude", rs -> doubleValueOrNull(rs, rs.getDouble("number_value")), 
+		  strings -> StringListToJsonNumberArray(strings));
 
   private final String tallTableColumnName;
   private final String typeString;
   private final FunctionalInterfaces.FunctionWithException<ResultSet, String> resultSetToStringValue;
+  private final FunctionalInterfaces.FunctionWithException<List<String>, JSONArray> multiValStringListToJsonArray;
 
-  VariableType(String tallTableColumnName, FunctionalInterfaces.FunctionWithException<ResultSet, String> resultSetToStringValue, String typeString) {
+  VariableType(String tallTableColumnName,
+		  String typeString, 
+		  FunctionalInterfaces.FunctionWithException<ResultSet, String> resultSetToStringValue, 
+		  FunctionalInterfaces.FunctionWithException<List<String>, JSONArray> multiValStringListToJsonArray) {
     this.tallTableColumnName = tallTableColumnName;
     this.resultSetToStringValue = resultSetToStringValue;
+    this.multiValStringListToJsonArray = multiValStringListToJsonArray;
     this.typeString = typeString;
   }
 
@@ -42,6 +58,15 @@ public enum VariableType {
       throw new RuntimeException(e);
     }
   }
+  
+  public JSONArray convertStringListToJsonArray(List<String> multipleValuesAsStrings) {
+	    try {
+	      return multiValStringListToJsonArray.apply(multipleValuesAsStrings);
+	    }
+	    catch (Exception e) {
+	      throw new RuntimeException(e);
+	    }
+	  }
 
   // utility to convert null DB double values to real null
   private static String doubleValueOrNull(ResultSet rs, double value) {
@@ -51,5 +76,17 @@ public enum VariableType {
   // utility to convert null DB date values to real null
   private static String dateValueOrNull(Date value) {
     return value == null ? null : FormatUtil.formatDateTimeNoTimezone(value);
+  }
+  
+  // convert a list of multiple values, in string form, to a parallel string JSON array
+  private static JSONArray StringListToJsonStringArray(List<String> stringList) {
+	  return new JSONArray(stringList);
+  }
+  
+  // convert a list of multiple values, in string form, to a parallel number JSON array
+  private static JSONArray StringListToJsonNumberArray(List<String> stringList) {
+	  List<Number> numberList = new ArrayList<Number>(stringList.size());
+	  for (String valueAsString : stringList) numberList.add(Double.valueOf(valueAsString));
+	  return new JSONArray(numberList);
   }
 }

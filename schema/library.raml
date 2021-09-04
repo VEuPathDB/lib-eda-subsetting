@@ -38,6 +38,7 @@ types:
     discriminatorValue: 'multiFilter'
     properties:
       operation: API_BooleanOperationType
+      multiFilterVariableId: string
       subFilters: API_MultiFilterSubFilter[]
   API_StringSetFilter:
     type: API_Filter
@@ -246,6 +247,7 @@ types:
       - number
       - date
       - longitude
+      - integer
   API_VariableDataShape:
     type: string
     enum:
@@ -277,6 +279,22 @@ types:
     properties:
       units: string
       precision: number
+      displayRangeMin?: number
+      displayRangeMax?: number
+      rangeMin?: number
+      rangeMax?: number
+      binWidthOverride?: number
+      binWidth?: number
+      distinctValuesCount: number
+      isTemporal: boolean
+      isFeatured: boolean
+      isMergeKey: boolean
+      isMultiValued: boolean
+  API_IntegerVariable:
+    type: API_Variable
+    discriminatorValue: integer
+    properties:
+      units: string
       displayRangeMin?: number
       displayRangeMax?: number
       rangeMin?: number

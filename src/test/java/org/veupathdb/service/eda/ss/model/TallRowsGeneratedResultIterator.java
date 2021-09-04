@@ -107,6 +107,7 @@ public class TallRowsGeneratedResultIterator implements Iterator<Map<String,Stri
       case NUMBER -> String.valueOf(123.4567);
       case STRING -> "some fun string";
       case LONGITUDE -> String.valueOf(160.00000);
+      case INTEGER -> String.valueOf(98);
     };
   }
 }

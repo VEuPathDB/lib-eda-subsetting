@@ -2,12 +2,18 @@
 package org.veupathdb.service.eda.ss.model;
 
 import javax.sql.DataSource;
+
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+import org.veupathdb.service.eda.ss.model.Variable.VariableDisplayType;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 /**
@@ -28,6 +34,13 @@ public class Entity {
   private List<String> ancestorPkColNames;
   private List<String> ancestorFullPkColNames; // entityName.pkColName
   private Integer tallRowSize; // number of columns in a tall table row
+  
+  private static final Logger LOG = LogManager.getLogger(Entity.class);
+
+  
+  // a map from ID of multifilter ancestor ID to multifilter leaf IDs
+  // used to validate multifilter requests
+  private final Map<String, Set<String>> _multiFilterMap = new HashMap<String, Set<String>>();
   
   public Entity(String entityId, String studyAbbrev, String displayName, String displayNamePlural, String description, String abbreviation) {
     this.id = entityId;
@@ -84,6 +97,10 @@ public class Entity {
 
   public String getWithClauseName() {
     return id;
+  }
+  
+  public Map<String, Set<String>> getMultiFilterMap() {
+    return Collections.unmodifiableMap(_multiFilterMap);
   }
 
   /**
@@ -144,7 +161,65 @@ public class Entity {
   }
 
   void loadVariables(DataSource datasource) {
+    
     List<Variable> variables = VariableResultSetUtils.getEntityVariables(datasource, this);
-    for (Variable var : variables) addVariable(var);
+    
+    // create temporary map of parent IDs to child variables
+    // use it  populate a concise map of multifilter ancestor IDs to leaf variables IDs
+    Map<String, Set<Variable>> parentIdToKids = new HashMap<String, Set<Variable>>();
+
+    for (Variable var : variables) {
+      addVariable(var);
+      addToParentIdMap(parentIdToKids, var);
+    }
+    
+    populateMultiFilterMap(parentIdToKids, _multiFilterMap);
+  }
+  
+
+  private void addToParentIdMap(Map<String, Set<Variable>> parentIdToKids, Variable var) {
+    String parentId = var.getParentId();
+    if (parentId != null) {
+      if (!parentIdToKids.containsKey(parentId)) parentIdToKids.put(parentId, new HashSet<Variable>());
+      parentIdToKids.get(parentId).add(var);
+    }
+  }
+  
+  /** 
+   * populate a map of multifilter ancestor IDs to leaf variables IDs
+   * @param parentIdToKids -- map of variable ID to that variable's children
+   */
+  void populateMultiFilterMap(Map<String, Set<Variable>> parentIdToKids,
+      Map<String, Set<String>> multiFilterMap) {
+    
+    // for any IDs that are multifilter, add to the multifilter map
+    for (String parentId : parentIdToKids.keySet()) {
+      if (!variablesMap.containsKey(parentId)) {
+        LOG.info("$$$$$$$$$$$$$$$$$$$$$$$$$$  " + parentId);
+        continue;
+      }
+      if (variablesMap.get(parentId).getDisplayType() == VariableDisplayType.MULTIFILTER) {
+        multiFilterMap.put(parentId, new HashSet<String>());
+        addToMultiFilterMap(parentId, parentId, parentIdToKids, multiFilterMap);
+      }
+    }
+  }
+  
+  /** 
+   * recursively add value-carrying variables to their multifilter ancestor
+   * @param multiFilterId - the ID of the variable tagged as 'multifilter'
+   * @param nodeId - a descendant of the multifilter variable
+   * @param parentIdToKids - a general map of parent ID to kid variables
+   * @param multiFilterMap - the map to add to.  multifilter ID -> value-variable ID
+   */
+  void addToMultiFilterMap(String multiFilterId, String nodeId, Map<String,
+      Set<Variable>> parentIdToKids, Map<String, Set<String>> multiFilterMap) {
+    
+    if (!parentIdToKids.containsKey(nodeId)) return;
+    
+    for (Variable kid : parentIdToKids.get(nodeId)) {
+      if (kid.getHasValues()) multiFilterMap.get(multiFilterId).add(kid.getId());
+      addToMultiFilterMap(multiFilterId, kid.getId(), parentIdToKids, multiFilterMap);
+    }
   }
 }

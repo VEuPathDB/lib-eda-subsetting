@@ -161,32 +161,25 @@ public class RequestBundle {
       APIMultiFilter f = (APIMultiFilter)apiFilter;
       if (f.getSubFilters().isEmpty()) 
     	  throw new BadRequestException("Multifilter may not have an empty list of subFilters");
-      String multiFilterParentId = getMultiFilterParentVariableId(entity, f);
       
+      // validate multifilter variable
+      String mfVarId = f.getMultiFilterVariableId();
+      Variable multiFilterVariable = entity.getVariable(mfVarId).orElseThrow(() -> 
+        new BadRequestException("Multifilter includes invalid variable ID: " + mfVarId));
+      if (multiFilterVariable.getDisplayType() != VariableDisplayType.MULTIFILTER)
+        throw new BadRequestException("Multifilter variable does not have display type 'multifilter': " + mfVarId);
+      
+      // validate subfilters
       List<MultiFilterSubFilter> subFilters = new ArrayList<>();
       for (APIMultiFilterSubFilter apiSubFilter : f.getSubFilters()) {
     	  String variableId = apiSubFilter.getVariableId();
+        if (!entity.getMultiFilterMap().containsKey(variableId))
+          throw new BadRequestException("Multifilter includes subfilter with invalid variable: " + variableId);
     	  Variable var = entity.getVariable(variableId).orElseThrow(() -> new BadRequestException("Multifilter includes invalid variable ID: " + variableId));
-    	  if (!var.getParentId().equals(multiFilterParentId))
-    		  throw new BadRequestException("Multifilter includes variable with invalid parent.  Variable: " + variableId);
     	  subFilters.add(new MultiFilterSubFilter(var, apiSubFilter.getStringSet()));
       }
+      
       return new MultiFilter(entity, subFilters,  MultiFilterOperation.fromString(f.getOperation().getValue()));
-  }
-  
-  private static String getMultiFilterParentVariableId(Entity entity, APIMultiFilter apiFilter) {
-	  String firstVariableId = apiFilter.getSubFilters().get(0).getVariableId();
-	  Variable firstVariable = entity.getVariable(firstVariableId).orElseThrow(() -> 
-	    new BadRequestException("Multifilter includes invalid variable ID: " + firstVariableId));
-	  String parentId = firstVariable.getParentId();
-	  if (parentId == null)
-		  throw new BadRequestException("Multifilter includes variable with null parent ID: " + firstVariableId);
-	  Variable parentVariable = entity.getVariable(parentId) .orElseThrow(() -> 
-	    new BadRequestException("Multifilter includes invalid parent variable ID: " + parentId));
-	  if (parentVariable.getDisplayType() != VariableDisplayType.MULTIFILTER)
-		  throw new BadRequestException("Multifilter parent variable does not have display type 'multifilter': " + parentId);
-
-	  return parentId;
   }
   
   static TabularReportConfig constructTabularReportConfigFromAPIReportConfig(APITabularReportConfig apiConfig) {

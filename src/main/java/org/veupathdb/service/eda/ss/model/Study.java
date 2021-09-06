@@ -8,6 +8,8 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 import javax.sql.DataSource;
+import javax.ws.rs.NotFoundException;
+
 import org.gusdb.fgputil.db.runner.SQLRunner;
 import org.gusdb.fgputil.functional.TreeNode;
 import org.veupathdb.service.eda.generated.model.APIFilter;
@@ -45,7 +47,8 @@ public class Study {
    */
   public static Study loadStudy(DataSource datasource, String studyId) {
 
-    StudyOverview overview = getStudyOverview(datasource, studyId);
+    StudyOverview overview = 
+        getStudyOverview(datasource, studyId).orElseThrow(() -> new NotFoundException("Study ID '" + studyId + "' not found:"));
 
     TreeNode<Entity> entityTree = EntityResultSetUtils.getStudyEntityTree(datasource, studyId);
     
@@ -55,16 +58,16 @@ public class Study {
 
     return new Study(overview, entityTree, entityIdMap);
   }
-
-  public static StudyOverview getStudyOverview(DataSource datasource, String studyId) {
+ 
+  public static Optional<StudyOverview> getStudyOverview(DataSource datasource, String studyId) {
     String sql = getStudyOverviewSql(studyId);
 
-    return new SQLRunner(datasource, sql, "Get study overview").executeQuery(rs -> {
-      rs.next();
+     return new SQLRunner(datasource, sql, "Get study overview").executeQuery(rs -> {
+      if (!rs.next()) return Optional.empty();
       String id = rs.getString(1);
       String datasetId = rs.getString(2);
       String abbrev = rs.getString(3);
-      return new StudyOverview(id, datasetId, abbrev);
+      return Optional.of(new StudyOverview(id, datasetId, abbrev));
     });
   }
 

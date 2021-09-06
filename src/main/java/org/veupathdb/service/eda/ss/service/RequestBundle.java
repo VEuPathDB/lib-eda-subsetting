@@ -165,7 +165,7 @@ public class RequestBundle {
       // validate multifilter variable
       String mfVarId = f.getMultiFilterVariableId();
       Variable multiFilterVariable = entity.getVariable(mfVarId).orElseThrow(() -> 
-        new BadRequestException("Multifilter includes invalid variable ID: " + mfVarId));
+        new BadRequestException("Multifilter includes invalid multifilter variable ID: " + mfVarId));
       if (multiFilterVariable.getDisplayType() != VariableDisplayType.MULTIFILTER)
         throw new BadRequestException("Multifilter variable does not have display type 'multifilter': " + mfVarId);
       
@@ -173,7 +173,7 @@ public class RequestBundle {
       List<MultiFilterSubFilter> subFilters = new ArrayList<>();
       for (APIMultiFilterSubFilter apiSubFilter : f.getSubFilters()) {
     	  String variableId = apiSubFilter.getVariableId();
-        if (!entity.getMultiFilterMap().containsKey(variableId))
+        if (!entity.getMultiFilterMap().get(mfVarId).contains(variableId))
           throw new BadRequestException("Multifilter includes subfilter with invalid variable: " + variableId);
     	  Variable var = entity.getVariable(variableId).orElseThrow(() -> new BadRequestException("Multifilter includes invalid variable ID: " + variableId));
     	  subFilters.add(new MultiFilterSubFilter(var, apiSubFilter.getStringSet()));

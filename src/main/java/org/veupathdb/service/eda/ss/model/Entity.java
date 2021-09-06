@@ -37,7 +37,6 @@ public class Entity {
   
   private static final Logger LOG = LogManager.getLogger(Entity.class);
 
-  
   // a map from ID of multifilter ancestor ID to multifilter leaf IDs
   // used to validate multifilter requests
   private final Map<String, Set<String>> _multiFilterMap = new HashMap<String, Set<String>>();
@@ -194,10 +193,8 @@ public class Entity {
     
     // for any IDs that are multifilter, add to the multifilter map
     for (String parentId : parentIdToKids.keySet()) {
-      if (!variablesMap.containsKey(parentId)) {
-        LOG.info("$$$$$$$$$$$$$$$$$$$$$$$$$$  " + parentId);
-        continue;
-      }
+      if (!variablesMap.containsKey(parentId)) continue;  // if parent is of different entity
+     
       if (variablesMap.get(parentId).getDisplayType() == VariableDisplayType.MULTIFILTER) {
         multiFilterMap.put(parentId, new HashSet<String>());
         addToMultiFilterMap(parentId, parentId, parentIdToKids, multiFilterMap);

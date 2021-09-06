@@ -509,7 +509,7 @@ order by number_value desc;
               .map(pk -> outputEntity.getId() + "." + pk)
               .collect(Collectors.toList()));
     }
-    return "  SELECT " + returnedCols.stream().collect(Collectors.joining(", "));
+    return "  SELECT distinct " + returnedCols.stream().collect(Collectors.joining(", "));
   }
   
   static String generateJoiningFromClause(TreeNode<Entity> prunedEntityTree) {

@@ -163,7 +163,7 @@ public class RequestBundle {
     	  throw new BadRequestException("Multifilter may not have an empty list of subFilters");
       
       // validate multifilter variable
-      String mfVarId = f.getMultiFilterVariableId();
+      String mfVarId = f.getVariableId();
       Variable multiFilterVariable = entity.getVariable(mfVarId).orElseThrow(() -> 
         new BadRequestException("Multifilter includes invalid multifilter variable ID: " + mfVarId));
       if (multiFilterVariable.getDisplayType() != VariableDisplayType.MULTIFILTER)

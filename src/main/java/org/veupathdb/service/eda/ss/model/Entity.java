@@ -212,7 +212,7 @@ public class Entity {
   void addToMultiFilterMap(String multiFilterId, String nodeId, Map<String,
       Set<Variable>> parentIdToKids, Map<String, Set<String>> multiFilterMap) {
     
-    if (!parentIdToKids.containsKey(nodeId)) return;
+    if (!parentIdToKids.containsKey(nodeId)) return;  // if node is not a parent, done with recursion
     
     for (Variable kid : parentIdToKids.get(nodeId)) {
       if (kid.getHasValues()) multiFilterMap.get(multiFilterId).add(kid.getId());

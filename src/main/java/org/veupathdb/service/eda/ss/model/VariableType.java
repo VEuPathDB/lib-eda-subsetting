@@ -17,6 +17,9 @@ public enum VariableType {
   NUMBER("number_value", "number", rs -> doubleValueOrNull(rs, rs.getDouble("number_value")), 
 		  strings -> StringListToJsonNumberArray(strings)),
   
+  INTEGER("number_value", "integer", rs -> integerValueOrNull(rs, rs.getInt("number_value")), 
+      strings -> StringListToJsonNumberArray(strings)),
+  
   DATE("date_value", "date", rs -> dateValueOrNull(rs.getDate("date_value")), 
 		  strings -> StringListToJsonStringArray(strings)),
   
@@ -43,8 +46,9 @@ public enum VariableType {
   }
 
   public static VariableType fromString(String str) {
-    if (str.equals(STRING.typeString) || str.equals("boolean")) return STRING;  // TODO remove boolean hack
+    if (str.equals(STRING.typeString)) return STRING; 
     else if (str.equals(NUMBER.typeString)) return NUMBER;
+    else if (str.equals(INTEGER.typeString)) return INTEGER;
     else if (str.equals(LONGITUDE.typeString)) return LONGITUDE;
     else if (str.equals(DATE.typeString)) return DATE;
     else throw new RuntimeException("Illegal variable type string: " + str);
@@ -70,6 +74,11 @@ public enum VariableType {
 
   // utility to convert null DB double values to real null
   private static String doubleValueOrNull(ResultSet rs, double value) {
+    return Functions.swallowAndGet(() -> rs.wasNull() ? null : String.valueOf(value));
+  }
+
+  // utility to convert null DB integer values to real null
+  private static String integerValueOrNull(ResultSet rs, int value) {
     return Functions.swallowAndGet(() -> rs.wasNull() ? null : String.valueOf(value));
   }
 

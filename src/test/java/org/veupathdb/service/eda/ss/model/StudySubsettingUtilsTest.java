@@ -12,6 +12,7 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.veupathdb.service.eda.ss.model.filter.Filter;
+import org.veupathdb.service.eda.ss.service.TabularResponseType;
 import org.veupathdb.service.eda.ss.stubdb.StubDb;
 
 import javax.sql.DataSource;
@@ -289,7 +290,7 @@ public class StudySubsettingUtilsTest {
     List<String> from = Arrays.asList(_model.household.getWithClauseName(), _model.householdObs.getWithClauseName(), _model.observation.getWithClauseName());
     String inClause = StudySubsettingUtils.generateSubsetInClause(prunedTree, outputEntity, "t");
     String expected = "AND t." + _model.householdObs.getPKColName() + " IN (" + NL +
-        "  SELECT " + _model.householdObs.getFullPKColName() + NL +
+        "  SELECT distinct " + _model.householdObs.getFullPKColName() + NL +
         "  FROM " + String.join(", ", from) + NL +
         "  WHERE " + _model.household.getFullPKColName() + " = " + _model.householdObs.getWithClauseName() + "." + _model.household.getPKColName() + NL +
         "  AND " + _model.household.getFullPKColName() + " = " + _model.observation.getWithClauseName() + "." + _model.household.getPKColName() + NL +
@@ -390,7 +391,7 @@ public class StudySubsettingUtilsTest {
 
   @Test
   @DisplayName("Test get tabular report - no filters") 
-  void testTabularReporttNoFiltersFromDb() {
+  void testTabularReportNoFiltersFromDb() {
     
     Study study = Study.loadStudy(_dataSource, LoadStudyTest.STUDY_ID);
 
@@ -406,7 +407,7 @@ public class StudySubsettingUtilsTest {
     ByteArrayOutputStream outStream = new ByteArrayOutputStream();
 
     StudySubsettingUtils.produceTabularSubset(_dataSource, study, entity,
-        variables, filters, null, outStream);
+        variables, filters, null, TabularResponseType.TABULAR.getFormatter(), outStream);
     String[] expected = {
     "Prtcpnt_stable_id", "Hshld_stable_id", "var_17",  "var_20",
     "201", "101",     "blond",   "Martin",
@@ -437,7 +438,7 @@ public class StudySubsettingUtilsTest {
     ByteArrayOutputStream outStream = new ByteArrayOutputStream();
 
     StudySubsettingUtils.produceTabularSubset(_dataSource, study, entity,
-        variables, filters, null, outStream);
+        variables, filters, null, TabularResponseType.TABULAR.getFormatter(), outStream);
     String[] expected = {
     "Prtcpnt_stable_id", "Hshld_stable_id", "var_17",  "var_20",
     "201", "101",     "blond",   "Martin",
@@ -613,7 +614,7 @@ public class StudySubsettingUtilsTest {
   private List<Map<String,String>> getTabularOutputRows(Entity entity, List<Variable> requestedVars) {
     ByteArrayOutputStream buffer = new ByteArrayOutputStream();
     StudySubsettingUtils.produceTabularSubset(_dataSource, _model.study, entity, requestedVars, 
-    		Collections.emptyList(), null, buffer);
+        Collections.emptyList(), null, TabularResponseType.TABULAR.getFormatter(), buffer);
     Scanner scanner = new Scanner(buffer.toString());
     if (!scanner.hasNextLine()) {
       throw new RuntimeException("Tabular output did not contain a header row.");

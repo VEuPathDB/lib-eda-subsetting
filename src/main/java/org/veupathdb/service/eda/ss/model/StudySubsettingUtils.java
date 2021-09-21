@@ -27,6 +27,7 @@ import org.gusdb.fgputil.functional.TreeNode;
 import org.gusdb.fgputil.iterator.GroupingIterator;
 import org.veupathdb.service.eda.ss.Resources;
 import org.veupathdb.service.eda.ss.model.filter.Filter;
+import org.veupathdb.service.eda.ss.service.TabularResponseType;
 
 import static org.gusdb.fgputil.iterator.IteratorUtil.toIterable;
 import static org.veupathdb.service.eda.ss.model.RdbmsColumnNames.DATE_VALUE_COL_NAME;
@@ -49,18 +50,21 @@ public class StudySubsettingUtils {
   private static final String COUNT_COLUMN_NAME = "count";
 
   /**
-   * Writes to the passed output stream tab delimited records containing
-   * the requested variables of the specified entity, reduced to the
+   * Writes to the passed output stream a "tabular" result.  Exact format depends on the passed
+   * responseType (JSON string[][] vs true tabular). Each row is a record containing
+   * the primary key columns and requested variables of the specified entity.
    *
    * @param datasource DB to run against
    * @param study study context
    * @param outputEntity entity type to return
    * @param outputVariables variables requested
    * @param filters filters to apply to create a subset of records
+   * @param formatter object that will write response
    */
   public static void produceTabularSubset(DataSource datasource, Study study, Entity outputEntity,
-                                          List<Variable> outputVariables, List<Filter> filters, 
-                                          TabularReportConfig reportConfig, OutputStream outputStream) {
+                                          List<Variable> outputVariables, List<Filter> filters,
+                                          TabularReportConfig reportConfig, TabularResponseType.Formatter formatter,
+                                          OutputStream outputStream) {
 
     TreeNode<Entity> prunedEntityTree = pruneTree(study.getEntityTree(), filters, outputEntity);
 
@@ -74,12 +78,15 @@ public class StudySubsettingUtils {
     new SQLRunner(datasource, sql, "Produce tabular subset").executeQuery(rs -> {
       try (BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(outputStream))) {
 
-        writer.write(String.join(TAB, outputColumns) + NL);
+        formatter.begin(writer);
+        formatter.writeRow(writer, outputColumns);
         if (reportConfig == null)
-          writeWideRowsNoReportConfig(convertTallRowsResultSet(rs, outputEntity), writer, outputColumns, outputEntity);
+          writeWideRowsNoReportConfig(convertTallRowsResultSet(rs, outputEntity), formatter, writer, outputColumns, outputEntity);
         else
-          writeWideRowsWithReportConfig(rs, writer, outputColumns, outputEntity);
+          writeWideRowsWithReportConfig(rs, formatter, writer, outputColumns);
 
+        // close out the response and flush
+        formatter.end(writer);
         writer.flush();
         return null;
       }
@@ -108,7 +115,7 @@ public class StudySubsettingUtils {
   }
 
   static void writeWideRowsNoReportConfig(Iterator<Map<String, String>> tallRowsIterator,
-      Writer writer, List<String> outputColumns, Entity outputEntity) throws IOException {
+                                          TabularResponseType.Formatter formatter, Writer writer, List<String> outputColumns, Entity outputEntity) throws IOException {
 
     // an iterator of lists of maps, each list being the rows of the tall table returned for a single entity id
     String pkCol = outputEntity.getPKColName();
@@ -125,21 +132,20 @@ public class StudySubsettingUtils {
       for (String colName : outputColumns) {
         wideRow.add(wideRowMap.getOrDefault(colName, ""));
       }
-      writer.write(String.join(TAB, wideRow) + NL);
+      formatter.writeRow(writer, wideRow);
     }
   }
   
-	static void writeWideRowsWithReportConfig(ResultSet rs, Writer writer, List<String> outputColumns,
-			Entity outputEntity) throws IOException, SQLException {
-
-		while (rs.next()) {
-			List<String> wideRow = new ArrayList<>();
-			for (String colName : outputColumns) {
-				wideRow.add(rs.getString(colName));
-			}
-			writer.write(String.join(TAB, wideRow) + NL);
-		}
-	}
+  static void writeWideRowsWithReportConfig(ResultSet rs, TabularResponseType.Formatter formatter,
+      Writer writer, List<String> outputColumns) throws IOException, SQLException {
+    while (rs.next()) {
+      List<String> wideRow = new ArrayList<>();
+      for (String colName : outputColumns) {
+        wideRow.add(rs.getString(colName));
+      }
+      formatter.writeRow(writer, wideRow);
+    }
+  }
 
   /**
    * NOTE! This stream MUST be closed by the caller once the stream has been processed.

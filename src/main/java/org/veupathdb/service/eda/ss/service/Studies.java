@@ -8,6 +8,8 @@ import java.util.stream.Collectors;
 import javax.sql.DataSource;
 import javax.ws.rs.BadRequestException;
 import javax.ws.rs.NotFoundException;
+import javax.ws.rs.container.ContainerRequestContext;
+import javax.ws.rs.core.Context;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.gusdb.fgputil.ListBuilder;
@@ -67,6 +69,9 @@ import org.veupathdb.service.eda.ss.model.filter.Filter;
 public class Studies implements org.veupathdb.service.eda.generated.resources.Studies {
 
   private static final Logger LOG = LogManager.getLogger(Studies.class);
+
+  @Context
+  ContainerRequestContext _request;
 
   @Override
   public GetStudiesClearMetadataCacheResponse getStudiesClearMetadataCache() {
@@ -352,18 +357,24 @@ public class Studies implements org.veupathdb.service.eda.generated.resources.St
   @Override
   public PostStudiesEntitiesTabularByStudyIdAndEntityIdResponse postStudiesEntitiesTabularByStudyIdAndEntityId(String studyId,
       String entityId, EntityTabularPostRequest requestBody) {
-    
+
     DataSource datasource = Resources.getApplicationDataSource();
-    
+
     RequestBundle request = RequestBundle.unpack(datasource, studyId, entityId, requestBody.getFilters(), requestBody.getOutputVariableIds(), requestBody.getReportConfig());
-    
+
+    TabularResponseType responseType = TabularResponseType.fromAcceptHeader(_request);
+
     EntityTabularPostResponseStream streamer = new EntityTabularPostResponseStream
         (outStream -> StudySubsettingUtils.produceTabularSubset(datasource, request.getStudy(),
             request.getTargetEntity(), request.getRequestedVariables(), request.getFilters(),
-            request.getReportConfig(), outStream));
+            request.getReportConfig(), responseType.getFormatter(), outStream));
 
-    return PostStudiesEntitiesTabularByStudyIdAndEntityIdResponse
-        .respond200WithTextPlain(streamer);
+    return switch(responseType) {
+      case JSON -> PostStudiesEntitiesTabularByStudyIdAndEntityIdResponse
+          .respond200WithApplicationJson(streamer);
+      default -> PostStudiesEntitiesTabularByStudyIdAndEntityIdResponse
+        .respond200WithTextTabSeparatedValues(streamer);
+    };
   }
 
   @Override
@@ -386,4 +397,5 @@ public class Studies implements org.veupathdb.service.eda.generated.resources.St
 
     return  PostStudiesEntitiesCountByStudyIdAndEntityIdResponse.respond200WithApplicationJson(response);
   }
+
 }

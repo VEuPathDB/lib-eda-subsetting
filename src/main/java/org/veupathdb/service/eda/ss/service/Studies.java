@@ -15,6 +15,7 @@ import org.apache.logging.log4j.Logger;
 import org.gusdb.fgputil.ListBuilder;
 import org.gusdb.fgputil.functional.TreeNode;
 import org.gusdb.fgputil.json.JsonUtil;
+import org.veupathdb.service.eda.common.client.TabularResponseType;
 import org.veupathdb.service.eda.generated.model.APIDateVariable;
 import org.veupathdb.service.eda.generated.model.APIDateVariableImpl;
 import org.veupathdb.service.eda.generated.model.APIEntity;

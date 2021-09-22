@@ -11,8 +11,8 @@ import org.gusdb.fgputil.iterator.IteratorUtil;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import org.veupathdb.service.eda.common.client.TabularResponseType;
 import org.veupathdb.service.eda.ss.model.filter.Filter;
-import org.veupathdb.service.eda.ss.service.TabularResponseType;
 import org.veupathdb.service.eda.ss.stubdb.StubDb;
 
 import javax.sql.DataSource;

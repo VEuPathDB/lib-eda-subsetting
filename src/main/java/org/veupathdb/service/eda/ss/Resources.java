@@ -25,6 +25,9 @@ public class Resources extends ContainerResources {
   private static final boolean DEVELOPMENT_MODE =
       Boolean.valueOf(getOptionalVar("DEVELOPMENT_MODE", "true"));
 
+  private static final String APP_DB_SCHEMA =
+      getOptionalVar("APP_DB_SCHEMA", "apidb.");
+
   // use in-memory test DB unless "real" application DB is configured
   private static boolean USE_IN_MEMORY_TEST_DATABASE = true;
 
@@ -52,7 +55,7 @@ public class Resources extends ContainerResources {
   }
 
   public static String getAppDbSchema() {
-    return USE_IN_MEMORY_TEST_DATABASE ? "" : "apidb.";
+    return USE_IN_MEMORY_TEST_DATABASE ? "" : APP_DB_SCHEMA;
   }
 
   /**

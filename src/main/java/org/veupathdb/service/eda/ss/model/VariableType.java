@@ -12,19 +12,19 @@ import org.json.JSONArray;
 
 public enum VariableType {
   STRING("string_value", "string", rs -> rs.getString("string_value"), 
-		  strings -> StringListToJsonStringArray(strings)),
+      strings -> StringListToJsonStringArray(strings)),
 
   NUMBER("number_value", "number", rs -> doubleValueOrNull(rs, rs.getDouble("number_value")), 
-		  strings -> StringListToJsonNumberArray(strings)),
+      strings -> StringListToJsonNumberArray(strings)),
   
   INTEGER("number_value", "integer", rs -> integerValueOrNull(rs, rs.getInt("number_value")), 
       strings -> StringListToJsonNumberArray(strings)),
   
   DATE("date_value", "date", rs -> dateValueOrNull(rs.getDate("date_value")), 
-		  strings -> StringListToJsonStringArray(strings)),
+      strings -> StringListToJsonStringArray(strings)),
   
   LONGITUDE("number_value", "longitude", rs -> doubleValueOrNull(rs, rs.getDouble("number_value")), 
-		  strings -> StringListToJsonNumberArray(strings));
+      strings -> StringListToJsonNumberArray(strings));
 
   private final String tallTableColumnName;
   private final String typeString;
@@ -32,9 +32,9 @@ public enum VariableType {
   private final FunctionalInterfaces.FunctionWithException<List<String>, JSONArray> multiValStringListToJsonArray;
 
   VariableType(String tallTableColumnName,
-		  String typeString, 
-		  FunctionalInterfaces.FunctionWithException<ResultSet, String> resultSetToStringValue, 
-		  FunctionalInterfaces.FunctionWithException<List<String>, JSONArray> multiValStringListToJsonArray) {
+               String typeString,
+               FunctionalInterfaces.FunctionWithException<ResultSet, String> resultSetToStringValue,
+               FunctionalInterfaces.FunctionWithException<List<String>, JSONArray> multiValStringListToJsonArray) {
     this.tallTableColumnName = tallTableColumnName;
     this.resultSetToStringValue = resultSetToStringValue;
     this.multiValStringListToJsonArray = multiValStringListToJsonArray;
@@ -64,13 +64,13 @@ public enum VariableType {
   }
   
   public JSONArray convertStringListToJsonArray(List<String> multipleValuesAsStrings) {
-	    try {
-	      return multiValStringListToJsonArray.apply(multipleValuesAsStrings);
-	    }
-	    catch (Exception e) {
-	      throw new RuntimeException(e);
-	    }
-	  }
+    try {
+      return multiValStringListToJsonArray.apply(multipleValuesAsStrings);
+    }
+    catch (Exception e) {
+      throw new RuntimeException(e);
+    }
+  }
 
   // utility to convert null DB double values to real null
   private static String doubleValueOrNull(ResultSet rs, double value) {
@@ -89,13 +89,19 @@ public enum VariableType {
   
   // convert a list of multiple values, in string form, to a parallel string JSON array
   private static JSONArray StringListToJsonStringArray(List<String> stringList) {
-	  return new JSONArray(stringList);
+    return new JSONArray(stringList);
   }
   
   // convert a list of multiple values, in string form, to a parallel number JSON array
   private static JSONArray StringListToJsonNumberArray(List<String> stringList) {
-	  List<Number> numberList = new ArrayList<Number>(stringList.size());
-	  for (String valueAsString : stringList) numberList.add(Double.valueOf(valueAsString));
-	  return new JSONArray(numberList);
+    List<Number> numberList = new ArrayList<Number>(stringList.size());
+    for (String valueAsString : stringList) {
+      numberList.add(Double.valueOf(valueAsString));
+    }
+    return new JSONArray(numberList);
+  }
+
+  public boolean isNumber() {
+    return "number_value".equals(tallTableColumnName);
   }
 }

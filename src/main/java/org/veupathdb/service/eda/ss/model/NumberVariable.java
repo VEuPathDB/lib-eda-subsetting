@@ -3,75 +3,79 @@ package org.veupathdb.service.eda.ss.model;
 import java.util.List;
 
 public class NumberVariable extends VariableWithValues {
-	private final String units;
-	private final Integer precision;
-	private final Number displayRangeMin;
-	private final Number displayRangeMax;
-	private final Number rangeMin;
-	private final Number rangeMax;
-	private final Number binWidthOverride;
-	private final Number binWidth;
+  private final String units;
+  private final Integer precision;
+  private final Number displayRangeMin;
+  private final Number displayRangeMax;
+  private final Number rangeMin;
+  private final Number rangeMax;
+  private final Number binWidthOverride;
+  private final Number binWidth;
 
-	public NumberVariable(String providerLabel, String id, Entity entity, boolean isLongitude,
-			VariableDataShape dataShape, VariableDisplayType displayType, Integer displayOrder, String units, Integer precision,
-			String displayName, String parentId, String definition, List<String> vocabulary, Number displayRangeMin,
-			Number displayRangeMax, Number rangeMin, Number rangeMax, Number binWidthOverride,
-			Number binWidth, Boolean isTemporal, Boolean isFeatured, Boolean isMergeKey,
-			Number distinctValuesCount, Boolean isMultiValued) {
-		
-		super(providerLabel, id, entity, isLongitude? VariableType.LONGITUDE : VariableType.NUMBER, dataShape, displayType, displayName, displayOrder, parentId, definition,
-				vocabulary, isTemporal, isFeatured, isMergeKey, distinctValuesCount, isMultiValued);
+  public NumberVariable(String providerLabel, String id, Entity entity, VariableType type,
+                        VariableDataShape dataShape, VariableDisplayType displayType, Integer displayOrder, String units, Integer precision,
+                        String displayName, String parentId, String definition, List<String> vocabulary, Number displayRangeMin,
+                        Number displayRangeMax, Number rangeMin, Number rangeMax, Number binWidthOverride,
+                        Number binWidth, Boolean isTemporal, Boolean isFeatured, Boolean isMergeKey,
+                        Number distinctValuesCount, Boolean isMultiValued) {
 
-		String errPrefix = "In entity " + entity.getId() + " variable " + id + " has a null ";
+    super(providerLabel, id, entity, type, dataShape, displayType, displayName, displayOrder, parentId, definition,
+        vocabulary, isTemporal, isFeatured, isMergeKey, distinctValuesCount, isMultiValued);
 
-		if (units == null)
-			throw new RuntimeException(errPrefix + "units");
-		if (precision == null)
-			throw new RuntimeException(errPrefix + "precision");
+    // validate type is a number type
+    if (!type.isNumber()) {
+      throw new RuntimeException("NumberVariable should only be instantiated with a number type (number, integer, longitude)");
+    }
+    String errPrefix = "In entity " + entity.getId() + " variable " + id + " has a null ";
 
-		this.units = units;
-		this.precision = precision;
-		this.displayRangeMin = displayRangeMin;
-		this.displayRangeMax = displayRangeMax;
-		this.rangeMin = rangeMin;
-		this.rangeMax = rangeMax;
-		this.binWidthOverride = binWidthOverride;
-		this.binWidth = binWidth;
-	}
+    if (units == null)
+      throw new RuntimeException(errPrefix + "units");
+    if (precision == null)
+      throw new RuntimeException(errPrefix + "precision");
 
-	public String getUnits() {
-		return units;
-	}
+    this.units = units;
+    this.precision = precision;
+    this.displayRangeMin = displayRangeMin;
+    this.displayRangeMax = displayRangeMax;
+    this.rangeMin = rangeMin;
+    this.rangeMax = rangeMax;
+    this.binWidthOverride = binWidthOverride;
+    this.binWidth = binWidth;
+  }
 
-	public Integer getPrecision() {
-		return precision;
-	}
+  public String getUnits() {
+    return units;
+  }
 
-	public Number getDisplayRangeMin() {
-		return displayRangeMin;
-	}
+  public Integer getPrecision() {
+    return precision;
+  }
 
-	public Number getDisplayRangeMax() {
-		return displayRangeMax;
-	}
+  public Number getDisplayRangeMin() {
+    return displayRangeMin;
+  }
 
-	public Number getRangeMin() {
-		return rangeMin;
-	}
+  public Number getDisplayRangeMax() {
+    return displayRangeMax;
+  }
 
-	public Number getRangeMax() {
-		return rangeMax;
-	}
+  public Number getRangeMin() {
+    return rangeMin;
+  }
 
-	public Number getBinWidthOverride() {
-		return binWidthOverride;
-	}
+  public Number getRangeMax() {
+    return rangeMax;
+  }
 
-	public Number getBinWidth() {
-		return binWidth;
-	}
+  public Number getBinWidthOverride() {
+    return binWidthOverride;
+  }
+
+  public Number getBinWidth() {
+    return binWidth;
+  }
 
   public Number getDefaultBinWidth() {
-	  return binWidthOverride == null ? binWidth : binWidthOverride;
+    return binWidthOverride == null ? binWidth : binWidthOverride;
   }
 }

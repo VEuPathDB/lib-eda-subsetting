@@ -150,22 +150,22 @@ public class TestModel {
 */	  
 
     // multi-valued number var (what can i say... left and right feet are different!)
-    shoesize = new NumberVariable("shoesize", "var_11", participant, false, VariableDataShape.CATEGORICAL,
+    shoesize = new NumberVariable("shoesize", "var_11", participant, VariableType.NUMBER, VariableDataShape.CATEGORICAL,
             Variable.VariableDisplayType.DEFAULT, null, "", 1, "Shoe size", null,
             "their shoe size", null, null, null, null, null, null, null, null, null, null, 47, true);
     participant.addVariable(shoesize);
 
-    networth = new NumberVariable("networth", "var_10", participant, false, VariableDataShape.CONTINUOUS,
+    networth = new NumberVariable("networth", "var_10", participant, VariableType.NUMBER, VariableDataShape.CONTINUOUS,
             Variable.VariableDisplayType.DEFAULT, null, "", 1, "Net worth", null,
             "Their net worth", null, null, null, null, null, null, null, null, null, null, 875, false);
     participant.addVariable(networth);
 
-    weight = new NumberVariable("weight", "var_12", observation, false, Variable.VariableDataShape.CONTINUOUS,
+    weight = new NumberVariable("weight", "var_12", observation, VariableType.NUMBER, Variable.VariableDataShape.CONTINUOUS,
             Variable.VariableDisplayType.DEFAULT, null, "", 1, "Weight", null,
             "Their weight", null, null, null, null, null, null, null, null, null, null, 65, false);
     observation.addVariable(weight);
 
-    favNumber = new NumberVariable("favNumber", "var_13", observation, false, Variable.VariableDataShape.CATEGORICAL,
+    favNumber = new NumberVariable("favNumber", "var_13", observation, VariableType.NUMBER, Variable.VariableDataShape.CATEGORICAL,
             Variable.VariableDisplayType.DEFAULT, null, "", 1, "Favorite number", null,
             "Their favorite number", null, null, null, null, null, null, null, null, null, null, 312, false);
     observation.addVariable(favNumber);

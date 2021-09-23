@@ -20,6 +20,8 @@ import org.veupathdb.service.eda.generated.model.APIDateVariable;
 import org.veupathdb.service.eda.generated.model.APIDateVariableImpl;
 import org.veupathdb.service.eda.generated.model.APIEntity;
 import org.veupathdb.service.eda.generated.model.APIEntityImpl;
+import org.veupathdb.service.eda.generated.model.APIIntegerVariable;
+import org.veupathdb.service.eda.generated.model.APIIntegerVariableImpl;
 import org.veupathdb.service.eda.generated.model.APILongitudeVariable;
 import org.veupathdb.service.eda.generated.model.APILongitudeVariableImpl;
 import org.veupathdb.service.eda.generated.model.APINumberVariable;
@@ -161,70 +163,85 @@ public class Studies implements org.veupathdb.service.eda.generated.resources.St
       apiVar.setDisplayOrder(var.getDisplayOrder());
       return apiVar;
     }
-    if (var.getType() == VariableType.DATE) {
-      DateVariable dateVar = (DateVariable)var;
-      APIDateVariable apiVar = new APIDateVariableImpl();
-      setApiValueVarProps(apiVar, var);
-      apiVar.setBinWidth(dateVar.getBinSize());
-      apiVar.setBinWidthOverride(null);
-      apiVar.setBinUnits(dateVar.getBinUnits());
-      apiVar.setDisplayRangeMin(dateVar.getDisplayRangeMin());
-      apiVar.setDisplayRangeMax(dateVar.getDisplayRangeMax());
-      apiVar.setRangeMin(dateVar.getRangeMin());
-      apiVar.setRangeMax(dateVar.getRangeMax());
-      apiVar.setVocabulary(dateVar.getVocabulary());
-      apiVar.setDistinctValuesCount(dateVar.getDistinctValuesCount());
-      apiVar.setIsFeatured(dateVar.getIsFeatured());
-      apiVar.setIsMergeKey(dateVar.getIsMergeKey());
-      apiVar.setIsMultiValued(dateVar.getIsMultiValued());
-      apiVar.setIsTemporal(dateVar.getIsTemporal());
-      return apiVar;
-    }
-    else if (var.getType() == VariableType.NUMBER) {
-      NumberVariable numVar = (NumberVariable)var;
-      APINumberVariable apiVar = new APINumberVariableImpl();
-      setApiValueVarProps(apiVar, var);
-      apiVar.setUnits(numVar.getUnits());
-      apiVar.setPrecision(numVar.getPrecision());
-      apiVar.setBinWidth(numVar.getBinWidth());
-      apiVar.setBinWidthOverride(numVar.getBinWidthOverride());
-      apiVar.setDisplayRangeMin(numVar.getDisplayRangeMin());
-      apiVar.setDisplayRangeMax(numVar.getDisplayRangeMax());
-      apiVar.setRangeMin(numVar.getRangeMin());
-      apiVar.setRangeMax(numVar.getRangeMax());
-      apiVar.setDistinctValuesCount(numVar.getDistinctValuesCount());
-      apiVar.setIsFeatured(numVar.getIsFeatured());
-      apiVar.setIsMergeKey(numVar.getIsMergeKey());
-      apiVar.setIsMultiValued(numVar.getIsMultiValued());
-      apiVar.setIsTemporal(numVar.getIsTemporal());
-      apiVar.setVocabulary(numVar.getVocabulary());
-      return apiVar;
-    }
-    else if (var.getType() == VariableType.STRING) {
-      StringVariable strVar = (StringVariable)var;	
-      APIStringVariable apiVar = new APIStringVariableImpl();
-      setApiValueVarProps(apiVar, var);
-      apiVar.setDistinctValuesCount(strVar.getDistinctValuesCount());
-      apiVar.setIsFeatured(strVar.getIsFeatured());
-      apiVar.setIsMergeKey(strVar.getIsMergeKey());
-      apiVar.setIsMultiValued(strVar.getIsMultiValued());
-      apiVar.setIsTemporal(strVar.getIsTemporal());
-      apiVar.setVocabulary(strVar.getVocabulary());
-      return apiVar;
-    }
-    else if (var.getType() == VariableType.LONGITUDE) {
-      NumberVariable numVar = (NumberVariable)var;
-      APILongitudeVariable apiVar = new APILongitudeVariableImpl();
-      setApiValueVarProps(apiVar, var);
-      apiVar.setDistinctValuesCount(numVar.getDistinctValuesCount());
-      apiVar.setIsFeatured(false);
-      apiVar.setIsMergeKey(false);
-      apiVar.setIsMultiValued(false);
-      apiVar.setIsTemporal(false);
-      return apiVar;
-    }
-    else {
-      throw new RuntimeException("Invalid variable type " + var.getType());
+    switch(var.getType()) {
+      case DATE:
+        DateVariable dateVar = (DateVariable)var;
+        APIDateVariable apiDateVar = new APIDateVariableImpl();
+        setApiValueVarProps(apiDateVar, var);
+        apiDateVar.setBinWidth(dateVar.getBinSize());
+        apiDateVar.setBinWidthOverride(null);
+        apiDateVar.setBinUnits(dateVar.getBinUnits());
+        apiDateVar.setDisplayRangeMin(dateVar.getDisplayRangeMin());
+        apiDateVar.setDisplayRangeMax(dateVar.getDisplayRangeMax());
+        apiDateVar.setRangeMin(dateVar.getRangeMin());
+        apiDateVar.setRangeMax(dateVar.getRangeMax());
+        apiDateVar.setVocabulary(dateVar.getVocabulary());
+        apiDateVar.setDistinctValuesCount(dateVar.getDistinctValuesCount());
+        apiDateVar.setIsFeatured(dateVar.getIsFeatured());
+        apiDateVar.setIsMergeKey(dateVar.getIsMergeKey());
+        apiDateVar.setIsMultiValued(dateVar.getIsMultiValued());
+        apiDateVar.setIsTemporal(dateVar.getIsTemporal());
+        return apiDateVar;
+      case INTEGER:
+        NumberVariable intVar = (NumberVariable)var;
+        APIIntegerVariable apiIntVar = new APIIntegerVariableImpl();
+        setApiValueVarProps(apiIntVar, var);
+        apiIntVar.setUnits(intVar.getUnits());
+        apiIntVar.setBinWidth(intVar.getBinWidth());
+        apiIntVar.setBinWidthOverride(intVar.getBinWidthOverride());
+        apiIntVar.setDisplayRangeMin(intVar.getDisplayRangeMin());
+        apiIntVar.setDisplayRangeMax(intVar.getDisplayRangeMax());
+        apiIntVar.setRangeMin(intVar.getRangeMin());
+        apiIntVar.setRangeMax(intVar.getRangeMax());
+        apiIntVar.setDistinctValuesCount(intVar.getDistinctValuesCount());
+        apiIntVar.setIsFeatured(intVar.getIsFeatured());
+        apiIntVar.setIsMergeKey(intVar.getIsMergeKey());
+        apiIntVar.setIsMultiValued(intVar.getIsMultiValued());
+        apiIntVar.setIsTemporal(intVar.getIsTemporal());
+        apiIntVar.setVocabulary(intVar.getVocabulary());
+        return apiIntVar;
+      case NUMBER:
+        NumberVariable numVar = (NumberVariable)var;
+        APINumberVariable apiNumVar = new APINumberVariableImpl();
+        setApiValueVarProps(apiNumVar, var);
+        apiNumVar.setUnits(numVar.getUnits());
+        apiNumVar.setPrecision(numVar.getPrecision());
+        apiNumVar.setBinWidth(numVar.getBinWidth());
+        apiNumVar.setBinWidthOverride(numVar.getBinWidthOverride());
+        apiNumVar.setDisplayRangeMin(numVar.getDisplayRangeMin());
+        apiNumVar.setDisplayRangeMax(numVar.getDisplayRangeMax());
+        apiNumVar.setRangeMin(numVar.getRangeMin());
+        apiNumVar.setRangeMax(numVar.getRangeMax());
+        apiNumVar.setDistinctValuesCount(numVar.getDistinctValuesCount());
+        apiNumVar.setIsFeatured(numVar.getIsFeatured());
+        apiNumVar.setIsMergeKey(numVar.getIsMergeKey());
+        apiNumVar.setIsMultiValued(numVar.getIsMultiValued());
+        apiNumVar.setIsTemporal(numVar.getIsTemporal());
+        apiNumVar.setVocabulary(numVar.getVocabulary());
+        return apiNumVar;
+      case STRING:
+        StringVariable strVar = (StringVariable)var;
+        APIStringVariable apiStrVar = new APIStringVariableImpl();
+        setApiValueVarProps(apiStrVar, var);
+        apiStrVar.setDistinctValuesCount(strVar.getDistinctValuesCount());
+        apiStrVar.setIsFeatured(strVar.getIsFeatured());
+        apiStrVar.setIsMergeKey(strVar.getIsMergeKey());
+        apiStrVar.setIsMultiValued(strVar.getIsMultiValued());
+        apiStrVar.setIsTemporal(strVar.getIsTemporal());
+        apiStrVar.setVocabulary(strVar.getVocabulary());
+        return apiStrVar;
+      case LONGITUDE:
+        NumberVariable longVar = (NumberVariable)var;
+        APILongitudeVariable apiLongVar = new APILongitudeVariableImpl();
+        setApiValueVarProps(apiLongVar, var);
+        apiLongVar.setDistinctValuesCount(longVar.getDistinctValuesCount());
+        apiLongVar.setIsFeatured(false);
+        apiLongVar.setIsMergeKey(false);
+        apiLongVar.setIsMultiValued(false);
+        apiLongVar.setIsTemporal(false);
+        return apiLongVar;
+      default:
+        throw new RuntimeException("Invalid variable type " + var.getType());
     }
   }
   
@@ -273,7 +290,7 @@ public class Studies implements org.veupathdb.service.eda.generated.resources.St
       BinSpecWithRange binSpec = validateVarAndBinSpec(var, incomingBinSpec);
       LOG.debug("Found var of type: " + var.getType() + ", will use bin spec: " + JsonUtil.serializeObject(binSpec));
       distribution = switch(var.getType()) {
-        case NUMBER -> new NumberBinDistribution(ds, study, targetEntity,
+        case INTEGER, NUMBER -> new NumberBinDistribution(ds, study, targetEntity,
             (NumberVariable)var, filters, valueSpec, binSpec);
         case DATE -> new DateBinDistribution(ds, study, targetEntity,
             (DateVariable)var, filters, valueSpec, binSpec);
@@ -308,7 +325,7 @@ public class Studies implements org.veupathdb.service.eda.generated.resources.St
       case STRING:
       case LONGITUDE:
         throw new BadRequestException("Among continuous variables, " +
-            "distribution endpoint supports only date and number types.");
+            "distribution endpoint supports only date, integer, and number types.");
       case DATE:
         DateVariable dateVar = (DateVariable)var;
         if (submittedBinSpec.isEmpty()) {
@@ -331,6 +348,7 @@ public class Studies implements org.veupathdb.service.eda.generated.resources.St
           return binSpec;
         }
       case NUMBER:
+      case INTEGER:
         NumberVariable numberVar = (NumberVariable)var;
         if (submittedBinSpec.isEmpty()) {
           // use defaults

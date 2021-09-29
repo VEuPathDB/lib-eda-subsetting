@@ -13,6 +13,8 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.veupathdb.service.eda.common.client.TabularResponseType;
 import org.veupathdb.service.eda.ss.model.filter.Filter;
+import org.veupathdb.service.eda.ss.model.variable.Variable;
+import org.veupathdb.service.eda.ss.model.variable.VariableWithValues;
 import org.veupathdb.service.eda.ss.stubdb.StubDb;
 
 import javax.sql.DataSource;
@@ -503,7 +505,7 @@ public class StudySubsettingUtilsTest {
     Entity entity = study.getEntity(entityId).orElseThrow();
 
     String varId = "var_17";
-    Variable var = entity.getVariable(varId).orElseThrow();
+    VariableWithValues var = (VariableWithValues)entity.getVariable(varId).orElseThrow();
 
     List<Filter> filters = Collections.emptyList();
 
@@ -526,7 +528,7 @@ public class StudySubsettingUtilsTest {
     Entity entity = study.getEntity(entityId).orElseThrow();
 
     String varId = "var_17";
-    Variable var = entity.getVariable(varId).orElseThrow();
+    VariableWithValues var = (VariableWithValues)entity.getVariable(varId).orElseThrow();
     
     List<Filter> filters = new ArrayList<>();
     filters.add(_filtersForTesting.houseCityFilter);
@@ -540,7 +542,7 @@ public class StudySubsettingUtilsTest {
     testDistributionResponse(study, entity, var, filters, expectedDistribution);
   }
 
-  private void testDistributionResponse(Study study, Entity entity, Variable var, List<Filter> filters, Map<String, Long> expectedDistribution) {
+  private void testDistributionResponse(Study study, Entity entity, VariableWithValues var, List<Filter> filters, Map<String, Long> expectedDistribution) {
 
     TreeNode<Entity> prunedEntityTree = StudySubsettingUtils.pruneTree(study.getEntityTree(), filters, entity);
 

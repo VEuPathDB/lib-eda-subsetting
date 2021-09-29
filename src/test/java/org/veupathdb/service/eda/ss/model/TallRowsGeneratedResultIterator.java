@@ -10,6 +10,9 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.gusdb.fgputil.FormatUtil;
 import org.gusdb.fgputil.MapBuilder;
+import org.veupathdb.service.eda.ss.model.variable.Variable;
+import org.veupathdb.service.eda.ss.model.variable.VariableType;
+import org.veupathdb.service.eda.ss.model.variable.VariableWithValues;
 
 import static org.veupathdb.service.eda.ss.model.RdbmsColumnNames.TT_VARIABLE_ID_COL_NAME;
 
@@ -93,7 +96,7 @@ public class TallRowsGeneratedResultIterator implements Iterator<Map<String,Stri
       record.add(new MapBuilder<String,String>()
         .putAll(idMap)
         .put(TT_VARIABLE_ID_COL_NAME, var.getId())
-        .put(RdbmsColumnNames.VARIABLE_VALUE_COL_NAME, getDefaultVarValue(var.getType()))
+        .putIf(var.hasValues(), RdbmsColumnNames.VARIABLE_VALUE_COL_NAME, getDefaultVarValue(((VariableWithValues)var).getType()))
         .toMap());
     }
 

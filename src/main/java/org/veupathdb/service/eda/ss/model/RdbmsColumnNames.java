@@ -1,12 +1,9 @@
 package org.veupathdb.service.eda.ss.model;
 
-import java.sql.ResultSet;
-import java.sql.SQLException;
-
 public class RdbmsColumnNames {
 
   static final String VARIABLE_VALUE_COL_NAME = "value";
-  
+
   // common
   static final String DESCRIP_COL_NAME = "description";
   static final String DISPLAY_NAME_COL_NAME = "display_name";
@@ -55,29 +52,12 @@ public class RdbmsColumnNames {
   static final String IS_REPEATED_COL_NAME = "is_repeated";
   static final String DISTINCT_VALUES_COUNT_COL_NAME = "distinct_values_count";
   static final String IS_MULTI_VALUED_COL_NAME = "is_multi_valued";
-  
+
   // Tall table
   public static final String TT_VARIABLE_ID_COL_NAME = "attribute_stable_id";
   public static final String STRING_VALUE_COL_NAME = "string_value";
   public static final String DATE_VALUE_COL_NAME = "date_value";
   public static final String NUMBER_VALUE_COL_NAME = "number_value";
-  
-  static String getRsStringNotNull(ResultSet rs, String colName) throws SQLException {
-    if (rs.getString(colName) == null) 
-      throw new RuntimeException("Found a null for variable column: " + colName);
-    return rs.getString(colName);
-  }
 
-  static String getRsStringWithDefault(ResultSet rs, String colName, String defaultVal) throws SQLException {
-    String val = rs.getString(colName);
-    if (val == null) val = defaultVal;
-    return val;
-  }
-
-  static Integer getRsIntegerWithDefault(ResultSet rs, String colName, Integer defaultVal) throws SQLException {
-    Integer val = rs.getInt(colName);
-    if (rs.wasNull()) val = defaultVal;
-    return val;
-  }
-
+  private RdbmsColumnNames(){}
 }

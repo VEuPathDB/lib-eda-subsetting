@@ -9,13 +9,20 @@ import java.util.List;
 import java.util.Map;
 
 import org.gusdb.fgputil.functional.TreeNode;
-import org.veupathdb.service.eda.ss.model.Variable.VariableDataShape;
+import org.veupathdb.service.eda.ss.model.variable.DateVariable;
+import org.veupathdb.service.eda.ss.model.variable.FloatingPointVariable;
+import org.veupathdb.service.eda.ss.model.variable.StringVariable;
+import org.veupathdb.service.eda.ss.model.variable.Variable;
+import org.veupathdb.service.eda.ss.model.variable.VariableDataShape;
 import org.veupathdb.service.eda.ss.model.filter.DateRangeFilter;
 import org.veupathdb.service.eda.ss.model.filter.DateSetFilter;
 import org.veupathdb.service.eda.ss.model.filter.Filter;
 import org.veupathdb.service.eda.ss.model.filter.NumberRangeFilter;
 import org.veupathdb.service.eda.ss.model.filter.NumberSetFilter;
 import org.veupathdb.service.eda.ss.model.filter.StringSetFilter;
+import org.veupathdb.service.eda.ss.model.variable.VariableDisplayType;
+import org.veupathdb.service.eda.ss.model.variable.VariableType;
+import org.veupathdb.service.eda.ss.model.variable.VariableWithValues;
 
 /**
  * A class that holds a test model of a study and supporting objects
@@ -105,93 +112,77 @@ public class TestModel {
     
     return householdNode;
   }
-  
+
+  private static StringVariable getMockStringVar(String label, String id, Entity entity, int distinctValuesCount, boolean isMultiValued) {
+    return new StringVariable(
+        new Variable.Properties(label, id, entity, VariableDisplayType.DEFAULT, label, null, null, "Their " + label),
+        new VariableWithValues.Properties(VariableType.STRING, VariableDataShape.CATEGORICAL, null, distinctValuesCount, false, false, false, isMultiValued)
+    );
+  }
+
+  private static FloatingPointVariable getMockFloatVar(String label, String id, Entity entity, VariableDataShape shape, int distinctValuesCount, boolean isMultiValued) {
+    return new FloatingPointVariable(
+        new Variable.Properties(label, id, entity, VariableDisplayType.DEFAULT, label, null, null, "Their " + label),
+        new VariableWithValues.Properties(VariableType.NUMBER, shape, null, distinctValuesCount, false, false, false, isMultiValued),
+        new FloatingPointVariable.Properties("", 1, null, null, null, null, null, null)
+    );
+  }
+
+  private static DateVariable getMockDateVar(String label, String id, Entity entity, VariableDataShape shape, int distinctValuesCount) {
+    return new DateVariable(
+        new Variable.Properties(label, id, entity, VariableDisplayType.DEFAULT, label, null, null, label),
+        new VariableWithValues.Properties(VariableType.DATE, shape, null, distinctValuesCount, true, false, false, false),
+        new DateVariable.Properties(shape, null, null, null, null, 1, "week", null)
+    );
+  }
+
   private void constructVariables() {
-/*
-	public StringVariable(String providerLabel, String id, Entity entity, 
-			VariableDataShape dataShape, VariableDisplayType displayType, String displayName, Integer displayOrder, String parentId,
-			String definition, List<String> vocabulary, Boolean isTemporal, Boolean isFeatured, Boolean isMergeKey,
-			Number distinctValuesCount, Boolean isMultiValued) 
-						
-*/	  
-    roof = new StringVariable("roof", "var_10", household, VariableDataShape.CATEGORICAL,
-            Variable.VariableDisplayType.DEFAULT, "Roof", null, null,
-            "Their roof", null, null, null, null, 12, false);
+
+    /**************** String Variables ****************/
+
+    roof = getMockStringVar("roof", "var_10", household, 12, false);
     household.addVariable(roof);
     
     // multi-valued string var
-    haircolor = new StringVariable("haircolor", "var_17", participant, Variable.VariableDataShape.CATEGORICAL,
-            Variable.VariableDisplayType.DEFAULT, "Hair color", null, null,
-            "Their hair color", null, null, null, null, 21, true);
+    haircolor = getMockStringVar("haircolor", "var_17", participant, 21, true);
     participant.addVariable(haircolor);
     
-    mood  = new StringVariable("mood", "var_16", observation, VariableDataShape.CATEGORICAL,
-            Variable.VariableDisplayType.DEFAULT, "Mood", null, null,
-            "Their mood", null, null, null, null, 96, false);
+    mood = getMockStringVar("mood", "var_16", observation, 96, false);
     observation.addVariable(mood);
 
-    waterSupply  = new StringVariable("waterSupply", "var_19", householdObs, VariableDataShape.CATEGORICAL,
-            Variable.VariableDisplayType.DEFAULT, "Waters supply", null, null,
-            "Their water supply", null, null, null, null, 66, false);
+    waterSupply = getMockStringVar("waterSupply", "var_19", householdObs, 66, false);
     householdObs.addVariable(waterSupply);
 
-    earsize = new StringVariable("earsize", "var_18", participant, VariableDataShape.CATEGORICAL,
-			   Variable.VariableDisplayType.DEFAULT, "Roof", null, null,
-			   "Their ear size", null, null, null, null, 87, false);
+    earsize = getMockStringVar("earsize", "var_18", participant, 87, false);
     participant.addVariable(earsize);
-    
-    /*
-	public NumberVariable(String providerLabel, String id, Entity entity, boolean isLongitude,
-			VariableDataShape dataShape, VariableDisplayType displayType, Integer displayOrder, String units, Integer precision,
-			String displayName, String parentId, String definition, List<String> vocabulary, Number displayRangeMin,
-			Number displayRangeMax, Number rangeMin, Number rangeMax, Number binWidthOverride,
-			Number binWidth, Boolean isTemporal, Boolean isFeatured, Boolean isMergeKey,
-			Number distinctValuesCount, Boolean isMultiValued) {			
-*/	  
+
+    /**************** Float/Number Variables ****************/
 
     // multi-valued number var (what can i say... left and right feet are different!)
-    shoesize = new NumberVariable("shoesize", "var_11", participant, VariableType.NUMBER, VariableDataShape.CATEGORICAL,
-            Variable.VariableDisplayType.DEFAULT, null, "", 1, "Shoe size", null,
-            "their shoe size", null, null, null, null, null, null, null, null, null, null, 47, true);
+    shoesize = getMockFloatVar("shoesize", "var_11", participant, VariableDataShape.CATEGORICAL, 47, true);
     participant.addVariable(shoesize);
 
-    networth = new NumberVariable("networth", "var_10", participant, VariableType.NUMBER, VariableDataShape.CONTINUOUS,
-            Variable.VariableDisplayType.DEFAULT, null, "", 1, "Net worth", null,
-            "Their net worth", null, null, null, null, null, null, null, null, null, null, 875, false);
+    networth = getMockFloatVar("networth", "var_10", participant, VariableDataShape.CONTINUOUS, 875, false);
     participant.addVariable(networth);
 
-    weight = new NumberVariable("weight", "var_12", observation, VariableType.NUMBER, Variable.VariableDataShape.CONTINUOUS,
-            Variable.VariableDisplayType.DEFAULT, null, "", 1, "Weight", null,
-            "Their weight", null, null, null, null, null, null, null, null, null, null, 65, false);
+    weight = getMockFloatVar("weight", "var_12", observation, VariableDataShape.CONTINUOUS, 65, false);
     observation.addVariable(weight);
 
-    favNumber = new NumberVariable("favNumber", "var_13", observation, VariableType.NUMBER, Variable.VariableDataShape.CATEGORICAL,
-            Variable.VariableDisplayType.DEFAULT, null, "", 1, "Favorite number", null,
-            "Their favorite number", null, null, null, null, null, null, null, null, null, null, 312, false);
+    favNumber = getMockFloatVar("favNumber", "var_13", observation, VariableDataShape.CATEGORICAL, 312, false);
     observation.addVariable(favNumber);
-    
-    /*
-    public DateVariable(String providerLabel, String id, Entity entity,
-			VariableDataShape dataShape, VariableDisplayType displayType,
-			String displayName, Integer displayOrder, String parentId, String definition, List<String> vocabulary, String displayRangeMin,
-			String displayRangeMax, String rangeMin, String rangeMax, String binWidthOverride,
-			String binWidth, Boolean isTemporal, Boolean isFeatured, Boolean isMergeKey, 
-			Number distinctValuesCount, Boolean isMultiValued)
-    */
-    birthDate = new DateVariable("birthDate", "var_14", observation, Variable.VariableDataShape.CONTINUOUS,
-            Variable.VariableDisplayType.DEFAULT, "Birth date", null, null,
-            "Their birth date", null, null, null, null, null, null, "week", 1, null, null, null, 13, false);
+
+    /**************** Date Variables ****************/
+
+    birthDate = getMockDateVar("birthDate", "var_14", observation, VariableDataShape.CONTINUOUS, 13);
     observation.addVariable(birthDate);
     
-    favNewYears = new DateVariable("favNewYears", "var_15", observation, Variable.VariableDataShape.CATEGORICAL,
-            Variable.VariableDisplayType.DEFAULT, "Fav new years", null, null,
-            "Their fav new years", null, null, null, null, null, null, "week", 1, null, null, null, 74, false);
+    favNewYears = getMockDateVar("favNewYears", "var_15", observation, VariableDataShape.CATEGORICAL, 74);
     observation.addVariable(favNewYears);
-    
+
   }
-  
+
   private void createFilters() {
-    
+
     // create observation weight filter
     obsWeightFilter = new NumberRangeFilter(observation, weight.getId(), 10, 20);
 

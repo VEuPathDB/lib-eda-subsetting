@@ -27,7 +27,7 @@ import org.veupathdb.service.eda.ss.model.Entity;
 import org.veupathdb.service.eda.ss.model.FiltersForTesting;
 import org.veupathdb.service.eda.ss.model.Study;
 import org.veupathdb.service.eda.ss.model.TestModel;
-import org.veupathdb.service.eda.ss.model.VariableWithValues;
+import org.veupathdb.service.eda.ss.model.variable.VariableWithValues;
 import org.veupathdb.service.eda.ss.model.distribution.DistributionResult;
 import org.veupathdb.service.eda.ss.model.filter.Filter;
 import org.veupathdb.service.eda.ss.stubdb.StubDb;
@@ -55,7 +55,7 @@ public class StudiesTest {
   @DisplayName("Test entity tree to api tree")
   void testEntityTreeToAPITree() {
 
-    APIEntity apiEntityTree = Studies.entityTreeToAPITree(_study.getEntityTree());
+    APIEntity apiEntityTree = ApiConversionUtil.entityTreeToAPITree(_study.getEntityTree());
     assertEquals("GEMS_House", apiEntityTree.getId());
 
     assertEquals(2, apiEntityTree.getChildren().size());
@@ -64,7 +64,7 @@ public class StudiesTest {
   @Test
   @DisplayName("Test get study details")
   void testGetStudyDetails() {
-    APIStudyDetail studyDetail = Studies.getApiStudyDetail(_study);
+    APIStudyDetail studyDetail = ApiConversionUtil.getApiStudyDetail(_study);
     assertNotNull(studyDetail);
   }
 

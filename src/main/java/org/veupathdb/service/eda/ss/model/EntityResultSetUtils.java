@@ -15,9 +15,13 @@ import org.gusdb.fgputil.db.runner.SQLRunner;
 import org.gusdb.fgputil.functional.TreeNode;
 import org.json.JSONArray;
 import org.veupathdb.service.eda.ss.Resources;
+import org.veupathdb.service.eda.ss.model.variable.Variable;
+import org.veupathdb.service.eda.ss.model.variable.VariableWithValues;
 
 import static org.gusdb.fgputil.FormatUtil.NL;
 import static org.veupathdb.service.eda.ss.model.RdbmsColumnNames.*;
+import static org.veupathdb.service.eda.ss.model.ResultSetUtils.getRsStringNotNull;
+import static org.veupathdb.service.eda.ss.model.ResultSetUtils.getRsStringWithDefault;
 
 /**
  * utilities for creating Entities from result sets
@@ -118,7 +122,8 @@ public class EntityResultSetUtils {
 
       // add variable value to map (skip if ID is null)
       if (variableId != null) {
-        Variable var = entity.getVariable(variableId)
+        VariableWithValues var = entity.getVariable(variableId)
+          .map(v -> (VariableWithValues)v)
           .orElseThrow(() -> new RuntimeException(
               "Metadata does not have variable found in tall table result set: " + variableId));
 

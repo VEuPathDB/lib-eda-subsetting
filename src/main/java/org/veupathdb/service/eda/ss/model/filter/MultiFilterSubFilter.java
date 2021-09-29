@@ -2,7 +2,7 @@ package org.veupathdb.service.eda.ss.model.filter;
 
 import java.util.List;
 
-import org.veupathdb.service.eda.ss.model.Variable;
+import org.veupathdb.service.eda.ss.model.variable.Variable;
 
 public class MultiFilterSubFilter {
 	private final Variable variable;

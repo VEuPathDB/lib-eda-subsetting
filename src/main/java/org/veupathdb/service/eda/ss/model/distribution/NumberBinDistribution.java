@@ -10,15 +10,15 @@ import org.veupathdb.service.eda.generated.model.HistogramStats;
 import org.veupathdb.service.eda.generated.model.HistogramStatsImpl;
 import org.veupathdb.service.eda.generated.model.ValueSpec;
 import org.veupathdb.service.eda.ss.model.Entity;
-import org.veupathdb.service.eda.ss.model.NumberVariable;
+import org.veupathdb.service.eda.ss.model.variable.FloatingPointVariable;
 import org.veupathdb.service.eda.ss.model.Study;
 import org.veupathdb.service.eda.ss.model.filter.Filter;
 
-public class NumberBinDistribution extends AbstractBinDistribution<NumberVariable, Double, NumberBin> {
+public class NumberBinDistribution extends AbstractBinDistribution<FloatingPointVariable, Double, NumberBin> {
 
   private final double _binWidth;
 
-  public NumberBinDistribution(DataSource ds, Study study, Entity targetEntity, NumberVariable var,
+  public NumberBinDistribution(DataSource ds, Study study, Entity targetEntity, FloatingPointVariable var,
                                List<Filter> filters, ValueSpec valueSpec, BinSpecWithRange binSpec) {
     super(ds, study, targetEntity, var, filters, valueSpec, binSpec.getDisplayRangeMin(), binSpec.getDisplayRangeMax(), binSpec);
     _binWidth = binSpec.getBinWidth().doubleValue();

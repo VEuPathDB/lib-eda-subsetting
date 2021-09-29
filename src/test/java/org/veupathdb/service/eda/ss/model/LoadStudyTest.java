@@ -13,6 +13,11 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.veupathdb.service.eda.ss.Resources;
+import org.veupathdb.service.eda.ss.model.variable.Variable;
+import org.veupathdb.service.eda.ss.model.variable.VariableDataShape;
+import org.veupathdb.service.eda.ss.model.variable.VariableDisplayType;
+import org.veupathdb.service.eda.ss.model.variable.VariableType;
+import org.veupathdb.service.eda.ss.model.variable.VariableWithValues;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -85,12 +90,12 @@ public class LoadStudyTest {
     assertEquals("var_10", var.getId());
     assertEquals("Net worth", var.getDisplayName());
     assertEquals("GEMS_Part", var.getEntityId());
-    assertEquals(Variable.VariableDataShape.CONTINUOUS, var.getDataShape());
     assertNull(var.getParentId());
     assertEquals("_networth", var.getProviderLabel());
-    assertEquals(VariableType.NUMBER, var.getType());
-    assertEquals(Variable.VariableDisplayType.DEFAULT, var.getDisplayType());
-    assertTrue(var.getHasValues());
+    assertEquals(VariableDisplayType.DEFAULT, var.getDisplayType());
+    assertTrue(var.hasValues());
+    assertEquals(VariableType.NUMBER, ((VariableWithValues)var).getType());
+    assertEquals(VariableDataShape.CONTINUOUS, ((VariableWithValues)var).getDataShape());
 
   }
   

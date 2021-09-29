@@ -5,7 +5,8 @@ import javax.sql.DataSource;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.veupathdb.service.eda.ss.model.Variable.VariableDisplayType;
+import org.veupathdb.service.eda.ss.model.variable.Variable;
+import org.veupathdb.service.eda.ss.model.variable.VariableDisplayType;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -215,7 +216,7 @@ public class Entity {
     if (!parentIdToKids.containsKey(nodeId)) return;  // if node is not a parent, done with recursion
     
     for (Variable kid : parentIdToKids.get(nodeId)) {
-      if (kid.getHasValues()) multiFilterMap.get(multiFilterId).add(kid.getId());
+      if (kid.hasValues()) multiFilterMap.get(multiFilterId).add(kid.getId());
       addToMultiFilterMap(multiFilterId, kid.getId(), parentIdToKids, multiFilterMap);
     }
   }

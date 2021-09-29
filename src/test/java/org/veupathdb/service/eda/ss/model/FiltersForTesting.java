@@ -12,6 +12,7 @@ import org.veupathdb.service.eda.ss.model.filter.Filter;
 import org.veupathdb.service.eda.ss.model.filter.NumberRangeFilter;
 import org.veupathdb.service.eda.ss.model.filter.NumberSetFilter;
 import org.veupathdb.service.eda.ss.model.filter.StringSetFilter;
+import org.veupathdb.service.eda.ss.model.variable.Variable;
 
 public class FiltersForTesting {
 

@@ -1,4 +1,4 @@
-package org.veupathdb.service.eda.ss.model;
+package org.veupathdb.service.eda.ss.model.variable;
 
 import java.sql.Date;
 import java.sql.ResultSet;

@@ -1,0 +1,74 @@
+package org.veupathdb.service.eda.ss.model.variable;
+
+import org.veupathdb.service.eda.ss.model.Entity;
+
+public abstract class Variable {
+
+  public static class Properties {
+    public final String providerLabel;
+    public final String id;
+    public final Entity entity;
+    public final VariableDisplayType displayType;
+    public final String displayName;
+    public final Integer displayOrder;
+    public final String parentId;
+    public final String definition;
+
+    public Properties(String providerLabel, String id, Entity entity,
+                      VariableDisplayType displayType, String displayName,
+                      Integer displayOrder, String parentId, String definition) {
+      this.providerLabel = providerLabel;
+      this.id = id;
+      this.entity = entity;
+      this.displayType = displayType;
+      this.displayName = displayName;
+      this.displayOrder = displayOrder;
+      this.parentId = parentId;
+      this.definition = definition;
+    }
+  }
+
+  private final Properties _properties;
+
+  public abstract boolean hasValues();
+
+  protected Variable(Properties properties) {
+    _properties = properties;
+  }
+
+  public String getProviderLabel() {
+    return _properties.providerLabel;
+  }
+
+  public String getId() {
+    return _properties.id;
+  }
+
+  public VariableDisplayType getDisplayType() {
+    return _properties.displayType;
+  }
+
+  public String getEntityId() {
+    return _properties.entity.getId();
+  }
+
+  public Entity getEntity() {
+    return _properties.entity;
+  }
+
+  public String getDisplayName() {
+    return _properties.displayName;
+  }
+
+  public String getParentId() {
+    return _properties.parentId;
+  }
+
+  public Integer getDisplayOrder() {
+    return _properties.displayOrder;
+  }
+
+  public String getDefinition() {
+    return _properties.definition;
+  }
+}

@@ -27,6 +27,9 @@ import org.gusdb.fgputil.iterator.GroupingIterator;
 import org.veupathdb.service.eda.common.client.TabularResponseType;
 import org.veupathdb.service.eda.ss.Resources;
 import org.veupathdb.service.eda.ss.model.filter.Filter;
+import org.veupathdb.service.eda.ss.model.variable.Variable;
+import org.veupathdb.service.eda.ss.model.variable.VariableType;
+import org.veupathdb.service.eda.ss.model.variable.VariableWithValues;
 
 import static org.gusdb.fgputil.iterator.IteratorUtil.toIterable;
 import static org.veupathdb.service.eda.ss.model.RdbmsColumnNames.DATE_VALUE_COL_NAME;
@@ -153,7 +156,7 @@ public class StudySubsettingUtils {
    */
   public static Stream<TwoTuple<String,Long>> produceVariableDistribution(
       DataSource datasource, TreeNode<Entity> prunedEntityTree, Entity outputEntity,
-      Variable distributionVariable, List<Filter> filters) {
+      VariableWithValues distributionVariable, List<Filter> filters) {
     String sql = generateDistributionSql(outputEntity, distributionVariable, filters, prunedEntityTree);
     LOG.info("Generated the following distribution SQL: " + NL + sql + NL);
     return ResultSets.openStream(datasource, sql, "Produce variable distribution", row -> Optional.of(
@@ -445,7 +448,7 @@ group by number_value
 order by number_value desc;
    */
 
-  static String generateDistributionSql(Entity outputEntity, Variable distributionVariable, List<Filter> filters, TreeNode<Entity> prunedEntityTree) {
+  static String generateDistributionSql(Entity outputEntity, VariableWithValues distributionVariable, List<Filter> filters, TreeNode<Entity> prunedEntityTree) {
 
     String tallTblAbbrev = "tall";
     String ancestorTblAbbrev = "subset";
@@ -465,7 +468,7 @@ order by number_value desc;
       "ORDER BY " + distributionVariable.getType().getTallTableColumnName() + " ASC";
    }
 
-  static String generateDistributionSelectClause(Variable distributionVariable) {
+  static String generateDistributionSelectClause(VariableWithValues distributionVariable) {
     return "SELECT " +
         distributionVariable.getType().getTallTableColumnName() +
         ", count(" + distributionVariable.getEntity().getPKColName() + ") as " + COUNT_COLUMN_NAME;
@@ -555,7 +558,7 @@ order by number_value desc;
     return "ORDER BY " + String.join(", ", cols);
   }
   
-  static String generateDistributionGroupByClause(Variable outputVariable) {
+  static String generateDistributionGroupByClause(VariableWithValues outputVariable) {
     return "GROUP BY " + outputVariable.getType().getTallTableColumnName();
   }
   

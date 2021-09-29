@@ -15,7 +15,7 @@ import org.veupathdb.service.eda.generated.model.BinUnits;
 import org.veupathdb.service.eda.generated.model.HistogramStats;
 import org.veupathdb.service.eda.generated.model.HistogramStatsImpl;
 import org.veupathdb.service.eda.generated.model.ValueSpec;
-import org.veupathdb.service.eda.ss.model.DateVariable;
+import org.veupathdb.service.eda.ss.model.variable.DateVariable;
 import org.veupathdb.service.eda.ss.model.Entity;
 import org.veupathdb.service.eda.ss.model.Study;
 import org.veupathdb.service.eda.ss.model.filter.Filter;

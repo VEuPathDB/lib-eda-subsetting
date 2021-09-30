@@ -151,8 +151,8 @@ class VariableResultSetUtils {
                 getIntegerFromString(rs.getString(DISPLAY_RANGE_MAX_COL_NAME)),
                 getIntegerFromString(rs.getString(RANGE_MIN_COL_NAME)),
                 getIntegerFromString(rs.getString(RANGE_MAX_COL_NAME)),
-                getIntegerFromString(rs.getString(BIN_WIDTH_COMPUTED_COL_NAME)),
-                getIntegerFromString(massageToInt(rs.getString(BIN_WIDTH_OVERRIDE_COL_NAME))) // FIXME!
+                getIntegerFromString(massageToInt(rs.getString(BIN_WIDTH_COMPUTED_COL_NAME))), // FIXME!
+                getIntegerFromString(rs.getString(BIN_WIDTH_OVERRIDE_COL_NAME))
             ));
 
         case DATE ->

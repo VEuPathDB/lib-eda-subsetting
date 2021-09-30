@@ -7,6 +7,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import javax.sql.DataSource;
+import org.gusdb.fgputil.FormatUtil;
 import org.gusdb.fgputil.db.runner.SQLRunner;
 import org.gusdb.fgputil.json.JsonUtil;
 import org.veupathdb.service.eda.ss.Resources;
@@ -151,7 +152,7 @@ class VariableResultSetUtils {
                 getIntegerFromString(rs.getString(RANGE_MIN_COL_NAME)),
                 getIntegerFromString(rs.getString(RANGE_MAX_COL_NAME)),
                 getIntegerFromString(rs.getString(BIN_WIDTH_COMPUTED_COL_NAME)),
-                getIntegerFromString(rs.getString(BIN_WIDTH_OVERRIDE_COL_NAME))
+                getIntegerFromString(massageToInt(rs.getString(BIN_WIDTH_OVERRIDE_COL_NAME))) // FIXME!
             ));
 
         case DATE ->
@@ -177,5 +178,9 @@ class VariableResultSetUtils {
     catch (SQLException | JsonProcessingException e) {
       throw new RuntimeException("Entity:  " + varProps.entity.getId() + " variable: " + varProps.id, e);
     }
+  }
+
+  private static String massageToInt(String string) {
+    return FormatUtil.isInteger(string) ? string : "1";
   }
 }

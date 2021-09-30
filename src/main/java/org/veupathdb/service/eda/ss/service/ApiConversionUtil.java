@@ -87,6 +87,7 @@ public class ApiConversionUtil {
       default -> Functions.doThrow(() -> new RuntimeException("Invalid variable type " + var.getType()));
     };
     // set props common to all variables with values
+    apiVar.setDataShape(var.getDataShape().toApiShape());
     apiVar.setVocabulary(var.getVocabulary());
     apiVar.setDistinctValuesCount(var.getDistinctValuesCount());
     apiVar.setIsFeatured(var.getIsFeatured());

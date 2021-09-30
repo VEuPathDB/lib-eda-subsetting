@@ -1,15 +1,19 @@
 package org.veupathdb.service.eda.ss.model.variable;
 
+import org.veupathdb.service.eda.generated.model.APIVariableDataShape;
+
 public enum VariableDataShape {
-  CONTINUOUS("continuous"),
-  CATEGORICAL("categorical"),
-  ORDINAL("ordinal"),
-  BINARY("binary");
+  CONTINUOUS("continuous", APIVariableDataShape.CONTINUOUS),
+  CATEGORICAL("categorical", APIVariableDataShape.CATEGORICAL),
+  ORDINAL("ordinal", APIVariableDataShape.ORDINAL),
+  BINARY("binary", APIVariableDataShape.BINARY);
 
   private final String _name;
+  private final APIVariableDataShape _apiDataShape;
 
-  VariableDataShape(String name) {
+  VariableDataShape(String name, APIVariableDataShape apiDataShape) {
     _name = name;
+    _apiDataShape = apiDataShape;
   }
 
   public static VariableDataShape fromString(String shapeString) {
@@ -21,4 +25,7 @@ public enum VariableDataShape {
     throw new RuntimeException("Unrecognized data shape: " + shapeString);
   }
 
+  public APIVariableDataShape toApiShape() {
+    return _apiDataShape;
+  }
 }

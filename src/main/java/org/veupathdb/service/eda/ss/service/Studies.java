@@ -260,9 +260,7 @@ public class Studies implements org.veupathdb.service.eda.generated.resources.St
           if (binSpec.getBinUnits() != null || binSpec.getBinWidth() == null) {
             throw new BadRequestException("For number variables, only binWidth should be submitted (not binUnits).");
           }
-          if (binSpec.getBinWidth().doubleValue() <= 0) {
-            throw new BadRequestException("binWidth must be a positive number for number variable distributions");
-          }
+          binSpec.setBinWidth(numberVar.validateBinWidth(binSpec.getBinWidth()));
           return binSpec;
         }
       default:

@@ -55,7 +55,7 @@ public class RequestBundle {
 
     List<Filter> filters = constructFiltersFromAPIFilters(study, apiFilters);
 
-    TabularReportConfig reportConfig = constructTabularReportConfigFromAPIReportConfig(apiReportConfig);
+    TabularReportConfig reportConfig = new TabularReportConfig(entity, apiReportConfig);
 
     return new RequestBundle(study, entity, variables, filters, reportConfig);
   }
@@ -187,18 +187,6 @@ public class RequestBundle {
     }
 
     return new MultiFilter(entity, subFilters, MultiFilterOperation.fromString(f.getOperation().getValue()));
-  }
-
-  static TabularReportConfig constructTabularReportConfigFromAPIReportConfig(APITabularReportConfig apiConfig) {
-    if (apiConfig == null) return null;
-    Integer numRows = null;
-    Integer offset = null;
-    if (apiConfig.getPagingConfig() != null) {
-      numRows = apiConfig.getPagingConfig().getNumRows();
-      offset = apiConfig.getPagingConfig().getOffset();
-    }
-    return new TabularReportConfig(apiConfig.getSortingColumns(), numRows,
-        offset);
   }
 
   public static LocalDateTime parseDate(String dateStr) {

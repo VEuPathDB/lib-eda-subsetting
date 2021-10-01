@@ -16,4 +16,5 @@ public interface SupportsNumericRange<T extends Number> {
 
   T getDefaultBinWidth();
 
+  Number validateBinWidth(Number binWidth);
 }

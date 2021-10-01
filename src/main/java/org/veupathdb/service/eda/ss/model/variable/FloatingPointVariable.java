@@ -1,5 +1,7 @@
 package org.veupathdb.service.eda.ss.model.variable;
 
+import javax.ws.rs.BadRequestException;
+
 public class FloatingPointVariable extends NumberVariable implements SupportsNumericRange<Double> {
 
   public static class Properties {
@@ -88,5 +90,12 @@ public class FloatingPointVariable extends NumberVariable implements SupportsNum
         ? _properties.binWidth
         : _properties.binWidthOverride;
   }
-
+  @Override
+  public Double validateBinWidth(Number binWidth) {
+    Double doubleValue = binWidth.doubleValue();
+    if (doubleValue <= 0) {
+      throw new BadRequestException("binWidth must be a positive number for number variable distributions");
+    }
+    return doubleValue;
+  }
 }

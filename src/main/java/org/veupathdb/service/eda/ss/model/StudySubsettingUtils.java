@@ -12,6 +12,7 @@ import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import javax.sql.DataSource;
+
 import static org.gusdb.fgputil.FormatUtil.NL;
 
 import org.apache.logging.log4j.LogManager;
@@ -25,6 +26,7 @@ import org.gusdb.fgputil.db.stream.ResultSets;
 import org.gusdb.fgputil.functional.TreeNode;
 import org.gusdb.fgputil.iterator.GroupingIterator;
 import org.veupathdb.service.eda.common.client.TabularResponseType;
+import org.veupathdb.service.eda.generated.model.SortSpecEntry;
 import org.veupathdb.service.eda.ss.Resources;
 import org.veupathdb.service.eda.ss.model.filter.Filter;
 import org.veupathdb.service.eda.ss.model.variable.Variable;
@@ -39,9 +41,8 @@ import static org.veupathdb.service.eda.ss.model.RdbmsColumnNames.TT_VARIABLE_ID
 
 /**
  * A class to perform subsetting operations on a study entity
- * 
- * @author Steve
  *
+ * @author Steve
  */
 public class StudySubsettingUtils {
 
@@ -56,12 +57,12 @@ public class StudySubsettingUtils {
    * responseType (JSON string[][] vs true tabular). Each row is a record containing
    * the primary key columns and requested variables of the specified entity.
    *
-   * @param datasource DB to run against
-   * @param study study context
-   * @param outputEntity entity type to return
+   * @param datasource      DB to run against
+   * @param study           study context
+   * @param outputEntity    entity type to return
    * @param outputVariables variables requested
-   * @param filters filters to apply to create a subset of records
-   * @param formatter object that will write response
+   * @param filters         filters to apply to create a subset of records
+   * @param formatter       object that will write response
    */
   public static void produceTabularSubset(DataSource datasource, Study study, Entity outputEntity,
                                           List<Variable> outputVariables, List<Filter> filters,
@@ -78,7 +79,7 @@ public class StudySubsettingUtils {
     List<String> outputColumns = getTabularOutputColumns(outputEntity, outputVariables);
 
     new SQLRunner(datasource, sql, "Produce tabular subset").executeQuery(rs -> {
-      try (BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(outputStream))) {
+      try(BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(outputStream))) {
 
         formatter.begin(writer);
         formatter.writeRow(writer, outputColumns);
@@ -97,12 +98,12 @@ public class StudySubsettingUtils {
       }
     }, FETCH_SIZE_FOR_TABULAR_QUERIES);
   }
-  
+
 
   static List<String> getTabularOutputColumns(Entity outputEntity, List<Variable> outputVariables) {
-	List<String> outputColumns = new ArrayList<>();
-	    
-	List<String> outputVariableIds = outputVariables.stream().map(Variable::getId).collect(Collectors.toList());
+    List<String> outputColumns = new ArrayList<>();
+
+    List<String> outputVariableIds = outputVariables.stream().map(Variable::getId).collect(Collectors.toList());
     outputColumns.add(outputEntity.getPKColName());
     outputColumns.addAll(outputEntity.getAncestorPkColNames());
     outputColumns.addAll(outputVariableIds);
@@ -123,8 +124,8 @@ public class StudySubsettingUtils {
     String pkCol = outputEntity.getPKColName();
     Iterator<List<Map<String, String>>> groupedTallRowsIterator = new GroupingIterator<>(
         tallRowsIterator, (row1, row2) -> {
-          return row1.get(pkCol).equals(row2.get(pkCol));
-        }
+      return row1.get(pkCol).equals(row2.get(pkCol));
+    }
     );
 
     // iterate through groups and format into strings to be written to stream
@@ -137,9 +138,9 @@ public class StudySubsettingUtils {
       formatter.writeRow(writer, wideRow);
     }
   }
-  
+
   static void writeWideRowsWithReportConfig(ResultSet rs, TabularResponseType.Formatter formatter,
-      Writer writer, List<String> outputColumns) throws IOException, SQLException {
+                                            Writer writer, List<String> outputColumns) throws IOException, SQLException {
     while (rs.next()) {
       List<String> wideRow = new ArrayList<>();
       for (String colName : outputColumns) {
@@ -152,9 +153,10 @@ public class StudySubsettingUtils {
   /**
    * NOTE! This stream MUST be closed by the caller once the stream has been processed.
    * The easiest way to do this is with a try-with-resources around this method's call.
+   *
    * @return stream of distribution tuples
    */
-  public static Stream<TwoTuple<String,Long>> produceVariableDistribution(
+  public static Stream<TwoTuple<String, Long>> produceVariableDistribution(
       DataSource datasource, TreeNode<Entity> prunedEntityTree, Entity outputEntity,
       VariableWithValues distributionVariable, List<Filter> filters) {
     String sql = generateDistributionSql(outputEntity, distributionVariable, filters, prunedEntityTree);
@@ -185,17 +187,17 @@ public class StudySubsettingUtils {
 
     Predicate<Entity> isActive =
         e -> entityIdsInFilters.contains(e.getId()) ||
-        e.getId().equals(outputEntity.getId());
+            e.getId().equals(outputEntity.getId());
 
     return pruneToActiveAndPivotNodes(tree, isActive);
   }
-  
+
   static List<String> getEntityIdsInFilters(List<Filter> filters) {
     return filters.stream().map(f -> f.getEntity().getId()).collect(Collectors.toList());
   }
 
   /**
-   * Generate SQL to produce a tall stream of Entity ID, ancestry IDs, variable ID and values.  
+   * Generate SQL to produce a tall stream of Entity ID, ancestry IDs, variable ID and values.
    */
   static String generateTabularSqlNoReportConfig(List<Variable> outputVariables, Entity outputEntity, List<Filter> filters, TreeNode<Entity> prunedEntityTree) {
 
@@ -204,58 +206,58 @@ public class StudySubsettingUtils {
     String tallTblAbbrev = "tall";
     String ancestorTblAbbrev = "subset";
     return
-      // with clauses create an entity-named filtered result for each relevant entity
-      generateFilterWithClauses(prunedEntityTree, filters) + NL +
-      // select
-      generateTabularSelectClause(outputEntity, ancestorTblAbbrev) + NL +
-      generateTabularFromClause(outputEntity, prunedEntityTree, ancestorTblAbbrev) + NL +
-      // left join to attributes table so we always get at least one row per subset
-      //   record, even if no data exists for requested vars (or no vars requested).
-      // null rows will be handled in the tall-to-wide rows conversion
-      generateLeftJoin(outputEntity, outputVariables, ancestorTblAbbrev, tallTblAbbrev) + NL +
-      generateTabularOrderByClause(outputEntity) + NL;
+        // with clauses create an entity-named filtered result for each relevant entity
+        generateFilterWithClauses(prunedEntityTree, filters) + NL +
+            // select
+            generateTabularSelectClause(outputEntity, ancestorTblAbbrev) + NL +
+            generateTabularFromClause(outputEntity, prunedEntityTree, ancestorTblAbbrev) + NL +
+            // left join to attributes table so we always get at least one row per subset
+            //   record, even if no data exists for requested vars (or no vars requested).
+            // null rows will be handled in the tall-to-wide rows conversion
+            generateLeftJoin(outputEntity, outputVariables, ancestorTblAbbrev, tallTblAbbrev) + NL +
+            generateTabularOrderByClause(outputEntity) + NL;
   }
 
   /**
    * Generate SQL to produce a multi-column tabular output (the requested variables), for the specified subset.
-   * 
-   * 
-WITH
-EUPATH_0000609 as (
-  SELECT Observation_stable_id, Participant_stable_id, Household_stable_id, Sample_stable_id FROM apidb.Ancestors_GEMSCC0003_1_Sample
-),
-subset AS (
-  SELECT EUPATH_0000609.Sample_stable_id
-  FROM EUPATH_0000609
-),
-wide_tabular AS (
-  select rownum as r, wt.*
-  from (
-    select Sample_stable_id, 
-    Observation_stable_id, 
-    Participant_stable_id, 
-    Household_stable_id, 
-    json_query(atts, '$.EUPATH_0000711') as EUPATH_0000711, 
-    ea.stable_id
-    from apidb.entityattributes ea, apidb.Ancestors_GEMSCC0003_1_Sample a
-    where ea.stable_id in (select * from subset)
-    and ea.stable_id = a.Sample_stable_id
-    order by Sample_stable_id
-  ) wt
-)
-select Sample_stable_id, Observation_stable_id, Participant_stable_id, Household_stable_id, EUPATH_0000711
-from wide_tabular
-where r > 2 and r <= 8
-order by Sample_stable_id
+   * <p>
+   * <p>
+   * WITH
+   * EUPATH_0000609 as (
+   * SELECT Observation_stable_id, Participant_stable_id, Household_stable_id, Sample_stable_id FROM apidb.Ancestors_GEMSCC0003_1_Sample
+   * ),
+   * subset AS (
+   * SELECT EUPATH_0000609.Sample_stable_id
+   * FROM EUPATH_0000609
+   * ),
+   * wide_tabular AS (
+   * select rownum as r, wt.*
+   * from (
+   * select Sample_stable_id,
+   * Observation_stable_id,
+   * Participant_stable_id,
+   * Household_stable_id,
+   * json_query(atts, '$.EUPATH_0000711') as EUPATH_0000711,
+   * ea.stable_id
+   * from apidb.entityattributes ea, apidb.Ancestors_GEMSCC0003_1_Sample a
+   * where ea.stable_id in (select * from subset)
+   * and ea.stable_id = a.Sample_stable_id
+   * order by Sample_stable_id
+   * ) wt
+   * )
+   * select Sample_stable_id, Observation_stable_id, Participant_stable_id, Household_stable_id, EUPATH_0000711
+   * from wide_tabular
+   * where r > 2 and r <= 8
+   * order by Sample_stable_id
    */
-  static String generateTabularSqlWithReportConfig(List<Variable> outputVariables, Entity outputEntity, List<Filter> filters, 
-		  TabularReportConfig reportConfig, TreeNode<Entity> prunedEntityTree) {
-	    LOG.debug("--------------------- generateTabularSql paging sorting ------------------");
+  static String generateTabularSqlWithReportConfig(List<Variable> outputVariables, Entity outputEntity, List<Filter> filters,
+                                                   TabularReportConfig reportConfig, TreeNode<Entity> prunedEntityTree) {
+    LOG.debug("--------------------- generateTabularSql paging sorting ------------------");
 
-    String wideTabularWithClauseName = "wide_tabular"; 
-    String subsetWithClauseName = "subset"; 
+    String wideTabularWithClauseName = "wide_tabular";
+    String subsetWithClauseName = "subset";
     String rowColName = "r";
-    
+
     //
     // build up WITH clauses
     //
@@ -268,37 +270,38 @@ order by Sample_stable_id
     withClausesList.add(subsetWithClauseName + " AS (" + NL + subsetSelectClause + ")");
     withClausesList.add(wideTabularWithClauseName + " AS (" + NL + wideTabularStmt + NL + ")");
     String withClauses = joinWithClauses(withClausesList);
-    
+
     //
     // final select 
     //
     List<String> outputCols = getTabularOutputColumns(outputEntity, outputVariables);
     return withClauses + NL
         + "select " + String.join(", ", outputCols) + NL
-        + "from "+ wideTabularWithClauseName + NL
+        + "from " + wideTabularWithClauseName + NL
         + reportConfigPagingWhereClause(reportConfig, rowColName) + NL
-		+ reportConfigOrderByClause(reportConfig, "");
-  }
-    
-  static String reportConfigPagingWhereClause(TabularReportConfig config, String rowColName) {
-	  if (config == null || (config.getOffset() == null && config.getNumRows() == null)) 
-		  return "";
-	  
-	  int start = 0;
-	  if (config.getOffset() != null) start = config.getOffset();
-	  String whereClause = "where " + rowColName + " > " + start;
-	  if (config.getNumRows() != null) {
-		  whereClause += " and " + rowColName + " <= " + (start + config.getNumRows());
-	  }
-	  return whereClause;
+        + reportConfigOrderByClause(reportConfig.getSorting(), "");
   }
 
-  static String reportConfigOrderByClause(TabularReportConfig config, String indent) {
-	  if (config == null || (config.getSortingColumns() == null))
-		  return "";
-	  return indent + "order by " + String.join(", ", config.getSortingColumns());
+  static String reportConfigPagingWhereClause(TabularReportConfig config, String rowColName) {
+    if (config.getOffset() == 0 && config.getNumRows().isEmpty()) {
+      return ""; // no paging
+    }
+
+    int start = config.getOffset();
+    String whereClause = "where " + rowColName + " > " + start;
+    if (config.getNumRows().isPresent()) {
+      whereClause += " and " + rowColName + " <= " + (start + config.getNumRows().get());
+    }
+    return whereClause;
   }
-  
+
+  static String reportConfigOrderByClause(List<SortSpecEntry> config, String indent) {
+    return config.isEmpty() ? "" :
+        indent + " order by " + config.stream()
+            .map(entry -> entry.getKey() + " " + entry.getDirection())
+            .collect(Collectors.joining(", ")) + " ";
+  }
+
   /*
    *       select json_query(atts, '$.EUPATH_0010077') as EUPATH_0010077
       , json_query(atts, '$.CMO_0000289') as CMO_0000289
@@ -309,44 +312,45 @@ order by Sample_stable_id
           select * from subset
         )
    */
-	static String generateRawWideTabularInnerStmt(Entity outputEntity, List<Variable> outputVariables,
-			String subsetWithClauseName, TabularReportConfig reportConfig) {
-		
-		String schema = Resources.getAppDbSchema(); 
-		
-		List<String> columns = new ArrayList<String>();
-		columns.add(outputEntity.getPKColName());
-		columns.addAll(outputEntity.getAncestorPkColNames());
-		for (Variable var : outputVariables) columns.add(var.getId());
-		
-		columns.add("ea.stable_id");
-	    return "    select " + String.join(", " + NL + "    ", columns) + NL +
-    		 "    from " + schema + outputEntity.getWideTableName() + " ea, " + schema + outputEntity.getAncestorsTableName() + " a" + NL + 
-    		 "    where ea.stable_id in (select * from " + subsetWithClauseName + ")" + NL +
-    		 "    and ea.stable_id = a." + outputEntity.getPKColName() + NL +
-    		 reportConfigOrderByClause(reportConfig, "    ");
-  }
-  
-  static String generateRawWideTabularOuterStmt(String innerStmt) {
-		return "  select rownum as r, wt.*" + NL +
-			   "  from (" + NL +
-			   innerStmt + NL +
-			   "  ) wt";			   
+  static String generateRawWideTabularInnerStmt(Entity outputEntity, List<Variable> outputVariables,
+                                                String subsetWithClauseName, TabularReportConfig reportConfig) {
+
+    String schema = Resources.getAppDbSchema();
+
+    List<String> columns = new ArrayList<String>();
+    columns.add(outputEntity.getPKColName());
+    columns.addAll(outputEntity.getAncestorPkColNames());
+    for (Variable var : outputVariables) columns.add(var.getId());
+
+    columns.add("ea.stable_id");
+    return
+        "    select " + String.join(", " + NL + "    ", columns) + NL +
+        "    from " + schema + outputEntity.getWideTableName() + " ea, " + schema + outputEntity.getAncestorsTableName() + " a" + NL +
+        "    where ea.stable_id in (select * from " + subsetWithClauseName + ")" + NL +
+        "    and ea.stable_id = a." + outputEntity.getPKColName() + NL +
+        reportConfigOrderByClause(reportConfig.getSorting(), "    ");
   }
 
-	
+  static String generateRawWideTabularOuterStmt(String innerStmt) {
+    return "  select rownum as r, wt.*" + NL +
+        "  from (" + NL +
+        innerStmt + NL +
+        "  ) wt";
+  }
+
+
   static String jsonQuery(String oracleQuery, String postgresQuery) {
-	  return oracleQuery != null? oracleQuery : postgresQuery;
+    return oracleQuery != null ? oracleQuery : postgresQuery;
   }
 
   private static String generateLeftJoin(Entity outputEntity, List<Variable> outputVariables, String ancestorTblAbbrev, String tallTblAbbrev) {
     if (outputVariables.isEmpty()) {
       return " LEFT JOIN ( SELECT " +
-          "null as " + TT_VARIABLE_ID_COL_NAME + ", "  +
+          "null as " + TT_VARIABLE_ID_COL_NAME + ", " +
           "null as " + STRING_VALUE_COL_NAME + ", " +
           "null as " + DATE_VALUE_COL_NAME + ", " +
           "null as " + NUMBER_VALUE_COL_NAME +
-        " FROM DUAL ) ON 1 = 1 ";
+          " FROM DUAL ) ON 1 = 1 ";
     }
     String pkColName = outputEntity.getPKColName();
     return " LEFT JOIN (" + NL
@@ -360,14 +364,14 @@ order by Sample_stable_id
    * Generate SQL to produce a multi-column tabular output (the requested variables), for the specified subset.
    */
   static String generateEntityCountSql(Entity outputEntity, List<Filter> filters, TreeNode<Entity> prunedEntityTree) {
-    
+
     return generateFilterWithClauses(prunedEntityTree, filters) + NL
         + "SELECT count(distinct " + outputEntity.getPKColName() + ") as " + COUNT_COLUMN_NAME + NL
         + "FROM (" + NL
         + generateSubsetSelectClause(prunedEntityTree, outputEntity, false) + NL
         + ") t";
   }
-  
+
   /**
    * Generate SQL to produce a count of the entities that have a value for a variable, for the specified subset.
    */
@@ -378,18 +382,18 @@ order by Sample_stable_id
         + generateDistributionWhereClause(variable) + NL
         + generateSubsetInClause(prunedEntityTree, outputEntity, outputEntity.getTallTableName());
 
-   }
+  }
 
   static String generateFilterWithClauses(TreeNode<Entity> prunedEntityTree, List<Filter> filters) {
-	    List<String> withClauses = prunedEntityTree.flatten().stream().map(e -> generateFilterWithClause(e, filters)).collect(Collectors.toList());
-	    return joinWithClauses(withClauses);
-	  }
-	  
+    List<String> withClauses = prunedEntityTree.flatten().stream().map(e -> generateFilterWithClause(e, filters)).collect(Collectors.toList());
+    return joinWithClauses(withClauses);
+  }
+
   static String joinWithClauses(List<String> withClauses) {
-	    return "WITH" + NL
-	        + String.join("," + NL, withClauses);
-	  }
-	  
+    return "WITH" + NL
+        + String.join("," + NL, withClauses);
+  }
+
   /*
    * Get a with clause for this entity.  If the filters don't include any from this entity,
    * then the with clause will just select * from the entity's ancestor table
@@ -408,11 +412,11 @@ order by Sample_stable_id
     if (!filtersOnThisEntity.isEmpty()) {
       List<String> filterSqls = filters.stream().filter(f -> f.getEntity().getId().equals(entity.getId())).map(Filter::getSql).collect(Collectors.toList());
       withBody = String.join("INTERSECT" + NL, filterSqls);
-    } 
+    }
 
     return entity.getWithClauseName() + " as (" + NL + withBody + ")";
   }
-  
+
   static String generateTabularSelectClause(Entity outputEntity, String ancestorTblAbbrev) {
     Set<String> valColNames = Arrays
         .stream(VariableType.values())
@@ -447,26 +451,25 @@ on tall.Participant_stable_id = subset.Participant_stable_id
 group by number_value
 order by number_value desc;
    */
-
   static String generateDistributionSql(Entity outputEntity, VariableWithValues distributionVariable, List<Filter> filters, TreeNode<Entity> prunedEntityTree) {
 
     String tallTblAbbrev = "tall";
     String ancestorTblAbbrev = "subset";
     return
-      // with clauses create an entity-named filtered result for each relevant entity
-      generateFilterWithClauses(prunedEntityTree, filters) + NL +
-      generateDistributionSelectClause(distributionVariable) + NL +
-      " FROM ( " + NL +
-        generateTabularSelectClause(outputEntity, ancestorTblAbbrev) + NL +
-        generateTabularFromClause(outputEntity, prunedEntityTree, ancestorTblAbbrev) + NL +
-        // left join to attributes table so we always get at least one row per subset
-        //   record, even if no data exists for requested vars (or no vars requested).
-        // null rows will be handled in the tall-to-wide rows conversion
-        generateLeftJoin(outputEntity, ListBuilder.asList(distributionVariable), ancestorTblAbbrev, tallTblAbbrev) + NL +
-      " ) " + NL +
-      generateDistributionGroupByClause(distributionVariable) + NL +
-      "ORDER BY " + distributionVariable.getType().getTallTableColumnName() + " ASC";
-   }
+        // with clauses create an entity-named filtered result for each relevant entity
+        generateFilterWithClauses(prunedEntityTree, filters) + NL +
+            generateDistributionSelectClause(distributionVariable) + NL +
+            " FROM ( " + NL +
+            generateTabularSelectClause(outputEntity, ancestorTblAbbrev) + NL +
+            generateTabularFromClause(outputEntity, prunedEntityTree, ancestorTblAbbrev) + NL +
+            // left join to attributes table so we always get at least one row per subset
+            //   record, even if no data exists for requested vars (or no vars requested).
+            // null rows will be handled in the tall-to-wide rows conversion
+            generateLeftJoin(outputEntity, ListBuilder.asList(distributionVariable), ancestorTblAbbrev, tallTblAbbrev) + NL +
+            " ) " + NL +
+            generateDistributionGroupByClause(distributionVariable) + NL +
+            "ORDER BY " + distributionVariable.getType().getTallTableColumnName() + " ASC";
+  }
 
   static String generateDistributionSelectClause(VariableWithValues distributionVariable) {
     return "SELECT " +
@@ -483,7 +486,7 @@ order by number_value desc;
   }
 
   static String generateTabularWhereClause(List<Variable> outputVariables, String entityPkCol) {
-    
+
     List<String> outputVariableExprs = outputVariables.stream()
         .map(Variable::getId)
         .map(varId -> " " + TT_VARIABLE_ID_COL_NAME + " = '" + varId + "'")
@@ -492,23 +495,23 @@ order by number_value desc;
     return outputVariableExprs.isEmpty() ? "" :
         " WHERE (" + NL + String.join(" OR" + NL, outputVariableExprs) + NL + ")" + NL;
   }
-  
+
   static String generateDistributionWhereClause(Variable outputVariable) {
     return "WHERE " + TT_VARIABLE_ID_COL_NAME + " = '" + outputVariable.getId() + "'";
   }
 
   static String generateSubsetInClause(TreeNode<Entity> prunedEntityTree, Entity outputEntity, String tallTblAbbrev) {
     return "AND" + " " + tallTblAbbrev + "." + outputEntity.getPKColName() + " IN (" + NL
-    + generateSubsetSelectClause(prunedEntityTree, outputEntity, false) + NL
-    + ")";
+        + generateSubsetSelectClause(prunedEntityTree, outputEntity, false) + NL
+        + ")";
   }
-  
+
   static String generateSubsetSelectClause(TreeNode<Entity> prunedEntityTree, Entity outputEntity, boolean returnAncestorIds) {
     return generateJoiningSelectClause(outputEntity, returnAncestorIds) + NL
-    + generateJoiningFromClause(prunedEntityTree) + NL
-    + generateJoiningJoinsClause(prunedEntityTree); 
+        + generateJoiningFromClause(prunedEntityTree) + NL
+        + generateJoiningJoinsClause(prunedEntityTree);
   }
-  
+
   static String generateJoiningSelectClause(Entity outputEntity, boolean returnAncestorIds) {
     List<String> returnedCols = ListBuilder.asList(outputEntity.getFullPKColName());
     if (returnAncestorIds) {
@@ -519,7 +522,7 @@ order by number_value desc;
     }
     return "  SELECT distinct " + returnedCols.stream().collect(Collectors.joining(", "));
   }
-  
+
   static String generateJoiningFromClause(TreeNode<Entity> prunedEntityTree) {
     List<String> fromClauses = prunedEntityTree.flatten().stream().map(Entity::getWithClauseName).collect(Collectors.toList());
     return "  FROM " + String.join(", ", fromClauses);
@@ -528,9 +531,9 @@ order by number_value desc;
   static String generateJoiningJoinsClause(TreeNode<Entity> prunedEntityTree) {
     List<String> sqlJoinStrings = new ArrayList<>();
     addSqlJoinStrings(prunedEntityTree, sqlJoinStrings);
-    return sqlJoinStrings.isEmpty()? "" : "  WHERE " + String.join(NL + "  AND ", sqlJoinStrings);
+    return sqlJoinStrings.isEmpty() ? "" : "  WHERE " + String.join(NL + "  AND ", sqlJoinStrings);
   }
-  
+
   /*
    * Add to the input list the sql join of a parent entity with each of its children, plus, recursively, its
    * children's sql joins.  (Because the tree might have been pruned, the "parent" is some ancestor)
@@ -557,55 +560,55 @@ order by number_value desc;
     cols.add(outputEntity.getPKColName());
     return "ORDER BY " + String.join(", ", cols);
   }
-  
+
   static String generateDistributionGroupByClause(VariableWithValues outputVariable) {
     return "GROUP BY " + outputVariable.getType().getTallTableColumnName();
   }
-  
+
 
   /*
    * PRUNE THE COMPLETE TREE TO JUST THE "ACTIVE" ENTITIES WE WANT FOR OUR JOINS
-   * 
+   *
    * definition: an active entity is one that must be included in the SQL definition: an active subtree is one
    * in which any entities in the subtree are active.
-   * 
+   *
    * this entity is active if any of these apply: 1. it has filters 2. it is the output entity 3. it is
    * neither of the above, but has more than one child that is the root of an active subtree
-   * 
+   *
    * (criterion 3 lets us join elements across connected subtrees)
-   * 
+   *
    * ----X---- | | --I-- I | | | A I A
-   * 
+   *
    * In the picture above the A entities are active and I are inactive. X has two children that are active
    * subtrees. We need to force X to be active so that we can join the lower A entities.
    *
    * So will we now have this:
-   * 
+   *
    * ----A---- | | --I-- I | | | A I A
-   * 
+   *
    * Finally, we want to prune the tree of inactive nodes, so we have the minimal active tree:
-   * 
+   *
    * ----A---- | | A A
-   * 
+   *
    * Now we can ascend the tree and form the concise SQL joins we need
-   * 
+   *
    * Using a concrete example: ----H---- | | --P-- E | | | O S T
-   * 
+   *
    * If O and and T are active (have filters or are the output entity), then we ultimately need this join:
    * where O.H_id = H.H_id and T.H_id = H.H_id
-   * 
+   *
    * (The graceful implementation below is courtesy of Ryan)
    */
   private static TreeNode<Entity> pruneToActiveAndPivotNodes(TreeNode<Entity> root, Predicate<Entity> isActive) {
     return root.mapStructure((nodeContents, mappedChildren) -> {
       List<TreeNode<Entity>> activeChildren = mappedChildren.stream()
-        .filter(Objects::nonNull) // filter dead branches
-        .collect(Collectors.toList());
+          .filter(Objects::nonNull) // filter dead branches
+          .collect(Collectors.toList());
       return isActive.test(nodeContents) || activeChildren.size() > 1 ?
-        // this node is active itself or a pivot node; return with any active children
-        new TreeNode<>(nodeContents).addAllChildNodes(activeChildren) :
-        // inactive, non-pivot node; return single active child or null
-        activeChildren.isEmpty() ? null : activeChildren.get(0);
+          // this node is active itself or a pivot node; return with any active children
+          new TreeNode<>(nodeContents).addAllChildNodes(activeChildren) :
+          // inactive, non-pivot node; return single active child or null
+          activeChildren.isEmpty() ? null : activeChildren.get(0);
     });
   }
 

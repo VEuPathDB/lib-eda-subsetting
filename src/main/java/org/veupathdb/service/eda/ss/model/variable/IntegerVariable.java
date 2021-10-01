@@ -1,5 +1,7 @@
 package org.veupathdb.service.eda.ss.model.variable;
 
+import javax.ws.rs.BadRequestException;
+
 public class IntegerVariable extends NumberVariable implements SupportsNumericRange<Integer> {
 
   public static class Properties {
@@ -78,6 +80,15 @@ public class IntegerVariable extends NumberVariable implements SupportsNumericRa
     return _properties.binWidthOverride == null
         ? _properties.binWidth
         : _properties.binWidthOverride;
+  }
+
+  @Override
+  public Integer validateBinWidth(Number binWidth) {
+    Integer intValue = binWidth.intValue();
+    if (intValue <= 0) {
+      throw new BadRequestException("binWidth must be a positive integer for integer variable distributions");
+    }
+    return intValue;
   }
 
 }

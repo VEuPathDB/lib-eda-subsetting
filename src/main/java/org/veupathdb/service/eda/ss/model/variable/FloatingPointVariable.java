@@ -1,9 +1,6 @@
 package org.veupathdb.service.eda.ss.model.variable;
 
-import java.util.List;
-import org.veupathdb.service.eda.ss.model.Entity;
-
-public class FloatingPointVariable extends VariableWithValues implements SupportsNumericRange<Double> {
+public class FloatingPointVariable extends NumberVariable implements SupportsNumericRange<Double> {
 
   public static class Properties {
 
@@ -91,4 +88,5 @@ public class FloatingPointVariable extends VariableWithValues implements Support
         ? _properties.binWidth
         : _properties.binWidthOverride;
   }
+
 }

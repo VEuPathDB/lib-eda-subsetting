@@ -1,8 +1,7 @@
 package org.veupathdb.service.eda.ss.model.variable;
 
-import java.util.List;
+import javax.ws.rs.BadRequestException;
 import org.veupathdb.service.eda.generated.model.BinUnits;
-import org.veupathdb.service.eda.ss.model.Entity;
 
 public class DateVariable extends VariableWithValues {
 
@@ -79,5 +78,11 @@ public class DateVariable extends VariableWithValues {
     return _properties.binUnitsOverride != null
         ? _properties.binUnitsOverride
         : _properties.binUnits;
+  }
+
+  public static DateVariable assertType(Variable variable) {
+    if (variable instanceof DateVariable) return (DateVariable)variable;
+    throw new BadRequestException("Variable " + variable.getId() +
+        " of entity " + variable.getEntityId() + " is not a date variable.");
   }
 }

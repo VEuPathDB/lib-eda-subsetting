@@ -85,9 +85,9 @@ public class LoadStudyTest {
    // insert into Attribute_ds2324_Prtcpnt values ('var_10', 300, null, '_networth', 'Net worth', null, 1, 'number', 0, 'continuous', 'dollars', null, 2);
 
 
-    //insert into variable values ('var_10', 300, 'GEMS-Part', null, '_networth', 'Net worth', 1, 1, 'dollars', null);
+    //insert into variable values ('var_p1', 300, 'GEMS-Part', null, '_networth', 'Net worth', 1, 1, 'dollars', null);
 
-    assertEquals("var_10", var.getId());
+    assertEquals("var_p1", var.getId());
     assertEquals("Net worth", var.getDisplayName());
     assertEquals("GEMS_Part", var.getEntityId());
     assertNull(var.getParentId());

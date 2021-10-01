@@ -1,5 +1,7 @@
 package org.veupathdb.service.eda.ss.model.variable;
 
+import javax.ws.rs.BadRequestException;
+
 public class LongitudeVariable extends VariableWithValues {
 
   public static class Properties {
@@ -21,5 +23,11 @@ public class LongitudeVariable extends VariableWithValues {
 
   public Integer getPrecision() {
     return _properties.precision;
+  }
+
+  public static LongitudeVariable assertType(Variable variable) {
+    if (variable instanceof LongitudeVariable) return (LongitudeVariable)variable;
+    throw new BadRequestException("Variable " + variable.getId() +
+        " of entity " + variable.getEntityId() + " is not a longitude variable.");
   }
 }

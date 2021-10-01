@@ -3,24 +3,26 @@ package org.veupathdb.service.eda.ss.model.filter;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import org.veupathdb.service.eda.ss.model.Entity;
+import org.veupathdb.service.eda.ss.model.variable.DateVariable;
 
 import static org.gusdb.fgputil.FormatUtil.NL;
 import static org.veupathdb.service.eda.ss.model.RdbmsColumnNames.DATE_VALUE_COL_NAME;
 
-public class DateRangeFilter extends SingleValueFilter {
+public class DateRangeFilter extends SingleValueFilter<DateVariable> {
 
-  private LocalDateTime min;
-  private LocalDateTime max;
+  private LocalDateTime _min;
+  private LocalDateTime _max;
   
-  public DateRangeFilter(Entity entity, String variableId, LocalDateTime min, LocalDateTime max) {
-    super(entity, variableId);
-    this.min = min;
-    this.max = max;
+  public DateRangeFilter(Entity entity, DateVariable variable, LocalDateTime min, LocalDateTime max) {
+    super(entity, variable);
+    _min = min;
+    _max = max;
   }
 
+  // safe from SQL injection since input classes are LocalDateTime
   @Override
   public String getFilteringAndClausesSql() {
-    return "  AND " + DATE_VALUE_COL_NAME + " >= " + dbDateTimeIsoValue(min) + " AND " + DATE_VALUE_COL_NAME + " <= " + dbDateTimeIsoValue(max) + NL;
+    return "  AND " + DATE_VALUE_COL_NAME + " >= " + dbDateTimeIsoValue(_min) + " AND " + DATE_VALUE_COL_NAME + " <= " + dbDateTimeIsoValue(_max) + NL;
   }
 
   static String dbDateTimeIsoValue(LocalDateTime dateTime) {

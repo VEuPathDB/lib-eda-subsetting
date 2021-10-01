@@ -4,6 +4,7 @@ import java.time.LocalDateTime;
 import java.time.Month;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -11,6 +12,7 @@ import java.util.Map;
 import org.gusdb.fgputil.functional.TreeNode;
 import org.veupathdb.service.eda.ss.model.variable.DateVariable;
 import org.veupathdb.service.eda.ss.model.variable.FloatingPointVariable;
+import org.veupathdb.service.eda.ss.model.variable.NumberVariable;
 import org.veupathdb.service.eda.ss.model.variable.StringVariable;
 import org.veupathdb.service.eda.ss.model.variable.Variable;
 import org.veupathdb.service.eda.ss.model.variable.VariableDataShape;
@@ -40,18 +42,19 @@ public class TestModel {
   public Entity observation;
   public Entity sample;
   public Entity treatment;
-  
-  public VariableWithValues roof;
-  public VariableWithValues shoesize;
-  public VariableWithValues weight;
-  public VariableWithValues favNumber;
-  public VariableWithValues birthDate;
-  public VariableWithValues favNewYears;
-  public VariableWithValues mood;
-  public VariableWithValues haircolor;
-  public VariableWithValues networth;
-  public VariableWithValues earsize;
-  public VariableWithValues waterSupply;
+
+  public StringVariable city;
+  public StringVariable roof;
+  public NumberVariable shoesize;
+  public NumberVariable weight;
+  public NumberVariable favNumber;
+  public DateVariable birthDate;
+  public DateVariable startDate;
+  public StringVariable mood;
+  public StringVariable haircolor;
+  public NumberVariable networth;
+  public StringVariable earsize;
+  public StringVariable waterSupply;
   
   public Filter obsWeightFilter;
   public Filter houseRoofFilter;
@@ -113,10 +116,10 @@ public class TestModel {
     return householdNode;
   }
 
-  private static StringVariable getMockStringVar(String label, String id, Entity entity, int distinctValuesCount, boolean isMultiValued) {
+  private static StringVariable getMockStringVar(String label, String id, Entity entity, int distinctValuesCount, boolean isMultiValued, List<String> vocab) {
     return new StringVariable(
         new Variable.Properties(label, id, entity, VariableDisplayType.DEFAULT, label, null, null, "Their " + label),
-        new VariableWithValues.Properties(VariableType.STRING, VariableDataShape.CATEGORICAL, null, distinctValuesCount, false, false, false, isMultiValued)
+        new VariableWithValues.Properties(VariableType.STRING, VariableDataShape.CATEGORICAL, vocab, distinctValuesCount, false, false, false, isMultiValued)
     );
   }
 
@@ -140,56 +143,59 @@ public class TestModel {
 
     /**************** String Variables ****************/
 
-    roof = getMockStringVar("roof", "var_10", household, 12, false);
+    city = getMockStringVar("city", "var_h1", household, 10, false, Arrays.asList("Boston", "Miami"));
+    household.addVariable(city);
+
+    roof = getMockStringVar("roof", "var_h2", household, 12, false, Arrays.asList("metal", "tile"));
     household.addVariable(roof);
     
     // multi-valued string var
-    haircolor = getMockStringVar("haircolor", "var_17", participant, 21, true);
+    haircolor = getMockStringVar("haircolor", "var_p4", participant, 21, true, Arrays.asList("blond", "brown", "silver"));
     participant.addVariable(haircolor);
     
-    mood = getMockStringVar("mood", "var_16", observation, 96, false);
+    mood = getMockStringVar("mood", "var_o5", observation, 96, false, Arrays.asList("happy", "jolly", "giddy"));
     observation.addVariable(mood);
 
-    waterSupply = getMockStringVar("waterSupply", "var_19", householdObs, 66, false);
+    waterSupply = getMockStringVar("waterSupply", "var_ho1", householdObs, 66, false, Arrays.asList("piped", "well"));
     householdObs.addVariable(waterSupply);
 
-    earsize = getMockStringVar("earsize", "var_18", participant, 87, false);
+    earsize = getMockStringVar("earsize", "var_p5", participant, 87, false, Arrays.asList("small", "medium", "large"));
     participant.addVariable(earsize);
 
     /**************** Float/Number Variables ****************/
 
     // multi-valued number var (what can i say... left and right feet are different!)
-    shoesize = getMockFloatVar("shoesize", "var_11", participant, VariableDataShape.CATEGORICAL, 47, true);
+    shoesize = getMockFloatVar("shoesize", "var_p2", participant, VariableDataShape.CATEGORICAL, 47, true);
     participant.addVariable(shoesize);
 
-    networth = getMockFloatVar("networth", "var_10", participant, VariableDataShape.CONTINUOUS, 875, false);
+    networth = getMockFloatVar("networth", "var_p1", participant, VariableDataShape.CONTINUOUS, 875, false);
     participant.addVariable(networth);
 
-    weight = getMockFloatVar("weight", "var_12", observation, VariableDataShape.CONTINUOUS, 65, false);
+    weight = getMockFloatVar("weight", "var_o1", observation, VariableDataShape.CONTINUOUS, 65, false);
     observation.addVariable(weight);
 
-    favNumber = getMockFloatVar("favNumber", "var_13", observation, VariableDataShape.CATEGORICAL, 312, false);
+    favNumber = getMockFloatVar("favNumber", "var_o2", observation, VariableDataShape.CATEGORICAL, 312, false);
     observation.addVariable(favNumber);
 
     /**************** Date Variables ****************/
 
-    birthDate = getMockDateVar("birthDate", "var_14", observation, VariableDataShape.CONTINUOUS, 13);
+    birthDate = getMockDateVar("visitDate", "var_o4", observation, VariableDataShape.CONTINUOUS, 13);
     observation.addVariable(birthDate);
     
-    favNewYears = getMockDateVar("favNewYears", "var_15", observation, VariableDataShape.CATEGORICAL, 74);
-    observation.addVariable(favNewYears);
+    startDate = getMockDateVar("startDate", "var_o3", observation, VariableDataShape.CATEGORICAL, 74);
+    observation.addVariable(startDate);
 
   }
 
   private void createFilters() {
 
     // create observation weight filter
-    obsWeightFilter = new NumberRangeFilter(observation, weight.getId(), 10, 20);
+    obsWeightFilter = new NumberRangeFilter(observation, weight, 10, 20);
 
     List<Number> favNums = Arrays.asList(new Number[]{5,7,9});
-    obsFavNumberFilter = new NumberSetFilter(observation, favNumber.getId(), favNums);
+    obsFavNumberFilter = new NumberSetFilter(observation, favNumber, favNums);
 
-    obsBirthDateFilter = new DateRangeFilter(observation, birthDate.getId(),
+    obsBirthDateFilter = new DateRangeFilter(observation, birthDate,
         LocalDateTime.of(2019, Month.MARCH, 21, 0, 0),
         LocalDateTime.of(2019, Month.MARCH, 28, 0, 0));
 
@@ -197,19 +203,19 @@ public class TestModel {
     dates.add(LocalDateTime.of(2019, Month.MARCH, 21, 0, 0));
     dates.add(LocalDateTime.of(2019, Month.MARCH, 28, 0, 0));
     dates.add(LocalDateTime.of(2019, Month.JUNE, 12, 0, 0));
-    obsFavNewYearsFilter = new DateSetFilter(observation, favNewYears.getId(), dates);
+    obsFavNewYearsFilter = new DateSetFilter(observation, startDate, dates);
 
     List<String> moods = Arrays.asList("happy", "jolly", "giddy");
-    obsMoodFilter = new StringSetFilter(observation, mood.getId(), moods);
+    obsMoodFilter = new StringSetFilter(observation, mood, moods);
 
-    obsWeightFilter = new NumberRangeFilter(observation, weight.getId(), 10, 20);
+    obsWeightFilter = new NumberRangeFilter(observation, weight, 10, 20);
 
     // create household roof filter
     List<String> roofs = Arrays.asList("metal", "tile");
-    houseRoofFilter = new StringSetFilter(household, roof.getId(), roofs);
+    houseRoofFilter = new StringSetFilter(household, roof, roofs);
 
     // create household observation filter
     List<String> waterSupplies = Arrays.asList("piped", "well");
-    houseObsWaterSupplyFilter = new StringSetFilter(householdObs, waterSupply.getId(), waterSupplies);
+    houseObsWaterSupplyFilter = new StringSetFilter(householdObs, waterSupply, waterSupplies);
   }
 }

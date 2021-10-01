@@ -193,7 +193,7 @@ public class StudySubsettingUtilsTest {
         "  AND " + NUMBER_VALUE_COL_NAME + " >= 10 AND " + NUMBER_VALUE_COL_NAME + " <= 20" + NL +
         "INTERSECT" + NL +
         obsBase +
-        "  AND " + TT_VARIABLE_ID_COL_NAME + " = '" + _model.favNewYears.getId() + "'" + NL +
+        "  AND " + TT_VARIABLE_ID_COL_NAME + " = '" + _model.startDate.getId() + "'" + NL +
         "  AND " + DATE_VALUE_COL_NAME + " IN (TO_DATE('2019-03-21T00:00:00', 'YYYY-MM-DD\"T\"HH24:MI:SS'), TO_DATE('2019-03-28T00:00:00', 'YYYY-MM-DD\"T\"HH24:MI:SS'), TO_DATE('2019-06-12T00:00:00', 'YYYY-MM-DD\"T\"HH24:MI:SS'))" + NL +
         "INTERSECT" + NL +
         obsBase + 
@@ -401,8 +401,8 @@ public class StudySubsettingUtilsTest {
     Entity entity = study.getEntity(entityId).orElseThrow();
 
     List<Variable> variables = new ArrayList<>();
-    variables.add(entity.getVariable("var_17").orElseThrow()); // hair color
-    variables.add(entity.getVariable("var_20").orElseThrow()); // name
+    variables.add(entity.getVariable("var_p4").orElseThrow()); // hair color
+    variables.add(entity.getVariable("var_p3").orElseThrow()); // name
 
     List<Filter> filters = Collections.emptyList();
     
@@ -411,7 +411,7 @@ public class StudySubsettingUtilsTest {
     StudySubsettingUtils.produceTabularSubset(_dataSource, study, entity,
         variables, filters, null, TabularResponseType.TABULAR.getFormatter(), outStream);
     String[] expected = {
-    "Prtcpnt_stable_id", "Hshld_stable_id", "var_17",  "var_20",
+    "Prtcpnt_stable_id", "Hshld_stable_id", "var_p4",  "var_p3",
     "201", "101",     "blond",   "Martin",
     "202", "101",     "blond",   "Abe",
     "203", "102",     "brown",   "Gladys",
@@ -430,8 +430,8 @@ public class StudySubsettingUtilsTest {
     Entity entity = study.getEntity(entityId).orElseThrow();
 
     List<Variable> variables = new ArrayList<>();
-    variables.add(entity.getVariable("var_17").orElseThrow()); // hair color
-    variables.add(entity.getVariable("var_20").orElseThrow()); // name
+    variables.add(entity.getVariable("var_p4").orElseThrow()); // hair color
+    variables.add(entity.getVariable("var_p3").orElseThrow()); // name
 
     List<Filter> filters = new ArrayList<>();
     filters.add(_filtersForTesting.partHairFilter);
@@ -442,7 +442,7 @@ public class StudySubsettingUtilsTest {
     StudySubsettingUtils.produceTabularSubset(_dataSource, study, entity,
         variables, filters, null, TabularResponseType.TABULAR.getFormatter(), outStream);
     String[] expected = {
-    "Prtcpnt_stable_id", "Hshld_stable_id", "var_17",  "var_20",
+    "Prtcpnt_stable_id", "Hshld_stable_id", "var_p4",  "var_p3",
     "201", "101",     "blond",   "Martin",
     "202", "101",     "blond",   "Abe",
 //    "203", "102",     "brown",   "Gladys",
@@ -460,7 +460,7 @@ public class StudySubsettingUtilsTest {
     String entityId = "GEMS_Part";
     Entity entity = study.getEntity(entityId).orElseThrow();
 
-    String varId = "var_17";
+    String varId = "var_p4";
     Variable var = entity.getVariable(varId).orElseThrow();
 
     List<Filter> filters = Collections.emptyList();
@@ -481,7 +481,7 @@ public class StudySubsettingUtilsTest {
     String entityId = "GEMS_Part";
     Entity entity = study.getEntity(entityId).orElseThrow();
 
-    String varId = "var_17";
+    String varId = "var_p4";
     Variable var = entity.getVariable(varId).orElseThrow();
 
     List<Filter> filters = new ArrayList<>();
@@ -504,7 +504,7 @@ public class StudySubsettingUtilsTest {
     String entityId = "GEMS_Part";
     Entity entity = study.getEntity(entityId).orElseThrow();
 
-    String varId = "var_17";
+    String varId = "var_p4";
     VariableWithValues var = (VariableWithValues)entity.getVariable(varId).orElseThrow();
 
     List<Filter> filters = Collections.emptyList();
@@ -527,7 +527,7 @@ public class StudySubsettingUtilsTest {
     String entityId = "GEMS_Part";
     Entity entity = study.getEntity(entityId).orElseThrow();
 
-    String varId = "var_17";
+    String varId = "var_p4";
     VariableWithValues var = (VariableWithValues)entity.getVariable(varId).orElseThrow();
     
     List<Filter> filters = new ArrayList<>();

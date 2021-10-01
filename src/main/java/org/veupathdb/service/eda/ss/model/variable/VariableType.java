@@ -11,20 +11,20 @@ import org.gusdb.fgputil.functional.Functions;
 import org.json.JSONArray;
 
 public enum VariableType {
-  STRING("string_value", "string", rs -> rs.getString("string_value"), 
+  STRING("string_value", "string", rs -> rs.getString("string_value"),
       strings -> StringListToJsonStringArray(strings)),
 
-  NUMBER("number_value", "number", rs -> doubleValueOrNull(rs, rs.getDouble("number_value")), 
-      strings -> StringListToJsonNumberArray(strings)),
+  NUMBER("number_value", "number", rs -> doubleValueOrNull(rs, rs.getDouble("number_value")),
+      strings -> StringListToJsonFloatArray(strings)),
   
-  INTEGER("number_value", "integer", rs -> integerValueOrNull(rs, rs.getInt("number_value")), 
-      strings -> StringListToJsonNumberArray(strings)),
+  INTEGER("number_value", "integer", rs -> integerValueOrNull(rs, rs.getInt("number_value")),
+      strings -> StringListToJsonIntegerArray(strings)),
   
-  DATE("date_value", "date", rs -> dateValueOrNull(rs.getDate("date_value")), 
+  DATE("date_value", "date", rs -> dateValueOrNull(rs.getDate("date_value")),
       strings -> StringListToJsonStringArray(strings)),
   
-  LONGITUDE("number_value", "longitude", rs -> doubleValueOrNull(rs, rs.getDouble("number_value")), 
-      strings -> StringListToJsonNumberArray(strings));
+  LONGITUDE("number_value", "longitude", rs -> doubleValueOrNull(rs, rs.getDouble("number_value")),
+      strings -> StringListToJsonFloatArray(strings));
 
   private final String tallTableColumnName;
   private final String typeString;
@@ -92,11 +92,20 @@ public enum VariableType {
     return new JSONArray(stringList);
   }
   
-  // convert a list of multiple values, in string form, to a parallel number JSON array
-  private static JSONArray StringListToJsonNumberArray(List<String> stringList) {
-    List<Number> numberList = new ArrayList<Number>(stringList.size());
+  // convert a list of multiple floating-point values, in string form, to a parallel number JSON array
+  private static JSONArray StringListToJsonFloatArray(List<String> stringList) {
+    List<Double> numberList = new ArrayList<>(stringList.size());
     for (String valueAsString : stringList) {
       numberList.add(Double.valueOf(valueAsString));
+    }
+    return new JSONArray(numberList);
+  }
+
+  // convert a list of multiple integer values, in string form, to a parallel number JSON array
+  private static JSONArray StringListToJsonIntegerArray(List<String> stringList) {
+    List<Integer> numberList = new ArrayList<>(stringList.size());
+    for (String valueAsString : stringList) {
+      numberList.add(Integer.valueOf(valueAsString));
     }
     return new JSONArray(numberList);
   }

@@ -76,7 +76,7 @@ public class StudiesTest {
     
     APIStringSetFilter stringFilter = new APIStringSetFilterImpl();
     stringFilter.setEntityId(_model.participant.getId());
-    stringFilter.setVariableId(_model.shoesize.getId());
+    stringFilter.setVariableId(_model.earsize.getId());
     
     afs.add(stringFilter);
     
@@ -100,7 +100,7 @@ public class StudiesTest {
       // a legit filter
       APIStringSetFilter stringFilter = new APIStringSetFilterImpl();
       stringFilter.setEntityId(_model.participant.getId());
-      stringFilter.setVariableId(_model.shoesize.getId());
+      stringFilter.setVariableId(_model.earsize.getId());
 
       afs.add(stringFilter);
 
@@ -122,7 +122,7 @@ public class StudiesTest {
     String entityId = "GEMS_Part";
     Entity entity = study.getEntity(entityId).orElseThrow();
 
-    String varId = "var_17";
+    String varId = "var_p4";
     VariableWithValues var = (VariableWithValues)entity.getVariable(varId).orElseThrow();
 
     List<Filter> filters = Collections.emptyList();
@@ -147,7 +147,7 @@ public class StudiesTest {
     String entityId = "GEMS_Part";
     Entity entity = study.getEntity(entityId).orElseThrow();
 
-    String varId = "var_17";
+    String varId = "var_p4";
     VariableWithValues var = (VariableWithValues)entity.getVariable(varId).orElseThrow();
 
     List<Filter> filters = new ArrayList<>();

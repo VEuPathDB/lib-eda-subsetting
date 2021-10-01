@@ -1,6 +1,7 @@
 package org.veupathdb.service.eda.ss.service;
 
 import java.util.Collections;
+import java.util.Date;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -61,7 +62,8 @@ public class Studies implements org.veupathdb.service.eda.generated.resources.St
   @Override
   public GetStudiesClearMetadataCacheResponse getStudiesClearMetadataCache() {
     MetadataCache.clear();
-    return GetStudiesClearMetadataCacheResponse.respond202();
+    return GetStudiesClearMetadataCacheResponse.respond200WithTextPlain(
+        "Cache successfully cleared at " + new Date());
   }
 
   @Override

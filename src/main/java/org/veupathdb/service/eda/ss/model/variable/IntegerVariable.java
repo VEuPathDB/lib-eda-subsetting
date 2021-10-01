@@ -1,6 +1,6 @@
 package org.veupathdb.service.eda.ss.model.variable;
 
-public class IntegerVariable extends VariableWithValues implements SupportsNumericRange<Integer> {
+public class IntegerVariable extends NumberVariable implements SupportsNumericRange<Integer> {
 
   public static class Properties {
 
@@ -79,4 +79,5 @@ public class IntegerVariable extends VariableWithValues implements SupportsNumer
         ? _properties.binWidth
         : _properties.binWidthOverride;
   }
+
 }

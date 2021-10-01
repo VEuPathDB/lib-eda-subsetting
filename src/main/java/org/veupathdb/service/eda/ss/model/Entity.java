@@ -3,6 +3,7 @@ package org.veupathdb.service.eda.ss.model;
 
 import javax.sql.DataSource;
 
+import javax.ws.rs.BadRequestException;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.veupathdb.service.eda.ss.model.variable.Variable;
@@ -113,6 +114,11 @@ public class Entity {
   
   public Optional<Variable> getVariable(String variableId) {
     return Optional.ofNullable(variablesMap.get(variableId));
+  }
+
+  public Variable getVariableOrThrow(String variableId) {
+    return getVariable(variableId).orElseThrow(
+        () -> new BadRequestException("Variable '" + variableId + "' is not found"));
   }
   
   public List<String> getAncestorFullPkColNames() {

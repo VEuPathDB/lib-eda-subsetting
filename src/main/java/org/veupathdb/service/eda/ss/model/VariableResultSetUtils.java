@@ -83,6 +83,7 @@ class VariableResultSetUtils {
         DISTINCT_VALUES_COUNT_COL_NAME, IS_MULTI_VALUED_COL_NAME
     };
 
+    // This SQL safe from injection because entities declare their own table names (no parameters)
     // TODO: remove hack distinct
     return "SELECT distinct " + String.join(", ", selectCols) + NL
         + "FROM " + Resources.getAppDbSchema() + variablesTableName + NL

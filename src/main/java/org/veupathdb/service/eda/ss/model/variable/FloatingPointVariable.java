@@ -1,40 +1,30 @@
 package org.veupathdb.service.eda.ss.model.variable;
 
 import javax.ws.rs.BadRequestException;
+import org.veupathdb.service.eda.ss.model.distribution.DistributionConfig;
 
-public class FloatingPointVariable extends NumberVariable implements SupportsNumericRange<Double> {
+public class FloatingPointVariable extends NumberVariable<Double> {
 
   public static class Properties {
 
     public final String units;
     public final Integer precision;
-    public final Double displayRangeMin;
-    public final Double displayRangeMax;
-    public final Double rangeMin;
-    public final Double rangeMax;
-    public final Double binWidth;
-    public final Double binWidthOverride;
 
-    public Properties(String units, Integer precision,
-                      Double displayRangeMin, Double displayRangeMax,
-                      Double rangeMin, Double rangeMax,
-                      Double binWidth, Double binWidthOverride) {
+    public Properties(String units, Integer precision) {
       this.units = units;
       this.precision = precision;
-      this.displayRangeMin = displayRangeMin;
-      this.displayRangeMax = displayRangeMax;
-      this.rangeMin = rangeMin;
-      this.rangeMax = rangeMax;
-      this.binWidthOverride = binWidthOverride;
-      this.binWidth = binWidth;
     }
   }
 
   private final Properties _properties;
 
-  public FloatingPointVariable(Variable.Properties varProperties, VariableWithValues.Properties valueProperties, Properties properties) {
+  public FloatingPointVariable(
+      Variable.Properties varProperties,
+      VariableWithValues.Properties valueProperties,
+      DistributionConfig<Double> distributionConfig,
+      Properties properties) {
 
-    super(varProperties, valueProperties);
+    super(varProperties, valueProperties, distributionConfig);
     _properties = properties;
     validateType(VariableType.NUMBER);
 
@@ -54,42 +44,6 @@ public class FloatingPointVariable extends NumberVariable implements SupportsNum
     return _properties.precision;
   }
 
-  @Override
-  public Double getDisplayRangeMin() {
-    return _properties.displayRangeMin;
-  }
-
-  @Override
-  public Double getDisplayRangeMax() {
-    return _properties.displayRangeMax;
-  }
-
-  @Override
-  public Double getRangeMin() {
-    return _properties.rangeMin;
-  }
-
-  @Override
-  public Double getRangeMax() {
-    return _properties.rangeMax;
-  }
-
-  @Override
-  public Double getBinWidthOverride() {
-    return _properties.binWidthOverride;
-  }
-
-  @Override
-  public Double getBinWidth() {
-    return _properties.binWidth;
-  }
-
-  @Override
-  public Double getDefaultBinWidth() {
-    return _properties.binWidthOverride == null
-        ? _properties.binWidth
-        : _properties.binWidthOverride;
-  }
   @Override
   public Double validateBinWidth(Number binWidth) {
     Double doubleValue = binWidth.doubleValue();

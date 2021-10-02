@@ -10,6 +10,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.gusdb.fgputil.functional.TreeNode;
+import org.veupathdb.service.eda.ss.model.distribution.DistributionConfig;
 import org.veupathdb.service.eda.ss.model.variable.DateVariable;
 import org.veupathdb.service.eda.ss.model.variable.FloatingPointVariable;
 import org.veupathdb.service.eda.ss.model.variable.NumberVariable;
@@ -45,14 +46,14 @@ public class TestModel {
 
   public StringVariable city;
   public StringVariable roof;
-  public NumberVariable shoesize;
-  public NumberVariable weight;
-  public NumberVariable favNumber;
+  public FloatingPointVariable shoesize;
+  public FloatingPointVariable weight;
+  public FloatingPointVariable favNumber;
   public DateVariable birthDate;
   public DateVariable startDate;
   public StringVariable mood;
   public StringVariable haircolor;
-  public NumberVariable networth;
+  public FloatingPointVariable networth;
   public StringVariable earsize;
   public StringVariable waterSupply;
   
@@ -127,7 +128,8 @@ public class TestModel {
     return new FloatingPointVariable(
         new Variable.Properties(label, id, entity, VariableDisplayType.DEFAULT, label, null, null, "Their " + label),
         new VariableWithValues.Properties(VariableType.NUMBER, shape, null, distinctValuesCount, false, false, false, isMultiValued),
-        new FloatingPointVariable.Properties("", 1, null, null, null, null, null, null)
+        new DistributionConfig<>(null, null, null, null, null, null),
+        new FloatingPointVariable.Properties("", 1)
     );
   }
 

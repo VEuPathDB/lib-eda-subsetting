@@ -167,7 +167,7 @@ public class StudiesTest {
   private void testDistributionResponse(Study study, Entity entity, VariableWithValues var,
       List<Filter> filters, int expectedVariableCount, Map<String, Integer> expectedDistribution) throws IOException {
 
-    DistributionResult result = Studies.processDistributionRequest(
+    DistributionResult result = StudiesService.processDistributionRequest(
         _dataSource, study, entity, var, filters, ValueSpec.COUNT, Optional.empty());
 
     // check variable count

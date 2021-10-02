@@ -11,6 +11,7 @@ import org.gusdb.fgputil.FormatUtil;
 import org.gusdb.fgputil.db.runner.SQLRunner;
 import org.gusdb.fgputil.json.JsonUtil;
 import org.veupathdb.service.eda.ss.Resources;
+import org.veupathdb.service.eda.ss.model.distribution.DistributionConfig;
 import org.veupathdb.service.eda.ss.model.variable.VariablesCategory;
 import org.veupathdb.service.eda.ss.model.variable.DateVariable;
 import org.veupathdb.service.eda.ss.model.variable.FloatingPointVariable;
@@ -129,16 +130,20 @@ class VariableResultSetUtils {
       return switch(valueProps.type) {
 
         case NUMBER ->
-            new FloatingPointVariable(varProps, valueProps, new FloatingPointVariable.Properties(
-                getRsStringWithDefault(rs, UNITS_COL_NAME, ""),
-                getRsIntegerWithDefault(rs, PRECISION_COL_NAME, 1),
-                getDoubleFromString(rs.getString(DISPLAY_RANGE_MIN_COL_NAME)),
-                getDoubleFromString(rs.getString(DISPLAY_RANGE_MAX_COL_NAME)),
-                getDoubleFromString(rs.getString(RANGE_MIN_COL_NAME)),
-                getDoubleFromString(rs.getString(RANGE_MAX_COL_NAME)),
-                getDoubleFromString(rs.getString(BIN_WIDTH_COMPUTED_COL_NAME)),
-                getDoubleFromString(rs.getString(BIN_WIDTH_OVERRIDE_COL_NAME))
-            ));
+            new FloatingPointVariable(varProps, valueProps,
+                new DistributionConfig<>(
+                    getDoubleFromString(rs.getString(DISPLAY_RANGE_MIN_COL_NAME)),
+                    getDoubleFromString(rs.getString(DISPLAY_RANGE_MAX_COL_NAME)),
+                    getDoubleFromString(rs.getString(RANGE_MIN_COL_NAME)),
+                    getDoubleFromString(rs.getString(RANGE_MAX_COL_NAME)),
+                    getDoubleFromString(rs.getString(BIN_WIDTH_COMPUTED_COL_NAME)),
+                    getDoubleFromString(rs.getString(BIN_WIDTH_OVERRIDE_COL_NAME))
+                ),
+                new FloatingPointVariable.Properties(
+                    getRsStringWithDefault(rs, UNITS_COL_NAME, ""),
+                    getRsIntegerWithDefault(rs, PRECISION_COL_NAME, 1)
+                )
+            );
 
         case LONGITUDE ->
             new LongitudeVariable(varProps, valueProps, new LongitudeVariable.Properties(
@@ -146,15 +151,19 @@ class VariableResultSetUtils {
             ));
 
         case INTEGER ->
-            new IntegerVariable(varProps, valueProps, new IntegerVariable.Properties(
-                getRsStringWithDefault(rs, UNITS_COL_NAME, ""),
-                getIntegerFromString(rs.getString(DISPLAY_RANGE_MIN_COL_NAME)),
-                getIntegerFromString(rs.getString(DISPLAY_RANGE_MAX_COL_NAME)),
-                getIntegerFromString(rs.getString(RANGE_MIN_COL_NAME)),
-                getIntegerFromString(rs.getString(RANGE_MAX_COL_NAME)),
-                getIntegerFromString(massageToInt(rs.getString(BIN_WIDTH_COMPUTED_COL_NAME))), // FIXME!
-                getIntegerFromString(massageToInt(rs.getString(BIN_WIDTH_OVERRIDE_COL_NAME))) // FIXME TOO!
-            ));
+            new IntegerVariable(varProps, valueProps,
+                new DistributionConfig<>(
+                    getIntegerFromString(rs.getString(DISPLAY_RANGE_MIN_COL_NAME)),
+                    getIntegerFromString(rs.getString(DISPLAY_RANGE_MAX_COL_NAME)),
+                    getIntegerFromString(rs.getString(RANGE_MIN_COL_NAME)),
+                    getIntegerFromString(rs.getString(RANGE_MAX_COL_NAME)),
+                    getIntegerFromString(massageToInt(rs.getString(BIN_WIDTH_COMPUTED_COL_NAME))), // FIXME!
+                    getIntegerFromString(massageToInt(rs.getString(BIN_WIDTH_OVERRIDE_COL_NAME))) // FIXME TOO!
+                ),
+                new IntegerVariable.Properties(
+                    getRsStringWithDefault(rs, UNITS_COL_NAME, "")
+                )
+            );
 
         case DATE ->
             new DateVariable(varProps, valueProps, new DateVariable.Properties(

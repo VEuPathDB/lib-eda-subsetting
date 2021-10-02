@@ -7,9 +7,7 @@ import java.util.stream.Stream;
 import javax.sql.DataSource;
 import org.gusdb.fgputil.Tuples.TwoTuple;
 import org.gusdb.fgputil.iterator.IteratorUtil;
-import org.veupathdb.service.eda.generated.model.BinSpecWithRange;
 import org.veupathdb.service.eda.generated.model.HistogramBin;
-import org.veupathdb.service.eda.generated.model.HistogramStats;
 import org.veupathdb.service.eda.generated.model.ValueSpec;
 import org.veupathdb.service.eda.ss.model.Entity;
 import org.veupathdb.service.eda.ss.model.Study;
@@ -27,38 +25,20 @@ public abstract class AbstractBinDistribution<T extends VariableWithValues, S, R
     HistogramBin toHistogramBin();
   }
 
-  protected abstract class StatsCollector {
-    abstract void accept(S value, Long count);
-    abstract HistogramStats toHistogramStats(long subsetEntityCount, long missingCasesCount);
-  }
-
-  protected final S _displayMin;
-  protected final S _displayMax;
-
   protected abstract S getTypedObject(String objectName, Object value, ValueSource source);
-  protected abstract StatsCollector getStatsCollector();
+  protected abstract StatsCollector<S> getStatsCollector();
   protected abstract R getFirstBin();
   protected abstract Optional<R> getNextBin(R currentBin);
 
   public AbstractBinDistribution(DataSource ds, Study study, Entity targetEntity,
-                                 T variable, List<Filter> filters, ValueSpec valueSpec,
-                                 Object displayMin, Object displayMax, BinSpecWithRange binSpec) {
+                                 T variable, List<Filter> filters, ValueSpec valueSpec) {
     super(ds, study, targetEntity, variable, filters, valueSpec);
-    _displayMin = adjustMin(getTypedObject("displayMin", displayMin, ValueSource.CONFIG), binSpec);
-    _displayMax = adjustMax(getTypedObject("displayMax", displayMax, ValueSource.CONFIG), binSpec);
   }
 
-  protected S adjustMin(S displayMin, BinSpecWithRange binSpec) {
-    return displayMin; // no adjustment by default
-  }
-
-  protected S adjustMax(S displayMax, BinSpecWithRange binSpec) {
-    return displayMax; // no adjustment by default
-  }
 
   @Override
   protected DistributionResult processDistributionStream(Stream<TwoTuple<String, Long>> distributionStream, int subsetEntityCount) {
-    StatsCollector stats = getStatsCollector();
+    StatsCollector<S> stats = getStatsCollector();
     long missingCasesCount = 0;
     R currentBin = getFirstBin();
     boolean beforeFirstBin = true;

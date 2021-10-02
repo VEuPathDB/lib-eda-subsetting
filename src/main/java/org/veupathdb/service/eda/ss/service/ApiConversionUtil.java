@@ -23,6 +23,7 @@ import org.veupathdb.service.eda.generated.model.APIVariableWithValues;
 import org.veupathdb.service.eda.generated.model.APIVariablesCategoryImpl;
 import org.veupathdb.service.eda.ss.model.Entity;
 import org.veupathdb.service.eda.ss.model.Study;
+import org.veupathdb.service.eda.ss.model.distribution.DistributionConfig;
 import org.veupathdb.service.eda.ss.model.variable.DateVariable;
 import org.veupathdb.service.eda.ss.model.variable.FloatingPointVariable;
 import org.veupathdb.service.eda.ss.model.variable.IntegerVariable;
@@ -111,27 +112,29 @@ public class ApiConversionUtil {
   }
 
   private static APIIntegerVariable getIntegerVar(IntegerVariable var) {
+    DistributionConfig<Integer> bins = var.getDistributionConfig();
     APIIntegerVariable apiVar = new APIIntegerVariableImpl();
     apiVar.setUnits(var.getUnits());
-    apiVar.setBinWidth(var.getBinWidth());
-    apiVar.setBinWidthOverride(var.getBinWidthOverride());
-    apiVar.setDisplayRangeMin(var.getDisplayRangeMin());
-    apiVar.setDisplayRangeMax(var.getDisplayRangeMax());
-    apiVar.setRangeMin(var.getRangeMin());
-    apiVar.setRangeMax(var.getRangeMax());
+    apiVar.setBinWidth(bins.getBinWidth());
+    apiVar.setBinWidthOverride(bins.getBinWidthOverride());
+    apiVar.setDisplayRangeMin(bins.getDisplayRangeMin());
+    apiVar.setDisplayRangeMax(bins.getDisplayRangeMax());
+    apiVar.setRangeMin(bins.getRangeMin());
+    apiVar.setRangeMax(bins.getRangeMax());
     return apiVar;
   }
 
   private static APINumberVariable getFloatVar(FloatingPointVariable var) {
+    DistributionConfig<Double> bins = var.getDistributionConfig();
     APINumberVariable apiVar = new APINumberVariableImpl();
     apiVar.setUnits(var.getUnits());
     apiVar.setPrecision(var.getPrecision());
-    apiVar.setBinWidth(var.getBinWidth());
-    apiVar.setBinWidthOverride(var.getBinWidthOverride());
-    apiVar.setDisplayRangeMin(var.getDisplayRangeMin());
-    apiVar.setDisplayRangeMax(var.getDisplayRangeMax());
-    apiVar.setRangeMin(var.getRangeMin());
-    apiVar.setRangeMax(var.getRangeMax());
+    apiVar.setBinWidth(bins.getBinWidth());
+    apiVar.setBinWidthOverride(bins.getBinWidthOverride());
+    apiVar.setDisplayRangeMin(bins.getDisplayRangeMin());
+    apiVar.setDisplayRangeMax(bins.getDisplayRangeMax());
+    apiVar.setRangeMin(bins.getRangeMin());
+    apiVar.setRangeMax(bins.getRangeMax());
     return apiVar;
   }
 

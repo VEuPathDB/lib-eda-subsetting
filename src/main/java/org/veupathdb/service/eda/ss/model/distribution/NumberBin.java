@@ -3,30 +3,30 @@ package org.veupathdb.service.eda.ss.model.distribution;
 import org.veupathdb.service.eda.generated.model.HistogramBin;
 import org.veupathdb.service.eda.generated.model.HistogramBinImpl;
 
-public class NumberBin implements AbstractBinDistribution.Bin<Double> {
+import static org.veupathdb.service.eda.ss.model.distribution.NumberBinDistribution.isLessThan;
 
-  public final Double _start;
-  public final Double _end;
-  public final boolean _endEqualsMax;
+public class NumberBin<T extends Number & Comparable<T>> implements AbstractBinDistribution.Bin<T>{
+
+  protected final T _start; // inclusive
+  protected final T _end; // exclusive
 
   private long _binCount = 0;
 
-  public NumberBin(Double start, Double end, boolean endEqualsMax) {
+  public NumberBin(T start, T end) {
     _start = start;
     _end = end;
-    _endEqualsMax = endEqualsMax;
   }
 
   @Override
-  public boolean startsAfter(Double value) {
-    return (value < _start);
+  public boolean startsAfter(T value) {
+    return isLessThan(value, _start);
   }
 
   @Override
-  public boolean accept(Double value, Long count) {
-    // start inclusive, end exclusive, unless end == max, then inclusive
-    if (value >= _start &&
-        (value < _end || (_endEqualsMax && value == _end))) {
+  public boolean accept(T value, Long count) {
+    // start inclusive, end exclusive
+    if (!isLessThan(value, _start) &&
+        (isLessThan(value, _end))) {
       _binCount += count;
       return true;
     }

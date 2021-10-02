@@ -13,29 +13,41 @@ import org.apache.logging.log4j.Logger;
 import org.veupathdb.service.eda.generated.model.BinSpecWithRange;
 import org.veupathdb.service.eda.generated.model.BinUnits;
 import org.veupathdb.service.eda.generated.model.HistogramStats;
-import org.veupathdb.service.eda.generated.model.HistogramStatsImpl;
 import org.veupathdb.service.eda.generated.model.ValueSpec;
-import org.veupathdb.service.eda.ss.model.variable.DateVariable;
 import org.veupathdb.service.eda.ss.model.Entity;
 import org.veupathdb.service.eda.ss.model.Study;
 import org.veupathdb.service.eda.ss.model.filter.Filter;
+import org.veupathdb.service.eda.ss.model.variable.DateVariable;
 import org.veupathdb.service.eda.ss.service.RequestBundle;
 
 public class DateBinDistribution extends AbstractBinDistribution<DateVariable, LocalDateTime, DateBin> {
 
   private static final Logger LOG = LogManager.getLogger(DateBinDistribution.class);
 
-  private final ChronoUnit _binUnits;
+  private final LocalDateTime _displayMin;
+  private final LocalDateTime _displayMax;
   private final int _binSize;
+  private final ChronoUnit _binUnits;
 
   public DateBinDistribution(DataSource ds, Study study, Entity targetEntity, DateVariable var,
-                             List<Filter> filters, ValueSpec valueSpec, BinSpecWithRange binSpec) {
-    super(ds, study, targetEntity, var, filters, valueSpec, binSpec.getDisplayRangeMin(), binSpec.getDisplayRangeMax(), binSpec);
-    _binUnits = calculateChronoUnit(binSpec.getBinUnits());
-    _binSize = binSpec.getBinWidth().intValue();
+                             List<Filter> filters, ValueSpec valueSpec, Optional<BinSpecWithRange> binSpec) {
+    super(ds, study, targetEntity, var, filters, valueSpec);
+
+    // process the bin spec to configure this distribution
+    _binUnits = getBinUnits(binSpec);
+    _binSize = getBinSize(binSpec);
+    _displayMin = getDisplayMin(binSpec);
+    _displayMax = getDisplayMax(binSpec);
   }
 
-  private ChronoUnit calculateChronoUnit(BinUnits binUnits) {
+  private ChronoUnit getBinUnits(Optional<BinSpecWithRange> binSpec) {
+    // if bin spec is sent, the bin units inside must have a value
+    if (binSpec.isPresent() && binSpec.get().getBinUnits() == null) {
+      throw new BadRequestException("binUnits is required for date variable distributions");
+    }
+    // use submitted value or value from var
+    BinUnits binUnits = binSpec.map(spec -> spec.getBinUnits()).orElse(_variable.getBinUnits());
+    // convert to ChronoUnit for use in adjusting min/max and bin sizes
     return switch(binUnits) {
       case DAY -> ChronoUnit.DAYS;
       case WEEK -> ChronoUnit.WEEKS;
@@ -44,26 +56,36 @@ public class DateBinDistribution extends AbstractBinDistribution<DateVariable, L
     };
   }
 
-  @Override
-  protected LocalDateTime adjustMin(LocalDateTime displayMin, BinSpecWithRange binSpec) {
-    switch(calculateChronoUnit(binSpec.getBinUnits())) {
+  private int getBinSize(Optional<BinSpecWithRange> binSpec) {
+    int binSize = binSpec.map(spec -> spec.getBinWidth().intValue()).orElse(_variable.getBinSize());
+    if (binSize <= 0) {
+      throw new BadRequestException("binWidth must be a positive integer for date variable distributions");
+    }
+    return binSize;
+  }
+
+  private LocalDateTime getDisplayMin(Optional<BinSpecWithRange> binSpec) {
+    Object rawMinValue = binSpec.map(spec -> spec.getDisplayRangeMin()).orElse(_variable.getDisplayRangeMin());
+    LocalDateTime rawDateTime = getTypedObject("displayRangeMin", rawMinValue, ValueSource.CONFIG);
+    switch(_binUnits) {
       case MONTHS:
         // truncate to the beginning of the month
-        return LocalDateTime.of(displayMin.getYear(), displayMin.getMonth(), 1, 0, 0);
+        return LocalDateTime.of(rawDateTime.getYear(), rawDateTime.getMonth(), 1, 0, 0);
       case YEARS:
         // truncate to the beginning of the year
-        return LocalDateTime.of(displayMin.getYear(), Month.JANUARY, 1, 0, 0);
+        return LocalDateTime.of(rawDateTime.getYear(), Month.JANUARY, 1, 0, 0);
       default:
         // for days and weeks, truncate to the beginning of the day
-        return displayMin.truncatedTo(ChronoUnit.DAYS);
+        return rawDateTime.truncatedTo(ChronoUnit.DAYS);
     }
   }
 
-  @Override
-  protected LocalDateTime adjustMax(LocalDateTime displayMax, BinSpecWithRange binSpec) {
+  private LocalDateTime getDisplayMax(Optional<BinSpecWithRange> binSpec) {
+    Object rawMaxValue = binSpec.map(spec -> spec.getDisplayRangeMax()).orElse(_variable.getDisplayRangeMax());
+    LocalDateTime rawDateTime = getTypedObject("displayMax", rawMaxValue, ValueSource.CONFIG);
     // truncate to the day (floor), then add 1 day and subtract 1 second
     //    this way all values on that day fall before the max, but none after
-    return displayMax
+    return rawDateTime
         .truncatedTo(ChronoUnit.DAYS)
         .plus(1, ChronoUnit.DAYS)
         .minus(1, ChronoUnit.SECONDS);
@@ -81,37 +103,25 @@ public class DateBinDistribution extends AbstractBinDistribution<DateVariable, L
   }
 
   @Override
-  protected StatsCollector getStatsCollector() {
-    return new StatsCollector() {
+  protected StatsCollector<LocalDateTime> getStatsCollector() {
+    return new StatsCollector<>() {
 
-      private LocalDateTime _subsetMin;
-      private LocalDateTime _subsetMax;
-      private long _numValues = 0;
-      private long _numDistinctValues = 0;
       private long _sumOfValues = 0;
 
       @Override
-      void accept(LocalDateTime value, Long count) {
-        if (_subsetMin == null) _subsetMin = value;
-        _subsetMax = value;
-        _numValues += count;
-        _numDistinctValues++;
+      public void accept(LocalDateTime value, Long count) {
+        super.accept(value, count);
         _sumOfValues += (count * value.toEpochSecond(ZoneOffset.UTC));
       }
 
       @Override
-      HistogramStats toHistogramStats(long subsetEntityCount, long missingCasesCount) {
-        HistogramStats stats = new HistogramStatsImpl();
+      public HistogramStats toHistogramStats(long subsetEntityCount, long missingCasesCount) {
+        HistogramStats stats = super.toHistogramStats(subsetEntityCount, missingCasesCount);
+        // override the LocalDateTime objects set by the parent class and assign strings
         stats.setSubsetMin(RequestBundle.formatDate(_subsetMin));
         stats.setSubsetMax(RequestBundle.formatDate(_subsetMax));
         stats.setSubsetMean(RequestBundle.formatDate(
-            LocalDateTime.ofEpochSecond(_sumOfValues / _numValues, 0, ZoneOffset.UTC)));
-        // FIXME: int casts ok here?
-        stats.setSubsetSize((int)subsetEntityCount);
-        stats.setNumVarValues((int)_numValues);
-        stats.setNumDistinctValues((int)_numDistinctValues);
-        stats.setNumDistinctEntityRecords((int)(subsetEntityCount - missingCasesCount));
-        stats.setNumMissingCases((int)missingCasesCount);
+            LocalDateTime.ofEpochSecond(_sumOfValues / stats.getNumVarValues(), 0, ZoneOffset.UTC)));
         return stats;
       }
     };

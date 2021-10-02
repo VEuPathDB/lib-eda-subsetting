@@ -141,13 +141,13 @@ public class RequestBundle {
 
   private static NumberRangeFilter unpackNumberRangeFilter(APIFilter apiFilter, Entity entity) {
     APINumberRangeFilter f = (APINumberRangeFilter)apiFilter;
-    NumberVariable var = NumberVariable.assertType(entity.getVariableOrThrow(f.getVariableId()));
+    NumberVariable<?> var = NumberVariable.assertType(entity.getVariableOrThrow(f.getVariableId()));
     return new NumberRangeFilter(entity, var, f.getMin(), f.getMax());
   }
 
   private static NumberSetFilter unpackNumberSetFilter(APIFilter apiFilter, Entity entity) {
     APINumberSetFilter f = (APINumberSetFilter)apiFilter;
-    NumberVariable var = NumberVariable.assertType(entity.getVariableOrThrow(f.getVariableId()));
+    NumberVariable<?> var = NumberVariable.assertType(entity.getVariableOrThrow(f.getVariableId()));
     return new NumberSetFilter(entity, var, f.getNumberSet());
   }
 

@@ -1,37 +1,28 @@
 package org.veupathdb.service.eda.ss.model.variable;
 
 import javax.ws.rs.BadRequestException;
+import org.veupathdb.service.eda.ss.model.distribution.DistributionConfig;
 
-public class IntegerVariable extends NumberVariable implements SupportsNumericRange<Integer> {
+public class IntegerVariable extends NumberVariable<Integer> {
 
   public static class Properties {
 
     public final String units;
-    public final Integer displayRangeMin;
-    public final Integer displayRangeMax;
-    public final Integer rangeMin;
-    public final Integer rangeMax;
-    public final Integer binWidth;
-    public final Integer binWidthOverride;
 
-    public Properties(String units, Integer displayRangeMin, Integer displayRangeMax,
-                      Integer rangeMin, Integer rangeMax,
-                      Integer binWidth, Integer binWidthOverride) {
+    public Properties(String units) {
       this.units = units;
-      this.displayRangeMin = displayRangeMin;
-      this.displayRangeMax = displayRangeMax;
-      this.rangeMin = rangeMin;
-      this.rangeMax = rangeMax;
-      this.binWidthOverride = binWidthOverride;
-      this.binWidth = binWidth;
     }
   }
 
   private final Properties _properties;
 
-  public IntegerVariable(Variable.Properties varProperties, VariableWithValues.Properties valueProperties, Properties properties) {
+  public IntegerVariable(
+      Variable.Properties varProperties,
+      VariableWithValues.Properties valueProperties,
+      DistributionConfig<Integer> distributionConfig,
+      Properties properties) {
 
-    super(varProperties, valueProperties);
+    super(varProperties, valueProperties, distributionConfig);
     _properties = properties;
     validateType(VariableType.INTEGER);
 
@@ -43,43 +34,6 @@ public class IntegerVariable extends NumberVariable implements SupportsNumericRa
 
   public String getUnits() {
     return _properties.units;
-  }
-
-  @Override
-  public Integer getDisplayRangeMin() {
-    return _properties.displayRangeMin;
-  }
-
-  @Override
-  public Integer getDisplayRangeMax() {
-    return _properties.displayRangeMax;
-  }
-
-  @Override
-  public Integer getRangeMin() {
-    return _properties.rangeMin;
-  }
-
-  @Override
-  public Integer getRangeMax() {
-    return _properties.rangeMax;
-  }
-
-  @Override
-  public Integer getBinWidthOverride() {
-    return _properties.binWidthOverride;
-  }
-
-  @Override
-  public Integer getBinWidth() {
-    return _properties.binWidth;
-  }
-
-  @Override
-  public Integer getDefaultBinWidth() {
-    return _properties.binWidthOverride == null
-        ? _properties.binWidth
-        : _properties.binWidthOverride;
   }
 
   @Override

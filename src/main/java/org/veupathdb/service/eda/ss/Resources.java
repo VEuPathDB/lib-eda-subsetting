@@ -5,7 +5,7 @@ import org.apache.logging.log4j.Logger;
 import org.veupathdb.lib.container.jaxrs.config.Options;
 import org.veupathdb.lib.container.jaxrs.server.ContainerResources;
 import org.veupathdb.lib.container.jaxrs.utils.db.DbManager;
-import org.veupathdb.service.eda.ss.service.Studies;
+import org.veupathdb.service.eda.ss.service.StudiesService;
 import org.veupathdb.service.eda.ss.stubdb.StubDb;
 
 import javax.sql.DataSource;
@@ -66,7 +66,7 @@ public class Resources extends ContainerResources {
   @Override
   protected Object[] resources() {
     return new Object[] {
-      Studies.class,
+      StudiesService.class,
     };
   }
 }

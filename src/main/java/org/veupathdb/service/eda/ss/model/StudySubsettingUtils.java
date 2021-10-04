@@ -131,10 +131,12 @@ public class StudySubsettingUtils {
     // iterate through groups and format into strings to be written to stream
     for (List<Map<String, String>> group : toIterable(groupedTallRowsIterator)) {
       Map<String, String> wideRowMap = EntityResultSetUtils.getTallToWideFunction(outputEntity).apply(group);
-      List<String> wideRow = new ArrayList<>();
-      for (String colName : outputColumns) {
-        wideRow.add(wideRowMap.getOrDefault(colName, ""));
-      }
+      List<String> wideRow = outputColumns.stream()
+          // look up column value in the map
+          .map(colName -> wideRowMap.get(colName))
+          // convert null values to empty strings
+          .map(val -> val == null ? "" : val)
+          .collect(Collectors.toList());
       formatter.writeRow(writer, wideRow);
     }
   }
@@ -144,7 +146,7 @@ public class StudySubsettingUtils {
     while (rs.next()) {
       List<String> wideRow = new ArrayList<>();
       for (String colName : outputColumns) {
-        wideRow.add(rs.getString(colName));
+        wideRow.add(ResultSetUtils.getRsStringWithDefault(rs, colName, ""));
       }
       formatter.writeRow(writer, wideRow);
     }

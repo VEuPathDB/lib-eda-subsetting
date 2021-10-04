@@ -160,7 +160,7 @@ public class EntityResultSetUtils {
       Map<String, String> wideRow = new HashMap<>();
       String tallRowEntityId = firstTallRow.get(entity.getPKColName());
       Map<String, List<String>> multiValues = null;  // this map only contains variables that have multiple values
-      Map<String, VariableWithValues> variablesMap = new HashMap<String, VariableWithValues>(); // ID -> VariableWithValues
+      Map<String, VariableWithValues> variablesMap = new HashMap<>(); // ID -> VariableWithValues
       
       addPrimaryKeysToWideRow(firstTallRow, entity, wideRow, tallRowEntityId, errPrefix);
 
@@ -176,7 +176,9 @@ public class EntityResultSetUtils {
           
           // handle multi valued variable.
           // (this is a rare case, so only allocate the array if needed)
-          if (variablesMap.get(variableId).getIsMultiValued()) multiValues = updateMultiValuesMap(variableId, tallRow, multiValues);
+          if (variablesMap.get(variableId).getIsMultiValued()) {
+            multiValues = updateMultiValuesMap(variableId, tallRow, multiValues);
+          }
           
           // else handle single valued variable
           else {

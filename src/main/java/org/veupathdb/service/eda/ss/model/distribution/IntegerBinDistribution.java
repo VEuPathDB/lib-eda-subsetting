@@ -14,7 +14,7 @@ import org.veupathdb.service.eda.ss.model.Study;
 import org.veupathdb.service.eda.ss.model.filter.Filter;
 import org.veupathdb.service.eda.ss.model.variable.IntegerVariable;
 
-public class IntegerBinDistribution extends NumberBinDistribution<Integer> {
+public class IntegerBinDistribution extends NumberBinDistribution<Long> {
 
   public IntegerBinDistribution(DataSource ds, Study study, Entity targetEntity, IntegerVariable var,
                                 List<Filter> filters, ValueSpec valueSpec, Optional<BinSpecWithRange> binSpec) {
@@ -22,22 +22,22 @@ public class IntegerBinDistribution extends NumberBinDistribution<Integer> {
   }
 
   @Override
-  protected Integer sum(Integer a, Integer b) {
+  protected Long sum(Long a, Long b) {
     return a + b;
   }
 
   @Override
-  protected Integer getTypedObject(String objectName, Object value, ValueSource source) {
+  protected Long getTypedObject(String objectName, Object value, ValueSource source) {
     Supplier<RuntimeException> exSupplier = () -> switch(source) {
       case CONFIG -> new BadRequestException(objectName + " must be an integer value.");
       case DB -> new RuntimeException("Value in column " + objectName + " is not an integer.");
     };
     if (value instanceof Number) {
-      return ((Number)value).intValue();
+      return ((Number)value).longValue();
     }
     if (value instanceof String) {
       try {
-        return Integer.parseInt((String)value);
+        return Long.parseLong((String)value);
       }
       catch (NumberFormatException e) {
         throw exSupplier.get();
@@ -47,13 +47,13 @@ public class IntegerBinDistribution extends NumberBinDistribution<Integer> {
   }
 
   @Override
-  protected StatsCollector<Integer> getStatsCollector() {
+  protected StatsCollector<Long> getStatsCollector() {
     return new StatsCollector<>() {
 
       private Long _sumOfValues = 0L;
 
       @Override
-      public void accept(Integer value, Long count) {
+      public void accept(Long value, Long count) {
         super.accept(value, count);
         _sumOfValues += (count * value);
       }

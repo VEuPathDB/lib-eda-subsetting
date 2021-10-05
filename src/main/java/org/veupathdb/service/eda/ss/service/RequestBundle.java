@@ -5,6 +5,7 @@ import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.function.Supplier;
 import javax.sql.DataSource;
 import javax.ws.rs.BadRequestException;
@@ -55,7 +56,8 @@ public class RequestBundle {
 
     List<Filter> filters = constructFiltersFromAPIFilters(study, apiFilters);
 
-    TabularReportConfig reportConfig = new TabularReportConfig(entity, apiReportConfig);
+    Optional<TabularReportConfig> reportConfig = Optional.ofNullable(apiReportConfig)
+        .map(config -> new TabularReportConfig(entity, config));
 
     return new RequestBundle(study, entity, variables, filters, reportConfig);
   }
@@ -213,9 +215,9 @@ public class RequestBundle {
   private final List<Filter> _filters;
   private final Entity _targetEntity;
   private final List<Variable> _requestedVariables;
-  private final TabularReportConfig _reportConfig;
+  private final Optional<TabularReportConfig> _reportConfig;
 
-  RequestBundle(Study study, Entity targetEntity, List<Variable> requestedVariables, List<Filter> filters, TabularReportConfig reportConfig) {
+  RequestBundle(Study study, Entity targetEntity, List<Variable> requestedVariables, List<Filter> filters, Optional<TabularReportConfig> reportConfig) {
     _study = study;
     _targetEntity = targetEntity;
     _filters = filters;
@@ -239,7 +241,7 @@ public class RequestBundle {
     return _requestedVariables;
   }
 
-  public TabularReportConfig getReportConfig() {
+  public Optional<TabularReportConfig> getReportConfig() {
     return _reportConfig;
   }
 }

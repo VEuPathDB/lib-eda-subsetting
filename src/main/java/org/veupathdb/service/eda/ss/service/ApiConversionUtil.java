@@ -112,7 +112,7 @@ public class ApiConversionUtil {
   }
 
   private static APIIntegerVariable getIntegerVar(IntegerVariable var) {
-    DistributionConfig<Integer> bins = var.getDistributionConfig();
+    DistributionConfig<Long> bins = var.getDistributionConfig();
     APIIntegerVariable apiVar = new APIIntegerVariableImpl();
     apiVar.setUnits(var.getUnits());
     apiVar.setBinWidth(bins.getBinWidth());

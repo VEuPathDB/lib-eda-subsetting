@@ -6,9 +6,9 @@ public class LongitudeVariable extends VariableWithValues {
 
   public static class Properties {
 
-    private final Integer precision;
+    private final Long precision;
 
-    public Properties(Integer precision) {
+    public Properties(Long precision) {
       this.precision = precision;
     }
   }
@@ -21,7 +21,7 @@ public class LongitudeVariable extends VariableWithValues {
     _properties = properties;
   }
 
-  public Integer getPrecision() {
+  public Long getPrecision() {
     return _properties.precision;
   }
 

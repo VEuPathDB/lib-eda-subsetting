@@ -156,7 +156,7 @@ public class StudiesService implements Studies {
     TreeNode<Entity> prunedEntityTree = StudySubsettingUtils.pruneTree(
         request.getStudy().getEntityTree(), request.getFilters(), request.getTargetEntity());
 
-    int count = StudySubsettingUtils.getEntityCount(
+    long count = StudySubsettingUtils.getEntityCount(
         datasource, prunedEntityTree, request.getTargetEntity(), request.getFilters());
 
     EntityCountPostResponse response = new EntityCountPostResponseImpl();

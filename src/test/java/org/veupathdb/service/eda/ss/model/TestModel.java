@@ -129,7 +129,7 @@ public class TestModel {
         new Variable.Properties(label, id, entity, VariableDisplayType.DEFAULT, label, null, null, "Their " + label),
         new VariableWithValues.Properties(VariableType.NUMBER, shape, null, distinctValuesCount, false, false, false, isMultiValued),
         new DistributionConfig<>(null, null, null, null, null, null),
-        new FloatingPointVariable.Properties("", 1)
+        new FloatingPointVariable.Properties("", 1L)
     );
   }
 

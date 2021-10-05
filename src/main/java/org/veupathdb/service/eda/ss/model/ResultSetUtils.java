@@ -14,13 +14,13 @@ public class ResultSetUtils {
     return Optional.ofNullable(rs.getString(colName)).orElse(defaultVal);
   }
 
-  public static Integer getRsIntegerWithDefault(ResultSet rs, String colName, Integer defaultVal) throws SQLException {
-    int val = rs.getInt(colName);
+  public static Long getRsIntegerWithDefault(ResultSet rs, String colName, Long defaultVal) throws SQLException {
+    long val = rs.getLong(colName);
     return rs.wasNull() ? defaultVal : val;
   }
 
-  public static Integer getIntegerFromString(String value) {
-    return value == null ? null : Integer.parseInt(value);
+  public static Long getIntegerFromString(String value) {
+    return value == null ? null : Long.parseLong(value);
   }
 
   public static Double getDoubleFromString(String value) {

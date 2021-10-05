@@ -24,7 +24,7 @@ public class DiscreteDistribution extends AbstractDistribution<VariableWithValue
   }
 
   @Override
-  protected DistributionResult processDistributionStream(Stream<TwoTuple<String,Long>> distributionStream, int subsetEntityCount) {
+  protected DistributionResult processDistributionStream(Stream<TwoTuple<String,Long>> distributionStream, long subsetEntityCount) {
     List<HistogramBin> bins = new ArrayList<>();
     long distinctValueCount = 0;
     long totalValueCount = 0;
@@ -44,12 +44,11 @@ public class DiscreteDistribution extends AbstractDistribution<VariableWithValue
       bins.add(bin);
     }
     HistogramStats stats = new HistogramStatsImpl();
-    // FIXME: int casts ok here?
     stats.setSubsetSize(subsetEntityCount);
-    stats.setNumMissingCases((int)missingCasesCount);
-    stats.setNumDistinctValues((int)distinctValueCount);
-    stats.setNumVarValues((int)totalValueCount);
-    stats.setNumDistinctEntityRecords((int)(subsetEntityCount - missingCasesCount));
+    stats.setNumMissingCases(missingCasesCount);
+    stats.setNumDistinctValues(distinctValueCount);
+    stats.setNumVarValues(totalValueCount);
+    stats.setNumDistinctEntityRecords(subsetEntityCount - missingCasesCount);
     return new DistributionResult(bins, stats);
   }
 }

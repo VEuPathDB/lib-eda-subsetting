@@ -21,12 +21,11 @@ public class StatsCollector<T> {
     HistogramStats stats = new HistogramStatsImpl();
     stats.setSubsetMin(_subsetMin);
     stats.setSubsetMax(_subsetMax);
-    // FIXME: int casts ok here?
-    stats.setSubsetSize((int)subsetEntityCount);
-    stats.setNumVarValues((int)_numValues);
-    stats.setNumDistinctValues((int)_numDistinctValues);
-    stats.setNumDistinctEntityRecords((int)(subsetEntityCount - missingCasesCount));
-    stats.setNumMissingCases((int)missingCasesCount);
+    stats.setSubsetSize(subsetEntityCount);
+    stats.setNumVarValues(_numValues);
+    stats.setNumDistinctValues(_numDistinctValues);
+    stats.setNumDistinctEntityRecords(subsetEntityCount - missingCasesCount);
+    stats.setNumMissingCases(missingCasesCount);
     return stats;
   }
 }

@@ -1,5 +1,15 @@
 package org.veupathdb.service.eda.ss.model;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.Scanner;
+import java.util.Set;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.gusdb.fgputil.DelimitedDataParser;
@@ -19,7 +29,6 @@ import org.veupathdb.service.eda.ss.stubdb.StubDb;
 
 import javax.sql.DataSource;
 import java.io.ByteArrayOutputStream;
-import java.util.*;
 import java.util.stream.Stream;
 
 import static org.gusdb.fgputil.FormatUtil.NL;
@@ -367,7 +376,7 @@ public class StudySubsettingUtilsTest {
     List<Filter> filters = Collections.emptyList();
 
     TreeNode<Entity> prunedEntityTree = StudySubsettingUtils.pruneTree(study.getEntityTree(), filters, entity);
-    Integer count = StudySubsettingUtils.getEntityCount(_dataSource, prunedEntityTree, entity, new ArrayList<>());
+    Long count = StudySubsettingUtils.getEntityCount(_dataSource, prunedEntityTree, entity, new ArrayList<>());
     
     assertEquals(4, count);
   }
@@ -386,7 +395,7 @@ public class StudySubsettingUtilsTest {
     filters.add(_filtersForTesting.houseObsWaterSupplyFilter);
 
     TreeNode<Entity> prunedEntityTree = StudySubsettingUtils.pruneTree(study.getEntityTree(), filters, entity);
-    int count = StudySubsettingUtils.getEntityCount(_dataSource, prunedEntityTree, entity, filters);
+    Long count = StudySubsettingUtils.getEntityCount(_dataSource, prunedEntityTree, entity, filters);
     
     assertEquals(2, count);
   }
@@ -409,7 +418,7 @@ public class StudySubsettingUtilsTest {
     ByteArrayOutputStream outStream = new ByteArrayOutputStream();
 
     StudySubsettingUtils.produceTabularSubset(_dataSource, study, entity,
-        variables, filters, null, TabularResponseType.TABULAR.getFormatter(), outStream);
+        variables, filters, Optional.empty(), TabularResponseType.TABULAR.getFormatter(), outStream);
     String[] expected = {
     "Prtcpnt_stable_id", "Hshld_stable_id", "var_p4",  "var_p3",
     "201", "101",     "blond",   "Martin",
@@ -440,7 +449,7 @@ public class StudySubsettingUtilsTest {
     ByteArrayOutputStream outStream = new ByteArrayOutputStream();
 
     StudySubsettingUtils.produceTabularSubset(_dataSource, study, entity,
-        variables, filters, null, TabularResponseType.TABULAR.getFormatter(), outStream);
+        variables, filters, Optional.empty(), TabularResponseType.TABULAR.getFormatter(), outStream);
     String[] expected = {
     "Prtcpnt_stable_id", "Hshld_stable_id", "var_p4",  "var_p3",
     "201", "101",     "blond",   "Martin",
@@ -467,7 +476,7 @@ public class StudySubsettingUtilsTest {
 
     TreeNode<Entity> prunedEntityTree = StudySubsettingUtils.pruneTree(study.getEntityTree(), filters, entity);
 
-    Integer count = StudySubsettingUtils.getVariableCount(_dataSource, prunedEntityTree, entity, var, filters);
+    Long count = StudySubsettingUtils.getVariableCount(_dataSource, prunedEntityTree, entity, var, filters);
     
     assertEquals(4, count);
   }
@@ -490,7 +499,7 @@ public class StudySubsettingUtilsTest {
 
     TreeNode<Entity> prunedEntityTree = StudySubsettingUtils.pruneTree(study.getEntityTree(), filters, entity);
 
-    Integer count = StudySubsettingUtils.getVariableCount(_dataSource, prunedEntityTree, entity, var, filters);
+    Long count = StudySubsettingUtils.getVariableCount(_dataSource, prunedEntityTree, entity, var, filters);
     
     assertEquals(2, count);
   }
@@ -569,7 +578,7 @@ public class StudySubsettingUtilsTest {
   @Test
   @DisplayName("Test tabular results without vars containing no nulls")
   void testTabularResultsNoVars() {
-    testTabularResults(Arrays.asList());
+    testTabularResults(List.of());
   }
 
   @Test
@@ -616,7 +625,7 @@ public class StudySubsettingUtilsTest {
   private List<Map<String,String>> getTabularOutputRows(Entity entity, List<Variable> requestedVars) {
     ByteArrayOutputStream buffer = new ByteArrayOutputStream();
     StudySubsettingUtils.produceTabularSubset(_dataSource, _model.study, entity, requestedVars, 
-        Collections.emptyList(), null, TabularResponseType.TABULAR.getFormatter(), buffer);
+        Collections.emptyList(), Optional.empty(), TabularResponseType.TABULAR.getFormatter(), buffer);
     Scanner scanner = new Scanner(buffer.toString());
     if (!scanner.hasNextLine()) {
       throw new RuntimeException("Tabular output did not contain a header row.");

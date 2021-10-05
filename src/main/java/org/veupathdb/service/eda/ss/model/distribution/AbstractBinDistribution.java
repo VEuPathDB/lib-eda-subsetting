@@ -37,7 +37,7 @@ public abstract class AbstractBinDistribution<T extends VariableWithValues, S, R
 
 
   @Override
-  protected DistributionResult processDistributionStream(Stream<TwoTuple<String, Long>> distributionStream, int subsetEntityCount) {
+  protected DistributionResult processDistributionStream(Stream<TwoTuple<String, Long>> distributionStream, long subsetEntityCount) {
     StatsCollector<S> stats = getStatsCollector();
     long missingCasesCount = 0;
     R currentBin = getFirstBin();

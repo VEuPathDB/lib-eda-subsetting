@@ -141,13 +141,13 @@ class VariableResultSetUtils {
                 ),
                 new FloatingPointVariable.Properties(
                     getRsStringWithDefault(rs, UNITS_COL_NAME, ""),
-                    getRsIntegerWithDefault(rs, PRECISION_COL_NAME, 1)
+                    getRsIntegerWithDefault(rs, PRECISION_COL_NAME, 1L)
                 )
             );
 
         case LONGITUDE ->
             new LongitudeVariable(varProps, valueProps, new LongitudeVariable.Properties(
-                getRsIntegerWithDefault(rs, PRECISION_COL_NAME, 1)
+                getRsIntegerWithDefault(rs, PRECISION_COL_NAME, 1L)
             ));
 
         case INTEGER ->

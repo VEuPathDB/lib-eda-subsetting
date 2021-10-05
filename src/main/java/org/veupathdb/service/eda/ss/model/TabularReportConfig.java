@@ -10,8 +10,8 @@ import org.veupathdb.service.eda.generated.model.SortSpecEntry;
 public class TabularReportConfig {
 
   private List<SortSpecEntry> _sorting = new ArrayList<>();
-  private Optional<Integer> _numRows = Optional.empty();
-  private Integer _offset = 0;
+  private Optional<Long> _numRows = Optional.empty();
+  private Long _offset = 0L;
 
   public TabularReportConfig(Entity entity, APITabularReportConfig apiConfig) {
     if (apiConfig == null) return;
@@ -32,15 +32,19 @@ public class TabularReportConfig {
     }
   }
 
+  public boolean requiresPaging() {
+    return !_sorting.isEmpty() || !_numRows.isEmpty() || _offset != 0L;
+  }
+
   public List<SortSpecEntry> getSorting() {
     return _sorting;
   }
 
-  public Optional<Integer> getNumRows() {
+  public Optional<Long> getNumRows() {
     return _numRows;
   }
 
-  public Integer getOffset() {
+  public Long getOffset() {
     return _offset;
   }
 

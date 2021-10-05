@@ -31,7 +31,7 @@ public abstract class AbstractDistribution<T extends VariableWithValues> {
    * @return distribution result
    */
   protected abstract DistributionResult processDistributionStream(
-      Stream<TwoTuple<String, Long>> distributionStream, int subsetEntityCount);
+      Stream<TwoTuple<String, Long>> distributionStream, long subsetEntityCount);
 
   public AbstractDistribution(DataSource ds, Study study, Entity targetEntity, T variable,
       List<Filter> filters, ValueSpec valueSpec) {
@@ -50,7 +50,7 @@ public abstract class AbstractDistribution<T extends VariableWithValues> {
         _study.getEntityTree(), _filters, _targetEntity);
 
     // get the number of entities in the subset
-    int subsetEntityCount = StudySubsettingUtils.getEntityCount(
+    long subsetEntityCount = StudySubsettingUtils.getEntityCount(
         _ds, prunedEntityTree, _targetEntity, _filters);
 
     try(

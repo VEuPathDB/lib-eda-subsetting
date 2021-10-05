@@ -17,7 +17,7 @@ public enum VariableType {
   NUMBER("number_value", "number", rs -> doubleValueOrNull(rs, rs.getDouble("number_value")),
       strings -> StringListToJsonFloatArray(strings)),
   
-  INTEGER("number_value", "integer", rs -> integerValueOrNull(rs, rs.getInt("number_value")),
+  INTEGER("number_value", "integer", rs -> integerValueOrNull(rs, rs.getLong("number_value")),
       strings -> StringListToJsonIntegerArray(strings)),
   
   DATE("date_value", "date", rs -> dateValueOrNull(rs.getDate("date_value")),
@@ -78,7 +78,7 @@ public enum VariableType {
   }
 
   // utility to convert null DB integer values to real null
-  private static String integerValueOrNull(ResultSet rs, int value) {
+  private static String integerValueOrNull(ResultSet rs, long value) {
     return Functions.swallowAndGet(() -> rs.wasNull() ? null : String.valueOf(value));
   }
 
@@ -103,9 +103,9 @@ public enum VariableType {
 
   // convert a list of multiple integer values, in string form, to a parallel number JSON array
   private static JSONArray StringListToJsonIntegerArray(List<String> stringList) {
-    List<Integer> numberList = new ArrayList<>(stringList.size());
+    List<Long> numberList = new ArrayList<>(stringList.size());
     for (String valueAsString : stringList) {
-      numberList.add(Integer.valueOf(valueAsString));
+      numberList.add(Long.valueOf(valueAsString));
     }
     return new JSONArray(numberList);
   }

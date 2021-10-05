@@ -8,9 +8,9 @@ public class FloatingPointVariable extends NumberVariable<Double> {
   public static class Properties {
 
     public final String units;
-    public final Integer precision;
+    public final Long precision;
 
-    public Properties(String units, Integer precision) {
+    public Properties(String units, Long precision) {
       this.units = units;
       this.precision = precision;
     }
@@ -40,7 +40,7 @@ public class FloatingPointVariable extends NumberVariable<Double> {
     return _properties.units;
   }
 
-  public Integer getPrecision() {
+  public Long getPrecision() {
     return _properties.precision;
   }
 

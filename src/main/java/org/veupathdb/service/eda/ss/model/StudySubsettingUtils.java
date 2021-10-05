@@ -21,6 +21,7 @@ import org.gusdb.fgputil.ListBuilder;
 import org.gusdb.fgputil.Tuples.TwoTuple;
 import org.gusdb.fgputil.db.runner.SQLRunner;
 import org.gusdb.fgputil.db.runner.SingleIntResultSetHandler;
+import org.gusdb.fgputil.db.runner.SingleLongResultSetHandler;
 import org.gusdb.fgputil.db.stream.ResultSetIterator;
 import org.gusdb.fgputil.db.stream.ResultSets;
 import org.gusdb.fgputil.functional.TreeNode;
@@ -66,14 +67,14 @@ public class StudySubsettingUtils {
    */
   public static void produceTabularSubset(DataSource datasource, Study study, Entity outputEntity,
                                           List<Variable> outputVariables, List<Filter> filters,
-                                          TabularReportConfig reportConfig, TabularResponseType.Formatter formatter,
+                                          Optional<TabularReportConfig> reportConfig, TabularResponseType.Formatter formatter,
                                           OutputStream outputStream) {
 
     TreeNode<Entity> prunedEntityTree = pruneTree(study.getEntityTree(), filters, outputEntity);
 
-    String sql = reportConfig == null
+    String sql = reportConfig.isEmpty()
         ? generateTabularSqlNoReportConfig(outputVariables, outputEntity, filters, prunedEntityTree)
-        : generateTabularSqlWithReportConfig(outputVariables, outputEntity, filters, reportConfig, prunedEntityTree);
+        : generateTabularSqlWithReportConfig(outputVariables, outputEntity, filters, reportConfig.get(), prunedEntityTree);
     LOG.debug("Generated the following tabular SQL: " + sql);
 
     List<String> outputColumns = getTabularOutputColumns(outputEntity, outputVariables);
@@ -83,7 +84,7 @@ public class StudySubsettingUtils {
 
         formatter.begin(writer);
         formatter.writeRow(writer, outputColumns);
-        if (reportConfig == null)
+        if (reportConfig.isEmpty())
           writeWideRowsNoReportConfig(convertTallRowsResultSet(rs, outputEntity), formatter, writer, outputColumns, outputEntity);
         else
           writeWideRowsWithReportConfig(rs, formatter, writer, outputColumns);
@@ -167,17 +168,19 @@ public class StudySubsettingUtils {
         new TwoTuple<>(distributionVariable.getType().convertRowValueToStringValue(row), row.getLong(COUNT_COLUMN_NAME))));
   }
 
-  public static int getVariableCount(
+  public static long getVariableCount(
       DataSource datasource, TreeNode<Entity> prunedEntityTree, Entity outputEntity,
       Variable distributionVariable, List<Filter> filters) {
     String sql = generateVariableCountSql(outputEntity, distributionVariable, filters, prunedEntityTree);
-    return new SQLRunner(datasource, sql, "Get variable count for distribution").executeQuery(new SingleIntResultSetHandler());
+    return new SQLRunner(datasource, sql, "Get variable count for distribution").executeQuery(new SingleLongResultSetHandler())
+        .orElseThrow(() -> new RuntimeException("Could not retrieve variable count"));
   }
 
-  public static int getEntityCount(
+  public static long getEntityCount(
       DataSource datasource, TreeNode<Entity> prunedEntityTree, Entity targetEntity, List<Filter> filters) {
     String sql = generateEntityCountSql(targetEntity, filters, prunedEntityTree);
-    return new SQLRunner(datasource, sql, "Get entity count").executeQuery(new SingleIntResultSetHandler());
+    return new SQLRunner(datasource, sql, "Get entity count").executeQuery(new SingleLongResultSetHandler())
+        .orElseThrow(() -> new RuntimeException("Could not retrieve variable count"));
   }
 
   /**
@@ -267,7 +270,8 @@ public class StudySubsettingUtils {
     String wideTabularStmt = generateRawWideTabularOuterStmt(wideTabularInnerStmt);
     String subsetSelectClause = generateSubsetSelectClause(prunedEntityTree, outputEntity, false);
 
-    List<String> filterWithClauses = prunedEntityTree.flatten().stream().map(e -> generateFilterWithClause(e, filters)).collect(Collectors.toList());
+    List<String> filterWithClauses = prunedEntityTree.flatten().stream()
+        .map(e -> generateFilterWithClause(e, filters)).collect(Collectors.toList());
     List<String> withClausesList = new ArrayList<String>(filterWithClauses);
     withClausesList.add(subsetWithClauseName + " AS (" + NL + subsetSelectClause + ")");
     withClausesList.add(wideTabularWithClauseName + " AS (" + NL + wideTabularStmt + NL + ")");
@@ -289,7 +293,7 @@ public class StudySubsettingUtils {
       return ""; // no paging
     }
 
-    int start = config.getOffset();
+    long start = config.getOffset();
     String whereClause = "where " + rowColName + " > " + start;
     if (config.getNumRows().isPresent()) {
       whereClause += " and " + rowColName + " <= " + (start + config.getNumRows().get());

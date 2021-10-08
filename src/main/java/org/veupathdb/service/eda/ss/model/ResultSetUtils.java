@@ -21,6 +21,7 @@ public class ResultSetUtils {
     return getRsString(rs, columnName, requireNonNull, null);
   }
 
+  // need BigDecimal to handle strings representing values in
   public static Long getIntegerFromString(ResultSet rs, String columnName, boolean requireNonNull) throws SQLException {
     return getNumberFromString(rs, columnName, requireNonNull, "integer", val -> new BigDecimal(val).longValueExact());
   }
@@ -46,7 +47,8 @@ public class ResultSetUtils {
       return value == null ? null : converter.apply(value);
     }
     catch (ArithmeticException e) {
-      throw new RuntimeException(variableId + ": Column " + columnName + " returned a value not convertible to " + typeDisplay);
+      throw new RuntimeException("For variable '" + variableId + "', the metadata property '" + columnName + "' returned '" + value + 
+                                 "' which is not convertible to this variable's datatype, which is '" + typeDisplay + "'");
     }
   }
 }

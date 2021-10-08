@@ -51,7 +51,7 @@ public class EntityResultSetUtilsTest {
     variablesMap.put(_model.haircolor.getId(), _model.haircolor);
     variablesMap.put(_model.shoesize.getId(), _model.shoesize);
        
-    EntityResultSetUtils.putMultiValuesAsJsonIntoWideRow(multiValues, wideRow, _model.participant, variablesMap);
+    EntityResultSetUtils.putMultiValuesAsJsonIntoWideRow(multiValues, wideRow, variablesMap);
     
     assertEquals("[\"red\",\"blue\"]", wideRow.get(_model.haircolor.getId()));
     assertEquals("[9.5,19]", wideRow.get(_model.shoesize.getId()));

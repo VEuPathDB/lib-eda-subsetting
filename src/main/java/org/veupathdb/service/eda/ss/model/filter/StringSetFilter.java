@@ -27,7 +27,7 @@ public class StringSetFilter extends SingleValueFilter<StringVariable> {
   private String createSqlInExpression() {
 
     // validate values against this var's vocabulary
-    /* FIXME: add back at a less risky time, after validating DB data
+    /* FIXME: add back at a less risky time, after validating DB data (ClinEpi Phase 2?)
     List<String> vocab = Optional.ofNullable(_variable.getVocabulary())
         .orElseThrow(() -> new RuntimeException("Var " + _variable.getId() + " has null vocabulary."));
     for (String value : _stringSet) {

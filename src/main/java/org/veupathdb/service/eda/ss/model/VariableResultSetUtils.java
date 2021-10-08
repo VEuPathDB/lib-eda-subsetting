@@ -7,12 +7,10 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import javax.sql.DataSource;
-import org.gusdb.fgputil.FormatUtil;
 import org.gusdb.fgputil.db.runner.SQLRunner;
 import org.gusdb.fgputil.json.JsonUtil;
 import org.veupathdb.service.eda.ss.Resources;
 import org.veupathdb.service.eda.ss.model.distribution.DistributionConfig;
-import org.veupathdb.service.eda.ss.model.variable.VariablesCategory;
 import org.veupathdb.service.eda.ss.model.variable.DateVariable;
 import org.veupathdb.service.eda.ss.model.variable.FloatingPointVariable;
 import org.veupathdb.service.eda.ss.model.variable.IntegerVariable;
@@ -23,6 +21,7 @@ import org.veupathdb.service.eda.ss.model.variable.VariableDataShape;
 import org.veupathdb.service.eda.ss.model.variable.VariableDisplayType;
 import org.veupathdb.service.eda.ss.model.variable.VariableType;
 import org.veupathdb.service.eda.ss.model.variable.VariableWithValues;
+import org.veupathdb.service.eda.ss.model.variable.VariablesCategory;
 
 import static org.gusdb.fgputil.FormatUtil.NL;
 import static org.gusdb.fgputil.functional.Functions.doThrow;
@@ -55,7 +54,7 @@ import static org.veupathdb.service.eda.ss.model.RdbmsColumnNames.VOCABULARY_COL
 import static org.veupathdb.service.eda.ss.model.ResultSetUtils.getDoubleFromString;
 import static org.veupathdb.service.eda.ss.model.ResultSetUtils.getIntegerFromString;
 import static org.veupathdb.service.eda.ss.model.ResultSetUtils.getRsIntegerWithDefault;
-import static org.veupathdb.service.eda.ss.model.ResultSetUtils.getRsStringNotNull;
+import static org.veupathdb.service.eda.ss.model.ResultSetUtils.getRsString;
 import static org.veupathdb.service.eda.ss.model.ResultSetUtils.getRsStringWithDefault;
 
 class VariableResultSetUtils {
@@ -95,10 +94,10 @@ class VariableResultSetUtils {
 
     Variable.Properties varProps = new Variable.Properties(
         getRsStringWithDefault(rs, PROVIDER_LABEL_COL_NAME, "No Provider Label available"), // TODO remove hack when in db
-        getRsStringNotNull(rs, VARIABLE_ID_COL_NAME),
+        getRsString(rs, VARIABLE_ID_COL_NAME, true),
         entity,
         VariableDisplayType.fromString(getRsStringWithDefault(rs, DISPLAY_TYPE_COL_NAME, "default")),
-        getRsStringNotNull(rs, DISPLAY_NAME_COL_NAME),
+        getRsString(rs, DISPLAY_NAME_COL_NAME, true),
         rs.getInt(DISPLAY_ORDER_COL_NAME),
         rs.getString(VARIABLE_PARENT_ID_COL_NAME),
         getRsStringWithDefault(rs, DEFINITION_COL_NAME, "")
@@ -117,8 +116,8 @@ class VariableResultSetUtils {
       List<String> vocabulary = rs.wasNull()? null : Arrays.asList(JsonUtil.Jackson.readValue(vocabString, String[].class));
 
       VariableWithValues.Properties valueProps = new VariableWithValues.Properties(
-          VariableType.fromString(getRsStringNotNull(rs, VARIABLE_TYPE_COL_NAME)),
-          VariableDataShape.fromString(getRsStringNotNull(rs, DATA_SHAPE_COL_NAME)),
+          VariableType.fromString(getRsString(rs, VARIABLE_TYPE_COL_NAME, true)),
+          VariableDataShape.fromString(getRsString(rs, DATA_SHAPE_COL_NAME, true)),
           vocabulary,
           rs.getInt(DISTINCT_VALUES_COUNT_COL_NAME),
           rs.getBoolean(IS_TEMPORAL_COL_NAME),
@@ -132,12 +131,12 @@ class VariableResultSetUtils {
         case NUMBER ->
             new FloatingPointVariable(varProps, valueProps,
                 new DistributionConfig<>(
-                    getDoubleFromString(rs.getString(DISPLAY_RANGE_MIN_COL_NAME)),
-                    getDoubleFromString(rs.getString(DISPLAY_RANGE_MAX_COL_NAME)),
-                    getDoubleFromString(rs.getString(RANGE_MIN_COL_NAME)),
-                    getDoubleFromString(rs.getString(RANGE_MAX_COL_NAME)),
-                    getDoubleFromString(rs.getString(BIN_WIDTH_COMPUTED_COL_NAME)),
-                    getDoubleFromString(rs.getString(BIN_WIDTH_OVERRIDE_COL_NAME))
+                    getDoubleFromString(rs, DISPLAY_RANGE_MIN_COL_NAME, false),
+                    getDoubleFromString(rs, DISPLAY_RANGE_MAX_COL_NAME, false),
+                    getDoubleFromString(rs, RANGE_MIN_COL_NAME, true),
+                    getDoubleFromString(rs, RANGE_MAX_COL_NAME, true),
+                    getDoubleFromString(rs, BIN_WIDTH_COMPUTED_COL_NAME, true),
+                    getDoubleFromString(rs, BIN_WIDTH_OVERRIDE_COL_NAME, false)
                 ),
                 new FloatingPointVariable.Properties(
                     getRsStringWithDefault(rs, UNITS_COL_NAME, ""),
@@ -153,12 +152,12 @@ class VariableResultSetUtils {
         case INTEGER ->
             new IntegerVariable(varProps, valueProps,
                 new DistributionConfig<>(
-                    getIntegerFromString(rs.getString(DISPLAY_RANGE_MIN_COL_NAME)),
-                    getIntegerFromString(rs.getString(DISPLAY_RANGE_MAX_COL_NAME)),
-                    getIntegerFromString(rs.getString(RANGE_MIN_COL_NAME)),
-                    getIntegerFromString(rs.getString(RANGE_MAX_COL_NAME)),
-                    getIntegerFromString(massageToInt(rs.getString(BIN_WIDTH_COMPUTED_COL_NAME))), // FIXME!
-                    getIntegerFromString(massageToInt(rs.getString(BIN_WIDTH_OVERRIDE_COL_NAME))) // FIXME TOO!
+                    getIntegerFromString(rs, DISPLAY_RANGE_MIN_COL_NAME, false),
+                    getIntegerFromString(rs, DISPLAY_RANGE_MAX_COL_NAME, false),
+                    getIntegerFromString(rs, RANGE_MIN_COL_NAME, true),
+                    getIntegerFromString(rs, RANGE_MAX_COL_NAME, true),
+                    getIntegerFromString(rs, BIN_WIDTH_COMPUTED_COL_NAME, true),
+                    getIntegerFromString(rs, BIN_WIDTH_OVERRIDE_COL_NAME, false)
                 ),
                 new IntegerVariable.Properties(
                     getRsStringWithDefault(rs, UNITS_COL_NAME, "")
@@ -168,13 +167,13 @@ class VariableResultSetUtils {
         case DATE ->
             new DateVariable(varProps, valueProps, new DateVariable.Properties(
                 valueProps.dataShape,
-                rs.getString(DISPLAY_RANGE_MIN_COL_NAME),
-                rs.getString(DISPLAY_RANGE_MAX_COL_NAME),
-                rs.getString(RANGE_MIN_COL_NAME),
-                rs.getString(RANGE_MAX_COL_NAME),
+                getRsString(rs, DISPLAY_RANGE_MIN_COL_NAME, false),
+                getRsString(rs, DISPLAY_RANGE_MAX_COL_NAME, false),
+                getRsString(rs, RANGE_MIN_COL_NAME, true),
+                getRsString(rs, RANGE_MAX_COL_NAME, true),
                 1,
-                rs.getString(BIN_WIDTH_COMPUTED_COL_NAME),
-                rs.getString(BIN_WIDTH_OVERRIDE_COL_NAME)
+                getRsString(rs, BIN_WIDTH_COMPUTED_COL_NAME, true),
+                getRsString(rs, BIN_WIDTH_OVERRIDE_COL_NAME, false)
             ));
 
         case STRING ->
@@ -188,9 +187,5 @@ class VariableResultSetUtils {
     catch (SQLException | JsonProcessingException e) {
       throw new RuntimeException("Entity:  " + varProps.entity.getId() + " variable: " + varProps.id, e);
     }
-  }
-
-  private static String massageToInt(String string) {
-    return FormatUtil.isInteger(string) ? string : "1";
   }
 }

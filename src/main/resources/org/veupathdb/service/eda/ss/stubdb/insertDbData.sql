@@ -46,9 +46,9 @@ insert into Ancestors_ds2324_HshldObsrvtn values ('302', '102');
 insert into AttributeValue_ds2324_HshldObsrvtn values ('302', 'var_ho1', null, 'well', null);
 
 -- participants
--- stable_id, parent_stable_id, provider_label, display_name, definition, ordinal_values, display_type, display_order, display_range_min, display_range_max, range_min, range_max, bin_width_override, bin_width_computed, is_temporal, is_featured, is_merge_key, is_repeated, has_values, data_type, distinct_values_count, is_multi_valued, data_shape, unit, precision
-insert into AttributeGraph_ds2324_Prtcpnt values ('var_p1', null, '_networth', 'Net worth', 'Their net worth', null, 'default', 1, null, null, null, null, null, null, 0, 0, 0, 0, 1, 'number', 10, 0, 'continuous', 'dollars', 2);
-insert into AttributeGraph_ds2324_Prtcpnt values ('var_p2', null, '_shoesize', 'Shoe size', 'Their shoe size', null, 'default', 1, null, null, null, null, null, null, 0, 0, 0, 0, 1, 'number', 10, 0, 'categorical', 'size', 1);
+-- stable_id, parent_stable_id, provider_label, display_name, definition, vocabulary, display_type, display_order, display_range_min, display_range_max, range_min, range_max, bin_width_override, bin_width_computed, is_temporal, is_featured, is_merge_key, is_repeated, has_values, data_type, distinct_values_count, is_multi_valued, data_shape, unit, precision
+insert into AttributeGraph_ds2324_Prtcpnt values ('var_p1', null, '_networth', 'Net worth', 'Their net worth', null, 'default', 1, null, null, '100', '100000', null, '50', 0, 0, 0, 0, 1, 'number', 10, 0, 'continuous', 'dollars', 2);
+insert into AttributeGraph_ds2324_Prtcpnt values ('var_p2', null, '_shoesize', 'Shoe size', 'Their shoe size', null, 'default', 1, null, null, '1.5', '14.5', null, '1', 0, 0, 0, 0, 1, 'number', 10, 0, 'categorical', 'size', 1);
 insert into AttributeGraph_ds2324_Prtcpnt values ('var_p3', null, '_name', 'Name', 'Their name', null, 'default', 1, null, null, null, null, null, null, 0, 0, 0, 0, 1, 'string', 10, 0, 'categorical', null, null);
 insert into AttributeGraph_ds2324_Prtcpnt values ('var_p4', null, '_haircolor', 'Hair color', 'Their hair color', '["blond","brown","silver"]', 'default', 1, null, null, null, null, null, null, 0, 0, 0, 0, 1, 'string', 10, 0, 'categorical', null, null);
 insert into AttributeGraph_ds2324_Prtcpnt values ('var_p5', null, '_earsize', 'Ear size', 'Their ear size', null, 'default', 1, null, null, null, null, null, null, 0, 0, 0, 0,1, 'string', 10, 0,  'categorical', null, null);
@@ -78,11 +78,11 @@ insert into AttributeValue_ds2324_Prtcpnt values ('204', 'var_p4', null, 'silver
 -- intentionally omit var_18 to test left join logic
 
 -- participant observations
--- stable_id, parent_stable_id, provider_label, display_name, definition, ordinal_values, display_type, display_order, display_range_min, display_range_max, range_min, range_max, bin_width_override, bin_width_computed, is_temporal, is_featured, is_merge_key, is_repeated, has_values, data_type, distinct_values_count, is_multi_valued, data_shape, unit, precision
-insert into AttributeGraph_ds2324_PrtcpntObsrvtn values ('var_o1', null, '_weight', 'Weight', 'Their weight', null, 'default', 1, null, null, null, null, null, null, 0, 0, 0, 0, 1, 'number', 10, 0, 'continuous', 'pounds', 2);
-insert into AttributeGraph_ds2324_PrtcpntObsrvtn values ('var_o2', null, '_favnumber', 'Favorite number', 'Their favorite number', null, 'default', 1, null, null, null, null, null, null, 0, 0, 0, 0, 1, 'number', 10, 0, 'categorical', null, null);
-insert into AttributeGraph_ds2324_PrtcpntObsrvtn values ('var_o3', null, '_startdate', 'Start date', 'Their start date', null, 'default', 1, null, null, null, null, null, 'week', 0, 0, 0, 0, 1, 'date', 10, 0, 'continuous', 'date', null);
-insert into AttributeGraph_ds2324_PrtcpntObsrvtn values ('var_o4', null, '_visitdate', 'Visit date', 'Their visit date', null, 'default', 1, null, null, null, null, null, 'week', 0, 0, 0, 0, 1, 'date', 10, 0, 'continuous', 'date', null);
+-- stable_id, parent_stable_id, provider_label, display_name, definition, vocabulary, display_type, display_order, display_range_min, display_range_max, range_min, range_max, bin_width_override, bin_width_computed, is_temporal, is_featured, is_merge_key, is_repeated, has_values, data_type, distinct_values_count, is_multi_valued, data_shape, unit, precision
+insert into AttributeGraph_ds2324_PrtcpntObsrvtn values ('var_o1', null, '_weight', 'Weight', 'Their weight', null, 'default', 1, null, null, '0', '200', null, '5', 0, 0, 0, 0, 1, 'number', 10, 0, 'continuous', 'pounds', 2);
+insert into AttributeGraph_ds2324_PrtcpntObsrvtn values ('var_o2', null, '_favnumber', 'Favorite number', 'Their favorite number', null, 'default', 1, null, null, '0', '1000.123', null, '10', 0, 0, 0, 0, 1, 'number', 10, 0, 'categorical', null, null);
+insert into AttributeGraph_ds2324_PrtcpntObsrvtn values ('var_o3', null, '_startdate', 'Start date', 'Their start date', null, 'default', 1, null, null, to_date('1999','yyyy'), to_date('2010','yyyy'), null, 'week', 0, 0, 0, 0, 1, 'date', 10, 0, 'continuous', 'date', null);
+insert into AttributeGraph_ds2324_PrtcpntObsrvtn values ('var_o4', null, '_visitdate', 'Visit date', 'Their visit date', null, 'default', 1, null, null, to_date('1999','yyyy'), to_date('2010','yyyy'), 'month', 'week', 0, 0, 0, 0, 1, 'date', 10, 0, 'continuous', 'date', null);
 insert into AttributeGraph_ds2324_PrtcpntObsrvtn values ('var_o5', null, '_mood', 'Mood', 'Their mood', null, 'default', 1, null, null, null, null, null, null, 0, 0, 0, 0, 1, 'string', 10, 0, 'categorical', null, null);
 
 -- samples

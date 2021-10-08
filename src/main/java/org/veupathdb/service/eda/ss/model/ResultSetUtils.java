@@ -22,7 +22,7 @@ public class ResultSetUtils {
   }
 
   public static Long getIntegerFromString(ResultSet rs, String columnName, boolean requireNonNull) throws SQLException {
-    return getNumberFromString(rs, columnName, requireNonNull, "integer", val -> new BigDecimal(val).longValue());
+    return getNumberFromString(rs, columnName, requireNonNull, "integer", val -> new BigDecimal(val).longValueExact());
   }
 
   public static Double getDoubleFromString(ResultSet rs, String columnName, boolean requireNonNull) throws SQLException {
@@ -45,7 +45,7 @@ public class ResultSetUtils {
     try {
       return value == null ? null : converter.apply(value);
     }
-    catch (NumberFormatException e) {
+    catch (ArithmeticException e) {
       throw new RuntimeException(variableId + ": Column " + columnName + " returned a value not convertible to " + typeDisplay);
     }
   }

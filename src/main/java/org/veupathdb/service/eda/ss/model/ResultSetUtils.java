@@ -40,11 +40,12 @@ public class ResultSetUtils {
   private static <T extends Number> T getNumberFromString(ResultSet rs, String columnName,
       boolean requireNonNull, String typeDisplay, Function<String,T> converter) throws SQLException {
     String value = getRsString(rs, columnName, requireNonNull, typeDisplay);
+    String variableId = getRsString(rs, "stable_id", true, null);
     try {
       return value == null ? null : converter.apply(value);
     }
     catch (NumberFormatException e) {
-      throw new RuntimeException("Column " + columnName + " returned a value not convertible to " + typeDisplay);
+      throw new RuntimeException(variableId + ": Column " + columnName + " returned a value not convertible to " + typeDisplay);
     }
   }
 }

@@ -1,5 +1,6 @@
 package org.veupathdb.service.eda.ss.model;
 
+import java.math.BigDecimal;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.Optional;
@@ -21,11 +22,11 @@ public class ResultSetUtils {
   }
 
   public static Long getIntegerFromString(ResultSet rs, String columnName, boolean requireNonNull) throws SQLException {
-    return getNumberFromString(rs, columnName, requireNonNull, "integer", val -> Long.parseLong(val));
+    return getNumberFromString(rs, columnName, requireNonNull, "integer", val -> new BigDecimal(val).longValue());
   }
 
   public static Double getDoubleFromString(ResultSet rs, String columnName, boolean requireNonNull) throws SQLException {
-    return getNumberFromString(rs, columnName, requireNonNull, "floating-point", val -> Double.parseDouble(val));
+    return getNumberFromString(rs, columnName, requireNonNull, "floating-point", val -> new BigDecimal(val).doubleValue());
   }
 
   private static String getRsString(ResultSet rs, String columnName, boolean requireNonNull, String typeDisplay) throws SQLException {

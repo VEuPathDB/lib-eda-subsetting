@@ -117,6 +117,7 @@ public class DateBinDistribution extends AbstractBinDistribution<DateVariable, L
       @Override
       public HistogramStats toHistogramStats(long subsetEntityCount, long missingCasesCount) {
         HistogramStats stats = super.toHistogramStats(subsetEntityCount, missingCasesCount);
+        // check if data present to avoid when filters leave no data for the current variable
         if (isDataPresent()) {
           // override the LocalDateTime objects set by the parent class and assign strings
           stats.setSubsetMin(RequestBundle.formatDate(_subsetMin));

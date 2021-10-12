@@ -1,5 +1,6 @@
 package org.veupathdb.service.eda.ss.model;
 
+import java.math.BigDecimal;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.Optional;
@@ -20,12 +21,13 @@ public class ResultSetUtils {
     return getRsString(rs, columnName, requireNonNull, null);
   }
 
+  // need BigDecimal to handle strings representing values in
   public static Long getIntegerFromString(ResultSet rs, String columnName, boolean requireNonNull) throws SQLException {
-    return getNumberFromString(rs, columnName, requireNonNull, "integer", val -> Long.parseLong(val));
+    return getNumberFromString(rs, columnName, requireNonNull, "integer", val -> new BigDecimal(val).longValueExact());
   }
 
   public static Double getDoubleFromString(ResultSet rs, String columnName, boolean requireNonNull) throws SQLException {
-    return getNumberFromString(rs, columnName, requireNonNull, "floating-point", val -> Double.parseDouble(val));
+    return getNumberFromString(rs, columnName, requireNonNull, "floating-point", val -> new BigDecimal(val).doubleValue());
   }
 
   private static String getRsString(ResultSet rs, String columnName, boolean requireNonNull, String typeDisplay) throws SQLException {
@@ -40,11 +42,13 @@ public class ResultSetUtils {
   private static <T extends Number> T getNumberFromString(ResultSet rs, String columnName,
       boolean requireNonNull, String typeDisplay, Function<String,T> converter) throws SQLException {
     String value = getRsString(rs, columnName, requireNonNull, typeDisplay);
+    String variableId = getRsString(rs, "stable_id", true, null);
     try {
       return value == null ? null : converter.apply(value);
     }
-    catch (NumberFormatException e) {
-      throw new RuntimeException("Column " + columnName + " returned a value not convertible to " + typeDisplay);
+    catch (ArithmeticException e) {
+      throw new RuntimeException("For variable '" + variableId + "', the metadata property '" + columnName + "' returned '" + value + 
+                                 "' which is not convertible to this variable's datatype, which is '" + typeDisplay + "'");
     }
   }
 }

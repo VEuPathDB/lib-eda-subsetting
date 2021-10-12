@@ -117,11 +117,13 @@ public class DateBinDistribution extends AbstractBinDistribution<DateVariable, L
       @Override
       public HistogramStats toHistogramStats(long subsetEntityCount, long missingCasesCount) {
         HistogramStats stats = super.toHistogramStats(subsetEntityCount, missingCasesCount);
-        // override the LocalDateTime objects set by the parent class and assign strings
-        stats.setSubsetMin(RequestBundle.formatDate(_subsetMin));
-        stats.setSubsetMax(RequestBundle.formatDate(_subsetMax));
-        stats.setSubsetMean(RequestBundle.formatDate(
-            LocalDateTime.ofEpochSecond(_sumOfValues / stats.getNumVarValues(), 0, ZoneOffset.UTC)));
+        if (isDataPresent()) {
+          // override the LocalDateTime objects set by the parent class and assign strings
+          stats.setSubsetMin(RequestBundle.formatDate(_subsetMin));
+          stats.setSubsetMax(RequestBundle.formatDate(_subsetMax));
+          stats.setSubsetMean(RequestBundle.formatDate(
+              LocalDateTime.ofEpochSecond(_sumOfValues / stats.getNumVarValues(), 0, ZoneOffset.UTC)));
+        }
         return stats;
       }
     };

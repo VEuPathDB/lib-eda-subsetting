@@ -61,7 +61,9 @@ public class IntegerBinDistribution extends NumberBinDistribution<Long> {
       @Override
       public HistogramStats toHistogramStats(long subsetEntityCount, long missingCasesCount) {
         HistogramStats stats = super.toHistogramStats(subsetEntityCount, missingCasesCount);
-        stats.setSubsetMean(_sumOfValues.doubleValue() / stats.getNumVarValues());
+        if (isDataPresent()) {
+          stats.setSubsetMean(_sumOfValues.doubleValue() / stats.getNumVarValues());
+        }
         return stats;
       }
     };

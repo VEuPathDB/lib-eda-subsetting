@@ -61,7 +61,9 @@ public class FloatingPointBinDistribution extends NumberBinDistribution<Double> 
       @Override
       public HistogramStats toHistogramStats(long subsetEntityCount, long missingCasesCount) {
         HistogramStats stats = super.toHistogramStats(subsetEntityCount, missingCasesCount);
-        stats.setSubsetMean(_sumOfValues / stats.getNumVarValues());
+        if (isDataPresent()) {
+          stats.setSubsetMean(_sumOfValues / stats.getNumVarValues());
+        }
         return stats;
       }
     };

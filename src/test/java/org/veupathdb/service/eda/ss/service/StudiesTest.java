@@ -9,6 +9,7 @@ import java.util.Map;
 import java.util.Optional;
 import javax.sql.DataSource;
 import javax.ws.rs.InternalServerErrorException;
+import org.gusdb.fgputil.distribution.DistributionResult;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -27,8 +28,8 @@ import org.veupathdb.service.eda.ss.model.Entity;
 import org.veupathdb.service.eda.ss.model.FiltersForTesting;
 import org.veupathdb.service.eda.ss.model.Study;
 import org.veupathdb.service.eda.ss.model.TestModel;
+import org.veupathdb.service.eda.ss.model.distribution.DistributionFactory;
 import org.veupathdb.service.eda.ss.model.variable.VariableWithValues;
-import org.veupathdb.service.eda.ss.model.distribution.DistributionResult;
 import org.veupathdb.service.eda.ss.model.filter.Filter;
 import org.veupathdb.service.eda.ss.stubdb.StubDb;
 
@@ -167,13 +168,13 @@ public class StudiesTest {
   private void testDistributionResponse(Study study, Entity entity, VariableWithValues var,
       List<Filter> filters, int expectedVariableCount, Map<String, Integer> expectedDistribution) throws IOException {
 
-    DistributionResult result = StudiesService.processDistributionRequest(
+    DistributionResult result = DistributionFactory.processDistributionRequest(
         _dataSource, study, entity, var, filters, ValueSpec.COUNT, Optional.empty());
 
     // check variable count
     assertEquals(expectedVariableCount, result.getStatistics().getNumDistinctEntityRecords());
 
-    List<HistogramBin> responseRows = result.getHistogramData();
+    List<HistogramBin> responseRows = ApiConversionUtil.toApiHistogramBins(result.getHistogramData());
 
     // check number of distribution rows
     assertEquals(expectedDistribution.size(), responseRows.size());

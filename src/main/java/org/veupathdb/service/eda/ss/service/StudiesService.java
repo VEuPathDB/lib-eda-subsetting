@@ -103,22 +103,28 @@ public class StudiesService implements Studies {
   public PostStudiesEntitiesVariablesDistributionByStudyIdAndEntityIdAndVariableIdResponse 
   postStudiesEntitiesVariablesDistributionByStudyIdAndEntityIdAndVariableId(
       String studyId, String entityId, String variableId, VariableDistributionPostRequest request) {
+    try {
 
-    // unpack data from API input to model objects
-    DataSource ds = Resources.getApplicationDataSource();
-    RequestBundle req = RequestBundle.unpack(ds, studyId, entityId, request.getFilters(), ListBuilder.asList(variableId), null);
-    VariableWithValues var = getRequestedVariable(req);
+      // unpack data from API input to model objects
+      DataSource ds = Resources.getApplicationDataSource();
+      RequestBundle req = RequestBundle.unpack(ds, studyId, entityId, request.getFilters(), ListBuilder.asList(variableId), null);
+      VariableWithValues var = getRequestedVariable(req);
 
-    DistributionResult result = processDistributionRequest(ds, req.getStudy(),
-        req.getTargetEntity(), var, req.getFilters(), request.getValueSpec(),
-        Optional.ofNullable(request.getBinSpec()));
+      DistributionResult result = processDistributionRequest(ds, req.getStudy(),
+          req.getTargetEntity(), var, req.getFilters(), request.getValueSpec(),
+          Optional.ofNullable(request.getBinSpec()));
 
-    VariableDistributionPostResponse response = new VariableDistributionPostResponseImpl();
-    response.setHistogram(result.getHistogramData());
-    response.setStatistics(result.getStatistics());
+      VariableDistributionPostResponse response = new VariableDistributionPostResponseImpl();
+      response.setHistogram(result.getHistogramData());
+      response.setStatistics(result.getStatistics());
 
-    return PostStudiesEntitiesVariablesDistributionByStudyIdAndEntityIdAndVariableIdResponse.
-        respond200WithApplicationJson(response);
+      return PostStudiesEntitiesVariablesDistributionByStudyIdAndEntityIdAndVariableIdResponse.
+          respond200WithApplicationJson(response);
+    }
+    catch (RuntimeException e) {
+      LOG.error("Unable to deliver distribution response", e);
+      throw e;
+    }
   }
 
   @Override
@@ -136,12 +142,11 @@ public class StudiesService implements Studies {
             request.getTargetEntity(), request.getRequestedVariables(), request.getFilters(),
             request.getReportConfig(), responseType.getFormatter(), outStream));
 
-    return switch(responseType) {
-      case JSON -> PostStudiesEntitiesTabularByStudyIdAndEntityIdResponse
-          .respond200WithApplicationJson(streamer);
-      default -> PostStudiesEntitiesTabularByStudyIdAndEntityIdResponse
-        .respond200WithTextTabSeparatedValues(streamer);
-    };
+    return responseType == TabularResponseType.JSON
+        ? PostStudiesEntitiesTabularByStudyIdAndEntityIdResponse
+            .respond200WithApplicationJson(streamer)
+        : PostStudiesEntitiesTabularByStudyIdAndEntityIdResponse
+            .respond200WithTextTabSeparatedValues(streamer);
   }
 
   @Override

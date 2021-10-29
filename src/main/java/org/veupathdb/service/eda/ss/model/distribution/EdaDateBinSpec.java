@@ -3,10 +3,15 @@ package org.veupathdb.service.eda.ss.model.distribution;
 import java.time.temporal.ChronoUnit;
 import java.util.Optional;
 import javax.ws.rs.BadRequestException;
+import org.gusdb.fgputil.functional.Functions;
 import org.veupathdb.service.eda.generated.model.BinSpecWithRange;
 import org.veupathdb.service.eda.generated.model.BinUnits;
 import org.gusdb.fgputil.distribution.DateBinDistribution.DateBinSpec;
 import org.veupathdb.service.eda.ss.model.variable.DateVariable;
+import org.veupathdb.service.eda.ss.service.RequestBundle;
+
+import static org.gusdb.fgputil.functional.Functions.doThrow;
+import static org.veupathdb.service.eda.ss.service.RequestBundle.standardizeLocalDateTime;
 
 public class EdaDateBinSpec implements DateBinSpec {
 
@@ -37,17 +42,23 @@ public class EdaDateBinSpec implements DateBinSpec {
   }
 
   @Override
-  public Object getDisplayRangeMin() {
+  public String getDisplayRangeMin() {
     return _binSpec
-        .map(spec -> spec.getDisplayRangeMin())
+        .map(spec -> standardizeLocalDateTime(castToString(spec.getDisplayRangeMin())))
         .orElse(_variable.getDisplayRangeMin());
   }
 
   @Override
-  public Object getDisplayRangeMax() {
+  public String getDisplayRangeMax() {
     return _binSpec
-        .map(spec -> spec.getDisplayRangeMax())
+        .map(spec -> standardizeLocalDateTime(castToString(spec.getDisplayRangeMax())))
         .orElse(_variable.getDisplayRangeMax());
+  }
+
+  private static String castToString(Object rangeBoundary) {
+    return (rangeBoundary == null || rangeBoundary instanceof String)
+        ? (String)rangeBoundary : doThrow(() -> new BadRequestException(
+            "Date range boundary must be a date-formatted string value."));
   }
 
   private static ChronoUnit convertToChrono(BinUnits binUnits) {

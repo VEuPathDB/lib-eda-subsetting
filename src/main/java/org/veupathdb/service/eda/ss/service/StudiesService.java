@@ -9,6 +9,8 @@ import javax.ws.rs.BadRequestException;
 import javax.ws.rs.NotFoundException;
 import javax.ws.rs.container.ContainerRequestContext;
 import javax.ws.rs.core.Context;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.gusdb.fgputil.ListBuilder;
 import org.gusdb.fgputil.distribution.DistributionResult;
 import org.gusdb.fgputil.functional.TreeNode;
@@ -39,6 +41,8 @@ import org.veupathdb.service.eda.ss.model.variable.Variable;
 import org.veupathdb.service.eda.ss.model.variable.VariableWithValues;
 
 public class StudiesService implements Studies {
+
+  private static final Logger LOG = LogManager.getLogger(StudiesService.class);
 
   @Context
   ContainerRequestContext _request;
@@ -87,22 +91,28 @@ public class StudiesService implements Studies {
   public PostStudiesEntitiesVariablesDistributionByStudyIdAndEntityIdAndVariableIdResponse 
   postStudiesEntitiesVariablesDistributionByStudyIdAndEntityIdAndVariableId(
       String studyId, String entityId, String variableId, VariableDistributionPostRequest request) {
+    try {
 
-    // unpack data from API input to model objects
-    DataSource ds = Resources.getApplicationDataSource();
-    RequestBundle req = RequestBundle.unpack(ds, studyId, entityId, request.getFilters(), ListBuilder.asList(variableId), null);
-    VariableWithValues var = getRequestedVariable(req);
+      // unpack data from API input to model objects
+      DataSource ds = Resources.getApplicationDataSource();
+      RequestBundle req = RequestBundle.unpack(ds, studyId, entityId, request.getFilters(), ListBuilder.asList(variableId), null);
+      VariableWithValues var = getRequestedVariable(req);
 
-    DistributionResult result = DistributionFactory.processDistributionRequest(ds, req.getStudy(),
-        req.getTargetEntity(), var, req.getFilters(), request.getValueSpec(),
-        Optional.ofNullable(request.getBinSpec()));
+      DistributionResult result = DistributionFactory.processDistributionRequest(ds, req.getStudy(),
+          req.getTargetEntity(), var, req.getFilters(), request.getValueSpec(),
+          Optional.ofNullable(request.getBinSpec()));
 
-    VariableDistributionPostResponse response = new VariableDistributionPostResponseImpl();
-    response.setHistogram(ApiConversionUtil.toApiHistogramBins(result.getHistogramData()));
-    response.setStatistics(ApiConversionUtil.toApiHistogramStats(result.getStatistics()));
+      VariableDistributionPostResponse response = new VariableDistributionPostResponseImpl();
+      response.setHistogram(ApiConversionUtil.toApiHistogramBins(result.getHistogramData()));
+      response.setStatistics(ApiConversionUtil.toApiHistogramStats(result.getStatistics()));
 
-    return PostStudiesEntitiesVariablesDistributionByStudyIdAndEntityIdAndVariableIdResponse.
-        respond200WithApplicationJson(response);
+      return PostStudiesEntitiesVariablesDistributionByStudyIdAndEntityIdAndVariableIdResponse.
+          respond200WithApplicationJson(response);
+    }
+    catch (RuntimeException e) {
+      LOG.error("Unable to deliver distribution response", e);
+      throw e;
+    }
   }
 
   @Override

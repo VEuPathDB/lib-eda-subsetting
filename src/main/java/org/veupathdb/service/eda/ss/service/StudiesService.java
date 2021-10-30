@@ -2,7 +2,6 @@ package org.veupathdb.service.eda.ss.service;
 
 import java.util.Collections;
 import java.util.Date;
-import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import javax.sql.DataSource;
@@ -13,11 +12,11 @@ import javax.ws.rs.core.Context;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.gusdb.fgputil.ListBuilder;
+import org.gusdb.fgputil.distribution.DistributionResult;
 import org.gusdb.fgputil.functional.TreeNode;
 import org.veupathdb.service.eda.common.client.TabularResponseType;
 import org.veupathdb.service.eda.generated.model.APIEntity;
 import org.veupathdb.service.eda.generated.model.APIStudyDetail;
-import org.veupathdb.service.eda.generated.model.BinSpecWithRange;
 import org.veupathdb.service.eda.generated.model.EntityCountPostRequest;
 import org.veupathdb.service.eda.generated.model.EntityCountPostResponse;
 import org.veupathdb.service.eda.generated.model.EntityCountPostResponseImpl;
@@ -28,28 +27,17 @@ import org.veupathdb.service.eda.generated.model.EntityTabularPostResponseStream
 import org.veupathdb.service.eda.generated.model.StudiesGetResponseImpl;
 import org.veupathdb.service.eda.generated.model.StudyIdGetResponse;
 import org.veupathdb.service.eda.generated.model.StudyIdGetResponseImpl;
-import org.veupathdb.service.eda.generated.model.ValueSpec;
 import org.veupathdb.service.eda.generated.model.VariableDistributionPostRequest;
 import org.veupathdb.service.eda.generated.model.VariableDistributionPostResponse;
 import org.veupathdb.service.eda.generated.model.VariableDistributionPostResponseImpl;
 import org.veupathdb.service.eda.generated.resources.Studies;
 import org.veupathdb.service.eda.ss.Resources;
+import org.veupathdb.service.eda.ss.model.distribution.DistributionFactory;
 import org.veupathdb.service.eda.ss.model.Entity;
 import org.veupathdb.service.eda.ss.model.MetadataCache;
 import org.veupathdb.service.eda.ss.model.Study;
 import org.veupathdb.service.eda.ss.model.StudySubsettingUtils;
-import org.veupathdb.service.eda.ss.model.distribution.AbstractDistribution;
-import org.veupathdb.service.eda.ss.model.distribution.DateBinDistribution;
-import org.veupathdb.service.eda.ss.model.distribution.DiscreteDistribution;
-import org.veupathdb.service.eda.ss.model.distribution.DistributionResult;
-import org.veupathdb.service.eda.ss.model.distribution.FloatingPointBinDistribution;
-import org.veupathdb.service.eda.ss.model.distribution.IntegerBinDistribution;
-import org.veupathdb.service.eda.ss.model.filter.Filter;
-import org.veupathdb.service.eda.ss.model.variable.DateVariable;
-import org.veupathdb.service.eda.ss.model.variable.FloatingPointVariable;
-import org.veupathdb.service.eda.ss.model.variable.IntegerVariable;
 import org.veupathdb.service.eda.ss.model.variable.Variable;
-import org.veupathdb.service.eda.ss.model.variable.VariableDataShape;
 import org.veupathdb.service.eda.ss.model.variable.VariableWithValues;
 
 public class StudiesService implements Studies {
@@ -110,13 +98,13 @@ public class StudiesService implements Studies {
       RequestBundle req = RequestBundle.unpack(ds, studyId, entityId, request.getFilters(), ListBuilder.asList(variableId), null);
       VariableWithValues var = getRequestedVariable(req);
 
-      DistributionResult result = processDistributionRequest(ds, req.getStudy(),
+      DistributionResult result = DistributionFactory.processDistributionRequest(ds, req.getStudy(),
           req.getTargetEntity(), var, req.getFilters(), request.getValueSpec(),
           Optional.ofNullable(request.getBinSpec()));
 
       VariableDistributionPostResponse response = new VariableDistributionPostResponseImpl();
-      response.setHistogram(result.getHistogramData());
-      response.setStatistics(result.getStatistics());
+      response.setHistogram(ApiConversionUtil.toApiHistogramBins(result.getHistogramData()));
+      response.setStatistics(ApiConversionUtil.toApiHistogramStats(result.getStatistics()));
 
       return PostStudiesEntitiesVariablesDistributionByStudyIdAndEntityIdAndVariableIdResponse.
           respond200WithApplicationJson(response);
@@ -168,34 +156,6 @@ public class StudiesService implements Studies {
     response.setCount(count);
 
     return  PostStudiesEntitiesCountByStudyIdAndEntityIdResponse.respond200WithApplicationJson(response);
-  }
-
-  static DistributionResult processDistributionRequest(DataSource ds, Study study, Entity targetEntity,
-                                                       VariableWithValues var, List<Filter> filters,
-                                                       ValueSpec valueSpec, Optional<BinSpecWithRange> incomingBinSpec) {
-    // inspect requested variable and select appropriate distribution
-    AbstractDistribution<?> distribution;
-    if (var.getDataShape() == VariableDataShape.CONTINUOUS) {
-      distribution = switch(var.getType()) {
-        case INTEGER -> new IntegerBinDistribution(ds, study, targetEntity,
-            (IntegerVariable)var, filters, valueSpec, incomingBinSpec);
-        case NUMBER -> new FloatingPointBinDistribution(ds, study, targetEntity,
-            (FloatingPointVariable)var, filters, valueSpec, incomingBinSpec);
-        case DATE -> new DateBinDistribution(ds, study, targetEntity,
-            (DateVariable)var, filters, valueSpec, incomingBinSpec);
-        default -> throw new BadRequestException("Among continuous variables, " +
-            "distribution endpoint supports only date, integer, and number types; " +
-            "requested variable '" + var.getId() + "' is type " + var.getType());
-      };
-    }
-    else {
-      if (incomingBinSpec.isPresent()) {
-        throw new BadRequestException("Bin spec is allowed/required only for continuous variables.");
-      }
-      distribution = new DiscreteDistribution(ds, study, targetEntity, var, filters, valueSpec);
-    }
-
-    return distribution.generateDistribution();
   }
 
   private Optional<APIEntity> findEntityById(APIEntity entity, String entityId) {

@@ -1,5 +1,6 @@
 package org.veupathdb.service.eda.ss.service;
 
+import java.util.List;
 import java.util.stream.Collectors;
 import org.gusdb.fgputil.functional.Functions;
 import org.gusdb.fgputil.functional.TreeNode;
@@ -21,6 +22,10 @@ import org.veupathdb.service.eda.generated.model.APIVariable;
 import org.veupathdb.service.eda.generated.model.APIVariableDisplayType;
 import org.veupathdb.service.eda.generated.model.APIVariableWithValues;
 import org.veupathdb.service.eda.generated.model.APIVariablesCategoryImpl;
+import org.veupathdb.service.eda.generated.model.HistogramBin;
+import org.veupathdb.service.eda.generated.model.HistogramBinImpl;
+import org.veupathdb.service.eda.generated.model.HistogramStats;
+import org.veupathdb.service.eda.generated.model.HistogramStatsImpl;
 import org.veupathdb.service.eda.ss.model.Entity;
 import org.veupathdb.service.eda.ss.model.Study;
 import org.veupathdb.service.eda.ss.model.distribution.DistributionConfig;
@@ -150,4 +155,27 @@ public class ApiConversionUtil {
     return apiVar;
   }
 
+  public static List<HistogramBin> toApiHistogramBins(List<org.gusdb.fgputil.distribution.HistogramBin> histogramData) {
+    return histogramData.stream().map(modelBin -> {
+      HistogramBin bin = new HistogramBinImpl();
+      bin.setBinStart(modelBin.getBinStart());
+      bin.setBinEnd(modelBin.getBinEnd());
+      bin.setValue(modelBin.getValue());
+      bin.setBinLabel(modelBin.getBinLabel());
+      return bin;
+    }).collect(Collectors.toList());
+  }
+
+  public static HistogramStats toApiHistogramStats(org.gusdb.fgputil.distribution.HistogramStats statistics) {
+    HistogramStats stats = new HistogramStatsImpl();
+    stats.setSubsetMin(statistics.getSubsetMin());
+    stats.setSubsetMax(statistics.getSubsetMax());
+    stats.setSubsetMean(statistics.getSubsetMean());
+    stats.setSubsetSize(statistics.getSubsetSize());
+    stats.setNumVarValues(statistics.getNumVarValues());
+    stats.setNumDistinctValues(statistics.getNumDistinctValues());
+    stats.setNumDistinctEntityRecords(statistics.getNumDistinctEntityRecords());
+    stats.setNumMissingCases(statistics.getNumMissingCases());
+    return stats;
+  }
 }

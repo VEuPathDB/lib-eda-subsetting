@@ -1,8 +1,6 @@
 package org.veupathdb.service.eda.ss.service;
 
 import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
-import java.time.format.DateTimeParseException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -11,6 +9,7 @@ import javax.sql.DataSource;
 import javax.ws.rs.BadRequestException;
 import javax.ws.rs.InternalServerErrorException;
 import javax.ws.rs.NotFoundException;
+import org.gusdb.fgputil.FormatUtil;
 import org.veupathdb.service.eda.generated.model.APIDateRangeFilter;
 import org.veupathdb.service.eda.generated.model.APIDateSetFilter;
 import org.veupathdb.service.eda.generated.model.APIFilter;
@@ -130,14 +129,14 @@ public class RequestBundle {
   private static DateRangeFilter unpackDateRangeFilter(APIFilter apiFilter, Entity entity) {
     APIDateRangeFilter f = (APIDateRangeFilter)apiFilter;
     DateVariable var = DateVariable.assertType(entity.getVariableOrThrow(f.getVariableId()));
-    return new DateRangeFilter(entity, var, parseDate(f.getMin()), parseDate(f.getMax()));
+    return new DateRangeFilter(entity, var, FormatUtil.parseDateTime(standardizeLocalDateTime(f.getMin())), FormatUtil.parseDateTime(standardizeLocalDateTime(f.getMax())));
   }
 
   private static DateSetFilter unpackDateSetFilter(APIFilter apiFilter, Entity entity) {
     APIDateSetFilter f = (APIDateSetFilter)apiFilter;
     DateVariable var = DateVariable.assertType(entity.getVariableOrThrow(f.getVariableId()));
     List<LocalDateTime> dateSet = new ArrayList<>();
-    for (String dateStr : f.getDateSet()) dateSet.add(parseDate(dateStr));
+    for (String dateStr : f.getDateSet()) dateSet.add(FormatUtil.parseDateTime(standardizeLocalDateTime(dateStr)));
     return new DateSetFilter(entity, var, dateSet);
   }
 
@@ -191,24 +190,11 @@ public class RequestBundle {
     return new MultiFilter(entity, subFilters, MultiFilterOperation.fromString(f.getOperation().getValue()));
   }
 
-  public static LocalDateTime parseDate(String dateStr) {
-    try {
-      DateTimeFormatter formatter = DateTimeFormatter.ISO_DATE_TIME;
-      return LocalDateTime.parse(dateStr, formatter);
-    }
-    catch (DateTimeParseException e) {
-      throw new BadRequestException("Can't parse date/time string: " + dateStr);
-    }
-  }
-
-  public static String formatDate(LocalDateTime dateTime) {
-    try {
-      DateTimeFormatter formatter = DateTimeFormatter.ISO_DATE_TIME;
-      return formatter.format(dateTime);
-    }
-    catch (DateTimeParseException e) {
-      throw new RuntimeException("Can't format date: " + dateTime);
-    }
+  // TODO: remove once the client is fixed to not send in trailing 'Z'
+  public static String standardizeLocalDateTime(String dateTimeString) {
+    return (dateTimeString == null || !dateTimeString.endsWith("Z"))
+        ? dateTimeString
+        : dateTimeString.substring(0, dateTimeString.length() - 1);
   }
 
   private final Study _study;

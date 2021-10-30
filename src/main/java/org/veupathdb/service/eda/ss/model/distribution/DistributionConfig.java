@@ -49,3 +49,4 @@ public class DistributionConfig<T extends Number> {
     return _binWidthOverride == null ? _binWidth : _binWidthOverride;
   }
 }
+

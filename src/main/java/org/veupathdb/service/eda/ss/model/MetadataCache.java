@@ -26,7 +26,6 @@ public class MetadataCache {
       for (Study.StudyOverview overview : overviews) {
         APIStudyOverview study = new APIStudyOverviewImpl();
         study.setId(overview.getId());
-        study.setDatasetId(overview.getDatasetId());
         apiStudyOverviewsTmp.put(study.getId(), study);
       }
       apiStudyOverviews = apiStudyOverviewsTmp;

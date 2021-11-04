@@ -80,7 +80,7 @@ public class Study {
             ", d." + RdbmsColumnNames.STUDY_DATASET_ID_COL_NAME +
             ", s." + RdbmsColumnNames.STUDY_ABBREV_COL_NAME +
             " from " + Resources.getAppDbSchema() + RdbmsColumnNames.STUDY_TABLE_NAME + " s, " +
-                       Resources.getAppDbSchema() + RdbmsColumnNames.STUDY_DATASET_TABLE_NAME + " d" +
+                      "apidbtuning."  + RdbmsColumnNames.STUDY_DATASET_TABLE_NAME + " d" +
             " where s." + RdbmsColumnNames.STUDY_ID_COL_NAME + " = d." + RdbmsColumnNames.STUDY_DATASET_STUDY_ID_COL_NAME +
             andClause;
   }

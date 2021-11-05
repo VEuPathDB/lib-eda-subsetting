@@ -67,7 +67,7 @@ public class TestModel {
   
   public TestModel() {
     createTestEntities();
-    Study.StudyOverview overview = new Study.StudyOverview("GEMS", "datasetid_2222", "ds2324");
+    Study.StudyOverview overview = new Study.StudyOverview("GEMS", "ds2324");
     study = new Study(overview, constructEntityTree(), createIdMap());
     constructVariables();
     createFilters();

@@ -14,6 +14,7 @@ import org.apache.logging.log4j.Logger;
 import org.gusdb.fgputil.ListBuilder;
 import org.gusdb.fgputil.distribution.DistributionResult;
 import org.gusdb.fgputil.functional.TreeNode;
+import org.gusdb.fgputil.json.JsonUtil;
 import org.veupathdb.service.eda.common.client.TabularResponseType;
 import org.veupathdb.service.eda.generated.model.APIEntity;
 import org.veupathdb.service.eda.generated.model.APIStudyDetail;
@@ -50,14 +51,16 @@ public class StudiesService implements Studies {
   @Override
   public GetStudiesClearMetadataCacheResponse getStudiesClearMetadataCache() {
     MetadataCache.clear();
-    return GetStudiesClearMetadataCacheResponse.respond200WithTextPlain(
-        "Cache successfully cleared at " + new Date());
+    String message = "Cache successfully cleared at " + new Date();
+    LOG.info(message);
+    return GetStudiesClearMetadataCacheResponse.respond200WithTextPlain(message);
   }
 
   @Override
   public GetStudiesResponse getStudies() {
     var out = new StudiesGetResponseImpl();
     out.setStudies(MetadataCache.getStudyOverviews());
+    LOG.info("Returning the following response for /studies request:\n" + JsonUtil.serializeObject(out));
     return GetStudiesResponse.respond200WithApplicationJson(out);
   }
 
@@ -67,6 +70,7 @@ public class StudiesService implements Studies {
     APIStudyDetail apiStudyDetail = ApiConversionUtil.getApiStudyDetail(study);
     StudyIdGetResponse response = new StudyIdGetResponseImpl();
     response.setStudy(apiStudyDetail);
+    LOG.info("Returning the following response for /studies/" + studyId + " request:\n" + JsonUtil.serializeObject(response));
     return GetStudiesByStudyIdResponse.respond200WithApplicationJson(response);
   }
 

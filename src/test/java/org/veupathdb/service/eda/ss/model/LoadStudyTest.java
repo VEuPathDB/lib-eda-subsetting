@@ -18,6 +18,7 @@ import org.veupathdb.service.eda.ss.model.variable.VariableDataShape;
 import org.veupathdb.service.eda.ss.model.variable.VariableDisplayType;
 import org.veupathdb.service.eda.ss.model.variable.VariableType;
 import org.veupathdb.service.eda.ss.model.variable.VariableWithValues;
+import org.veupathdb.service.eda.ss.stubdb.StubDb;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -29,7 +30,7 @@ public class LoadStudyTest {
   
   @BeforeAll
   public static void setUp() {
-    datasource = Resources.getApplicationDataSource();
+    datasource = StubDb.getDataSource();
   }
   
   @Test

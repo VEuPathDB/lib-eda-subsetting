@@ -6,12 +6,14 @@ import java.util.Optional;
 import javax.ws.rs.BadRequestException;
 import org.veupathdb.service.eda.generated.model.APITabularReportConfig;
 import org.veupathdb.service.eda.generated.model.SortSpecEntry;
+import org.veupathdb.service.eda.generated.model.TabularHeaderFormat;
 
 public class TabularReportConfig {
 
   private List<SortSpecEntry> _sorting = new ArrayList<>();
   private Optional<Long> _numRows = Optional.empty();
   private Long _offset = 0L;
+  private TabularHeaderFormat _headerFormat;
 
   public TabularReportConfig(Entity entity, APITabularReportConfig apiConfig) {
     if (apiConfig == null) return;
@@ -30,6 +32,8 @@ public class TabularReportConfig {
       }
       _sorting = sorting;
     }
+    _headerFormat = Optional.ofNullable(apiConfig.getHeaderFormat())
+        .orElse(TabularHeaderFormat.STANDARD); // standard by default
   }
 
   public boolean requiresPaging() {
@@ -48,4 +52,7 @@ public class TabularReportConfig {
     return _offset;
   }
 
+  public TabularHeaderFormat getHeaderFormat() {
+    return _headerFormat;
+  }
 }

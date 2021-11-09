@@ -8,6 +8,7 @@ import java.io.Writer;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.*;
+import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -28,6 +29,7 @@ import org.gusdb.fgputil.functional.TreeNode;
 import org.gusdb.fgputil.iterator.GroupingIterator;
 import org.veupathdb.service.eda.common.client.TabularResponseType;
 import org.veupathdb.service.eda.generated.model.SortSpecEntry;
+import org.veupathdb.service.eda.generated.model.TabularHeaderFormat;
 import org.veupathdb.service.eda.ss.Resources;
 import org.veupathdb.service.eda.ss.model.filter.Filter;
 import org.veupathdb.service.eda.ss.model.variable.Variable;
@@ -77,13 +79,20 @@ public class StudySubsettingUtils {
         : generateTabularSqlWithReportConfig(outputVariables, outputEntity, filters, reportConfig.get(), prunedEntityTree);
     LOG.debug("Generated the following tabular SQL: " + sql);
 
+    // gather the output columns; these will be used for the standard header and to look up DB column values
     List<String> outputColumns = getTabularOutputColumns(outputEntity, outputVariables);
+
+    // check if header should contain pretty display values
+    boolean usePrettyHeader = reportConfig.isPresent() && reportConfig.get().getHeaderFormat() == TabularHeaderFormat.DISPLAY;
 
     new SQLRunner(datasource, sql, "Produce tabular subset").executeQuery(rs -> {
       try(BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(outputStream))) {
 
         formatter.begin(writer);
-        formatter.writeRow(writer, outputColumns);
+
+        // write header row
+        formatter.writeRow(writer, usePrettyHeader ? getTabularPrettyHeaders(outputEntity, outputVariables) : outputColumns);
+
         if (reportConfig.isEmpty())
           writeWideRowsNoReportConfig(convertTallRowsResultSet(rs, outputEntity), formatter, writer, outputColumns, outputEntity);
         else
@@ -100,15 +109,21 @@ public class StudySubsettingUtils {
     }, FETCH_SIZE_FOR_TABULAR_QUERIES);
   }
 
+  static List<String> getTabularPrettyHeaders(Entity outputEntity, List<Variable> outputVariables) {
+    return getColumns(outputEntity, outputVariables, Variable::getDisplayName);
+  }
 
   static List<String> getTabularOutputColumns(Entity outputEntity, List<Variable> outputVariables) {
-    List<String> outputColumns = new ArrayList<>();
+    return getColumns(outputEntity, outputVariables, Variable::getId);
+  }
 
-    List<String> outputVariableIds = outputVariables.stream().map(Variable::getId).collect(Collectors.toList());
+  private static List<String> getColumns(Entity outputEntity, List<Variable> outputVariables, Function<Variable,String> mapper) {
+    List<String> outputColumns = new ArrayList<>();
     outputColumns.add(outputEntity.getPKColName());
     outputColumns.addAll(outputEntity.getAncestorPkColNames());
-    outputColumns.addAll(outputVariableIds);
+    outputColumns.addAll(outputVariables.stream().map(mapper).collect(Collectors.toList()));
     return outputColumns;
+
   }
 
   /**

@@ -110,7 +110,7 @@ public class StudySubsettingUtils {
   }
 
   static List<String> getTabularPrettyHeaders(Entity outputEntity, List<Variable> outputVariables) {
-    return getColumns(outputEntity, outputVariables, Variable::getDisplayName);
+    return getColumns(outputEntity, outputVariables, var -> var.getDisplayName() + " [" + var.getId() + "]");
   }
 
   static List<String> getTabularOutputColumns(Entity outputEntity, List<Variable> outputVariables) {

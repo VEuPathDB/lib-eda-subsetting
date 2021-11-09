@@ -25,6 +25,7 @@ import org.veupathdb.service.eda.generated.model.EntityIdGetResponse;
 import org.veupathdb.service.eda.generated.model.EntityIdGetResponseImpl;
 import org.veupathdb.service.eda.generated.model.EntityTabularPostRequest;
 import org.veupathdb.service.eda.generated.model.EntityTabularPostResponseStream;
+import org.veupathdb.service.eda.generated.model.StudiesGetResponse;
 import org.veupathdb.service.eda.generated.model.StudiesGetResponseImpl;
 import org.veupathdb.service.eda.generated.model.StudyIdGetResponse;
 import org.veupathdb.service.eda.generated.model.StudyIdGetResponseImpl;
@@ -58,9 +59,8 @@ public class StudiesService implements Studies {
 
   @Override
   public GetStudiesResponse getStudies() {
-    var out = new StudiesGetResponseImpl();
+    StudiesGetResponse out = new StudiesGetResponseImpl();
     out.setStudies(MetadataCache.getStudyOverviews());
-    LOG.info("Returning the following response for /studies request:\n" + JsonUtil.serializeObject(out));
     return GetStudiesResponse.respond200WithApplicationJson(out);
   }
 
@@ -70,7 +70,6 @@ public class StudiesService implements Studies {
     APIStudyDetail apiStudyDetail = ApiConversionUtil.getApiStudyDetail(study);
     StudyIdGetResponse response = new StudyIdGetResponseImpl();
     response.setStudy(apiStudyDetail);
-    LOG.info("Returning the following response for /studies/" + studyId + " request:\n" + JsonUtil.serializeObject(response));
     return GetStudiesByStudyIdResponse.respond200WithApplicationJson(response);
   }
 

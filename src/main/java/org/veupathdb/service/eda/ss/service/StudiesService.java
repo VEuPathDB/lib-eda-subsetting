@@ -2,8 +2,10 @@ package org.veupathdb.service.eda.ss.service;
 
 import java.util.Collections;
 import java.util.Date;
-import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Optional;
+import java.util.function.BiFunction;
+import java.util.function.Predicate;
 import javax.sql.DataSource;
 import javax.ws.rs.BadRequestException;
 import javax.ws.rs.NotFoundException;
@@ -14,7 +16,9 @@ import org.apache.logging.log4j.Logger;
 import org.gusdb.fgputil.ListBuilder;
 import org.gusdb.fgputil.distribution.DistributionResult;
 import org.gusdb.fgputil.functional.TreeNode;
-import org.gusdb.fgputil.json.JsonUtil;
+import org.veupathdb.lib.container.jaxrs.server.annotations.Authenticated;
+import org.veupathdb.lib.container.jaxrs.utils.RequestKeys;
+import org.veupathdb.service.eda.common.auth.StudyAccess;
 import org.veupathdb.service.eda.common.client.TabularResponseType;
 import org.veupathdb.service.eda.generated.model.APIEntity;
 import org.veupathdb.service.eda.generated.model.APIStudyDetail;
@@ -34,17 +38,21 @@ import org.veupathdb.service.eda.generated.model.VariableDistributionPostRespons
 import org.veupathdb.service.eda.generated.model.VariableDistributionPostResponseImpl;
 import org.veupathdb.service.eda.generated.resources.Studies;
 import org.veupathdb.service.eda.ss.Resources;
-import org.veupathdb.service.eda.ss.model.distribution.DistributionFactory;
 import org.veupathdb.service.eda.ss.model.Entity;
 import org.veupathdb.service.eda.ss.model.MetadataCache;
 import org.veupathdb.service.eda.ss.model.Study;
 import org.veupathdb.service.eda.ss.model.StudySubsettingUtils;
+import org.veupathdb.service.eda.ss.model.TabularReportConfig;
+import org.veupathdb.service.eda.ss.model.distribution.DistributionFactory;
 import org.veupathdb.service.eda.ss.model.variable.Variable;
 import org.veupathdb.service.eda.ss.model.variable.VariableWithValues;
 
+@Authenticated(allowGuests = true)
 public class StudiesService implements Studies {
 
   private static final Logger LOG = LogManager.getLogger(StudiesService.class);
+
+  private static final long MAX_ROWS_FOR_SINGLE_PAGE_ACCESS = 20;
 
   @Context
   ContainerRequestContext _request;
@@ -66,6 +74,7 @@ public class StudiesService implements Studies {
 
   @Override
   public GetStudiesByStudyIdResponse getStudiesByStudyId(String studyId) {
+    checkPerms(_request, studyId, StudyAccess::allowStudyMetadata);
     Study study = MetadataCache.getStudy(studyId);
     APIStudyDetail apiStudyDetail = ApiConversionUtil.getApiStudyDetail(study);
     StudyIdGetResponse response = new StudyIdGetResponseImpl();
@@ -75,6 +84,7 @@ public class StudiesService implements Studies {
 
   @Override
   public GetStudiesEntitiesByStudyIdAndEntityIdResponse getStudiesEntitiesByStudyIdAndEntityId(String studyId, String entityId) {
+    checkPerms(_request, studyId, StudyAccess::allowStudyMetadata);
     APIStudyDetail apiStudyDetail = ApiConversionUtil.getApiStudyDetail(MetadataCache.getStudy(studyId));
     APIEntity entity = findEntityById(apiStudyDetail.getRootEntity(), entityId).orElseThrow(NotFoundException::new);
     EntityIdGetResponse response = new EntityIdGetResponseImpl();
@@ -84,7 +94,7 @@ public class StudiesService implements Studies {
     response.setDisplayName(entity.getDisplayName());
     response.setDisplayNamePlural(entity.getDisplayNamePlural());
     response.setVariables(entity.getVariables());
-    for (Map.Entry<String,Object> prop : entity.getAdditionalProperties().entrySet()) {
+    for (Entry<String,Object> prop : entity.getAdditionalProperties().entrySet()) {
       response.setAdditionalProperties(prop.getKey(), prop.getValue());
     }
     return GetStudiesEntitiesByStudyIdAndEntityIdResponse.respond200WithApplicationJson(response);
@@ -95,6 +105,7 @@ public class StudiesService implements Studies {
   postStudiesEntitiesVariablesDistributionByStudyIdAndEntityIdAndVariableId(
       String studyId, String entityId, String variableId, VariableDistributionPostRequest request) {
     try {
+      checkPerms(_request, studyId, StudyAccess::allowSubsetting);
 
       // unpack data from API input to model objects
       DataSource ds = Resources.getApplicationDataSource();
@@ -121,28 +132,54 @@ public class StudiesService implements Studies {
   @Override
   public PostStudiesEntitiesTabularByStudyIdAndEntityIdResponse postStudiesEntitiesTabularByStudyIdAndEntityId(String studyId,
       String entityId, EntityTabularPostRequest requestBody) {
-
-    DataSource datasource = Resources.getApplicationDataSource();
-
-    RequestBundle request = RequestBundle.unpack(datasource, studyId, entityId, requestBody.getFilters(), requestBody.getOutputVariableIds(), requestBody.getReportConfig());
-
-    TabularResponseType responseType = TabularResponseType.fromAcceptHeader(_request);
-
-    EntityTabularPostResponseStream streamer = new EntityTabularPostResponseStream
-        (outStream -> StudySubsettingUtils.produceTabularSubset(datasource, request.getStudy(),
-            request.getTargetEntity(), request.getRequestedVariables(), request.getFilters(),
-            request.getReportConfig(), responseType.getFormatter(), outStream));
-
-    return responseType == TabularResponseType.JSON
+    return handleTabularRequest(_request, studyId, entityId, requestBody, true, (streamer, responseType) ->
+      responseType == TabularResponseType.JSON
         ? PostStudiesEntitiesTabularByStudyIdAndEntityIdResponse
             .respond200WithApplicationJson(streamer)
         : PostStudiesEntitiesTabularByStudyIdAndEntityIdResponse
-            .respond200WithTextTabSeparatedValues(streamer);
+            .respond200WithTextTabSeparatedValues(streamer)
+    );
+  }
+
+  public static <T> T handleTabularRequest(
+      ContainerRequestContext requestContext, String studyId, String entityId,
+      EntityTabularPostRequest requestBody, boolean checkUserPermissions,
+      BiFunction<EntityTabularPostResponseStream,TabularResponseType,T> responseConverter) {
+
+    DataSource dataSource = Resources.getApplicationDataSource();
+    RequestBundle request = RequestBundle.unpack(dataSource, studyId, entityId, requestBody.getFilters(), requestBody.getOutputVariableIds(), requestBody.getReportConfig());
+
+    if (checkUserPermissions) {
+      // if requested, make sure user has permission to access this amount of tabular data (may differ based on report config)
+      checkPerms(requestContext, studyId, getTabularAccessPredicate(request.getReportConfig()));
+    }
+
+    TabularResponseType responseType = TabularResponseType.fromAcceptHeader(requestContext);
+
+    EntityTabularPostResponseStream streamer = new EntityTabularPostResponseStream
+        (outStream -> StudySubsettingUtils.produceTabularSubset(dataSource, request.getStudy(),
+            request.getTargetEntity(), request.getRequestedVariables(), request.getFilters(),
+            request.getReportConfig(), responseType.getFormatter(), outStream));
+
+    return responseConverter.apply(streamer, responseType);
+  }
+
+  private static Predicate<StudyAccess> getTabularAccessPredicate(Optional<TabularReportConfig> reportConfig) {
+    // trigger single-page access IFF user specifies paging with zero offset and number of rows under the single-page max
+    if (reportConfig.isPresent() &&
+        reportConfig.get().getOffset() == 0L &&
+        reportConfig.get().getNumRows().isPresent() &&
+        reportConfig.get().getNumRows().get() <= MAX_ROWS_FOR_SINGLE_PAGE_ACCESS) {
+      return StudyAccess::allowResultsFirstPage;
+    }
+    // if paging not present or does not meet single-page criteria, user needs all-results access
+    return StudyAccess::allowResultsAll;
   }
 
   @Override
   public PostStudiesEntitiesCountByStudyIdAndEntityIdResponse postStudiesEntitiesCountByStudyIdAndEntityId(
       String studyId, String entityId, EntityCountPostRequest rawRequest) {
+    checkPerms(_request, studyId, StudyAccess::allowSubsetting);
 
     DataSource datasource = Resources.getApplicationDataSource();
 
@@ -159,6 +196,11 @@ public class StudiesService implements Studies {
     response.setCount(count);
 
     return  PostStudiesEntitiesCountByStudyIdAndEntityIdResponse.respond200WithApplicationJson(response);
+  }
+
+  private static void checkPerms(ContainerRequestContext request, String studyId, Predicate<StudyAccess> accessPredicate) {
+    Entry<String, String> authHeader = StudyAccess.readAuthHeader(request, RequestKeys.AUTH_HEADER);
+    StudyAccess.confirmPermission(authHeader, Resources.ENV.getDatasetAccessServiceUrl(), studyId, accessPredicate);
   }
 
   private Optional<APIEntity> findEntityById(APIEntity entity, String entityId) {

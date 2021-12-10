@@ -19,7 +19,8 @@ public class TabularReportConfig {
     if (apiConfig == null) return;
     if (apiConfig.getPaging() != null) {
       _numRows = Optional.of(apiConfig.getPaging().getNumRows());
-      _offset = apiConfig.getPaging().getOffset();
+      Long offset = apiConfig.getPaging().getOffset();
+      if (offset != null) _offset = offset;
       if (_offset < 0)
         throw new BadRequestException("In paging config, offset must a non-negative integer.");
       if (_numRows.get() <= 0)

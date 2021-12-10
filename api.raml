@@ -83,14 +83,6 @@ securitySchemes:
                 body:
                   application/json:
                     type: lib.EntityCountPostResponse
-              401:
-                body:
-                  application/json:
-                    type: error.UnauthorizedError
-              500:
-                body:
-                  application/json:
-                    type: error.ServerError
 
         /tabular:
           post:
@@ -107,15 +99,6 @@ securitySchemes:
                     type: lib.EntityTabularPostResponse
                   application/json:
                     type: lib.EntityTabularPostResponse
-              
-              401:
-                body:
-                  application/json:
-                    type: error.UnauthorizedError
-              500:
-                body:
-                  application/json:
-                    type: error.ServerError
 
         /variables:
 
@@ -136,11 +119,19 @@ securitySchemes:
                     body:
                       application/json:
                         type: lib.VariableDistributionPostResponse
-                  401:
-                    body:
-                      application/json:
-                        type: error.UnauthorizedError
-                  500:
-                    body:
-                      application/json:
-                        type: error.ServerError
+
+/ss-internal/studies/{study-id}/entities/{entity-id}/tabular:
+  post:
+    securedBy: header-auth
+    description: |
+     Return a tabular report of one or more variables belonging to this entity.  The output will also include all ancestor primary keys.  In the request, `filters` must be a subclass of [Filter](#type:lib.Filter)
+    body:
+      application/json:
+        type: lib.EntityTabularPostRequest
+    responses:
+      200:
+        body:
+          text/tab-separated-values:
+            type: lib.EntityTabularPostResponse
+          application/json:
+            type: lib.EntityTabularPostResponse

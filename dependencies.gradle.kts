@@ -1,8 +1,8 @@
 //
 // Version Numbers
 //
-val coreLib   = "5.2.2"  // Container core lib version
-val edaCommon = "6.1.0"  // EDA Common version
+val coreLib   = "5.3.0"  // Container core lib version
+val edaCommon = "7.0.0"  // EDA Common version
 
 val jersey    = "2.33"   // Jersey/JaxRS version
 val jackson   = "2.12.2" // FasterXML Jackson version
@@ -38,6 +38,7 @@ dependencies {
   implementation(files(
     "vendor/fgputil-accountdb-1.0.0.jar",
     "vendor/fgputil-core-1.0.0.jar",
+    "vendor/fgputil-client-1.0.0.jar",
     "vendor/fgputil-db-1.0.0.jar",
     "vendor/fgputil-web-1.0.0.jar",
     "vendor/fgputil-json-1.0.0.jar"

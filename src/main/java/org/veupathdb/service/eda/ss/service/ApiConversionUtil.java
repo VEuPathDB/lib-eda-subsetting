@@ -1,5 +1,6 @@
 package org.veupathdb.service.eda.ss.service;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 import org.gusdb.fgputil.functional.Functions;
@@ -78,6 +79,7 @@ public class ApiConversionUtil {
     apiVar.setParentId(var.getParentId());
     apiVar.setDefinition(var.getDefinition());
     apiVar.setDisplayOrder(var.getDisplayOrder());
+    apiVar.setHideFrom(Collections.emptyList()); // TODO: fill in with value from DB
     return apiVar;
   }
 

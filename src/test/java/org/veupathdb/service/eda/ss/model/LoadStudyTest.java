@@ -97,7 +97,9 @@ public class LoadStudyTest {
     assertTrue(var.hasValues());
     assertEquals(VariableType.NUMBER, ((VariableWithValues)var).getType());
     assertEquals(VariableDataShape.CONTINUOUS, ((VariableWithValues)var).getDataShape());
-
+    List<String> hidden = var.getHideFrom();
+    assertEquals(hidden.get(0), "downloads");
+    assertEquals(hidden.get(1), "variableTree");
   }
   
   @Test

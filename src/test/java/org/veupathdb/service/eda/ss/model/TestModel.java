@@ -13,7 +13,6 @@ import org.gusdb.fgputil.functional.TreeNode;
 import org.veupathdb.service.eda.ss.model.distribution.DistributionConfig;
 import org.veupathdb.service.eda.ss.model.variable.DateVariable;
 import org.veupathdb.service.eda.ss.model.variable.FloatingPointVariable;
-import org.veupathdb.service.eda.ss.model.variable.NumberVariable;
 import org.veupathdb.service.eda.ss.model.variable.StringVariable;
 import org.veupathdb.service.eda.ss.model.variable.Variable;
 import org.veupathdb.service.eda.ss.model.variable.VariableDataShape;
@@ -119,14 +118,14 @@ public class TestModel {
 
   private static StringVariable getMockStringVar(String label, String id, Entity entity, int distinctValuesCount, boolean isMultiValued, List<String> vocab) {
     return new StringVariable(
-        new Variable.Properties(label, id, entity, VariableDisplayType.DEFAULT, label, null, null, "Their " + label),
+        new Variable.Properties(label, id, entity, VariableDisplayType.DEFAULT, label, null, null, "Their " + label, Collections.emptyList()),
         new VariableWithValues.Properties(VariableType.STRING, VariableDataShape.CATEGORICAL, vocab, distinctValuesCount, false, false, false, isMultiValued)
     );
   }
 
   private static FloatingPointVariable getMockFloatVar(String label, String id, Entity entity, VariableDataShape shape, int distinctValuesCount, boolean isMultiValued) {
     return new FloatingPointVariable(
-        new Variable.Properties(label, id, entity, VariableDisplayType.DEFAULT, label, null, null, "Their " + label),
+        new Variable.Properties(label, id, entity, VariableDisplayType.DEFAULT, label, null, null, "Their " + label, Collections.emptyList()),
         new VariableWithValues.Properties(VariableType.NUMBER, shape, null, distinctValuesCount, false, false, false, isMultiValued),
         new DistributionConfig<>(null, null, null, null, null, null),
         new FloatingPointVariable.Properties("", 1L)
@@ -135,7 +134,7 @@ public class TestModel {
 
   private static DateVariable getMockDateVar(String label, String id, Entity entity, VariableDataShape shape, int distinctValuesCount) {
     return new DateVariable(
-        new Variable.Properties(label, id, entity, VariableDisplayType.DEFAULT, label, null, null, label),
+        new Variable.Properties(label, id, entity, VariableDisplayType.DEFAULT, label, null, null, label, Collections.emptyList()),
         new VariableWithValues.Properties(VariableType.DATE, shape, null, distinctValuesCount, true, false, false, false),
         new DateVariable.Properties(shape, null, null, null, null, 1, "week", null)
     );

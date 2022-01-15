@@ -1,5 +1,7 @@
 package org.veupathdb.service.eda.ss.model.variable;
 
+import java.util.List;
+
 import org.veupathdb.service.eda.ss.model.Entity;
 
 public abstract class Variable {
@@ -13,10 +15,12 @@ public abstract class Variable {
     public final Integer displayOrder;
     public final String parentId;
     public final String definition;
+    public final List<String> hideFrom;
 
     public Properties(String providerLabel, String id, Entity entity,
                       VariableDisplayType displayType, String displayName,
-                      Integer displayOrder, String parentId, String definition) {
+                      Integer displayOrder, String parentId, String definition, 
+                      List<String> hideFrom) {
       this.providerLabel = providerLabel;
       this.id = id;
       this.entity = entity;
@@ -25,6 +29,7 @@ public abstract class Variable {
       this.displayOrder = displayOrder;
       this.parentId = parentId;
       this.definition = definition;
+      this.hideFrom = hideFrom;
     }
   }
 
@@ -70,5 +75,9 @@ public abstract class Variable {
 
   public String getDefinition() {
     return _properties.definition;
+  }
+  
+  public List<String> getHideFrom() {
+    return _properties.hideFrom;
   }
 }

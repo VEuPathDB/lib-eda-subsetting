@@ -25,32 +25,7 @@ import org.veupathdb.service.eda.ss.model.variable.VariablesCategory;
 
 import static org.gusdb.fgputil.FormatUtil.NL;
 import static org.gusdb.fgputil.functional.Functions.doThrow;
-import static org.veupathdb.service.eda.ss.model.RdbmsColumnNames.BIN_WIDTH_COMPUTED_COL_NAME;
-import static org.veupathdb.service.eda.ss.model.RdbmsColumnNames.BIN_WIDTH_OVERRIDE_COL_NAME;
-import static org.veupathdb.service.eda.ss.model.RdbmsColumnNames.DATA_SHAPE_COL_NAME;
-import static org.veupathdb.service.eda.ss.model.RdbmsColumnNames.DEFINITION_COL_NAME;
-import static org.veupathdb.service.eda.ss.model.RdbmsColumnNames.DISPLAY_NAME_COL_NAME;
-import static org.veupathdb.service.eda.ss.model.RdbmsColumnNames.DISPLAY_ORDER_COL_NAME;
-import static org.veupathdb.service.eda.ss.model.RdbmsColumnNames.DISPLAY_RANGE_MAX_COL_NAME;
-import static org.veupathdb.service.eda.ss.model.RdbmsColumnNames.DISPLAY_RANGE_MIN_COL_NAME;
-import static org.veupathdb.service.eda.ss.model.RdbmsColumnNames.DISPLAY_TYPE_COL_NAME;
-import static org.veupathdb.service.eda.ss.model.RdbmsColumnNames.DISTINCT_VALUES_COUNT_COL_NAME;
-import static org.veupathdb.service.eda.ss.model.RdbmsColumnNames.HAS_VALUES_COL_NAME;
-import static org.veupathdb.service.eda.ss.model.RdbmsColumnNames.IS_FEATURED_COL_NAME;
-import static org.veupathdb.service.eda.ss.model.RdbmsColumnNames.IS_MERGE_KEY_COL_NAME;
-import static org.veupathdb.service.eda.ss.model.RdbmsColumnNames.IS_MULTI_VALUED_COL_NAME;
-import static org.veupathdb.service.eda.ss.model.RdbmsColumnNames.IS_REPEATED_COL_NAME;
-import static org.veupathdb.service.eda.ss.model.RdbmsColumnNames.IS_TEMPORAL_COL_NAME;
-import static org.veupathdb.service.eda.ss.model.RdbmsColumnNames.MULTIVALUED_COL_NAME;
-import static org.veupathdb.service.eda.ss.model.RdbmsColumnNames.PRECISION_COL_NAME;
-import static org.veupathdb.service.eda.ss.model.RdbmsColumnNames.PROVIDER_LABEL_COL_NAME;
-import static org.veupathdb.service.eda.ss.model.RdbmsColumnNames.RANGE_MAX_COL_NAME;
-import static org.veupathdb.service.eda.ss.model.RdbmsColumnNames.RANGE_MIN_COL_NAME;
-import static org.veupathdb.service.eda.ss.model.RdbmsColumnNames.UNITS_COL_NAME;
-import static org.veupathdb.service.eda.ss.model.RdbmsColumnNames.VARIABLE_ID_COL_NAME;
-import static org.veupathdb.service.eda.ss.model.RdbmsColumnNames.VARIABLE_PARENT_ID_COL_NAME;
-import static org.veupathdb.service.eda.ss.model.RdbmsColumnNames.VARIABLE_TYPE_COL_NAME;
-import static org.veupathdb.service.eda.ss.model.RdbmsColumnNames.VOCABULARY_COL_NAME;
+import static org.veupathdb.service.eda.ss.model.RdbmsColumnNames.*;
 import static org.veupathdb.service.eda.ss.model.ResultSetUtils.getDoubleFromString;
 import static org.veupathdb.service.eda.ss.model.ResultSetUtils.getIntegerFromString;
 import static org.veupathdb.service.eda.ss.model.ResultSetUtils.getRsIntegerWithDefault;
@@ -80,7 +55,7 @@ class VariableResultSetUtils {
         DEFINITION_COL_NAME, VOCABULARY_COL_NAME, DISPLAY_ORDER_COL_NAME, DISPLAY_RANGE_MIN_COL_NAME, DISPLAY_RANGE_MAX_COL_NAME,
         RANGE_MIN_COL_NAME, RANGE_MAX_COL_NAME, BIN_WIDTH_OVERRIDE_COL_NAME, BIN_WIDTH_COMPUTED_COL_NAME,
         IS_TEMPORAL_COL_NAME, IS_FEATURED_COL_NAME, IS_MERGE_KEY_COL_NAME, IS_REPEATED_COL_NAME,
-        DISTINCT_VALUES_COUNT_COL_NAME, IS_MULTI_VALUED_COL_NAME
+        DISTINCT_VALUES_COUNT_COL_NAME, IS_MULTI_VALUED_COL_NAME, HIDE_FROM_COL_NAME
     };
 
     // This SQL safe from injection because entities declare their own table names (no parameters)
@@ -93,32 +68,35 @@ class VariableResultSetUtils {
   static Variable createVariableFromResultSet(ResultSet rs, Entity entity) throws SQLException {
 
     Variable.Properties varProps = new Variable.Properties(
-        getRsStringWithDefault(rs, PROVIDER_LABEL_COL_NAME, "No Provider Label available"), // TODO remove hack when in db
-        getRsString(rs, VARIABLE_ID_COL_NAME, true),
-        entity,
+        getRsStringWithDefault(rs, PROVIDER_LABEL_COL_NAME, "No Provider Label available"), // TODO remove hack when
+                                                                                            // in db
+        getRsString(rs, VARIABLE_ID_COL_NAME, true), entity,
         VariableDisplayType.fromString(getRsStringWithDefault(rs, DISPLAY_TYPE_COL_NAME, "default")),
-        getRsString(rs, DISPLAY_NAME_COL_NAME, true),
-        rs.getInt(DISPLAY_ORDER_COL_NAME),
-        rs.getString(VARIABLE_PARENT_ID_COL_NAME),
-        getRsStringWithDefault(rs, DEFINITION_COL_NAME, "")
-    );
+        getRsString(rs, DISPLAY_NAME_COL_NAME, true), rs.getInt(DISPLAY_ORDER_COL_NAME),
+        rs.getString(VARIABLE_PARENT_ID_COL_NAME), getRsStringWithDefault(rs, DEFINITION_COL_NAME, ""),
+        jsonArrayStringToList(rs.getString(HIDE_FROM_COL_NAME)));
 
-    return rs.getBoolean(HAS_VALUES_COL_NAME) ?
-      createValueVarFromResultSet(rs, varProps) :
-      new VariablesCategory(varProps);
+    return rs.getBoolean(HAS_VALUES_COL_NAME) ? createValueVarFromResultSet(rs, varProps)
+        : new VariablesCategory(varProps);
+  }
+  
+  // parse a string containing a json array into a List
+  static List<String> jsonArrayStringToList(String jsonArrayString) {
+    try {
+      return jsonArrayString == null ? null
+          : Arrays.asList(JsonUtil.Jackson.readValue(jsonArrayString, String[].class));
+    } catch (JsonProcessingException e) {
+      throw new RuntimeException("Can't parse string into json array: '" + jsonArrayString + "'");
+    }
   }
 
   static Variable createValueVarFromResultSet(ResultSet rs, Variable.Properties varProps) {
 
     try {
-      // first, parse vocabulary json string
-      String vocabString = rs.getString(VOCABULARY_COL_NAME);
-      List<String> vocabulary = rs.wasNull()? null : Arrays.asList(JsonUtil.Jackson.readValue(vocabString, String[].class));
-
       VariableWithValues.Properties valueProps = new VariableWithValues.Properties(
           VariableType.fromString(getRsString(rs, VARIABLE_TYPE_COL_NAME, true)),
           VariableDataShape.fromString(getRsString(rs, DATA_SHAPE_COL_NAME, true)),
-          vocabulary,
+          jsonArrayStringToList(rs.getString(VOCABULARY_COL_NAME)),
           rs.getInt(DISTINCT_VALUES_COUNT_COL_NAME),
           rs.getBoolean(IS_TEMPORAL_COL_NAME),
           rs.getBoolean(IS_FEATURED_COL_NAME),
@@ -184,7 +162,7 @@ class VariableResultSetUtils {
               " variable: " + varProps.id + " has unrecognized type " + valueProps.type));
       };
     }
-    catch (SQLException | JsonProcessingException e) {
+    catch (SQLException e) {
       throw new RuntimeException("Entity:  " + varProps.entity.getId() + " variable: " + varProps.id, e);
     }
   }

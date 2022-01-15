@@ -79,7 +79,7 @@ public class ApiConversionUtil {
     apiVar.setParentId(var.getParentId());
     apiVar.setDefinition(var.getDefinition());
     apiVar.setDisplayOrder(var.getDisplayOrder());
-    apiVar.setHideFrom(Collections.emptyList()); // TODO: fill in with value from DB
+    apiVar.setHideFrom(var.getHideFrom()); 
     return apiVar;
   }
 

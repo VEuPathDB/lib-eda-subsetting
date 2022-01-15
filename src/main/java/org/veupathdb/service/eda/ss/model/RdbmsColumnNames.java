@@ -47,6 +47,8 @@ public class RdbmsColumnNames {
   static final String IS_REPEATED_COL_NAME = "is_repeated";
   static final String DISTINCT_VALUES_COUNT_COL_NAME = "distinct_values_count";
   static final String IS_MULTI_VALUED_COL_NAME = "is_multi_valued";
+  static final String HIDE_FROM_COL_NAME = "hidden";
+
 
   // Tall table
   public static final String TT_VARIABLE_ID_COL_NAME = "attribute_stable_id";

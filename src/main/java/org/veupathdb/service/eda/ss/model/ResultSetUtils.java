@@ -1,10 +1,14 @@
 package org.veupathdb.service.eda.ss.model;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import java.math.BigDecimal;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.Arrays;
+import java.util.List;
 import java.util.Optional;
 import java.util.function.Function;
+import org.gusdb.fgputil.json.JsonUtil;
 
 public class ResultSetUtils {
 
@@ -49,6 +53,20 @@ public class ResultSetUtils {
     catch (ArithmeticException e) {
       throw new RuntimeException("For variable '" + variableId + "', the metadata property '" + columnName + "' returned '" + value + 
                                  "' which is not convertible to this variable's datatype, which is '" + typeDisplay + "'");
+    }
+  }
+
+  /**
+   * Parses a string containing a json array of strings into a List
+   */
+  public static List<String> parseJsonArrayOfString(ResultSet resultSet, String columnName) throws SQLException {
+    String jsonArrayOfString = resultSet.getString(columnName);
+    try {
+      return jsonArrayOfString == null ? null
+          : Arrays.asList(JsonUtil.Jackson.readValue(jsonArrayOfString, String[].class));
+    }
+    catch (JsonProcessingException e) {
+      throw new RuntimeException("Value in column " + columnName + " can not be parsed into json array of strings: " + jsonArrayOfString);
     }
   }
 }

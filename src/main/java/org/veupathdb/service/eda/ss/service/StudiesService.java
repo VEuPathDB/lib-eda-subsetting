@@ -1,5 +1,6 @@
 package org.veupathdb.service.eda.ss.service;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import java.util.Collections;
 import java.util.Date;
 import java.util.Map.Entry;
@@ -11,12 +12,17 @@ import javax.ws.rs.BadRequestException;
 import javax.ws.rs.NotFoundException;
 import javax.ws.rs.container.ContainerRequestContext;
 import javax.ws.rs.core.Context;
+import javax.ws.rs.core.HttpHeaders;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.gusdb.fgputil.ListBuilder;
+import org.gusdb.fgputil.MapBuilder;
 import org.gusdb.fgputil.distribution.DistributionResult;
 import org.gusdb.fgputil.functional.TreeNode;
+import org.gusdb.fgputil.json.JsonUtil;
+import org.gusdb.fgputil.web.UrlEncodedForm;
 import org.veupathdb.lib.container.jaxrs.server.annotations.Authenticated;
+import org.veupathdb.lib.container.jaxrs.server.middleware.CustomResponseHeadersFilter;
 import org.veupathdb.lib.container.jaxrs.utils.RequestKeys;
 import org.veupathdb.service.eda.common.auth.StudyAccess;
 import org.veupathdb.service.eda.common.client.TabularResponseType;
@@ -56,14 +62,6 @@ public class StudiesService implements Studies {
 
   @Context
   ContainerRequestContext _request;
-
-  @Override
-  public GetStudiesClearMetadataCacheResponse getStudiesClearMetadataCache() {
-    MetadataCache.clear();
-    String message = "Cache successfully cleared at " + new Date();
-    LOG.info(message);
-    return GetStudiesClearMetadataCacheResponse.respond200WithTextPlain(message);
-  }
 
   @Override
   public GetStudiesResponse getStudies() {
@@ -139,6 +137,29 @@ public class StudiesService implements Studies {
         : PostStudiesEntitiesTabularByStudyIdAndEntityIdResponse
             .respond200WithTextTabSeparatedValues(streamer)
     );
+  }
+
+  @Override
+  public PostStudiesEntitiesTabularByStudyIdAndEntityIdResponse postStudiesEntitiesTabularByStudyIdAndEntityId(String studyId, String entityId) {
+    UrlEncodedForm form = new UrlEncodedForm(_request.getEntityStream());
+    String requestJson = form.getFirstParamValue("data")
+        .orElseThrow(() -> new BadRequestException(
+            "Form must contain parameter 'data' containing tabular request JSON."));
+    try {
+      EntityTabularPostRequest request = JsonUtil.Jackson.readValue(requestJson, EntityTabularPostRequest.class);
+      PostStudiesEntitiesTabularByStudyIdAndEntityIdResponse typedResponse =
+          postStudiesEntitiesTabularByStudyIdAndEntityId(studyId, entityId, request);
+      // success so far; add header to response
+      String entityDisplay = MetadataCache.getStudy(studyId).getEntity(entityId).get().getDisplayName();
+      String fileName = studyId + "_" + entityDisplay + "_subsettedData.txt";
+      String dispositionHeaderValue = "attachment; filename=\"" + fileName + "\"";
+      _request.setProperty(CustomResponseHeadersFilter.CUSTOM_HEADERS_KEY,
+          new MapBuilder<String,String>(HttpHeaders.CONTENT_DISPOSITION, dispositionHeaderValue).toMap());
+      return typedResponse;
+    }
+    catch (JsonProcessingException e) {
+      throw new BadRequestException(e.getMessage());
+    }
   }
 
   public static <T> T handleTabularRequest(

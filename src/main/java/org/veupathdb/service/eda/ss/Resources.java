@@ -5,6 +5,7 @@ import org.apache.logging.log4j.Logger;
 import org.veupathdb.lib.container.jaxrs.config.Options;
 import org.veupathdb.lib.container.jaxrs.server.ContainerResources;
 import org.veupathdb.lib.container.jaxrs.utils.db.DbManager;
+import org.veupathdb.service.eda.ss.service.ClearMetadataCacheService;
 import org.veupathdb.service.eda.ss.service.InternalClientsService;
 import org.veupathdb.service.eda.ss.service.StudiesService;
 import org.veupathdb.service.eda.ss.stubdb.StubDb;
@@ -74,7 +75,8 @@ public class Resources extends ContainerResources {
   protected Object[] resources() {
     return new Object[] {
       StudiesService.class,
-      InternalClientsService.class
+      InternalClientsService.class,
+      ClearMetadataCacheService.class
     };
   }
 }

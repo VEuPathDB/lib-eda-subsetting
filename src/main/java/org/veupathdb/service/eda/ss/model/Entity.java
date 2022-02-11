@@ -36,6 +36,7 @@ public class Entity {
   private List<String> ancestorPkColNames;
   private List<String> ancestorFullPkColNames; // entityName.pkColName
   private Integer tallRowSize; // number of columns in a tall table row
+  private Long loadOrder;
   
   private static final Logger LOG = LogManager.getLogger(Entity.class);
 
@@ -43,13 +44,14 @@ public class Entity {
   // used to validate multifilter requests
   private final Map<String, Set<String>> _multiFilterMap = new HashMap<String, Set<String>>();
   
-  public Entity(String entityId, String studyAbbrev, String displayName, String displayNamePlural, String description, String abbreviation) {
+  public Entity(String entityId, String studyAbbrev, String displayName, String displayNamePlural, String description, String abbreviation, long loadOrder) {
     this.id = entityId;
     this.studyAbbrev = studyAbbrev;
     this.displayName = displayName;
     this.displayNamePlural = displayNamePlural;
     this.description = description;
     this.abbreviation = abbreviation;
+    this.loadOrder = loadOrder;
   }
 
   public String getAbbreviation() {

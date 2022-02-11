@@ -28,6 +28,7 @@ CREATE TABLE EntityTypeGraph (
   display_name varchar(30) not null,
   display_name_plural varchar(30),
   description varchar(100),
+  entity_type_id integer,
 );
 alter table EntityTypeGraph add unique (study_stable_id, stable_id);
 alter table EntityTypeGraph add unique (study_stable_id, internal_abbrev);

@@ -73,12 +73,12 @@ public class TestModel {
   }
   
   private void createTestEntities() {
-    household = new Entity("GEMS_House", "ds2324", "Household", "Households", "descrip", "Hshld");
-    householdObs = new Entity("GEMS_HouseObs", "ds2324", "Household Observation", "Household Observations", "descrip", "HshldObsvtn");
-    participant = new Entity("GEMS_Part", "ds2324", "Participant", "Participants", "descrip", "Prtcpnt");
-    observation = new Entity("GEMS_PartObs", "ds2324", "Observation", "Observations", "descrip", "PrtcpntObsrvtn");
-    sample = new Entity("GEMS_Sample", "ds2324", "Sample", "Samples", "descrip", "Smpl");
-    treatment = new Entity("GEMS_Treat", "ds2324", "Treatment", "Treatments", "descrip", "Trtmnt");
+    household = new Entity("GEMS_House", "ds2324", "Household", "Households", "descrip", "Hshld", 1);
+    householdObs = new Entity("GEMS_HouseObs", "ds2324", "Household Observation", "Household Observations", "descrip", "HshldObsvtn", 2);
+    participant = new Entity("GEMS_Part", "ds2324", "Participant", "Participants", "descrip", "Prtcpnt", 3);
+    observation = new Entity("GEMS_PartObs", "ds2324", "Observation", "Observations", "descrip", "PrtcpntObsrvtn", 4);
+    sample = new Entity("GEMS_Sample", "ds2324", "Sample", "Samples", "descrip", "Smpl", 5);
+    treatment = new Entity("GEMS_Treat", "ds2324", "Treatment", "Treatments", "descrip", "Trtmnt", 6);
   }
   
   private Map<String, Entity> createIdMap() {

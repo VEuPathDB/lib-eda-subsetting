@@ -2,7 +2,6 @@ package org.veupathdb.service.eda.ss.service;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import java.util.Collections;
-import java.util.Date;
 import java.util.Map.Entry;
 import java.util.Optional;
 import java.util.function.BiFunction;

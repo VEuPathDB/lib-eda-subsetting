@@ -20,6 +20,7 @@ public class RdbmsColumnNames {
   static final String ENTITY_STUDY_ID_COL_NAME = "study_stable_id";
   static final String ENTITY_PARENT_ID_COL_NAME = "parent_stable_id";
   static final String ENTITY_ABBREV_COL_NAME = "internal_abbrev";
+  static final String ENTITY_LOAD_ORDER_ID = "entity_type_id";
 
   // AttributeGraph table
   static final String VARIABLE_ID_COL_NAME = "stable_id";

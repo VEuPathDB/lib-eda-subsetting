@@ -4,11 +4,15 @@ import java.sql.ResultSet;
 
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.function.Function;
 
+import java.util.stream.Collectors;
 import javax.sql.DataSource;
 
 import org.gusdb.fgputil.db.runner.SQLRunner;
@@ -37,7 +41,7 @@ public class EntityResultSetUtils {
     String sql = generateEntityTreeSql(studyId);
 
     // entityID -> list of child entities
-    Map<String, List<Entity>> simpleTree = new HashMap<>();
+    Map<String, List<Entity>> childrenMap = new HashMap<>();
 
     Entity rootEntity = new SQLRunner(datasource, sql, "Get entity tree").executeQuery(rs -> {
       Entity root = null;
@@ -49,39 +53,45 @@ public class EntityResultSetUtils {
           root = entity;
         }
         else {
-          if (!simpleTree.containsKey(parentId)) simpleTree.put(parentId, new ArrayList<>());
-          simpleTree.get(parentId).add(entity);
+          if (!childrenMap.containsKey(parentId)) childrenMap.put(parentId, new ArrayList<>());
+          childrenMap.get(parentId).add(entity);
         }
       }
       return root;
     });
 
-    if (rootEntity == null) throw new RuntimeException("Found no entities for study: " + studyId);
+    if (rootEntity == null)
+      throw new RuntimeException("Found no entities for study: " + studyId);
 
-    List<Entity> rootKids = simpleTree.get(rootEntity.getId());
+    return generateEntityTree(rootEntity, childrenMap);
+  }
+
+  static TreeNode<Entity> generateEntityTree(Entity rootEntity, Map<String, List<Entity>> childrenMap) {
+    // create a new node for this entity
     TreeNode<Entity> rootNode = new TreeNode<>(rootEntity);
-    populateEntityTree(rootNode, rootKids, simpleTree);
+    // create subtree nodes for all children and add
+    rootNode.addAllChildNodes(
+        // get the children of this node
+        Optional.ofNullable(childrenMap.get(rootEntity.getId()))
+            // if no children added, use empty list
+            .orElse(Collections.emptyList()).stream()
+            // map each child to a tree
+            .map(child -> generateEntityTree(child, childrenMap))
+            // collect children into a list
+            .collect(Collectors.toList())
+    );
     return rootNode;
   }
 
-  static void populateEntityTree(TreeNode<Entity> parentNode, List<Entity> children, Map<String, List<Entity>> simpleTree) {
-    for (Entity child : children) {
-      TreeNode<Entity> childNode = new TreeNode<>(child);
-      parentNode.addChildNode(childNode);
-
-      // if this node has children, recurse
-      if (simpleTree.containsKey(child.getId()))
-        populateEntityTree(childNode, simpleTree.get(child.getId()), simpleTree);
-    }
-  }
-
   static String generateEntityTreeSql(String studyId) {
-    String[] entityCols = { STUDY_ID_COL_NAME, ENTITY_ABBREV_COL_NAME, DISPLAY_NAME_COL_NAME, DISPLAY_NAME_PLURAL_COL_NAME, ENTITY_ID_COL_NAME, DESCRIP_COL_NAME, ENTITY_PARENT_ID_COL_NAME };
+    String[] entityCols = { STUDY_ID_COL_NAME, ENTITY_ABBREV_COL_NAME, DISPLAY_NAME_COL_NAME, DISPLAY_NAME_PLURAL_COL_NAME, ENTITY_ID_COL_NAME, DESCRIP_COL_NAME, ENTITY_PARENT_ID_COL_NAME, ENTITY_LOAD_ORDER_ID };
     return "SELECT e." + String.join(", e.", entityCols) + ", s." + STUDY_ABBREV_COL_NAME + " as " + STDY_ABBRV_COL_NM + NL
         + "FROM " + Resources.getAppDbSchema() + ENTITY_TABLE_NAME + " e," + Resources.getAppDbSchema() + STUDY_TABLE_NAME + " s " + NL
         + "WHERE s." + STUDY_ID_COL_NAME + " = '" + studyId + "'" + NL
         + "AND e." + ENTITY_STUDY_ID_COL_NAME + " = s." + STUDY_ID_COL_NAME + NL
-        + "ORDER BY e." + ENTITY_ID_COL_NAME;  // stable ordering supports unit testing
+        // This ordering ensures the produced tree is displayed in load order;
+        //   also stable ordering supports unit testing
+        + "ORDER BY e." + ENTITY_LOAD_ORDER_ID + " ASC";
   }
 
   static Entity createEntityFromResultSet(ResultSet rs) {
@@ -94,8 +104,9 @@ public class EntityResultSetUtils {
       String studyAbbrev = getRsString(rs, STDY_ABBRV_COL_NM, true);
       String descrip = getRsStringWithDefault(rs, DESCRIP_COL_NAME, "No Entity Description available");
       String abbrev = getRsString(rs, ENTITY_ABBREV_COL_NAME, true);
+      long loadOrder = ResultSetUtils.getIntegerFromString(rs, ENTITY_LOAD_ORDER_ID, true);
 
-      return new Entity(id, studyAbbrev, name, namePlural, descrip, abbrev);
+      return new Entity(id, studyAbbrev, name, namePlural, descrip, abbrev, loadOrder);
     }
     catch (SQLException e) {
       throw new RuntimeException(e);

@@ -14,13 +14,13 @@ insert into study values ('DS-2324', 'GEMS', 'ds2324');
 
 insert into StudyIdDatasetId values('DS-2324', 'datasetid_2222');
 
---(stable_id, study_stable_id, parent_stable_id, internal_abbrev, display_name, display_name_plural, description)
-insert into entityTypeGraph values ('GEMS_House', 'DS-2324', null, 'Hshld', 'Household', 'Households', 'Households in the study');
-insert into entityTypeGraph values ('GEMS_HouseObs', 'DS-2324', 'GEMS_House', 'HshldObsrvtn', 'Household Observation', 'Household Observations', 'Observations about households in the study');
-insert into entityTypeGraph values ('GEMS_Part','DS-2324', 'GEMS_House', 'Prtcpnt', 'Participant', 'Participants', 'Participants in the study');
-insert into entityTypeGraph values ('GEMS_PartObs', 'DS-2324', 'GEMS_Part', 'PrtcpntObsrvtn', 'Participant Observation', 'Participant Observations', 'Participant observations');
-insert into entityTypeGraph values ('GEMS_Sample', 'DS-2324', 'GEMS_PartObs', 'Smpl', 'Sample', 'Samples', 'Sample');
-insert into entityTypeGraph values ('GEMS_Treat', 'DS-2324', 'GEMS_PartObs', 'Trtmnt', 'Treatment', 'Treatments', 'Treatment');
+--(stable_id, study_stable_id, parent_stable_id, internal_abbrev, display_name, display_name_plural, description, entity_type_id)
+insert into entityTypeGraph values ('GEMS_House', 'DS-2324', null, 'Hshld', 'Household', 'Households', 'Households in the study',1);
+insert into entityTypeGraph values ('GEMS_HouseObs', 'DS-2324', 'GEMS_House', 'HshldObsrvtn', 'Household Observation', 'Household Observations', 'Observations about households in the study',2);
+insert into entityTypeGraph values ('GEMS_Part','DS-2324', 'GEMS_House', 'Prtcpnt', 'Participant', 'Participants', 'Participants in the study',3);
+insert into entityTypeGraph values ('GEMS_PartObs', 'DS-2324', 'GEMS_Part', 'PrtcpntObsrvtn', 'Participant Observation', 'Participant Observations', 'Participant observations',4);
+insert into entityTypeGraph values ('GEMS_Sample', 'DS-2324', 'GEMS_PartObs', 'Smpl', 'Sample', 'Samples', 'Sample',5);
+insert into entityTypeGraph values ('GEMS_Treat', 'DS-2324', 'GEMS_PartObs', 'Trtmnt', 'Treatment', 'Treatments', 'Treatment',6);
 
 ------------------------------------------------------------
 -- STUDY DATA TABLES

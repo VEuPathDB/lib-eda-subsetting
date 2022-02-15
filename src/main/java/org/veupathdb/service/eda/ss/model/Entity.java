@@ -93,7 +93,11 @@ public class Entity {
   public String getFullPKColName() {
     return getWithClauseName() + "." + getPKColName();
   }
-  
+
+  public String getDownloadPkColHeader() {
+    return getDisplayName().replace(' ','_') + "_ID";
+  }
+
   public String getAncestorsTableName() {
     return "Ancestors_" + getStudyAbbrev() + "_" + getAbbreviation();
   }
@@ -122,7 +126,7 @@ public class Entity {
     return getVariable(variableId).orElseThrow(
         () -> new BadRequestException("Variable '" + variableId + "' is not found"));
   }
-  
+
   public List<String> getAncestorFullPkColNames() {
     return Collections.unmodifiableList(ancestorFullPkColNames);
   }

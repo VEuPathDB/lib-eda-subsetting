@@ -110,18 +110,19 @@ public class StudySubsettingUtils {
   }
 
   static List<String> getTabularPrettyHeaders(Entity outputEntity, List<Variable> outputVariables) {
-    return getColumns(outputEntity, outputVariables, var -> var.getDisplayName() + " [" + var.getId() + "]");
+    return getColumns(outputEntity, outputVariables, Entity::getDownloadPkColHeader, var -> var.getDisplayName() + " [" + var.getId() + "]");
   }
 
   static List<String> getTabularOutputColumns(Entity outputEntity, List<Variable> outputVariables) {
-    return getColumns(outputEntity, outputVariables, Variable::getId);
+    return getColumns(outputEntity, outputVariables, Entity::getPKColName, Variable::getId);
   }
 
-  private static List<String> getColumns(Entity outputEntity, List<Variable> outputVariables, Function<Variable,String> mapper) {
+  private static List<String> getColumns(Entity outputEntity, List<Variable> outputVariables,
+      Function<Entity, String> pkMapper, Function<Variable,String> varMapper) {
     List<String> outputColumns = new ArrayList<>();
-    outputColumns.add(outputEntity.getPKColName());
-    outputColumns.addAll(outputEntity.getAncestorPkColNames());
-    outputColumns.addAll(outputVariables.stream().map(mapper).collect(Collectors.toList()));
+    outputColumns.add(pkMapper.apply(outputEntity));
+    outputColumns.addAll(outputEntity.getAncestorEntities().stream().map(pkMapper).collect(Collectors.toList()));
+    outputColumns.addAll(outputVariables.stream().map(varMapper).collect(Collectors.toList()));
     return outputColumns;
 
   }

@@ -31,7 +31,8 @@ public abstract class NumberVariable<T extends Number> extends VariableWithValue
 
   @Override
   public String getDownloadColHeader() {
-    String units = getUnits() == null ? "" : " (" + getUnits() + ")";
-    return getDisplayName() + units + " [" + getId() + "]";
+    String units = getUnits();
+    String unitsStr = units == null || units.isBlank() ? "" : " (" + units.trim() + ")";
+    return getDisplayName() + unitsStr + " [" + getId() + "]";
   }
 }

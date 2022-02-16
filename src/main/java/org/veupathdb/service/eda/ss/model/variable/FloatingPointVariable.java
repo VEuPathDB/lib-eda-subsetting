@@ -36,6 +36,7 @@ public class FloatingPointVariable extends NumberVariable<Double> {
 
   }
 
+  @Override
   public String getUnits() {
     return _properties.units;
   }

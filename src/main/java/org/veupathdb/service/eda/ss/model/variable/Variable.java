@@ -80,4 +80,8 @@ public abstract class Variable {
   public List<String> getHideFrom() {
     return _properties.hideFrom;
   }
+
+  public String getDownloadColHeader() {
+    return getDisplayName() + " [" + getId() + "]";
+  }
 }

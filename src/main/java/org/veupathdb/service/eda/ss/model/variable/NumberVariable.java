@@ -10,6 +10,7 @@ import org.veupathdb.service.eda.ss.model.distribution.DistributionConfig;
 public abstract class NumberVariable<T extends Number> extends VariableWithValues {
 
   public abstract T validateBinWidth(Number binWidth);
+  public abstract String getUnits();
 
   private final DistributionConfig<T> _distributionConfig;
 
@@ -26,5 +27,11 @@ public abstract class NumberVariable<T extends Number> extends VariableWithValue
     if (variable instanceof NumberVariable<?>) return (NumberVariable<?>)variable;
     throw new BadRequestException("Variable " + variable.getId() +
         " of entity " + variable.getEntityId() + " is not a number or integer variable.");
+  }
+
+  @Override
+  public String getDownloadColHeader() {
+    String units = getUnits() == null ? "" : " (" + getUnits() + ")";
+    return getDisplayName() + units + " [" + getId() + "]";
   }
 }

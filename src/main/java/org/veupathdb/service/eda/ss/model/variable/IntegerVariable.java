@@ -32,6 +32,7 @@ public class IntegerVariable extends NumberVariable<Long> {
 
   }
 
+  @Override
   public String getUnits() {
     return _properties.units;
   }

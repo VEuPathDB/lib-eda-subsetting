@@ -105,7 +105,7 @@ public class DistributionFactory {
     }
     catch(IllegalArgumentException e) {
       // underlying lib sometimes throws this; indicates bad request data coming in
-      throw new BadRequestException(e.getMessage());
+      throw new BadRequestException("Variable " + var.getId() + " of type " + var.getType() + ": " + e.getMessage());
     }
   }
 

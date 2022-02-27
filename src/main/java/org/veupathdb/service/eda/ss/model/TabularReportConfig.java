@@ -13,19 +13,33 @@ public class TabularReportConfig {
   private List<SortSpecEntry> _sorting = new ArrayList<>();
   private Optional<Long> _numRows = Optional.empty();
   private Long _offset = 0L;
-  private TabularHeaderFormat _headerFormat;
+  private TabularHeaderFormat _headerFormat = TabularHeaderFormat.STANDARD;
+  private boolean _trimTimeFromDateVars = false;
 
-  public TabularReportConfig(Entity entity, APITabularReportConfig apiConfig) {
-    if (apiConfig == null) return;
-    if (apiConfig.getPaging() != null) {
-      _numRows = Optional.of(apiConfig.getPaging().getNumRows());
-      Long offset = apiConfig.getPaging().getOffset();
-      if (offset != null) _offset = offset;
-      if (_offset < 0)
-        throw new BadRequestException("In paging config, offset must a non-negative integer.");
-      if (_numRows.get() <= 0)
-        throw new BadRequestException("In paging config, numRows must a positive integer.");
+  public TabularReportConfig(Entity entity, Optional<APITabularReportConfig> configOpt) {
+    if (configOpt.isEmpty()) {
+      // use defaults for config
+      return;
     }
+    APITabularReportConfig apiConfig = configOpt.get();
+
+    // assign submitted paging if present
+    if (apiConfig.getPaging() != null) {
+      Long numRows = apiConfig.getPaging().getNumRows();
+      if (numRows != null) {
+        if (numRows <= 0)
+          throw new BadRequestException("In paging config, numRows must a positive integer.");
+        _numRows = Optional.of(numRows);
+      }
+      Long offset = apiConfig.getPaging().getOffset();
+      if (offset != null) {
+        if (offset < 0)
+          throw new BadRequestException("In paging config, offset must a non-negative integer.");
+        _offset = offset;
+      }
+    }
+
+    // assign submitted sorting if present
     List<SortSpecEntry> sorting = apiConfig.getSorting();
     if (sorting != null && !sorting.isEmpty()) {
       for (SortSpecEntry entry : sorting) {
@@ -33,11 +47,24 @@ public class TabularReportConfig {
       }
       _sorting = sorting;
     }
-    _headerFormat = Optional.ofNullable(apiConfig.getHeaderFormat())
-        .orElse(TabularHeaderFormat.STANDARD); // standard by default
+
+    // assign header format if present
+    if (apiConfig.getHeaderFormat() != null) {
+      _headerFormat = apiConfig.getHeaderFormat();
+    }
+
+    // assign date trimming flag if present
+    if (apiConfig.getTrimTimeFromDateVars() != null) {
+      _trimTimeFromDateVars = apiConfig.getTrimTimeFromDateVars();
+    }
   }
 
-  public boolean requiresPaging() {
+  /**
+   * Whether this configuration contains paging or sorting (paging always requires sorting)
+   *
+   * @return true if paging or sorting config is not the default, else false
+   */
+  public boolean requiresSorting() {
     return !_sorting.isEmpty() || !_numRows.isEmpty() || _offset != 0L;
   }
 
@@ -55,5 +82,9 @@ public class TabularReportConfig {
 
   public TabularHeaderFormat getHeaderFormat() {
     return _headerFormat;
+  }
+
+  public boolean getTrimTimeFromDateVars() {
+    return _trimTimeFromDateVars;
   }
 }

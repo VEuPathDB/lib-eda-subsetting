@@ -5,7 +5,10 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
+import java.io.Writer;
+import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.function.Function;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -37,7 +40,7 @@ public class TallRowsConversionPerformanceTest {
     TallRowsGeneratedResultIterator iterator = new TallRowsGeneratedResultIterator(entity, NUM_RECORDS_TO_PROCESS, CACHE_SAMPLE_RECORD);
     try (BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(OUTPUT_STREAM_PROVIDER.get()))) {
       Timer t = new Timer();
-      StudySubsettingUtils.writeWideRowsNoReportConfig(iterator, TabularResponseType.TABULAR.getFormatter(), writer, outputColumns, entity);
+      StudySubsettingUtils.writeWideRowsFromTallResult(iterator, TabularResponseType.TABULAR.getFormatter(), writer, outputColumns, entity, false);
       writer.flush();
       LOG.info("Time to dump " + NUM_RECORDS_TO_PROCESS + " entity records: " + t.getElapsedString());
     }

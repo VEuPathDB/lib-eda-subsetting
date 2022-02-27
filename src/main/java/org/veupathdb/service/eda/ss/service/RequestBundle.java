@@ -55,8 +55,7 @@ public class RequestBundle {
 
     List<Filter> filters = constructFiltersFromAPIFilters(study, apiFilters);
 
-    Optional<TabularReportConfig> reportConfig = Optional.ofNullable(apiReportConfig)
-        .map(config -> new TabularReportConfig(entity, config));
+    TabularReportConfig reportConfig = new TabularReportConfig(entity, Optional.ofNullable(apiReportConfig));
 
     return new RequestBundle(study, entity, variables, filters, reportConfig);
   }
@@ -201,9 +200,9 @@ public class RequestBundle {
   private final List<Filter> _filters;
   private final Entity _targetEntity;
   private final List<Variable> _requestedVariables;
-  private final Optional<TabularReportConfig> _reportConfig;
+  private final TabularReportConfig _reportConfig;
 
-  RequestBundle(Study study, Entity targetEntity, List<Variable> requestedVariables, List<Filter> filters, Optional<TabularReportConfig> reportConfig) {
+  RequestBundle(Study study, Entity targetEntity, List<Variable> requestedVariables, List<Filter> filters, TabularReportConfig reportConfig) {
     _study = study;
     _targetEntity = targetEntity;
     _filters = filters;
@@ -227,7 +226,7 @@ public class RequestBundle {
     return _requestedVariables;
   }
 
-  public Optional<TabularReportConfig> getReportConfig() {
+  public TabularReportConfig getReportConfig() {
     return _reportConfig;
   }
 }

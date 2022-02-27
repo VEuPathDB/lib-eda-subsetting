@@ -320,7 +320,7 @@ public class StudySubsettingUtilsTest {
 
     TreeNode<Entity> prunedTree = StudySubsettingUtils.pruneTree(_model.study.getEntityTree(), filters, _model.participant);
 
-    String sql = StudySubsettingUtils.generateTabularSqlNoReportConfig(outputVariables, _model.participant, filters, prunedTree);
+    String sql = StudySubsettingUtils.generateTabularSqlForTallRows(outputVariables, _model.participant, filters, prunedTree);
     assertNotEquals("", sql);
     System.out.println("Tabular SQL:" + "\n" + sql);
   }
@@ -418,7 +418,7 @@ public class StudySubsettingUtilsTest {
     ByteArrayOutputStream outStream = new ByteArrayOutputStream();
 
     StudySubsettingUtils.produceTabularSubset(_dataSource, study, entity,
-        variables, filters, Optional.empty(), TabularResponseType.TABULAR.getFormatter(), outStream);
+        variables, filters, new TabularReportConfig(entity, Optional.empty()), TabularResponseType.TABULAR.getFormatter(), outStream);
     String[] expected = {
     "Prtcpnt_stable_id", "Hshld_stable_id", "var_p4",  "var_p3",
     "201", "101",     "blond",   "Martin",
@@ -449,7 +449,7 @@ public class StudySubsettingUtilsTest {
     ByteArrayOutputStream outStream = new ByteArrayOutputStream();
 
     StudySubsettingUtils.produceTabularSubset(_dataSource, study, entity,
-        variables, filters, Optional.empty(), TabularResponseType.TABULAR.getFormatter(), outStream);
+        variables, filters, new TabularReportConfig(entity, Optional.empty()), TabularResponseType.TABULAR.getFormatter(), outStream);
     String[] expected = {
     "Prtcpnt_stable_id", "Hshld_stable_id", "var_p4",  "var_p3",
     "201", "101",     "blond",   "Martin",
@@ -625,7 +625,7 @@ public class StudySubsettingUtilsTest {
   private List<Map<String,String>> getTabularOutputRows(Entity entity, List<Variable> requestedVars) {
     ByteArrayOutputStream buffer = new ByteArrayOutputStream();
     StudySubsettingUtils.produceTabularSubset(_dataSource, _model.study, entity, requestedVars, 
-        Collections.emptyList(), Optional.empty(), TabularResponseType.TABULAR.getFormatter(), buffer);
+        Collections.emptyList(), new TabularReportConfig(entity, Optional.empty()), TabularResponseType.TABULAR.getFormatter(), buffer);
     Scanner scanner = new Scanner(buffer.toString());
     if (!scanner.hasNextLine()) {
       throw new RuntimeException("Tabular output did not contain a header row.");

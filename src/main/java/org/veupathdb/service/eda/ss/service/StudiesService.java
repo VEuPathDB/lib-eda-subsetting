@@ -184,12 +184,11 @@ public class StudiesService implements Studies {
     return responseConverter.apply(streamer, responseType);
   }
 
-  private static Predicate<StudyAccess> getTabularAccessPredicate(Optional<TabularReportConfig> reportConfig) {
+  private static Predicate<StudyAccess> getTabularAccessPredicate(TabularReportConfig reportConfig) {
     // trigger single-page access IFF user specifies paging with zero offset and number of rows under the single-page max
-    if (reportConfig.isPresent() &&
-        reportConfig.get().getOffset() == 0L &&
-        reportConfig.get().getNumRows().isPresent() &&
-        reportConfig.get().getNumRows().get() <= MAX_ROWS_FOR_SINGLE_PAGE_ACCESS) {
+    if (reportConfig.getOffset() == 0L &&
+        reportConfig.getNumRows().isPresent() &&
+        reportConfig.getNumRows().get() <= MAX_ROWS_FOR_SINGLE_PAGE_ACCESS) {
       return StudyAccess::allowResultsFirstPage;
     }
     // if paging not present or does not meet single-page criteria, user needs all-results access

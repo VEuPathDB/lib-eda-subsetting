@@ -21,7 +21,6 @@ import org.apache.logging.log4j.Logger;
 import org.gusdb.fgputil.ListBuilder;
 import org.gusdb.fgputil.Tuples.TwoTuple;
 import org.gusdb.fgputil.db.runner.SQLRunner;
-import org.gusdb.fgputil.db.runner.SingleIntResultSetHandler;
 import org.gusdb.fgputil.db.runner.SingleLongResultSetHandler;
 import org.gusdb.fgputil.db.stream.ResultSetIterator;
 import org.gusdb.fgputil.db.stream.ResultSets;
@@ -65,25 +64,30 @@ public class StudySubsettingUtils {
    * @param outputEntity    entity type to return
    * @param outputVariables variables requested
    * @param filters         filters to apply to create a subset of records
+   * @param reportConfig    configuration of this report
    * @param formatter       object that will write response
+   * @param outputStream    stream to which report should be written
    */
   public static void produceTabularSubset(DataSource datasource, Study study, Entity outputEntity,
                                           List<Variable> outputVariables, List<Filter> filters,
-                                          Optional<TabularReportConfig> reportConfig, TabularResponseType.Formatter formatter,
+                                          TabularReportConfig reportConfig, TabularResponseType.Formatter formatter,
                                           OutputStream outputStream) {
 
     TreeNode<Entity> prunedEntityTree = pruneTree(study.getEntityTree(), filters, outputEntity);
 
-    String sql = reportConfig.isEmpty()
-        ? generateTabularSqlNoReportConfig(outputVariables, outputEntity, filters, prunedEntityTree)
-        : generateTabularSqlWithReportConfig(outputVariables, outputEntity, filters, reportConfig.get(), prunedEntityTree);
+    String sql = reportConfig.requiresSorting()
+        ? generateTabularSqlForWideRows(outputVariables, outputEntity, filters, reportConfig, prunedEntityTree)
+        : generateTabularSqlForTallRows(outputVariables, outputEntity, filters, prunedEntityTree);
     LOG.debug("Generated the following tabular SQL: " + sql);
 
     // gather the output columns; these will be used for the standard header and to look up DB column values
     List<String> outputColumns = getTabularOutputColumns(outputEntity, outputVariables);
 
     // check if header should contain pretty display values
-    boolean usePrettyHeader = reportConfig.isPresent() && reportConfig.get().getHeaderFormat() == TabularHeaderFormat.DISPLAY;
+    boolean usePrettyHeader = reportConfig.getHeaderFormat() == TabularHeaderFormat.DISPLAY;
+
+    // create a date formatter based on config
+    boolean trimTimeFromDateVars = reportConfig.getTrimTimeFromDateVars();
 
     new SQLRunner(datasource, sql, "Produce tabular subset").executeQuery(rs -> {
       try(BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(outputStream))) {
@@ -93,10 +97,10 @@ public class StudySubsettingUtils {
         // write header row
         formatter.writeRow(writer, usePrettyHeader ? getTabularPrettyHeaders(outputEntity, outputVariables) : outputColumns);
 
-        if (reportConfig.isEmpty())
-          writeWideRowsNoReportConfig(convertTallRowsResultSet(rs, outputEntity), formatter, writer, outputColumns, outputEntity);
+        if (reportConfig.requiresSorting())
+          writeWideRowsFromWideResult(rs, formatter, writer, outputColumns, outputEntity, trimTimeFromDateVars);
         else
-          writeWideRowsWithReportConfig(rs, formatter, writer, outputColumns);
+          writeWideRowsFromTallResult(convertTallRowsResultSet(rs, outputEntity), formatter, writer, outputColumns, outputEntity, trimTimeFromDateVars);
 
         // close out the response and flush
         formatter.end(writer);
@@ -124,7 +128,6 @@ public class StudySubsettingUtils {
     outputColumns.addAll(outputEntity.getAncestorEntities().stream().map(pkMapper).collect(Collectors.toList()));
     outputColumns.addAll(outputVariables.stream().map(varMapper).collect(Collectors.toList()));
     return outputColumns;
-
   }
 
   /**
@@ -134,36 +137,71 @@ public class StudySubsettingUtils {
     return new ResultSetIterator<>(rs, row -> Optional.of(EntityResultSetUtils.resultSetToTallRowMap(outputEntity, rs)));
   }
 
-  static void writeWideRowsNoReportConfig(Iterator<Map<String, String>> tallRowsIterator,
-                                          TabularResponseType.Formatter formatter, Writer writer, List<String> outputColumns, Entity outputEntity) throws IOException {
+  private static List<String> getDateVarNames(Entity entity, List<String> desiredVarNames) {
+    // create a list of date var names in this result; they may be trimmed
+    return desiredVarNames.stream()
+        // find the var by each name (null for ID names, which won't be found)
+        .map(name -> entity.getVariable(name).orElse(null))
+        // filter out ID names and non-dates
+        .filter(var -> var != null && ((VariableWithValues)var).getType() == VariableType.DATE)
+        // convert back to the ID/name of the variable
+        .map(Variable::getId)
+        // collect into a list
+        .collect(Collectors.toList());
+  }
+
+  static void writeWideRowsFromTallResult(Iterator<Map<String, String>> tallRowsIterator,
+                                          TabularResponseType.Formatter formatter,
+                                          Writer writer, List<String> outputColumns,
+                                          Entity outputEntity, boolean trimTimeFromDateVars) throws IOException {
 
     // an iterator of lists of maps, each list being the rows of the tall table returned for a single entity id
     String pkCol = outputEntity.getPKColName();
     Iterator<List<Map<String, String>>> groupedTallRowsIterator = new GroupingIterator<>(
-        tallRowsIterator, (row1, row2) -> {
-      return row1.get(pkCol).equals(row2.get(pkCol));
-    }
-    );
+        tallRowsIterator, (row1, row2) -> row1.get(pkCol).equals(row2.get(pkCol)));
 
     // iterate through groups and format into strings to be written to stream
+    List<String> dateVars = getDateVarNames(outputEntity, outputColumns);
     for (List<Map<String, String>> group : toIterable(groupedTallRowsIterator)) {
       Map<String, String> wideRowMap = EntityResultSetUtils.getTallToWideFunction(outputEntity).apply(group);
-      List<String> wideRow = outputColumns.stream()
-          // look up column value in the map
-          .map(colName -> wideRowMap.get(colName))
-          // convert null values to empty strings
-          .map(val -> val == null ? "" : val)
-          .collect(Collectors.toList());
+
+      // build list of row values
+      List<String> wideRow = new ArrayList<>(outputColumns.size());
+      for (String colName : outputColumns) {
+        // look up column value in the map
+        String value = wideRowMap.get(colName);
+        // convert null values to empty strings
+        if (value == null) value = "";
+        // trim dates if necessary
+        if (trimTimeFromDateVars && dateVars.contains(colName) && value.length() > 10) value = value.substring(0,10);
+        // add to row
+        wideRow.add(value);
+      }
       formatter.writeRow(writer, wideRow);
     }
   }
 
-  static void writeWideRowsWithReportConfig(ResultSet rs, TabularResponseType.Formatter formatter,
-                                            Writer writer, List<String> outputColumns) throws IOException, SQLException {
+  static void writeWideRowsFromWideResult(ResultSet rs, TabularResponseType.Formatter formatter,
+                                          Writer writer, List<String> outputColumns, Entity outputEntity,
+                                          boolean trimTimeFromDateVars) throws IOException, SQLException {
+
+    // iterate through groups and format into strings to be written to stream
+    List<String> dateVars = getDateVarNames(outputEntity, outputColumns);
+
+    // iterate over wide result rows, converting dates if necessary
     while (rs.next()) {
-      List<String> wideRow = new ArrayList<>();
+      List<String> wideRow = new ArrayList<>(outputColumns.size());
       for (String colName : outputColumns) {
-        wideRow.add(ResultSetUtils.getRsStringWithDefault(rs, colName, ""));
+        // read raw value from result set, defaulting to empty string
+        String value = ResultSetUtils.getRsStringWithDefault(rs, colName, "");
+        // data vars need extra formatting for ISO format compliance; also, trim dates if necessary
+        if (dateVars.contains(colName) && value.length() > 10) {
+          if (trimTimeFromDateVars)
+            value = value.substring(0,10);
+          else
+            value = value.replace(' ','T');
+        }
+        wideRow.add(value);
       }
       formatter.writeRow(writer, wideRow);
     }
@@ -220,7 +258,7 @@ public class StudySubsettingUtils {
   /**
    * Generate SQL to produce a tall stream of Entity ID, ancestry IDs, variable ID and values.
    */
-  static String generateTabularSqlNoReportConfig(List<Variable> outputVariables, Entity outputEntity, List<Filter> filters, TreeNode<Entity> prunedEntityTree) {
+  static String generateTabularSqlForTallRows(List<Variable> outputVariables, Entity outputEntity, List<Filter> filters, TreeNode<Entity> prunedEntityTree) {
 
     LOG.debug("--------------------- generateTabularSql ------------------");
 
@@ -240,39 +278,37 @@ public class StudySubsettingUtils {
   }
 
   /**
-   * Generate SQL to produce a multi-column tabular output (the requested variables), for the specified subset.
-   * <p>
-   * <p>
+   * Generate SQL to produce a multi-column tabular output (the requested variables), for the specified subset, e.g.
+   * <pre>
    * WITH
-   * EUPATH_0000609 as (
-   * SELECT Observation_stable_id, Participant_stable_id, Household_stable_id, Sample_stable_id FROM apidb.Ancestors_GEMSCC0003_1_Sample
-   * ),
-   * subset AS (
-   * SELECT EUPATH_0000609.Sample_stable_id
-   * FROM EUPATH_0000609
-   * ),
-   * wide_tabular AS (
-   * select rownum as r, wt.*
-   * from (
-   * select Sample_stable_id,
-   * Observation_stable_id,
-   * Participant_stable_id,
-   * Household_stable_id,
-   * json_query(atts, '$.EUPATH_0000711') as EUPATH_0000711,
-   * ea.stable_id
-   * from apidb.entityattributes ea, apidb.Ancestors_GEMSCC0003_1_Sample a
-   * where ea.stable_id in (select * from subset)
-   * and ea.stable_id = a.Sample_stable_id
-   * order by Sample_stable_id
-   * ) wt
-   * )
-   * select Sample_stable_id, Observation_stable_id, Participant_stable_id, Household_stable_id, EUPATH_0000711
+   *   EUPATH_0000609 as (
+   *     SELECT Participant_stable_id, Household_stable_id, Sample_stable_id FROM eda.Ancestors_GEMSCC0003_1_Sample
+   *   ),
+   *   subset AS (
+   *     SELECT EUPATH_0000609.Sample_stable_id
+   *     FROM EUPATH_0000609
+   *   ),
+   *   wide_tabular AS (
+   *     select rownum as r, wt.*
+   *     from (
+   *       select Sample_stable_id, Participant_stable_id, Household_stable_id,
+   *         json_query(atts, '$.EUPATH_0000711') as EUPATH_0000711,
+   *         json_query(atts, '$.OBI_0001619') as OBI_0001619,
+   *         ea.stable_id
+   *       from eda.entityattributes ea, eda.Ancestors_GEMSCC0003_1_Sample a
+   *       where ea.stable_id in (select * from subset)
+   *         and ea.stable_id = a.Sample_stable_id
+   *       order by Sample_stable_id
+   *     ) wt
+   *   )
+   * select Sample_stable_id, Participant_stable_id, Household_stable_id, EUPATH_0000711, OBI_0001619
    * from wide_tabular
    * where r > 2 and r <= 8
-   * order by Sample_stable_id
+   * order by Sample_stable_id;
+   * </pre>
    */
-  static String generateTabularSqlWithReportConfig(List<Variable> outputVariables, Entity outputEntity, List<Filter> filters,
-                                                   TabularReportConfig reportConfig, TreeNode<Entity> prunedEntityTree) {
+  static String generateTabularSqlForWideRows(List<Variable> outputVariables, Entity outputEntity, List<Filter> filters,
+                                              TabularReportConfig reportConfig, TreeNode<Entity> prunedEntityTree) {
     LOG.debug("--------------------- generateTabularSql paging sorting ------------------");
 
     String wideTabularWithClauseName = "wide_tabular";

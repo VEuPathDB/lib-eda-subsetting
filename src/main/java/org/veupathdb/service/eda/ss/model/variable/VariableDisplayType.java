@@ -3,8 +3,10 @@ package org.veupathdb.service.eda.ss.model.variable;
 public enum VariableDisplayType {
   DEFAULT("default"),
   HIDDEN("hidden"),
+  MULTIFILTER("multifilter"),
   GEOAGGREGATOR("geoaggregator"),
-  MULTIFILTER("multifilter");
+  LATITUDE("latitude"),
+  LONGITUDE("longitude");
 
   private final String _type;
 

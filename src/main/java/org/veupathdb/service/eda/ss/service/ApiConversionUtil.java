@@ -74,7 +74,7 @@ public class ApiConversionUtil {
     // set props common to all variables
     apiVar.setId(var.getId());
     apiVar.setDisplayName(var.getDisplayName());
-    apiVar.setDisplayType(APIVariableDisplayType.valueOf(var.getDisplayType().toString()));
+    apiVar.setDisplayType(APIVariableDisplayType.valueOf(var.getDisplayType().name()));
     apiVar.setProviderLabel(var.getProviderLabel());
     apiVar.setParentId(var.getParentId());
     apiVar.setDefinition(var.getDefinition());

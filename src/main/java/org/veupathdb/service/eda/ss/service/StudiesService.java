@@ -14,15 +14,16 @@ import javax.ws.rs.core.Context;
 import javax.ws.rs.core.HttpHeaders;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.glassfish.jersey.server.ContainerRequest;
 import org.gusdb.fgputil.ListBuilder;
 import org.gusdb.fgputil.MapBuilder;
 import org.gusdb.fgputil.distribution.DistributionResult;
 import org.gusdb.fgputil.functional.TreeNode;
 import org.gusdb.fgputil.json.JsonUtil;
 import org.gusdb.fgputil.web.UrlEncodedForm;
+import org.veupathdb.lib.container.jaxrs.providers.UserProvider;
 import org.veupathdb.lib.container.jaxrs.server.annotations.Authenticated;
 import org.veupathdb.lib.container.jaxrs.server.middleware.CustomResponseHeadersFilter;
-import org.veupathdb.lib.container.jaxrs.utils.RequestKeys;
 import org.veupathdb.service.eda.common.auth.StudyAccess;
 import org.veupathdb.service.eda.common.client.TabularResponseType;
 import org.veupathdb.service.eda.generated.model.APIEntity;
@@ -60,7 +61,7 @@ public class StudiesService implements Studies {
   private static final long MAX_ROWS_FOR_SINGLE_PAGE_ACCESS = 20;
 
   @Context
-  ContainerRequestContext _request;
+  ContainerRequest _request;
 
   @Override
   public GetStudiesResponse getStudies() {
@@ -162,7 +163,7 @@ public class StudiesService implements Studies {
   }
 
   public static <T> T handleTabularRequest(
-      ContainerRequestContext requestContext, String studyId, String entityId,
+      ContainerRequest requestContext, String studyId, String entityId,
       EntityTabularPostRequest requestBody, boolean checkUserPermissions,
       BiFunction<EntityTabularPostResponseStream,TabularResponseType,T> responseConverter) {
 
@@ -217,8 +218,8 @@ public class StudiesService implements Studies {
     return  PostStudiesEntitiesCountByStudyIdAndEntityIdResponse.respond200WithApplicationJson(response);
   }
 
-  private static void checkPerms(ContainerRequestContext request, String studyId, Predicate<StudyAccess> accessPredicate) {
-    Entry<String, String> authHeader = StudyAccess.readAuthHeader(request, RequestKeys.AUTH_HEADER);
+  private static void checkPerms(ContainerRequest request, String studyId, Predicate<StudyAccess> accessPredicate) {
+    Entry<String, String> authHeader = UserProvider.getSubmittedAuth(request).orElseThrow();
     StudyAccess.confirmPermission(authHeader, Resources.ENV.getDatasetAccessServiceUrl(), studyId, accessPredicate);
   }
 

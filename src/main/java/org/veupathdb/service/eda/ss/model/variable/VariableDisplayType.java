@@ -3,26 +3,21 @@ package org.veupathdb.service.eda.ss.model.variable;
 public enum VariableDisplayType {
   DEFAULT("default"),
   HIDDEN("hidden"),
+  GEOAGGREGATOR("geoaggregator"),
   MULTIFILTER("multiFilter");
 
-  String type;
+  private final String _type;
 
   VariableDisplayType(String type) {
-    this.type = type;
+    _type = type;
   }
 
   public static VariableDisplayType fromString(String displayType) {
-
-    VariableDisplayType t;
-
-    switch (displayType.toLowerCase()) {
-      case "default" -> t = DEFAULT;
-      case "multifilter" -> t = MULTIFILTER;
-      case "hidden" -> t = HIDDEN;
-      default -> throw new RuntimeException("Unrecognized variable display type: " + displayType);
+    for (VariableDisplayType type : values()) {
+      if (type._type.equals(displayType.toLowerCase())) {
+        return type;
+      }
     }
-    return t;
+    throw new RuntimeException("Unrecognized variable display type: " + displayType);
   }
-
-  public String getType() {return type;}
 }

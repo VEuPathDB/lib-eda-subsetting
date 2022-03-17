@@ -4,7 +4,7 @@ public enum VariableDisplayType {
   DEFAULT("default"),
   HIDDEN("hidden"),
   GEOAGGREGATOR("geoaggregator"),
-  MULTIFILTER("multiFilter");
+  MULTIFILTER("multifilter");
 
   private final String _type;
 

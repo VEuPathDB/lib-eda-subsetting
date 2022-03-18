@@ -2,6 +2,8 @@ package org.veupathdb.service.eda.ss.model.variable;
 
 public enum VariableDisplayType {
   DEFAULT("default"),
+  // FIXME: hidden is deprecated and should be removed
+  //  from both this code and the RAML in EdaCommon
   HIDDEN("hidden"),
   MULTIFILTER("multifilter"),
   GEOAGGREGATOR("geoaggregator"),
@@ -21,5 +23,9 @@ public enum VariableDisplayType {
       }
     }
     throw new RuntimeException("Unrecognized variable display type: " + displayType);
+  }
+
+  public String getType() {
+    return _type;
   }
 }

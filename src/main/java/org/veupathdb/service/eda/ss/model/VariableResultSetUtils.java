@@ -95,7 +95,7 @@ class VariableResultSetUtils {
         getRsStringWithDefault(rs, PROVIDER_LABEL_COL_NAME, "No Provider Label available"), // TODO remove hack when in db
         getRsString(rs, VARIABLE_ID_COL_NAME, true),
         entity,
-        VariableDisplayType.fromString(getRsStringWithDefault(rs, DISPLAY_TYPE_COL_NAME, "default")),
+        VariableDisplayType.fromString(getRsStringWithDefault(rs, DISPLAY_TYPE_COL_NAME, VariableDisplayType.DEFAULT.getType())),
         getRsString(rs, DISPLAY_NAME_COL_NAME, true),
         rs.getInt(DISPLAY_ORDER_COL_NAME),
         rs.getString(VARIABLE_PARENT_ID_COL_NAME),

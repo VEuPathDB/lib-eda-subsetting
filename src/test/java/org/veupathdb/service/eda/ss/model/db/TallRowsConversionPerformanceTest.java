@@ -1,14 +1,11 @@
-package org.veupathdb.service.eda.ss.model;
+package org.veupathdb.service.eda.ss.model.db;
 
 import java.io.BufferedWriter;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
-import java.io.Writer;
-import java.util.Iterator;
 import java.util.List;
-import java.util.Map;
 import java.util.function.Function;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -16,6 +13,8 @@ import org.gusdb.fgputil.Timer;
 import org.gusdb.fgputil.functional.FunctionalInterfaces.SupplierWithException;
 import org.junit.jupiter.api.Test;
 import org.veupathdb.service.eda.common.client.TabularResponseType;
+import org.veupathdb.service.eda.ss.model.Entity;
+import org.veupathdb.service.eda.ss.model.TestModel;
 
 public class TallRowsConversionPerformanceTest {
 
@@ -36,11 +35,11 @@ public class TallRowsConversionPerformanceTest {
   @Test
   public void doTallRowsPerfTest() throws Exception {
     Entity entity = TEST_ENTITY.apply(new TestModel());
-    List<String> outputColumns = StudySubsettingUtils.getTabularOutputColumns(entity, entity.getVariables());
+    List<String> outputColumns = FilteredResultFactory.getTabularOutputColumns(entity, entity.getVariables());
     TallRowsGeneratedResultIterator iterator = new TallRowsGeneratedResultIterator(entity, NUM_RECORDS_TO_PROCESS, CACHE_SAMPLE_RECORD);
     try (BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(OUTPUT_STREAM_PROVIDER.get()))) {
       Timer t = new Timer();
-      StudySubsettingUtils.writeWideRowsFromTallResult(iterator, TabularResponseType.TABULAR.getFormatter(), writer, outputColumns, entity, false);
+      FilteredResultFactory.writeWideRowsFromTallResult(iterator, TabularResponseType.TABULAR.getFormatter(), writer, outputColumns, entity, false);
       writer.flush();
       LOG.info("Time to dump " + NUM_RECORDS_TO_PROCESS + " entity records: " + t.getElapsedString());
     }

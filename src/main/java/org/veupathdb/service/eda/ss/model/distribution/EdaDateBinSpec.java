@@ -31,28 +31,28 @@ public class EdaDateBinSpec implements DateBinSpec {
   public ChronoUnit getBinUnits() {
     return convertToChrono(_binSpec
         .map(spec -> spec.getBinUnits())
-        .orElse(_variable.getBinUnits()));
+        .orElse(_variable.getDistributionConfig().binUnits));
   }
 
   @Override
   public int getBinSize() {
     return _binSpec
         .map(spec -> spec.getBinWidth().intValue())
-        .orElse(_variable.getBinSize());
+        .orElse(_variable.getDistributionConfig().binSize);
   }
 
   @Override
   public String getDisplayRangeMin() {
     return _binSpec
         .map(spec -> standardizeLocalDateTime(castToString(spec.getDisplayRangeMin())))
-        .orElse(_variable.getDisplayRangeMin());
+        .orElse(_variable.getDistributionConfig().displayRangeMin);
   }
 
   @Override
   public String getDisplayRangeMax() {
     return _binSpec
         .map(spec -> standardizeLocalDateTime(castToString(spec.getDisplayRangeMax())))
-        .orElse(_variable.getDisplayRangeMax());
+        .orElse(_variable.getDistributionConfig().displayRangeMax);
   }
 
   private static String castToString(Object rangeBoundary) {

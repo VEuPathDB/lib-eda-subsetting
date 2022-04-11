@@ -1,10 +1,10 @@
 package org.veupathdb.service.eda.ss.model.filter;
 
 import org.veupathdb.service.eda.ss.model.Entity;
-import org.veupathdb.service.eda.ss.model.RdbmsColumnNames;
 import org.veupathdb.service.eda.ss.model.variable.NumberVariable;
 
 import static org.gusdb.fgputil.FormatUtil.NL;
+import static org.veupathdb.service.eda.ss.model.db.DB.Tables.AttributeValue.Columns.NUMBER_VALUE_COL_NAME;
 
 public class NumberRangeFilter extends SingleValueFilter<NumberVariable> {
 
@@ -20,7 +20,7 @@ public class NumberRangeFilter extends SingleValueFilter<NumberVariable> {
   // safe from SQL injection since input classes are Number
   @Override
   public String getFilteringAndClausesSql() {
-    return "  AND " + RdbmsColumnNames.NUMBER_VALUE_COL_NAME + " >= " + _min + " AND " + RdbmsColumnNames.NUMBER_VALUE_COL_NAME + " <= " + _max + NL;
+    return "  AND " + NUMBER_VALUE_COL_NAME + " >= " + _min + " AND " + NUMBER_VALUE_COL_NAME + " <= " + _max + NL;
   }
 
 }

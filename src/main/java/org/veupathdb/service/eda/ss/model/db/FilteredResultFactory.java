@@ -1,4 +1,4 @@
-package org.veupathdb.service.eda.ss.model;
+package org.veupathdb.service.eda.ss.model.db;
 
 import java.io.BufferedWriter;
 import java.io.IOException;
@@ -30,25 +30,29 @@ import org.veupathdb.service.eda.common.client.TabularResponseType;
 import org.veupathdb.service.eda.generated.model.SortSpecEntry;
 import org.veupathdb.service.eda.generated.model.TabularHeaderFormat;
 import org.veupathdb.service.eda.ss.Resources;
+import org.veupathdb.service.eda.ss.model.Entity;
+import org.veupathdb.service.eda.ss.model.Study;
+import org.veupathdb.service.eda.ss.model.TabularReportConfig;
+import org.veupathdb.service.eda.ss.model.db.DB.Tables.Ancestors;
 import org.veupathdb.service.eda.ss.model.filter.Filter;
 import org.veupathdb.service.eda.ss.model.variable.Variable;
 import org.veupathdb.service.eda.ss.model.variable.VariableType;
 import org.veupathdb.service.eda.ss.model.variable.VariableWithValues;
 
 import static org.gusdb.fgputil.iterator.IteratorUtil.toIterable;
-import static org.veupathdb.service.eda.ss.model.RdbmsColumnNames.DATE_VALUE_COL_NAME;
-import static org.veupathdb.service.eda.ss.model.RdbmsColumnNames.NUMBER_VALUE_COL_NAME;
-import static org.veupathdb.service.eda.ss.model.RdbmsColumnNames.STRING_VALUE_COL_NAME;
-import static org.veupathdb.service.eda.ss.model.RdbmsColumnNames.TT_VARIABLE_ID_COL_NAME;
+import static org.veupathdb.service.eda.ss.model.db.DB.Tables.AttributeValue.Columns.DATE_VALUE_COL_NAME;
+import static org.veupathdb.service.eda.ss.model.db.DB.Tables.AttributeValue.Columns.NUMBER_VALUE_COL_NAME;
+import static org.veupathdb.service.eda.ss.model.db.DB.Tables.AttributeValue.Columns.STRING_VALUE_COL_NAME;
+import static org.veupathdb.service.eda.ss.model.db.DB.Tables.AttributeValue.Columns.TT_VARIABLE_ID_COL_NAME;
 
 /**
  * A class to perform subsetting operations on a study entity
  *
  * @author Steve
  */
-public class StudySubsettingUtils {
+public class FilteredResultFactory {
 
-  private static final Logger LOG = LogManager.getLogger(StudySubsettingUtils.class);
+  private static final Logger LOG = LogManager.getLogger(FilteredResultFactory.class);
 
   private static final int FETCH_SIZE_FOR_TABULAR_QUERIES = 2000;
 
@@ -134,7 +138,7 @@ public class StudySubsettingUtils {
    * @return an iterator of maps, each representing a single row in the tall table
    */
   private static Iterator<Map<String, String>> convertTallRowsResultSet(ResultSet rs, Entity outputEntity) {
-    return new ResultSetIterator<>(rs, row -> Optional.of(EntityResultSetUtils.resultSetToTallRowMap(outputEntity, rs)));
+    return new ResultSetIterator<>(rs, row -> Optional.of(TallRowConversionUtils.resultSetToTallRowMap(outputEntity, rs)));
   }
 
   private static List<String> getDateVarNames(Entity entity, List<String> desiredVarNames) {
@@ -163,7 +167,7 @@ public class StudySubsettingUtils {
     // iterate through groups and format into strings to be written to stream
     List<String> dateVars = getDateVarNames(outputEntity, outputColumns);
     for (List<Map<String, String>> group : toIterable(groupedTallRowsIterator)) {
-      Map<String, String> wideRowMap = EntityResultSetUtils.getTallToWideFunction(outputEntity).apply(group);
+      Map<String, String> wideRowMap = TallRowConversionUtils.getTallToWideFunction(outputEntity).apply(group);
 
       // build list of row values
       List<String> wideRow = new ArrayList<>(outputColumns.size());
@@ -193,7 +197,7 @@ public class StudySubsettingUtils {
       List<String> wideRow = new ArrayList<>(outputColumns.size());
       for (String colName : outputColumns) {
         // read raw value from result set, defaulting to empty string
-        String value = ResultSetUtils.getRsStringWithDefault(rs, colName, "");
+        String value = ResultSetUtils.getRsOptionalString(rs, colName, "");
         // data vars need extra formatting for ISO format compliance; also, trim dates if necessary
         if (dateVars.contains(colName) && value.length() > 10) {
           if (trimTimeFromDateVars)
@@ -383,7 +387,7 @@ public class StudySubsettingUtils {
     columns.add("ea.stable_id");
     return
         "    select " + String.join(", " + NL + "    ", columns) + NL +
-        "    from " + schema + outputEntity.getWideTableName() + " ea, " + schema + outputEntity.getAncestorsTableName() + " a" + NL +
+        "    from " + schema + DB.Tables.Attributes.NAME(outputEntity) + " ea, " + schema + Ancestors.NAME(outputEntity) + " a" + NL +
         "    where ea.stable_id in (select * from " + subsetWithClauseName + ")" + NL +
         "    and ea.stable_id = a." + outputEntity.getPKColName() + NL +
         reportConfigOrderByClause(reportConfig.getSorting(), "    ");
@@ -412,7 +416,7 @@ public class StudySubsettingUtils {
     }
     String pkColName = outputEntity.getPKColName();
     return " LEFT JOIN (" + NL
-        + " SELECT * FROM " + Resources.getAppDbSchema() + outputEntity.getTallTableName() + " " + NL
+        + " SELECT * FROM " + Resources.getAppDbSchema() + DB.Tables.AttributeValue.NAME(outputEntity) + " " + NL
         + generateTabularWhereClause(outputVariables, pkColName) + NL
         + " ) " + tallTblAbbrev + NL
         + " ON " + ancestorTblAbbrev + "." + pkColName + " = " + tallTblAbbrev + "." + pkColName;
@@ -438,7 +442,7 @@ public class StudySubsettingUtils {
         + generateVariableCountSelectClause(variable) + NL
         + generateDistributionFromClause(outputEntity) + NL
         + generateDistributionWhereClause(variable) + NL
-        + generateSubsetInClause(prunedEntityTree, outputEntity, outputEntity.getTallTableName());
+        + generateSubsetInClause(prunedEntityTree, outputEntity, DB.Tables.AttributeValue.NAME(outputEntity));
 
   }
 
@@ -463,7 +467,7 @@ public class StudySubsettingUtils {
     String selectCols = String.join(", ", selectColsList);
 
     // default WITH body assumes no filters. we use the ancestor table because it is small
-    String withBody = "  SELECT " + selectCols + " FROM " + Resources.getAppDbSchema() + entity.getAncestorsTableName() + NL;
+    String withBody = "  SELECT " + selectCols + " FROM " + Resources.getAppDbSchema() + DB.Tables.Ancestors.NAME(entity) + NL;
 
     List<Filter> filtersOnThisEntity = filters.stream().filter(f -> f.getEntity().getId().equals(entity.getId())).collect(Collectors.toList());
 
@@ -536,7 +540,7 @@ order by number_value desc;
   }
 
   static String generateDistributionFromClause(Entity outputEntity) {
-    return "FROM " + Resources.getAppDbSchema() + outputEntity.getTallTableName();
+    return "FROM " + Resources.getAppDbSchema() + DB.Tables.AttributeValue.NAME(outputEntity);
   }
 
   private static String generateTabularFromClause(Entity outputEntity, TreeNode<Entity> prunedEntityTree, String ancestorTblAbbrev) {

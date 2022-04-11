@@ -9,7 +9,6 @@ import java.util.function.Predicate;
 import javax.sql.DataSource;
 import jakarta.ws.rs.BadRequestException;
 import jakarta.ws.rs.NotFoundException;
-import jakarta.ws.rs.container.ContainerRequestContext;
 import jakarta.ws.rs.core.Context;
 import jakarta.ws.rs.core.HttpHeaders;
 import org.apache.logging.log4j.LogManager;
@@ -47,7 +46,7 @@ import org.veupathdb.service.eda.ss.Resources;
 import org.veupathdb.service.eda.ss.model.Entity;
 import org.veupathdb.service.eda.ss.model.MetadataCache;
 import org.veupathdb.service.eda.ss.model.Study;
-import org.veupathdb.service.eda.ss.model.StudySubsettingUtils;
+import org.veupathdb.service.eda.ss.model.db.FilteredResultFactory;
 import org.veupathdb.service.eda.ss.model.TabularReportConfig;
 import org.veupathdb.service.eda.ss.model.distribution.DistributionFactory;
 import org.veupathdb.service.eda.ss.model.variable.Variable;
@@ -178,7 +177,7 @@ public class StudiesService implements Studies {
     TabularResponseType responseType = TabularResponseType.fromAcceptHeader(requestContext);
 
     EntityTabularPostResponseStream streamer = new EntityTabularPostResponseStream
-        (outStream -> StudySubsettingUtils.produceTabularSubset(dataSource, request.getStudy(),
+        (outStream -> FilteredResultFactory.produceTabularSubset(dataSource, request.getStudy(),
             request.getTargetEntity(), request.getRequestedVariables(), request.getFilters(),
             request.getReportConfig(), responseType.getFormatter(), outStream));
 
@@ -206,10 +205,10 @@ public class StudiesService implements Studies {
     // unpack data from API input to model objects
     RequestBundle request = RequestBundle.unpack(datasource, studyId, entityId, rawRequest.getFilters(), Collections.emptyList(), null);
 
-    TreeNode<Entity> prunedEntityTree = StudySubsettingUtils.pruneTree(
+    TreeNode<Entity> prunedEntityTree = FilteredResultFactory.pruneTree(
         request.getStudy().getEntityTree(), request.getFilters(), request.getTargetEntity());
 
-    long count = StudySubsettingUtils.getEntityCount(
+    long count = FilteredResultFactory.getEntityCount(
         datasource, prunedEntityTree, request.getTargetEntity(), request.getFilters());
 
     EntityCountPostResponse response = new EntityCountPostResponseImpl();

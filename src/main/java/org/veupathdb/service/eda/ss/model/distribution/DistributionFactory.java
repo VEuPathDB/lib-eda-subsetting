@@ -11,7 +11,7 @@ import org.veupathdb.service.eda.generated.model.BinSpecWithRange;
 import org.veupathdb.service.eda.generated.model.ValueSpec;
 import org.veupathdb.service.eda.ss.model.Entity;
 import org.veupathdb.service.eda.ss.model.Study;
-import org.veupathdb.service.eda.ss.model.StudySubsettingUtils;
+import org.veupathdb.service.eda.ss.model.db.FilteredResultFactory;
 import org.gusdb.fgputil.distribution.AbstractDistribution;
 import org.gusdb.fgputil.distribution.DateBinDistribution;
 import org.gusdb.fgputil.distribution.DiscreteDistribution;
@@ -47,17 +47,17 @@ public class DistributionFactory {
       _filters = filters;
 
       // get entity tree pruned to those entities of current interest
-      _prunedEntityTree = StudySubsettingUtils.pruneTree(
+      _prunedEntityTree = FilteredResultFactory.pruneTree(
           study.getEntityTree(), _filters, _targetEntity);
 
       // get the number of entities in the subset
-      _subsetEntityCount = StudySubsettingUtils.getEntityCount(
+      _subsetEntityCount = FilteredResultFactory.getEntityCount(
           _ds, _prunedEntityTree, _targetEntity, _filters);
     }
 
     @Override
     public Stream<Tuples.TwoTuple<String, Long>> getDistributionStream() {
-      return StudySubsettingUtils.produceVariableDistribution(
+      return FilteredResultFactory.produceVariableDistribution(
           _ds, _prunedEntityTree, _targetEntity, _variable, _filters);
     }
 

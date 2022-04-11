@@ -3,8 +3,10 @@ package org.veupathdb.service.eda.ss.model.filter;
 import java.util.List;
 import java.util.stream.Collectors;
 import org.veupathdb.service.eda.ss.model.Entity;
-import org.veupathdb.service.eda.ss.model.RdbmsColumnNames;
+import org.veupathdb.service.eda.ss.model.db.DB;
 import org.veupathdb.service.eda.ss.model.variable.NumberVariable;
+
+import static org.veupathdb.service.eda.ss.model.db.DB.Tables.AttributeValue.Columns.NUMBER_VALUE_COL_NAME;
 
 import static org.gusdb.fgputil.FormatUtil.NL;
 
@@ -20,7 +22,7 @@ public class NumberSetFilter extends SingleValueFilter<NumberVariable> {
   // safe from SQL injection since input classes are Number
   @Override
   public String getFilteringAndClausesSql() {
-    return "  AND " + RdbmsColumnNames.NUMBER_VALUE_COL_NAME + " IN (" + createSqlInExpression() + " )" + NL;
+    return "  AND " + NUMBER_VALUE_COL_NAME + " IN (" + createSqlInExpression() + " )" + NL;
   }
 
   private String createSqlInExpression() {

@@ -1,4 +1,4 @@
-package org.veupathdb.service.eda.ss.model;
+package org.veupathdb.service.eda.ss.model.db;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import java.util.ArrayList;
@@ -11,7 +11,9 @@ import javax.sql.DataSource;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
-import org.veupathdb.lib.container.jaxrs.server.middleware.JacksonFilter;
+import org.veupathdb.service.eda.ss.model.FiltersForTesting;
+import org.veupathdb.service.eda.ss.model.Study;
+import org.veupathdb.service.eda.ss.model.TestModel;
 import org.veupathdb.service.eda.ss.model.variable.VariableWithValues;
 import org.veupathdb.service.eda.ss.stubdb.StubDb;
 
@@ -23,7 +25,7 @@ public class EntityResultSetUtilsTest {
   public static void setUp() {
     _model = new TestModel();
     _dataSource = StubDb.getDataSource();
-    Study study = Study.loadStudy(_dataSource, LoadStudyTest.STUDY_ID);
+    Study study = new StudyFactory(_dataSource).loadStudy(LoadStudyTest.STUDY_ID);
     new FiltersForTesting(study);
   }
   
@@ -52,7 +54,7 @@ public class EntityResultSetUtilsTest {
     variablesMap.put(_model.haircolor.getId(), _model.haircolor);
     variablesMap.put(_model.shoesize.getId(), _model.shoesize);
        
-    EntityResultSetUtils.putMultiValuesAsJsonIntoWideRow(multiValues, wideRow, variablesMap);
+    TallRowConversionUtils.putMultiValuesAsJsonIntoWideRow(multiValues, wideRow, variablesMap);
     
     assertEquals("[\"red\",\"blue\"]", wideRow.get(_model.haircolor.getId()));
     assertEquals("[9.5,19]", wideRow.get(_model.shoesize.getId()));

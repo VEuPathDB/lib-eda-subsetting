@@ -3,10 +3,11 @@ package org.veupathdb.service.eda.ss.model.filter;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import org.veupathdb.service.eda.ss.model.Entity;
+import org.veupathdb.service.eda.ss.model.db.DB;
 import org.veupathdb.service.eda.ss.model.variable.DateVariable;
 
 import static org.gusdb.fgputil.FormatUtil.NL;
-import static org.veupathdb.service.eda.ss.model.RdbmsColumnNames.DATE_VALUE_COL_NAME;
+import static org.veupathdb.service.eda.ss.model.db.DB.Tables.AttributeValue.Columns.DATE_VALUE_COL_NAME;
 
 public class DateRangeFilter extends SingleValueFilter<DateVariable> {
 

@@ -1,6 +1,6 @@
 package org.veupathdb.service.eda.ss.model.distribution;
 
-public class DistributionConfig<T extends Number> {
+public class NumberDistributionConfig<T extends Number> {
 
   private final T _displayRangeMin;
   private final T _displayRangeMax;
@@ -9,7 +9,7 @@ public class DistributionConfig<T extends Number> {
   private final T _binWidth;
   private final T _binWidthOverride;
 
-  public DistributionConfig(
+  public NumberDistributionConfig(
       T displayRangeMin, T displayRangeMax,
       T rangeMin, T rangeMax,
       T binWidth, T binWidthOverride) {

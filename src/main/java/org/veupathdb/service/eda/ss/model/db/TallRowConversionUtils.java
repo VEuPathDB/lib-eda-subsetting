@@ -1,117 +1,27 @@
-package org.veupathdb.service.eda.ss.model;
+package org.veupathdb.service.eda.ss.model.db;
 
 import java.sql.ResultSet;
-
 import java.sql.SQLException;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashMap;
-import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 import java.util.function.Function;
-
-import java.util.stream.Collectors;
-import javax.sql.DataSource;
-
-import org.gusdb.fgputil.db.runner.SQLRunner;
-import org.gusdb.fgputil.functional.TreeNode;
 import org.json.JSONArray;
-import org.veupathdb.service.eda.ss.Resources;
+import org.veupathdb.service.eda.ss.model.Entity;
 import org.veupathdb.service.eda.ss.model.variable.Variable;
 import org.veupathdb.service.eda.ss.model.variable.VariableWithValues;
 
-import static org.gusdb.fgputil.FormatUtil.NL;
-import static org.veupathdb.service.eda.ss.model.RdbmsColumnNames.*;
-import static org.veupathdb.service.eda.ss.model.ResultSetUtils.getRsString;
-import static org.veupathdb.service.eda.ss.model.ResultSetUtils.getRsStringWithDefault;
+import static org.veupathdb.service.eda.ss.model.db.DB.Tables.AttributeValue.Columns.TT_VARIABLE_ID_COL_NAME;
 
 /**
- * utilities for creating Entities from result sets
+ * utilities for converting tall row SQL results into wide rows for tabular responses
  *
  * @author Steve
  */
-public class EntityResultSetUtils {
+public class TallRowConversionUtils {
 
-  private final static String STDY_ABBRV_COL_NM = "study_abbrev"; // for private queries
-
-  static TreeNode<Entity> getStudyEntityTree(DataSource datasource, String studyId) {
-
-    String sql = generateEntityTreeSql(studyId);
-
-    // entityID -> list of child entities
-    Map<String, List<Entity>> childrenMap = new HashMap<>();
-
-    Entity rootEntity = new SQLRunner(datasource, sql, "Get entity tree").executeQuery(rs -> {
-      Entity root = null;
-      while (rs.next()) {
-        Entity entity = createEntityFromResultSet(rs);
-        String parentId = rs.getString(ENTITY_PARENT_ID_COL_NAME);
-        if (parentId == null) {
-          if (root != null) throw new RuntimeException("In Study " + studyId + " found more than one root entity");
-          root = entity;
-        }
-        else {
-          if (!childrenMap.containsKey(parentId)) childrenMap.put(parentId, new ArrayList<>());
-          childrenMap.get(parentId).add(entity);
-        }
-      }
-      return root;
-    });
-
-    if (rootEntity == null)
-      throw new RuntimeException("Found no entities for study: " + studyId);
-
-    return generateEntityTree(rootEntity, childrenMap);
-  }
-
-  static TreeNode<Entity> generateEntityTree(Entity rootEntity, Map<String, List<Entity>> childrenMap) {
-    // create a new node for this entity
-    TreeNode<Entity> rootNode = new TreeNode<>(rootEntity);
-    // create subtree nodes for all children and add
-    rootNode.addAllChildNodes(
-        // get the children of this node
-        Optional.ofNullable(childrenMap.get(rootEntity.getId()))
-            // if no children added, use empty list
-            .orElse(Collections.emptyList()).stream()
-            // map each child to a tree
-            .map(child -> generateEntityTree(child, childrenMap))
-            // collect children into a list
-            .collect(Collectors.toList())
-    );
-    return rootNode;
-  }
-
-  static String generateEntityTreeSql(String studyId) {
-    String[] entityCols = { STUDY_ID_COL_NAME, ENTITY_ABBREV_COL_NAME, DISPLAY_NAME_COL_NAME, DISPLAY_NAME_PLURAL_COL_NAME, ENTITY_ID_COL_NAME, DESCRIP_COL_NAME, ENTITY_PARENT_ID_COL_NAME, ENTITY_LOAD_ORDER_ID };
-    return "SELECT e." + String.join(", e.", entityCols) + ", s." + STUDY_ABBREV_COL_NAME + " as " + STDY_ABBRV_COL_NM + NL
-        + "FROM " + Resources.getAppDbSchema() + ENTITY_TABLE_NAME + " e," + Resources.getAppDbSchema() + STUDY_TABLE_NAME + " s " + NL
-        + "WHERE s." + STUDY_ID_COL_NAME + " = '" + studyId + "'" + NL
-        + "AND e." + ENTITY_STUDY_ID_COL_NAME + " = s." + STUDY_ID_COL_NAME + NL
-        // This ordering ensures the produced tree is displayed in load order;
-        //   also stable ordering supports unit testing
-        + "ORDER BY e." + ENTITY_LOAD_ORDER_ID + " ASC";
-  }
-
-  static Entity createEntityFromResultSet(ResultSet rs) {
-
-    try {
-      String name = getRsString(rs, DISPLAY_NAME_COL_NAME, true);
-      String namePlural = rs.getString(DISPLAY_NAME_PLURAL_COL_NAME);
-      if (namePlural == null) namePlural = name + "s";  // TODO remove this hack when db has plurals
-      String id = getRsString(rs, ENTITY_ID_COL_NAME, true);
-      String studyAbbrev = getRsString(rs, STDY_ABBRV_COL_NM, true);
-      String descrip = getRsStringWithDefault(rs, DESCRIP_COL_NAME, "No Entity Description available");
-      String abbrev = getRsString(rs, ENTITY_ABBREV_COL_NAME, true);
-      long loadOrder = ResultSetUtils.getIntegerFromString(rs, ENTITY_LOAD_ORDER_ID, true);
-
-      return new Entity(id, studyAbbrev, name, namePlural, descrip, abbrev, loadOrder);
-    }
-    catch (SQLException e) {
-      throw new RuntimeException(e);
-    }
-  }
+  static final String VARIABLE_VALUE_COL_NAME = "value";
 
   /**
    * Tall table rows look like this:

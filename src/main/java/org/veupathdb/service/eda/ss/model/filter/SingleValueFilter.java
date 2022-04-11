@@ -4,7 +4,7 @@ import org.veupathdb.service.eda.ss.model.Entity;
 import org.veupathdb.service.eda.ss.model.variable.VariableWithValues;
 
 import static org.gusdb.fgputil.FormatUtil.NL;
-import static org.veupathdb.service.eda.ss.model.RdbmsColumnNames.TT_VARIABLE_ID_COL_NAME;
+import static org.veupathdb.service.eda.ss.model.db.DB.Tables.AttributeValue.Columns.TT_VARIABLE_ID_COL_NAME;
 
 public abstract class SingleValueFilter<T extends VariableWithValues> extends Filter {
 

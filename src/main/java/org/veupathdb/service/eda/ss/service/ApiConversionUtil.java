@@ -1,18 +1,31 @@
 package org.veupathdb.service.eda.ss.service;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 import org.gusdb.fgputil.functional.Functions;
 import org.gusdb.fgputil.functional.TreeNode;
+import org.veupathdb.service.eda.generated.model.APICollection;
+import org.veupathdb.service.eda.generated.model.APIDateCollection;
+import org.veupathdb.service.eda.generated.model.APIDateCollectionImpl;
+import org.veupathdb.service.eda.generated.model.APIDateDistributionDefaultsImpl;
 import org.veupathdb.service.eda.generated.model.APIDateVariable;
 import org.veupathdb.service.eda.generated.model.APIDateVariableImpl;
 import org.veupathdb.service.eda.generated.model.APIEntity;
 import org.veupathdb.service.eda.generated.model.APIEntityImpl;
+import org.veupathdb.service.eda.generated.model.APIIntegerCollection;
+import org.veupathdb.service.eda.generated.model.APIIntegerCollectionImpl;
+import org.veupathdb.service.eda.generated.model.APIIntegerDistributionDefaults;
+import org.veupathdb.service.eda.generated.model.APIIntegerDistributionDefaultsImpl;
 import org.veupathdb.service.eda.generated.model.APIIntegerVariable;
 import org.veupathdb.service.eda.generated.model.APIIntegerVariableImpl;
 import org.veupathdb.service.eda.generated.model.APILongitudeVariable;
 import org.veupathdb.service.eda.generated.model.APILongitudeVariableImpl;
+import org.veupathdb.service.eda.generated.model.APINumberCollection;
+import org.veupathdb.service.eda.generated.model.APINumberCollectionImpl;
+import org.veupathdb.service.eda.generated.model.APINumberDistributionDefaults;
+import org.veupathdb.service.eda.generated.model.APINumberDistributionDefaultsImpl;
 import org.veupathdb.service.eda.generated.model.APINumberVariable;
 import org.veupathdb.service.eda.generated.model.APINumberVariableImpl;
 import org.veupathdb.service.eda.generated.model.APIStringVariable;
@@ -23,13 +36,19 @@ import org.veupathdb.service.eda.generated.model.APIVariable;
 import org.veupathdb.service.eda.generated.model.APIVariableDisplayType;
 import org.veupathdb.service.eda.generated.model.APIVariableWithValues;
 import org.veupathdb.service.eda.generated.model.APIVariablesCategoryImpl;
+import org.veupathdb.service.eda.generated.model.APIDateDistributionDefaults;
 import org.veupathdb.service.eda.generated.model.HistogramBin;
 import org.veupathdb.service.eda.generated.model.HistogramBinImpl;
 import org.veupathdb.service.eda.generated.model.HistogramStats;
 import org.veupathdb.service.eda.generated.model.HistogramStatsImpl;
 import org.veupathdb.service.eda.ss.model.Entity;
 import org.veupathdb.service.eda.ss.model.Study;
-import org.veupathdb.service.eda.ss.model.distribution.DistributionConfig;
+import org.veupathdb.service.eda.ss.model.distribution.DateDistributionConfig;
+import org.veupathdb.service.eda.ss.model.distribution.NumberDistributionConfig;
+import org.veupathdb.service.eda.ss.model.varcollection.DateVarCollection;
+import org.veupathdb.service.eda.ss.model.varcollection.FloatingPointVarCollection;
+import org.veupathdb.service.eda.ss.model.varcollection.IntegerVarCollection;
+import org.veupathdb.service.eda.ss.model.varcollection.VarCollection;
 import org.veupathdb.service.eda.ss.model.variable.DateVariable;
 import org.veupathdb.service.eda.ss.model.variable.FloatingPointVariable;
 import org.veupathdb.service.eda.ss.model.variable.IntegerVariable;
@@ -58,12 +77,54 @@ public class ApiConversionUtil {
       apiEntity.setDisplayNamePlural(entity.getDisplayNamePlural());
       apiEntity.setId(entity.getId());
       apiEntity.setIdColumnName(entity.getPKColName());
+      apiEntity.setIsManyToOneWithParent(entity.isManyToOneWithParent());
       apiEntity.setChildren(mappedChildren);
       apiEntity.setVariables(entity.getVariables().stream()
-          .map(var -> variableToAPIVariable(var))
+          .map(ApiConversionUtil::variableToAPIVariable)
+          .collect(Collectors.toList()));
+      apiEntity.setCollections(entity.getCollections().stream()
+          .map(ApiConversionUtil::collectionToAPICollection)
           .collect(Collectors.toList()));
       return apiEntity;
     });
+  }
+
+  private static APICollection collectionToAPICollection(VarCollection col) {
+    APICollection collection = switch(col.getType()) {
+      case DATE -> getDateCollection((DateVarCollection)col);
+      case INTEGER -> getIntegerCollection((IntegerVarCollection)col);
+      case NUMBER -> getFloatCollection((FloatingPointVarCollection)col);
+      default -> Functions.doThrow(() -> new RuntimeException("Invalid variable type " + col.getType()));
+    };
+    collection.setId(col.getId());
+    collection.setDisplayName(col.getDisplayName());
+    collection.setDataShape(col.getDataShape().toApiShape());
+    collection.setImputeZero(col.getImputeZero());
+    collection.setDistinctValuesCount(col.getDistinctValuesCount());
+    collection.setVocabulary(new ArrayList<>(col.getVocabulary()));
+    collection.setMemberVariableIds(col.getMemberVariableIds());
+    return collection;
+  }
+
+  private static APICollection getDateCollection(DateVarCollection col) {
+    APIDateCollection dateCol = new APIDateCollectionImpl();
+    dateCol.setDistributionDefaults(getDateDistributionDefaults(col.getDistributionConfig()));
+    return dateCol;
+  }
+
+  private static APICollection getIntegerCollection(IntegerVarCollection col) {
+    APIIntegerCollection intCol = new APIIntegerCollectionImpl();
+    intCol.setDistributionDefaults(getIntegerDistributionDefaults(col.getDistributionConfig()));
+    intCol.setUnits(col.getUnits());
+    return intCol;
+  }
+
+  private static APICollection getFloatCollection(FloatingPointVarCollection col) {
+    APINumberCollection floatCol = new APINumberCollectionImpl();
+    floatCol.setDistributionDefaults(getFloatDistributionDefaults(col.getDistributionConfig()));
+    floatCol.setUnits(col.getUnits());
+    floatCol.setPrecision(col.getPrecision());
+    return floatCol;
   }
 
   /** converts model variable object to API variable object */
@@ -101,47 +162,66 @@ public class ApiConversionUtil {
     apiVar.setIsMergeKey(var.getIsMergeKey());
     apiVar.setIsMultiValued(var.getIsMultiValued());
     apiVar.setIsTemporal(var.getIsTemporal());
+    apiVar.setImputeZero(var.getImputeZero());
     return apiVar;
   }
 
   /** instantiates API date var and sets date-specific props */
   private static APIDateVariable getDateVar(DateVariable var) {
     APIDateVariable apiVar = new APIDateVariableImpl();
-    apiVar.setBinWidth(var.getBinSize());
-    apiVar.setBinWidthOverride(null);
-    apiVar.setBinUnits(var.getBinUnits());
-    apiVar.setDisplayRangeMin(var.getDisplayRangeMin());
-    apiVar.setDisplayRangeMax(var.getDisplayRangeMax());
-    apiVar.setRangeMin(var.getRangeMin());
-    apiVar.setRangeMax(var.getRangeMax());
+    apiVar.setDistributionDefaults(getDateDistributionDefaults(var.getDistributionConfig()));
     return apiVar;
+  }
+
+  private static APIDateDistributionDefaults getDateDistributionDefaults(DateDistributionConfig distributionConfig) {
+    APIDateDistributionDefaults defaults = new APIDateDistributionDefaultsImpl();
+    defaults.setRangeMin(distributionConfig.rangeMin);
+    defaults.setRangeMax(distributionConfig.rangeMax);
+    defaults.setDisplayRangeMin(distributionConfig.displayRangeMin);
+    defaults.setDisplayRangeMax(distributionConfig.displayRangeMax);
+    defaults.setBinWidth(distributionConfig.binSize);
+    defaults.setBinWidthOverride(null);
+    defaults.setBinUnits(distributionConfig.binUnits);
+    return defaults;
   }
 
   private static APIIntegerVariable getIntegerVar(IntegerVariable var) {
-    DistributionConfig<Long> bins = var.getDistributionConfig();
+    NumberDistributionConfig<Long> bins = var.getDistributionConfig();
     APIIntegerVariable apiVar = new APIIntegerVariableImpl();
+    apiVar.setDistributionDefaults(getIntegerDistributionDefaults(var.getDistributionConfig()));
     apiVar.setUnits(var.getUnits());
-    apiVar.setBinWidth(bins.getBinWidth());
-    apiVar.setBinWidthOverride(bins.getBinWidthOverride());
-    apiVar.setDisplayRangeMin(bins.getDisplayRangeMin());
-    apiVar.setDisplayRangeMax(bins.getDisplayRangeMax());
-    apiVar.setRangeMin(bins.getRangeMin());
-    apiVar.setRangeMax(bins.getRangeMax());
     return apiVar;
   }
 
+  private static APIIntegerDistributionDefaults getIntegerDistributionDefaults(NumberDistributionConfig<Long> distributionConfig) {
+    APIIntegerDistributionDefaults defaults = new APIIntegerDistributionDefaultsImpl();
+    defaults.setBinWidth(distributionConfig.getBinWidth());
+    defaults.setBinWidthOverride(distributionConfig.getBinWidthOverride());
+    defaults.setDisplayRangeMin(distributionConfig.getDisplayRangeMin());
+    defaults.setDisplayRangeMax(distributionConfig.getDisplayRangeMax());
+    defaults.setRangeMin(distributionConfig.getRangeMin());
+    defaults.setRangeMax(distributionConfig.getRangeMax());
+    return defaults;
+  }
+
   private static APINumberVariable getFloatVar(FloatingPointVariable var) {
-    DistributionConfig<Double> bins = var.getDistributionConfig();
+    NumberDistributionConfig<Double> bins = var.getDistributionConfig();
     APINumberVariable apiVar = new APINumberVariableImpl();
+    apiVar.setDistributionDefaults(getFloatDistributionDefaults(var.getDistributionConfig()));
     apiVar.setUnits(var.getUnits());
     apiVar.setPrecision(var.getPrecision());
-    apiVar.setBinWidth(bins.getBinWidth());
-    apiVar.setBinWidthOverride(bins.getBinWidthOverride());
-    apiVar.setDisplayRangeMin(bins.getDisplayRangeMin());
-    apiVar.setDisplayRangeMax(bins.getDisplayRangeMax());
-    apiVar.setRangeMin(bins.getRangeMin());
-    apiVar.setRangeMax(bins.getRangeMax());
     return apiVar;
+  }
+
+  private static APINumberDistributionDefaults getFloatDistributionDefaults(NumberDistributionConfig<Double> distributionConfig) {
+    APINumberDistributionDefaults defaults = new APINumberDistributionDefaultsImpl();
+    defaults.setBinWidth(distributionConfig.getBinWidth());
+    defaults.setBinWidthOverride(distributionConfig.getBinWidthOverride());
+    defaults.setDisplayRangeMin(distributionConfig.getDisplayRangeMin());
+    defaults.setDisplayRangeMax(distributionConfig.getDisplayRangeMax());
+    defaults.setRangeMin(distributionConfig.getRangeMin());
+    defaults.setRangeMax(distributionConfig.getRangeMax());
+    return defaults;
   }
 
   private static APIStringVariable getStringVar(StringVariable var) {

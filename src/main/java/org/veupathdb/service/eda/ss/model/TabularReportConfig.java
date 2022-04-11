@@ -69,7 +69,7 @@ public class TabularReportConfig {
    * @return true if paging or sorting config is not the default, else false
    */
   public boolean requiresSorting() {
-    return !_sorting.isEmpty() || !_numRows.isEmpty() || _offset != 0L;
+    return !_sorting.isEmpty() || _numRows.isPresent() || _offset != 0L;
   }
 
   public List<SortSpecEntry> getSorting() {

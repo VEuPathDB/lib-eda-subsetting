@@ -1,7 +1,7 @@
 package org.veupathdb.service.eda.ss.model.variable;
 
 import jakarta.ws.rs.BadRequestException;
-import org.veupathdb.service.eda.ss.model.distribution.DistributionConfig;
+import org.veupathdb.service.eda.ss.model.distribution.NumberDistributionConfig;
 
 public class FloatingPointVariable extends NumberVariable<Double> {
 
@@ -21,7 +21,7 @@ public class FloatingPointVariable extends NumberVariable<Double> {
   public FloatingPointVariable(
       Variable.Properties varProperties,
       VariableWithValues.Properties valueProperties,
-      DistributionConfig<Double> distributionConfig,
+      NumberDistributionConfig<Double> distributionConfig,
       Properties properties) {
 
     super(varProperties, valueProperties, distributionConfig);

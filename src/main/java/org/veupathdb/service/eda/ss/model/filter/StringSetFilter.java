@@ -1,14 +1,12 @@
 package org.veupathdb.service.eda.ss.model.filter;
 
 import java.util.List;
-import java.util.Optional;
 import java.util.stream.Collectors;
-import jakarta.ws.rs.BadRequestException;
 import org.veupathdb.service.eda.ss.model.Entity;
-import org.veupathdb.service.eda.ss.model.RdbmsColumnNames;
 import org.veupathdb.service.eda.ss.model.variable.StringVariable;
 
 import static org.gusdb.fgputil.FormatUtil.NL;
+import static org.veupathdb.service.eda.ss.model.db.DB.Tables.AttributeValue.Columns.STRING_VALUE_COL_NAME;
 
 public class StringSetFilter extends SingleValueFilter<StringVariable> {
 
@@ -21,7 +19,7 @@ public class StringSetFilter extends SingleValueFilter<StringVariable> {
 
   @Override
   public String getFilteringAndClausesSql() {
-    return "  AND " + RdbmsColumnNames.STRING_VALUE_COL_NAME + " IN (" + createSqlInExpression() + ")" + NL;
+    return "  AND " + STRING_VALUE_COL_NAME + " IN (" + createSqlInExpression() + ")" + NL;
   }
 
   private String createSqlInExpression() {

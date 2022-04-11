@@ -1,7 +1,7 @@
 package org.veupathdb.service.eda.ss.model.variable;
 
 import jakarta.ws.rs.BadRequestException;
-import org.veupathdb.service.eda.ss.model.distribution.DistributionConfig;
+import org.veupathdb.service.eda.ss.model.distribution.NumberDistributionConfig;
 
 public class IntegerVariable extends NumberVariable<Long> {
 
@@ -19,7 +19,7 @@ public class IntegerVariable extends NumberVariable<Long> {
   public IntegerVariable(
       Variable.Properties varProperties,
       VariableWithValues.Properties valueProperties,
-      DistributionConfig<Long> distributionConfig,
+      NumberDistributionConfig<Long> distributionConfig,
       Properties properties) {
 
     super(varProperties, valueProperties, distributionConfig);
@@ -39,7 +39,7 @@ public class IntegerVariable extends NumberVariable<Long> {
 
   @Override
   public Long validateBinWidth(Number binWidth) {
-    Long intValue = binWidth.longValue();
+    long intValue = binWidth.longValue();
     if (intValue <= 0) {
       throw new BadRequestException("binWidth must be a positive integer for integer variable distributions");
     }

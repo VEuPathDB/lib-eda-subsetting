@@ -1,7 +1,7 @@
 package org.veupathdb.service.eda.ss.model.variable;
 
 import jakarta.ws.rs.BadRequestException;
-import org.veupathdb.service.eda.ss.model.distribution.DistributionConfig;
+import org.veupathdb.service.eda.ss.model.distribution.NumberDistributionConfig;
 
 /**
  * This is a superclass supporting ONLY float and integer types, which can both
@@ -12,14 +12,14 @@ public abstract class NumberVariable<T extends Number> extends VariableWithValue
   public abstract T validateBinWidth(Number binWidth);
   public abstract String getUnits();
 
-  private final DistributionConfig<T> _distributionConfig;
+  private final NumberDistributionConfig<T> _distributionConfig;
 
-  public NumberVariable(Variable.Properties varProperties, Properties properties, DistributionConfig<T> distributionConfig) {
+  public NumberVariable(Variable.Properties varProperties, Properties properties, NumberDistributionConfig<T> distributionConfig) {
     super(varProperties, properties);
     _distributionConfig = distributionConfig;
   }
 
-  public DistributionConfig<T> getDistributionConfig() {
+  public NumberDistributionConfig<T> getDistributionConfig() {
     return _distributionConfig;
   }
 

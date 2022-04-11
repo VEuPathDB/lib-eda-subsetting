@@ -1,9 +1,9 @@
 package org.veupathdb.service.eda.ss.model.varcollection;
 
-import org.veupathdb.service.eda.generated.model.BinUnits;
+import java.util.List;
 import org.veupathdb.service.eda.ss.model.distribution.NumberDistributionConfig;
-import org.veupathdb.service.eda.ss.model.variable.FloatingPointVariable;
 import org.veupathdb.service.eda.ss.model.variable.IntegerVariable;
+import org.veupathdb.service.eda.ss.model.variable.VariableWithValues;
 
 public class IntegerVarCollection extends VarCollection {
 
@@ -25,5 +25,19 @@ public class IntegerVarCollection extends VarCollection {
 
   public NumberDistributionConfig<Long> getDistributionConfig() {
     return _distributionConfig;
+  }
+
+  @Override
+  protected void assignBinValues(List<VariableWithValues> memberVars) {
+    long maxBinSize = 0L; // find the biggest size
+    for (VariableWithValues var : memberVars) {
+      // superclass promises to only pass the correct type here
+      NumberDistributionConfig<Long> varConfig = ((IntegerVariable)var).getDistributionConfig();
+      if (varConfig.getDefaultBinWidth() > maxBinSize) {
+        maxBinSize = varConfig.getDefaultBinWidth();
+      }
+    }
+    _distributionConfig.setBinWidth(maxBinSize);
+
   }
 }

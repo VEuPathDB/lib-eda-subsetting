@@ -6,7 +6,7 @@ public class NumberDistributionConfig<T extends Number> {
   private final T _displayRangeMax;
   private final T _rangeMin;
   private final T _rangeMax;
-  private final T _binWidth;
+  private T _binWidth;
   private final T _binWidthOverride;
 
   public NumberDistributionConfig(
@@ -39,6 +39,10 @@ public class NumberDistributionConfig<T extends Number> {
 
   public T getBinWidthOverride() {
     return _binWidthOverride;
+  }
+
+  public void setBinWidth(T binWidth) {
+    _binWidth = binWidth;
   }
 
   public T getBinWidth() {

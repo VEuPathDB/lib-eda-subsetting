@@ -9,7 +9,7 @@ public class DateDistributionConfig {
   public final String displayRangeMax;
   public final String rangeMin;
   public final String rangeMax;
-  public final Integer binSize;
+  public Integer binSize;
   public BinUnits binUnits;
   public final BinUnits binUnitsOverride;
 

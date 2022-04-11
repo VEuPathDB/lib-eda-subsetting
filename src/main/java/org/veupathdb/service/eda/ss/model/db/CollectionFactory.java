@@ -6,7 +6,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
 import javax.sql.DataSource;
 import org.gusdb.fgputil.db.runner.SQLRunner;
 import org.gusdb.fgputil.functional.Functions;
@@ -54,18 +53,26 @@ public class CollectionFactory {
   }
 
   private void assignMemberVariables(Entity entity, Map<String, VarCollection> collectionMap) {
-
-    // assign variable to its collection
-    //collectionMap.get(collectionId).addMemberVariableId("");
-
+    String sql =
+        "select " + String.join(", ", DB.Tables.CollectionAttribute.Columns.ALL) +
+        " from " + Resources.getAppDbSchema() + DB.Tables.CollectionAttribute.NAME(entity);
+    new SQLRunner(_dataSource, sql, "select-collection-vars").executeQuery(rs -> {
+      while (rs.next()) {
+        // assign variable to its collection
+        String collectionId = getRsRequiredString(rs, DB.Tables.CollectionAttribute.Columns.COLLECTION_ID);
+        String variableId = getRsRequiredString(rs, DB.Tables.CollectionAttribute.Columns.VARIABLE_ID);
+        collectionMap.get(collectionId).addMemberVariableId(variableId);
+      }
+      return null;
+    });
   }
 
   private Map<String, VarCollection> loadCollectionMap(Entity entity) {
-    // build map of collections for this entity
-    String collectionSql =
-        "select " + DB.Tables.Collection.Columns.ALL.stream().collect(Collectors.joining(", ")) +
+    String sql =
+        "select " + String.join(", ", DB.Tables.Collection.Columns.ALL) +
         " from " + Resources.getAppDbSchema() + DB.Tables.Collection.NAME(entity);
-    return new SQLRunner(_dataSource, collectionSql, "select-collection").executeQuery(rs -> {
+    return new SQLRunner(_dataSource, sql, "select-collection").executeQuery(rs -> {
+      // build map of collections for this entity
       Map<String, VarCollection> map = new HashMap<>();
       while (rs.next()) {
         VarCollection collection = loadCollection(rs);

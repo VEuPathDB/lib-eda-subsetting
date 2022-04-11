@@ -31,7 +31,7 @@ public class EdaDateBinSpec implements DateBinSpec {
   public ChronoUnit getBinUnits() {
     return convertToChrono(_binSpec
         .map(spec -> spec.getBinUnits())
-        .orElse(_variable.getDistributionConfig().binUnits));
+        .orElse(_variable.getDistributionConfig().getDefaultBinUnits()));
   }
 
   @Override

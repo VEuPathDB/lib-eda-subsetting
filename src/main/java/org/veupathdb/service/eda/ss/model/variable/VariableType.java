@@ -6,9 +6,10 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.gusdb.fgputil.FormatUtil;
-import org.gusdb.fgputil.functional.FunctionalInterfaces;
+import org.gusdb.fgputil.functional.FunctionalInterfaces.FunctionWithException;
 import org.gusdb.fgputil.functional.Functions;
 import org.json.JSONArray;
+import org.veupathdb.service.eda.generated.model.APICollectionType;
 
 public enum VariableType {
   STRING("string_value", "string", rs -> rs.getString("string_value"),
@@ -28,13 +29,13 @@ public enum VariableType {
 
   private final String tallTableColumnName;
   private final String typeString;
-  private final FunctionalInterfaces.FunctionWithException<ResultSet, String> resultSetToStringValue;
-  private final FunctionalInterfaces.FunctionWithException<List<String>, JSONArray> multiValStringListToJsonArray;
+  private final FunctionWithException<ResultSet, String> resultSetToStringValue;
+  private final FunctionWithException<List<String>, JSONArray> multiValStringListToJsonArray;
 
   VariableType(String tallTableColumnName,
                String typeString,
-               FunctionalInterfaces.FunctionWithException<ResultSet, String> resultSetToStringValue,
-               FunctionalInterfaces.FunctionWithException<List<String>, JSONArray> multiValStringListToJsonArray) {
+               FunctionWithException<ResultSet, String> resultSetToStringValue,
+               FunctionWithException<List<String>, JSONArray> multiValStringListToJsonArray) {
     this.tallTableColumnName = tallTableColumnName;
     this.resultSetToStringValue = resultSetToStringValue;
     this.multiValStringListToJsonArray = multiValStringListToJsonArray;
@@ -112,5 +113,9 @@ public enum VariableType {
 
   public boolean isNumber() {
     return "number_value".equals(tallTableColumnName);
+  }
+
+  public boolean isSameTypeAs(APICollectionType type) {
+    return type.name().equals(name());
   }
 }

@@ -91,6 +91,7 @@ public class StudiesService implements Studies {
     response.setDisplayName(entity.getDisplayName());
     response.setDisplayNamePlural(entity.getDisplayNamePlural());
     response.setVariables(entity.getVariables());
+    response.setCollections(entity.getCollections());
     for (Entry<String,Object> prop : entity.getAdditionalProperties().entrySet()) {
       response.setAdditionalProperties(prop.getKey(), prop.getValue());
     }

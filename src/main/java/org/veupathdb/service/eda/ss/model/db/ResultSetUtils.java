@@ -22,7 +22,7 @@ public class ResultSetUtils {
 
   public static Long getRsOptionalLong(ResultSet rs, String columnName, Long defaultVal) throws SQLException {
     long val = rs.getLong(columnName);
-    return rs.wasNull() ? defaultVal : val;
+    return rs.wasNull() ? defaultVal : Long.valueOf(val);
   }
 
   public static Long getRsRequiredLong(ResultSet rs, String columnName) throws SQLException {

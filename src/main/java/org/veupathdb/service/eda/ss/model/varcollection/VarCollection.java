@@ -44,7 +44,7 @@ public abstract class VarCollection {
 
   private final Properties _properties;
   private final List<String> _memberVariableIds = new ArrayList<>();
-  private Set<String> _vocabulary;
+  private List<String> _vocabulary;
 
   protected VarCollection(Properties properties) {
     _properties = properties;
@@ -64,6 +64,7 @@ public abstract class VarCollection {
    * @param entity parent entity of this collection (provides access to variables)
    */
   public void buildAndValidate(Entity entity) {
+    LOG.info("Building and validating collection " + _properties.id + " on entity " + entity.getId());
     if (_properties.numMembers != _memberVariableIds.size()) {
       throw new RuntimeException("Discovered " + _memberVariableIds.size() +
           " variable IDs in collection " + _properties.id + " but " +
@@ -78,10 +79,10 @@ public abstract class VarCollection {
         throw new RuntimeException("Collection " + _properties.id +
             " references variable " + varId + " which does not exist in entity " + entity.getId());
       }
-      if (!var.get().hasValues() ||
-          ((VariableWithValues)var.get()).getType().isSameTypeAs(_properties.type) ||
-          ((VariableWithValues)var.get()).getDataShape() == _properties.dataShape) {
-        throw new RuntimeException("Variable " + varId + " must have the same " +
+      if (!(var.get().hasValues() &&
+            ((VariableWithValues)var.get()).getType().isSameTypeAs(_properties.type) &&
+            ((VariableWithValues)var.get()).getDataShape() == _properties.dataShape)) {
+        throw new RuntimeException("Variable " + varId + " must have values and be the same " +
             "data type and shape as its parent collection " + _properties.id);
       }
       VariableWithValues valueVar = (VariableWithValues)var.get();
@@ -91,13 +92,13 @@ public abstract class VarCollection {
       }
       else {
         // do not declare a vocabular unless all member vars have a vocabulary
-        LOG.warn("Member variable " + varId + " of collection " + _properties.id + " does not have a vocabulary.");
+        //LOG.warn("Member variable " + varId + " of collection " + _properties.id + " does not have a vocabulary.");
         useVocabulary = false;
       }
     }
     // vocabulary will be completely populated or null; hopefully warnings will alert devs of discrepancies
     if (useVocabulary) {
-      _vocabulary = derivedVocabulary;
+      _vocabulary = new ArrayList<>(derivedVocabulary);
     }
     assignBinValues(valueVars);
   }
@@ -130,7 +131,7 @@ public abstract class VarCollection {
     return _memberVariableIds;
   }
 
-  public Set<String> getVocabulary() {
+  public List<String> getVocabulary() {
     return _vocabulary;
   }
 }

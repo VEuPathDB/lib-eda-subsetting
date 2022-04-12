@@ -1,6 +1,5 @@
 package org.veupathdb.service.eda.ss.service;
 
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -9,6 +8,7 @@ import org.gusdb.fgputil.functional.TreeNode;
 import org.veupathdb.service.eda.generated.model.APICollection;
 import org.veupathdb.service.eda.generated.model.APIDateCollection;
 import org.veupathdb.service.eda.generated.model.APIDateCollectionImpl;
+import org.veupathdb.service.eda.generated.model.APIDateDistributionDefaults;
 import org.veupathdb.service.eda.generated.model.APIDateDistributionDefaultsImpl;
 import org.veupathdb.service.eda.generated.model.APIDateVariable;
 import org.veupathdb.service.eda.generated.model.APIDateVariableImpl;
@@ -36,7 +36,6 @@ import org.veupathdb.service.eda.generated.model.APIVariable;
 import org.veupathdb.service.eda.generated.model.APIVariableDisplayType;
 import org.veupathdb.service.eda.generated.model.APIVariableWithValues;
 import org.veupathdb.service.eda.generated.model.APIVariablesCategoryImpl;
-import org.veupathdb.service.eda.generated.model.APIDateDistributionDefaults;
 import org.veupathdb.service.eda.generated.model.HistogramBin;
 import org.veupathdb.service.eda.generated.model.HistogramBinImpl;
 import org.veupathdb.service.eda.generated.model.HistogramStats;
@@ -101,7 +100,7 @@ public class ApiConversionUtil {
     collection.setDataShape(col.getDataShape().toApiShape());
     collection.setImputeZero(col.getImputeZero());
     collection.setDistinctValuesCount(col.getDistinctValuesCount());
-    collection.setVocabulary(new ArrayList<>(col.getVocabulary()));
+    collection.setVocabulary(col.getVocabulary());
     collection.setMemberVariableIds(col.getMemberVariableIds());
     return collection;
   }

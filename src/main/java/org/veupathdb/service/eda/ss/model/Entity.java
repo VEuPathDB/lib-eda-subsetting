@@ -96,8 +96,8 @@ public class Entity {
 
   public void assignCollections(List<VarCollection> collections) {
     // TODO: validate types, etc. of vars match the collection type/shape and maybe assign values???
-    collections.clear();
-    collections.addAll(collections);
+    this.collections.clear();
+    this.collections.addAll(collections);
   }
 
   public List<VarCollection> getCollections() {
@@ -107,7 +107,7 @@ public class Entity {
   public String getPKColName() {
     return getAbbreviation() + "_stable_id";
   }
-  
+
   public String getFullPKColName() {
     return getWithClauseName() + "." + getPKColName();
   }

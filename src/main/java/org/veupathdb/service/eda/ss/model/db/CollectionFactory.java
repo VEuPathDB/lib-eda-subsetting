@@ -7,6 +7,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import javax.sql.DataSource;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.gusdb.fgputil.db.runner.SQLRunner;
 import org.gusdb.fgputil.functional.Functions;
 import org.veupathdb.service.eda.generated.model.APICollectionType;
@@ -29,6 +31,8 @@ import static org.veupathdb.service.eda.ss.model.db.VariableFactory.createIntege
 import static org.veupathdb.service.eda.ss.model.db.VariableFactory.createIntegerProperties;
 
 public class CollectionFactory {
+
+  private static final Logger LOG = LogManager.getLogger(CollectionFactory.class);
 
   private final DataSource _dataSource;
 
@@ -78,11 +82,12 @@ public class CollectionFactory {
         VarCollection collection = loadCollection(rs);
         map.put(collection.getId(), collection);
       }
+      LOG.info("Loaded metadata for " + map.size() + " collections on entity " + entity.getId());
       return map;
     });
   }
 
-  private VarCollection loadCollection(ResultSet rs) throws SQLException {
+  private static VarCollection loadCollection(ResultSet rs) throws SQLException {
 
     // find data type of this collection
     APICollectionType type = Functions.mapException(() ->

@@ -147,8 +147,8 @@ class VariableFactory {
         getRsRequiredString(rs, RANGE_MIN_COL_NAME),
         getRsRequiredString(rs, RANGE_MAX_COL_NAME),
         1,
-        includeBinInfo ? null : getRsRequiredString(rs, BIN_WIDTH_COMPUTED_COL_NAME),
-        includeBinInfo ? null : getRsOptionalString(rs, BIN_WIDTH_OVERRIDE_COL_NAME, null)
+        includeBinInfo ? getRsRequiredString(rs, BIN_WIDTH_COMPUTED_COL_NAME) : null,
+        includeBinInfo ? getRsOptionalString(rs, BIN_WIDTH_OVERRIDE_COL_NAME, null) : null
     );
   }
 
@@ -159,8 +159,8 @@ class VariableFactory {
         getDoubleFromString(rs, DISPLAY_RANGE_MAX_COL_NAME, false),
         getDoubleFromString(rs, RANGE_MIN_COL_NAME, true),
         getDoubleFromString(rs, RANGE_MAX_COL_NAME, true),
-        includeBinInfo ? null : getDoubleFromString(rs, BIN_WIDTH_COMPUTED_COL_NAME, true),
-        includeBinInfo ? null : getDoubleFromString(rs, BIN_WIDTH_OVERRIDE_COL_NAME, false)
+        includeBinInfo ? getDoubleFromString(rs, BIN_WIDTH_COMPUTED_COL_NAME, true) : null,
+        includeBinInfo ? getDoubleFromString(rs, BIN_WIDTH_OVERRIDE_COL_NAME, false) : null
     );
   }
 
@@ -171,8 +171,8 @@ class VariableFactory {
         getIntegerFromString(rs, DISPLAY_RANGE_MAX_COL_NAME, false),
         getIntegerFromString(rs, RANGE_MIN_COL_NAME, true),
         getIntegerFromString(rs, RANGE_MAX_COL_NAME, true),
-        includeBinInfo ? null : getIntegerFromString(rs, BIN_WIDTH_COMPUTED_COL_NAME, true),
-        includeBinInfo ? null : getIntegerFromString(rs, BIN_WIDTH_OVERRIDE_COL_NAME, false)
+        includeBinInfo ? getIntegerFromString(rs, BIN_WIDTH_COMPUTED_COL_NAME, true) : null,
+        includeBinInfo ? getIntegerFromString(rs, BIN_WIDTH_OVERRIDE_COL_NAME, false) : null
     );
   }
 }

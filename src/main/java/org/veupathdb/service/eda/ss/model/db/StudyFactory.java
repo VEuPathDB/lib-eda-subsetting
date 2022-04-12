@@ -7,6 +7,8 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
 import javax.sql.DataSource;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.gusdb.fgputil.db.runner.SQLRunner;
 import org.gusdb.fgputil.functional.TreeNode;
 import org.veupathdb.service.eda.ss.Resources;
@@ -15,6 +17,8 @@ import org.veupathdb.service.eda.ss.model.Study;
 import org.veupathdb.service.eda.ss.model.StudyOverview;
 
 public class StudyFactory {
+
+  private static final Logger LOG = LogManager.getLogger(StudyFactory.class);
 
   private final DataSource _dataSource;
 
@@ -36,9 +40,6 @@ public class StudyFactory {
     });
   }
 
-  /*
-   * Expects a pre-validated study ID
-   */
   public Study loadStudy(String studyId) {
 
     StudyOverview overview =
@@ -54,6 +55,7 @@ public class StudyFactory {
     for (Entity entity : entityIdMap.values()) {
       entity.assignVariables(variableFactory.loadVariables(entity));
       if (entity.hasCollections()) {
+        LOG.info("Entity " + entity.getId() + " has collections.  Loading them...");
         entity.assignCollections(collectionFactory.loadCollections(entity));
       }
     }

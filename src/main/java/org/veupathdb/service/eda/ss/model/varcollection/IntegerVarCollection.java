@@ -28,7 +28,7 @@ public class IntegerVarCollection extends VarCollection {
   }
 
   @Override
-  protected void assignBinValues(List<VariableWithValues> memberVars) {
+  protected void assignDistributionDefaults(List<VariableWithValues> memberVars) {
     long maxBinSize = 0L; // find the biggest size
     for (VariableWithValues var : memberVars) {
       // superclass promises to only pass the correct type here

@@ -20,7 +20,7 @@ public class DateVarCollection extends VarCollection {
   }
 
   @Override
-  protected void assignBinValues(List<VariableWithValues> memberVars) {
+  protected void assignDistributionDefaults(List<VariableWithValues> memberVars) {
     int maxBinSize = 1; // find the biggest size
     int maxBinUnitsOrdinal = 0; // find the biggest units
     for (VariableWithValues var : memberVars) {

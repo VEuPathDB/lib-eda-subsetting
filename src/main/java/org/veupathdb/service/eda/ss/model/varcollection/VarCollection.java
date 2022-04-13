@@ -40,7 +40,7 @@ public abstract class VarCollection {
     }
   }
 
-  protected abstract void assignBinValues(List<VariableWithValues> memberVars);
+  protected abstract void assignDistributionDefaults(List<VariableWithValues> memberVars);
 
   private final Properties _properties;
   private final List<String> _memberVariableIds = new ArrayList<>();
@@ -65,34 +65,46 @@ public abstract class VarCollection {
    */
   public void buildAndValidate(Entity entity) {
     LOG.info("Building and validating collection " + _properties.id + " on entity " + entity.getId());
+
+    // check that num members declared in collection metadata matches number in variable map table
     if (_properties.numMembers != _memberVariableIds.size()) {
       throw new RuntimeException("Discovered " + _memberVariableIds.size() +
           " variable IDs in collection " + _properties.id + " but " +
           NUM_MEMBERS + " column declares " + _properties.numMembers);
     }
+
+    // loop through vars for checks and to collect information
     List<VariableWithValues> valueVars = new ArrayList<>();
     boolean useVocabulary = true;
     Set<String> derivedVocabulary = new HashSet<>();
     for (String varId : _memberVariableIds) {
+
+      // make sure var is valid for this entity
       Optional<Variable> var = entity.getVariable(varId);
       if (var.isEmpty()) {
         throw new RuntimeException("Collection " + _properties.id +
             " references variable " + varId + " which does not exist in entity " + entity.getId());
       }
+
+      // make sure var is a value var and has the same type/shape as the collection
       if (!(var.get().hasValues() &&
             ((VariableWithValues)var.get()).getType().isSameTypeAs(_properties.type) &&
             ((VariableWithValues)var.get()).getDataShape() == _properties.dataShape)) {
         throw new RuntimeException("Variable " + varId + " must have values and be the same " +
             "data type and shape as its parent collection " + _properties.id);
       }
+
+      // add to list for bin values assignment
       VariableWithValues valueVar = (VariableWithValues)var.get();
       valueVars.add(valueVar);
+
+      // collect the union of the vocabularies for the collection vocabulary
       if (valueVar.getVocabulary() != null && !valueVar.getVocabulary().isEmpty()) {
         derivedVocabulary.addAll(valueVar.getVocabulary());
       }
       else {
-        // do not declare a vocabular unless all member vars have a vocabulary
-        //LOG.warn("Member variable " + varId + " of collection " + _properties.id + " does not have a vocabulary.");
+        // do not declare a vocabulary unless all member vars have a vocabulary
+        LOG.warn("At least one variable in collection " + _properties.id + " does not have a vocabulary, so collection will not either.");
         useVocabulary = false;
       }
     }
@@ -100,7 +112,9 @@ public abstract class VarCollection {
     if (useVocabulary) {
       _vocabulary = new ArrayList<>(derivedVocabulary);
     }
-    assignBinValues(valueVars);
+
+    // typed subclasses must assign distribution defaults based on member variables' values
+    assignDistributionDefaults(valueVars);
   }
 
   public APICollectionType getType() {

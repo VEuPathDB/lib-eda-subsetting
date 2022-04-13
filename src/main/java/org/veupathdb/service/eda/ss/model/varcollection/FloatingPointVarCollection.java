@@ -32,7 +32,7 @@ public class FloatingPointVarCollection extends VarCollection {
   }
 
   @Override
-  protected void assignBinValues(List<VariableWithValues> memberVars) {
+  protected void assignDistributionDefaults(List<VariableWithValues> memberVars) {
     Double maxBinSize = (double)0; // find the biggest size
     for (VariableWithValues var : memberVars) {
       // superclass promises to only pass the correct type here

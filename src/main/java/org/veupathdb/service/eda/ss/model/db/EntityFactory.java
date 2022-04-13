@@ -45,7 +45,8 @@ public class EntityFactory {
         Entity entity = createEntityFromResultSet(rs);
         String parentId = rs.getString(DB.Tables.EntityTypeGraph.Columns.ENTITY_PARENT_ID_COL_NAME);
         if (parentId == null) {
-          if (root != null) throw new RuntimeException("In Study " + studyId + " found more than one root entity");
+          if (root != null) throw new RuntimeException("In Study " + studyId +
+              " found more than one root entity (" + root.getId() + ", " + entity.getId() + ")");
           root = entity;
         }
         else {

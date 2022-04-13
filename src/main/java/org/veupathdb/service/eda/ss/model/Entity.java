@@ -1,11 +1,10 @@
 
 package org.veupathdb.service.eda.ss.model;
 
-import javax.sql.DataSource;
-
 import jakarta.ws.rs.BadRequestException;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.veupathdb.service.eda.ss.model.varcollection.VarCollection;
 import org.veupathdb.service.eda.ss.model.variable.Variable;
 import org.veupathdb.service.eda.ss.model.variable.VariableDisplayType;
 import java.util.ArrayList;
@@ -20,9 +19,11 @@ import java.util.stream.Collectors;
 
 /**
  * @author Steve
- *
  */
 public class Entity {
+
+  private static final Logger LOG = LogManager.getLogger(Entity.class);
+
   private final String id;
   private final String studyAbbrev; // internal abbrev
   private final String displayName;
@@ -36,15 +37,17 @@ public class Entity {
   private List<String> ancestorPkColNames;
   private List<String> ancestorFullPkColNames; // entityName.pkColName
   private Integer tallRowSize; // number of columns in a tall table row
-  private Long loadOrder;
-  
-  private static final Logger LOG = LogManager.getLogger(Entity.class);
+  private final Long loadOrder;
+  private final boolean hasCollections;
+  private final boolean isManyToOneWithParent;
+
+  private final List<VarCollection> collections = new ArrayList<>();
 
   // a map from ID of multifilter ancestor ID to multifilter leaf IDs
   // used to validate multifilter requests
   private final Map<String, Set<String>> _multiFilterMap = new HashMap<String, Set<String>>();
   
-  public Entity(String entityId, String studyAbbrev, String displayName, String displayNamePlural, String description, String abbreviation, long loadOrder) {
+  public Entity(String entityId, String studyAbbrev, String displayName, String displayNamePlural, String description, String abbreviation, long loadOrder, boolean hasCollections, boolean isManyToOneWithParent) {
     this.id = entityId;
     this.studyAbbrev = studyAbbrev;
     this.displayName = displayName;
@@ -52,6 +55,8 @@ public class Entity {
     this.description = description;
     this.abbreviation = abbreviation;
     this.loadOrder = loadOrder;
+    this.hasCollections = hasCollections;
+    this.isManyToOneWithParent = isManyToOneWithParent;
   }
 
   public String getAbbreviation() {
@@ -78,28 +83,36 @@ public class Entity {
     return description;
   }
 
-  public String getVariablesTableName() { return "AttributeGraph_" + getStudyAbbrev() + "_" + getAbbreviation(); }
+  public boolean isManyToOneWithParent() {
+    return isManyToOneWithParent;
+  }
 
-  public String getWideTableName() { return "Attributes_" + getStudyAbbrev() + "_" + getAbbreviation(); }
+  /**
+   * @return whether this entity's hasCollections flag is set to true (in entity DB table)
+   */
+  public boolean hasCollections() {
+    return hasCollections;
+  }
 
-  public String getTallTableName() {
-    return "AttributeValue_" + getStudyAbbrev() + "_" + getAbbreviation();
+  public void assignCollections(List<VarCollection> collections) {
+    this.collections.clear();
+    this.collections.addAll(collections);
+  }
+
+  public List<VarCollection> getCollections() {
+    return collections;
   }
 
   public String getPKColName() {
     return getAbbreviation() + "_stable_id";
   }
-  
+
   public String getFullPKColName() {
     return getWithClauseName() + "." + getPKColName();
   }
 
   public String getDownloadPkColHeader() {
     return getDisplayName().replace(' ','_') + "_ID";
-  }
-
-  public String getAncestorsTableName() {
-    return "Ancestors_" + getStudyAbbrev() + "_" + getAbbreviation();
   }
 
   public String getWithClauseName() {
@@ -156,7 +169,7 @@ public class Entity {
   }
   
   // ancestor PKs, pk, variable_id, value
-  Integer getTallRowSize() {
+  public Integer getTallRowSize() {
     if (tallRowSize == null) tallRowSize = ancestorEntities.size() + 3;
     return tallRowSize;
   }
@@ -172,13 +185,11 @@ public class Entity {
     variablesList.add(var);
   }
 
-  void loadVariables(DataSource datasource) {
-    
-    List<Variable> variables = VariableResultSetUtils.getEntityVariables(datasource, this);
+  public void assignVariables(List<Variable> variables) {
     
     // create temporary map of parent IDs to child variables
     // use it  populate a concise map of multifilter ancestor IDs to leaf variables IDs
-    Map<String, Set<Variable>> parentIdToKids = new HashMap<String, Set<Variable>>();
+    Map<String, Set<Variable>> parentIdToKids = new HashMap<>();
 
     for (Variable var : variables) {
       addVariable(var);
@@ -187,7 +198,6 @@ public class Entity {
     
     populateMultiFilterMap(parentIdToKids, _multiFilterMap);
   }
-  
 
   private void addToParentIdMap(Map<String, Set<Variable>> parentIdToKids, Variable var) {
     String parentId = var.getParentId();
@@ -232,4 +242,5 @@ public class Entity {
       addToMultiFilterMap(multiFilterId, kid.getId(), parentIdToKids, multiFilterMap);
     }
   }
+
 }

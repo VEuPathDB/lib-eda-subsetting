@@ -10,7 +10,8 @@ import java.util.List;
 import java.util.Map;
 
 import org.gusdb.fgputil.functional.TreeNode;
-import org.veupathdb.service.eda.ss.model.distribution.DistributionConfig;
+import org.veupathdb.service.eda.ss.model.distribution.NumberDistributionConfig;
+import org.veupathdb.service.eda.ss.model.distribution.DateDistributionConfig;
 import org.veupathdb.service.eda.ss.model.variable.DateVariable;
 import org.veupathdb.service.eda.ss.model.variable.FloatingPointVariable;
 import org.veupathdb.service.eda.ss.model.variable.StringVariable;
@@ -66,19 +67,19 @@ public class TestModel {
   
   public TestModel() {
     createTestEntities();
-    Study.StudyOverview overview = new Study.StudyOverview("GEMS", "ds2324");
+    StudyOverview overview = new StudyOverview("GEMS", "ds2324");
     study = new Study(overview, constructEntityTree(), createIdMap());
     constructVariables();
     createFilters();
   }
   
   private void createTestEntities() {
-    household = new Entity("GEMS_House", "ds2324", "Household", "Households", "descrip", "Hshld", 1);
-    householdObs = new Entity("GEMS_HouseObs", "ds2324", "Household Observation", "Household Observations", "descrip", "HshldObsvtn", 2);
-    participant = new Entity("GEMS_Part", "ds2324", "Participant", "Participants", "descrip", "Prtcpnt", 3);
-    observation = new Entity("GEMS_PartObs", "ds2324", "Observation", "Observations", "descrip", "PrtcpntObsrvtn", 4);
-    sample = new Entity("GEMS_Sample", "ds2324", "Sample", "Samples", "descrip", "Smpl", 5);
-    treatment = new Entity("GEMS_Treat", "ds2324", "Treatment", "Treatments", "descrip", "Trtmnt", 6);
+    household = new Entity("GEMS_House", "ds2324", "Household", "Households", "descrip", "Hshld", 1, false, false);
+    householdObs = new Entity("GEMS_HouseObs", "ds2324", "Household Observation", "Household Observations", "descrip", "HshldObsvtn", 2, false, true);
+    participant = new Entity("GEMS_Part", "ds2324", "Participant", "Participants", "descrip", "Prtcpnt", 3, false, true);
+    observation = new Entity("GEMS_PartObs", "ds2324", "Observation", "Observations", "descrip", "PrtcpntObsrvtn", 4, false, true);
+    sample = new Entity("GEMS_Sample", "ds2324", "Sample", "Samples", "descrip", "Smpl", 5, false, true);
+    treatment = new Entity("GEMS_Treat", "ds2324", "Treatment", "Treatments", "descrip", "Trtmnt", 6, false, true);
   }
   
   private Map<String, Entity> createIdMap() {
@@ -116,27 +117,27 @@ public class TestModel {
     return householdNode;
   }
 
-  private static StringVariable getMockStringVar(String label, String id, Entity entity, int distinctValuesCount, boolean isMultiValued, List<String> vocab) {
+  private static StringVariable getMockStringVar(String label, String id, Entity entity, long distinctValuesCount, boolean isMultiValued, List<String> vocab) {
     return new StringVariable(
         new Variable.Properties(label, id, entity, VariableDisplayType.DEFAULT, label, null, null, "Their " + label, Collections.emptyList()),
-        new VariableWithValues.Properties(VariableType.STRING, VariableDataShape.CATEGORICAL, vocab, distinctValuesCount, false, false, false, isMultiValued)
+        new VariableWithValues.Properties(VariableType.STRING, VariableDataShape.CATEGORICAL, vocab, distinctValuesCount, false, false, false, isMultiValued, false)
     );
   }
 
-  private static FloatingPointVariable getMockFloatVar(String label, String id, Entity entity, VariableDataShape shape, int distinctValuesCount, boolean isMultiValued) {
+  private static FloatingPointVariable getMockFloatVar(String label, String id, Entity entity, VariableDataShape shape, long distinctValuesCount, boolean isMultiValued) {
     return new FloatingPointVariable(
         new Variable.Properties(label, id, entity, VariableDisplayType.DEFAULT, label, null, null, "Their " + label, Collections.emptyList()),
-        new VariableWithValues.Properties(VariableType.NUMBER, shape, null, distinctValuesCount, false, false, false, isMultiValued),
-        new DistributionConfig<>(null, null, null, null, null, null),
+        new VariableWithValues.Properties(VariableType.NUMBER, shape, null, distinctValuesCount, false, false, false, isMultiValued, false),
+        new NumberDistributionConfig<>(null, null, null, null, null, null),
         new FloatingPointVariable.Properties("", 1L)
     );
   }
 
-  private static DateVariable getMockDateVar(String label, String id, Entity entity, VariableDataShape shape, int distinctValuesCount) {
+  private static DateVariable getMockDateVar(String label, String id, Entity entity, VariableDataShape shape, long distinctValuesCount) {
     return new DateVariable(
         new Variable.Properties(label, id, entity, VariableDisplayType.DEFAULT, label, null, null, label, Collections.emptyList()),
-        new VariableWithValues.Properties(VariableType.DATE, shape, null, distinctValuesCount, true, false, false, false),
-        new DateVariable.Properties(shape, null, null, null, null, 1, "week", null)
+        new VariableWithValues.Properties(VariableType.DATE, shape, null, distinctValuesCount, true, false, false, false, false),
+        new DateDistributionConfig(true, shape, null, null, null, null, 1, "week", null)
     );
   }
 

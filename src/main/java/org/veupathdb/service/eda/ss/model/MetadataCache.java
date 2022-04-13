@@ -7,6 +7,7 @@ import java.util.Map;
 import org.veupathdb.service.eda.generated.model.APIStudyOverview;
 import org.veupathdb.service.eda.generated.model.APIStudyOverviewImpl;
 import org.veupathdb.service.eda.ss.Resources;
+import org.veupathdb.service.eda.ss.model.db.StudyFactory;
 
 public class MetadataCache {
 
@@ -15,16 +16,16 @@ public class MetadataCache {
 
   public static synchronized Study getStudy(String studyId) {
     return studies.computeIfAbsent(studyId,
-        id -> Study.loadStudy(Resources.getApplicationDataSource(), id));
+        id -> new StudyFactory(Resources.getApplicationDataSource()).loadStudy(id));
   }
 
   public static synchronized List<APIStudyOverview> getStudyOverviews() {
     if (apiStudyOverviews == null) {
       apiStudyOverviews = new HashMap<>();
-      List<Study.StudyOverview> overviews = Study.getStudyOverviews(Resources.getApplicationDataSource());
-      for (Study.StudyOverview overview : overviews) {
+      List<StudyOverview> overviews = new StudyFactory(Resources.getApplicationDataSource()).getStudyOverviews();
+      for (StudyOverview overview : overviews) {
         APIStudyOverview study = new APIStudyOverviewImpl();
-        study.setId(overview.getId());
+        study.setId(overview.getStudyId());
         apiStudyOverviews.put(study.getId(), study);
       }
     }

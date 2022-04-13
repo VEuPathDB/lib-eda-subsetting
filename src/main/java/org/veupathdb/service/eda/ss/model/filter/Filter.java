@@ -5,6 +5,7 @@ import static org.gusdb.fgputil.FormatUtil.NL;
 import java.util.Objects;
 import org.veupathdb.service.eda.ss.Resources;
 import org.veupathdb.service.eda.ss.model.Entity;
+import org.veupathdb.service.eda.ss.model.db.DB;
 
 public abstract class Filter {
 
@@ -25,14 +26,14 @@ public abstract class Filter {
     // join to ancestors table to get ancestor ID
 
     return "  SELECT " + entity.getAllPksSelectList("a") + NL
-        + "  FROM " + Resources.getAppDbSchema() + entity.getTallTableName() + " t, " + Resources.getAppDbSchema() + entity.getAncestorsTableName() + " a" + NL
+        + "  FROM " + Resources.getAppDbSchema() + DB.Tables.AttributeValue.NAME(entity) + " t, " + Resources.getAppDbSchema() + DB.Tables.Ancestors.NAME(entity) + " a" + NL
         + "  WHERE t." + entity.getPKColName() + " = a." + entity.getPKColName();
   }
 
   protected String getSingleFilterCommonSqlNoAncestors() {
 
     return "  SELECT " + entity.getPKColName() + NL
-        + "  FROM " + Resources.getAppDbSchema() + entity.getTallTableName() + NL
+        + "  FROM " + Resources.getAppDbSchema() + DB.Tables.AttributeValue.NAME(entity) + NL
         + "  WHERE 1 = 1 --no-op where clause for code generation simplicity";
   }
 

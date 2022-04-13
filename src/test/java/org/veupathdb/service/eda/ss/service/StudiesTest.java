@@ -1,6 +1,6 @@
 package org.veupathdb.service.eda.ss.service;
 
-import java.io.IOException;
+import jakarta.ws.rs.InternalServerErrorException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -8,7 +8,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import javax.sql.DataSource;
-import jakarta.ws.rs.InternalServerErrorException;
 import org.gusdb.fgputil.distribution.DistributionResult;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.DisplayName;
@@ -28,9 +27,10 @@ import org.veupathdb.service.eda.ss.model.Entity;
 import org.veupathdb.service.eda.ss.model.FiltersForTesting;
 import org.veupathdb.service.eda.ss.model.Study;
 import org.veupathdb.service.eda.ss.model.TestModel;
+import org.veupathdb.service.eda.ss.model.db.StudyFactory;
 import org.veupathdb.service.eda.ss.model.distribution.DistributionFactory;
-import org.veupathdb.service.eda.ss.model.variable.VariableWithValues;
 import org.veupathdb.service.eda.ss.model.filter.Filter;
+import org.veupathdb.service.eda.ss.model.variable.VariableWithValues;
 import org.veupathdb.service.eda.ss.stubdb.StubDb;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -48,7 +48,7 @@ public class StudiesTest {
   public static void setUp() {
     _model = new TestModel();
     _dataSource = StubDb.getDataSource();
-    _study = Study.loadStudy(_dataSource, "DS-2324");
+    _study = new StudyFactory(_dataSource).loadStudy("DS-2324");
     _filtersForTesting = new FiltersForTesting(_study);
   }
 
@@ -116,9 +116,9 @@ public class StudiesTest {
 
   @Test
   @DisplayName("Test variable distribution - no filters")
-  void testVariableDistributionNoFilters() throws IOException {
+  void testVariableDistributionNoFilters() {
 
-    Study study = Study.loadStudy(Resources.getApplicationDataSource(), "DS-2324");
+    Study study = new StudyFactory(Resources.getApplicationDataSource()).loadStudy("DS-2324");
 
     String entityId = "GEMS_Part";
     Entity entity = study.getEntity(entityId).orElseThrow();
@@ -141,9 +141,9 @@ public class StudiesTest {
 
   @Test
   @DisplayName("Test variable distribution - with filters")
-  void testVariableDistribution() throws IOException {
+  void testVariableDistribution() {
 
-    Study study = Study.loadStudy(Resources.getApplicationDataSource(), "DS-2324");
+    Study study = new StudyFactory(Resources.getApplicationDataSource()).loadStudy("DS-2324");
 
     String entityId = "GEMS_Part";
     Entity entity = study.getEntity(entityId).orElseThrow();
@@ -166,7 +166,7 @@ public class StudiesTest {
   }
 
   private void testDistributionResponse(Study study, Entity entity, VariableWithValues var,
-      List<Filter> filters, int expectedVariableCount, Map<String, Integer> expectedDistribution) throws IOException {
+      List<Filter> filters, int expectedVariableCount, Map<String, Integer> expectedDistribution) {
 
     DistributionResult result = DistributionFactory.processDistributionRequest(
         _dataSource, study, entity, var, filters, ValueSpec.COUNT, Optional.empty());

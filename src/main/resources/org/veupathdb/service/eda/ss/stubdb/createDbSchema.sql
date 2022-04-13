@@ -29,6 +29,8 @@ CREATE TABLE EntityTypeGraph (
   display_name_plural varchar(30),
   description varchar(100),
   entity_type_id integer,
+  has_attribute_collections integer,
+  is_many_to_one_with_parent integer
 );
 alter table EntityTypeGraph add unique (study_stable_id, stable_id);
 alter table EntityTypeGraph add unique (study_stable_id, internal_abbrev);
@@ -64,12 +66,13 @@ IS_MERGE_KEY                   integer,
 IS_REPEATED                    integer,
 HAS_VALUES                     integer,
 DATA_TYPE                      varchar(10),
-HIDDEN			       varchar(100),
+HIDDEN                         varchar(100),
 DISTINCT_VALUES_COUNT          integer,
 IS_MULTI_VALUED                integer,
 DATA_SHAPE                     varchar(30),
 UNIT                           varchar(30),
 PRECISION                      integer,
+IMPUTE_ZERO                    integer,
 PRIMARY KEY (stable_id)
 );
 
@@ -120,6 +123,7 @@ IS_MULTI_VALUED                integer,
 DATA_SHAPE                     varchar(30),
 UNIT                           varchar(30),
 PRECISION                      integer,
+IMPUTE_ZERO                    integer,
 PRIMARY KEY (stable_id)
 );
 
@@ -171,6 +175,7 @@ IS_MULTI_VALUED                integer,
 DATA_SHAPE                     varchar(30),
 UNIT                           varchar(30),
 PRECISION                      integer,
+IMPUTE_ZERO                    integer,
 PRIMARY KEY (stable_id)
 );
 create table AttributeValue_ds2324_Prtcpnt (
@@ -221,6 +226,7 @@ IS_MULTI_VALUED                integer,
 DATA_SHAPE                     varchar(30),
 UNIT                           varchar(30),
 PRECISION                      integer,
+IMPUTE_ZERO                    integer,
 PRIMARY KEY (stable_id)
 );
 
@@ -272,6 +278,7 @@ IS_MULTI_VALUED                integer,
 DATA_SHAPE                     varchar(30),
 UNIT                           varchar(30),
 PRECISION                      integer,
+IMPUTE_ZERO                    integer,
 PRIMARY KEY (stable_id)
 );
 
@@ -302,5 +309,6 @@ IS_MULTI_VALUED                integer,
 DATA_SHAPE                     varchar(30),
 UNIT                           varchar(30),
 PRECISION                      integer,
+IMPUTE_ZERO                    integer,
 PRIMARY KEY (stable_id)
 );

@@ -1,7 +1,6 @@
 package org.veupathdb.service.eda.ss.model.variable;
 
 import java.util.List;
-import org.veupathdb.service.eda.ss.model.Entity;
 
 public abstract class VariableWithValues extends Variable {
 
@@ -10,16 +9,18 @@ public abstract class VariableWithValues extends Variable {
     public final VariableType type;
     public final VariableDataShape dataShape;
     public final List<String> vocabulary;
-    public final Number distinctValuesCount;
+    public final Long distinctValuesCount;
     public final Boolean isTemporal;
     public final Boolean isFeatured;
     public final Boolean isMergeKey;
     public final Boolean isMultiValued;
+    public final Boolean imputeZero;
 
     public Properties(VariableType type, VariableDataShape dataShape,
-                      List<String> vocabulary, Number distinctValuesCount,
+                      List<String> vocabulary, Long distinctValuesCount,
                       Boolean isTemporal, Boolean isFeatured,
-                      Boolean isMergeKey, Boolean isMultiValued) {
+                      Boolean isMergeKey, Boolean isMultiValued,
+                      Boolean imputeZero) {
       this.type = type;
       this.dataShape = dataShape;
       this.vocabulary = vocabulary;
@@ -28,6 +29,7 @@ public abstract class VariableWithValues extends Variable {
       this.isTemporal = isTemporal;
       this.isMergeKey = isMergeKey;
       this.isMultiValued = isMultiValued;
+      this.imputeZero = imputeZero;
     }
   }
 
@@ -65,12 +67,16 @@ public abstract class VariableWithValues extends Variable {
     return _properties.isMergeKey;
   }
 
-  public Number getDistinctValuesCount() {
+  public Long getDistinctValuesCount() {
     return _properties.distinctValuesCount;
   }
 
   public Boolean getIsMultiValued() {
     return _properties.isMultiValued;
+  }
+
+  public Boolean getImputeZero() {
+    return _properties.imputeZero;
   }
 
   public VariableDataShape getDataShape() {

@@ -7,19 +7,20 @@ import org.veupathdb.service.eda.ss.model.Entity;
 public abstract class Variable {
 
   public static class Properties {
+
     public final String providerLabel;
     public final String id;
     public final Entity entity;
     public final VariableDisplayType displayType;
     public final String displayName;
-    public final Integer displayOrder;
+    public final Long displayOrder;
     public final String parentId;
     public final String definition;
     public final List<String> hideFrom;
 
     public Properties(String providerLabel, String id, Entity entity,
                       VariableDisplayType displayType, String displayName,
-                      Integer displayOrder, String parentId, String definition, 
+                      Long displayOrder, String parentId, String definition,
                       List<String> hideFrom) {
       this.providerLabel = providerLabel;
       this.id = id;
@@ -69,7 +70,7 @@ public abstract class Variable {
     return _properties.parentId;
   }
 
-  public Integer getDisplayOrder() {
+  public Long getDisplayOrder() {
     return _properties.displayOrder;
   }
 

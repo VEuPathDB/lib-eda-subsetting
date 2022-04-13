@@ -95,7 +95,6 @@ public class Entity {
   }
 
   public void assignCollections(List<VarCollection> collections) {
-    // TODO: validate types, etc. of vars match the collection type/shape and maybe assign values???
     this.collections.clear();
     this.collections.addAll(collections);
   }

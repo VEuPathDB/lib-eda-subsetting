@@ -104,7 +104,8 @@ public abstract class VarCollection {
       }
       else {
         // do not declare a vocabulary unless all member vars have a vocabulary
-        LOG.warn("At least one variable in collection " + _properties.id + " does not have a vocabulary, so collection will not either.");
+        if (useVocabulary) // only log once per collection
+          LOG.warn("At least one variable in collection " + _properties.id + " does not have a vocabulary, so collection will not either.");
         useVocabulary = false;
       }
     }

@@ -13,7 +13,7 @@ public class DateDistributionConfig {
   public BinUnits binUnits;
   public final BinUnits binUnitsOverride;
 
-  public DateDistributionConfig(boolean requireBinUnits, VariableDataShape dataShape, // needed for bin units calculations
+  public DateDistributionConfig(boolean assignBinInfo, VariableDataShape dataShape, // needed for bin units calculations
                                 String displayRangeMin, String displayRangeMax,
                                 String rangeMin, String rangeMax, Integer binSize,
                                 String binUnits, String binUnitsOverride) {
@@ -24,10 +24,11 @@ public class DateDistributionConfig {
 
     // massage bin values based on data shape
     if (dataShape == VariableDataShape.CONTINUOUS) {
-      if (requireBinUnits) {
+      if (assignBinInfo) {
         this.binUnits = BinUnits.valueOf(binUnits.toUpperCase());
       }
-      this.binUnitsOverride = binUnitsOverride == null ? null : BinUnits.valueOf(binUnitsOverride.toUpperCase());
+      this.binUnitsOverride = binUnitsOverride == null ? null :
+          BinUnits.valueOf(binUnitsOverride.toUpperCase());
       this.binSize = binSize;
     }
     else {

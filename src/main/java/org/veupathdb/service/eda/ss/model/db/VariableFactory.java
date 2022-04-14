@@ -140,7 +140,7 @@ class VariableFactory {
 
   public static DateDistributionConfig createDateDistributionConfig(
       VariableDataShape dataShape, ResultSet rs, boolean includeBinInfo) throws SQLException {
-    return new DateDistributionConfig(!includeBinInfo,
+    return new DateDistributionConfig(includeBinInfo,
         dataShape,
         getRsOptionalString(rs, DISPLAY_RANGE_MIN_COL_NAME, null),
         getRsOptionalString(rs, DISPLAY_RANGE_MAX_COL_NAME, null),

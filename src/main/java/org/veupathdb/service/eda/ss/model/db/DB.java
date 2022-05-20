@@ -127,6 +127,14 @@ public interface DB {
       }
     }
 
+    interface EntityType {
+      String NAME = "EntityType";
+      interface Columns extends ColumnCollection {
+        String ENTITY_TYPE_ID = "entity_type_id";
+        String ISA_TYPE = "isa_type";
+      }
+    }
+
     interface EntityTypeGraph {
       String NAME = "EntityTypeGraph";
       interface Columns extends ColumnCollection {
@@ -139,8 +147,8 @@ public interface DB {
         String DESCRIP_COL_NAME = "description";
         String DISPLAY_NAME_COL_NAME = "display_name";
         String DISPLAY_NAME_PLURAL_COL_NAME = "display_name_plural";
-        String ENTITY_HAS_ATTRIBUTE_COLLECTIONS = "has_attribute_collections";
-        String ENTITY_IS_MANY_TO_ONE_WITH_PARENT = "is_many_to_one_with_parent";
+        //String ENTITY_HAS_ATTRIBUTE_COLLECTIONS = "has_attribute_collections";
+        //String ENTITY_IS_MANY_TO_ONE_WITH_PARENT = "is_many_to_one_with_parent";
         List<String> ALL = getAll(Columns.class);
       }
     }

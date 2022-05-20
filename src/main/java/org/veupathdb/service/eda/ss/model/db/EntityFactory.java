@@ -82,14 +82,19 @@ public class EntityFactory {
 
   static String generateEntityTreeSql(String studyId) {
     return "SELECT " +
+        "e2." + DB.Tables.EntityType.Columns.ISA_TYPE + ", " +
         "e." + String.join(", e.", DB.Tables.EntityTypeGraph.Columns.ALL) + ", " +
-        "s." + DB.Tables.Study.Columns.STUDY_ABBREV_COL_NAME + " as " + STDY_ABBRV_COL_NM + NL
-        + "FROM " + Resources.getAppDbSchema() + DB.Tables.EntityTypeGraph.NAME + " e," + Resources.getAppDbSchema() + DB.Tables.Study.NAME + " s " + NL
-        + "WHERE s." + DB.Tables.Study.Columns.STUDY_ID_COL_NAME + " = '" + studyId + "'" + NL
-        + "AND e." + DB.Tables.EntityTypeGraph.Columns.ENTITY_STUDY_ID_COL_NAME + " = s." + DB.Tables.Study.Columns.STUDY_ID_COL_NAME + NL
+        "s." + DB.Tables.Study.Columns.STUDY_ABBREV_COL_NAME + " as " + STDY_ABBRV_COL_NM + NL +
+        "FROM " +
+        Resources.getAppDbSchema() + DB.Tables.EntityTypeGraph.NAME + " e, " +
+        Resources.getAppDbSchema() + DB.Tables.Study.NAME + " s, " +
+        Resources.getAppDbSchema() + DB.Tables.EntityType.NAME + " e2 " + NL +
+        "WHERE s." + DB.Tables.Study.Columns.STUDY_ID_COL_NAME + " = '" + studyId + "'" + NL +
+        "AND e." + DB.Tables.EntityTypeGraph.Columns.ENTITY_STUDY_ID_COL_NAME + " = s." + DB.Tables.Study.Columns.STUDY_ID_COL_NAME + NL +
+        "AND e." + DB.Tables.EntityTypeGraph.Columns.ENTITY_LOAD_ORDER_ID + " = e2." + DB.Tables.EntityType.Columns.ENTITY_TYPE_ID + NL +
         // This ordering ensures the produced tree is displayed in load order;
         //   also stable ordering supports unit testing
-        + "ORDER BY e." + DB.Tables.EntityTypeGraph.Columns.ENTITY_LOAD_ORDER_ID + " ASC";
+        "ORDER BY e." + DB.Tables.EntityTypeGraph.Columns.ENTITY_LOAD_ORDER_ID + " ASC";
   }
 
   static Entity createEntityFromResultSet(ResultSet rs) {
@@ -102,13 +107,17 @@ public class EntityFactory {
       String descrip = getRsOptionalString(rs, DESCRIP_COL_NAME, "No Entity Description available");
       String abbrev = getRsRequiredString(rs, ENTITY_ABBREV_COL_NAME);
       long loadOrder = getIntegerFromString(rs, ENTITY_LOAD_ORDER_ID, true);
-      boolean hasCollections = getRsRequiredBoolean(rs, ENTITY_HAS_ATTRIBUTE_COLLECTIONS);
-      boolean isManyToOneWithParent = getRsRequiredBoolean(rs, ENTITY_IS_MANY_TO_ONE_WITH_PARENT);
+      boolean hasCollections = determineHasCollections(getRsRequiredString(rs, DB.Tables.EntityType.Columns.ISA_TYPE)); // getRsRequiredBoolean(rs, ENTITY_HAS_ATTRIBUTE_COLLECTIONS);
+      boolean isManyToOneWithParent = false; //getRsRequiredBoolean(rs, ENTITY_IS_MANY_TO_ONE_WITH_PARENT);
 
       return new Entity(id, studyAbbrev, name, namePlural, descrip, abbrev, loadOrder, hasCollections, isManyToOneWithParent);
     }
     catch (SQLException e) {
       throw new RuntimeException(e);
     }
+  }
+
+  private static boolean determineHasCollections(String isaEntityType) {
+    return Resources.getConvertAssaysFlag() && isaEntityType.equals("Assay");
   }
 }

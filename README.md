@@ -1,0 +1,2 @@
+# lib-eda-subsetting
+Provides Java interface to query and provide EDA data and metadata from a database

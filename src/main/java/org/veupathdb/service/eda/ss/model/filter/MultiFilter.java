@@ -25,13 +25,11 @@ public class MultiFilter extends Filter {
     String getOperation() {return operation;}
 
     public static MultiFilterOperation fromString(String operation) {
-
-      return switch (operation) {
-        case "intersect" -> INTERSECT;
-        case "union" -> UNION;
-        default -> throw new RuntimeException("Unrecognized multi-filter operation: " + operation);
-
-      };
+      switch (operation) {
+        case "intersect": return INTERSECT;
+        case "union": return UNION;
+        default: throw new RuntimeException("Unrecognized multi-filter operation: " + operation);
+      }
     }
   }
 

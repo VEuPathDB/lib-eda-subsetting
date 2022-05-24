@@ -102,10 +102,11 @@ public class CollectionFactory {
     );
 
     // create typed collection, loading type-specific props
-    return switch (type) {
-      case DATE -> new DateVarCollection(properties, createDateDistributionConfig(properties.dataShape, rs, false));
-      case INTEGER -> new IntegerVarCollection(properties, createIntegerProperties(rs), createIntegerDistributionConfig(rs, false));
-      case NUMBER -> new FloatingPointVarCollection(properties, createFloatProperties(rs), createFloatDistributionConfig(rs, false));
-    };
+    switch (type) {
+      case DATE: return new DateVarCollection(properties, createDateDistributionConfig(properties.dataShape, rs, false));
+      case INTEGER: return new IntegerVarCollection(properties, createIntegerProperties(rs), createIntegerDistributionConfig(rs, false));
+      case NUMBER: return new FloatingPointVarCollection(properties, createFloatProperties(rs), createFloatDistributionConfig(rs, false));
+      default: throw new IllegalArgumentException();
+    }
   }
 }

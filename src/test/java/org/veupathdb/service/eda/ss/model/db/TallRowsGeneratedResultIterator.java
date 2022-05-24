@@ -107,12 +107,13 @@ public class TallRowsGeneratedResultIterator implements Iterator<Map<String,Stri
   }
 
   private static String getDefaultVarValue(VariableType type) {
-    return switch(type) {
-      case DATE -> FormatUtil.formatDateTimeNoTimezone(new Date(1613328166541L));
-      case NUMBER -> String.valueOf(123.4567);
-      case STRING -> "some fun string";
-      case LONGITUDE -> String.valueOf(160.00000);
-      case INTEGER -> String.valueOf(98);
-    };
+    switch(type) {
+      case DATE: return FormatUtil.formatDateTimeNoTimezone(new Date(1613328166541L));
+      case NUMBER: return String.valueOf(123.4567);
+      case STRING: return "some fun string";
+      case LONGITUDE: return String.valueOf(160.00000);
+      case INTEGER: return String.valueOf(98);
+      default: throw new IllegalArgumentException();
+    }
   }
 }

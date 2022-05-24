@@ -77,20 +77,20 @@ public class DistributionFactory {
       // inspect requested variable and select appropriate distribution
       AbstractDistribution distribution;
       if (var.getDataShape() == VariableDataShape.CONTINUOUS) {
-        distribution = switch(var.getType()) {
-          case INTEGER -> new IntegerBinDistribution(
+        switch(var.getType()) {
+          case INTEGER: distribution = new IntegerBinDistribution(
               new EdaDistributionStreamProvider<>(ds, appDbSchema, study, targetEntity, (IntegerVariable)var, filters),
               valueSpec, new EdaNumberBinSpec((IntegerVariable)var, incomingBinSpec));
-          case NUMBER -> new FloatingPointBinDistribution(
+          case NUMBER: distribution = new FloatingPointBinDistribution(
               new EdaDistributionStreamProvider<>(ds, appDbSchema, study, targetEntity, (FloatingPointVariable)var, filters),
               valueSpec, new EdaNumberBinSpec((FloatingPointVariable)var, incomingBinSpec));
-          case DATE -> new DateBinDistribution(
+          case DATE: distribution = new DateBinDistribution(
               new EdaDistributionStreamProvider<>(ds, appDbSchema, study, targetEntity, (DateVariable)var, filters),
               valueSpec, new EdaDateBinSpec((DateVariable)var, incomingBinSpec));
-          default -> throw new BadRequestException("Among continuous variables, " +
+          default: throw new BadRequestException("Among continuous variables, " +
               "distribution endpoint supports only date, integer, and number types; " +
               "requested variable '" + var.getId() + "' is type " + var.getType());
-        };
+        }
       }
       else {
         if (incomingBinSpec.isPresent()) {
@@ -110,9 +110,10 @@ public class DistributionFactory {
   }
 
   private static AbstractDistribution.ValueSpec convertValueSpec(ValueSpec apiValueSpec) {
-    return switch(apiValueSpec) {
-      case COUNT -> AbstractDistribution.ValueSpec.COUNT;
-      case PROPORTION -> AbstractDistribution.ValueSpec.PROPORTION;
-    };
+    switch(apiValueSpec) {
+      case COUNT: return AbstractDistribution.ValueSpec.COUNT;
+      case PROPORTION: return AbstractDistribution.ValueSpec.PROPORTION;
+      default: throw new IllegalArgumentException();
+    }
   }
 }

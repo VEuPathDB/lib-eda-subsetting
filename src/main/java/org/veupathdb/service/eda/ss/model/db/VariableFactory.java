@@ -96,29 +96,28 @@ class VariableFactory {
           rs.getBoolean(IMPUTE_ZERO)
       );
 
-      return switch(valueProps.type) {
+      switch(valueProps.type) {
 
-        case NUMBER ->
+        case NUMBER: return
             new FloatingPointVariable(varProps, valueProps, createFloatDistributionConfig(rs, true), createFloatProperties(rs));
 
-        case LONGITUDE ->
+        case LONGITUDE: return
             new LongitudeVariable(varProps, valueProps, new LongitudeVariable.Properties(
                 getRsOptionalLong(rs, PRECISION_COL_NAME, 1L)
             ));
 
-        case INTEGER ->
+        case INTEGER: return
             new IntegerVariable(varProps, valueProps, createIntegerDistributionConfig(rs, true), createIntegerProperties(rs));
 
-        case DATE ->
+        case DATE: return
             new DateVariable(varProps, valueProps, createDateDistributionConfig(valueProps.dataShape, rs, true));
 
-        case STRING ->
+        case STRING: return
             new StringVariable(varProps, valueProps);
 
-        default -> doThrow(() ->
-            new RuntimeException("Entity:  " + varProps.entity.getId() +
-              " variable: " + varProps.id + " has unrecognized type " + valueProps.type));
-      };
+        default: throw new RuntimeException("Entity:  " + varProps.entity.getId() +
+            " variable: " + varProps.id + " has unrecognized type " + valueProps.type);
+      }
     }
     catch (SQLException e) {
       throw new RuntimeException("Entity:  " + varProps.entity.getId() + " variable: " + varProps.id, e);

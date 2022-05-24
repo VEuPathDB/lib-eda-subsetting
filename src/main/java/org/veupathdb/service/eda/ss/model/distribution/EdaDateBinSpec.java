@@ -59,11 +59,12 @@ public class EdaDateBinSpec implements DateBinSpec {
 
   private static ChronoUnit convertToChrono(BinUnits binUnits) {
     // convert to ChronoUnit for use in adjusting min/max and bin sizes
-    return switch(binUnits) {
-      case DAY -> ChronoUnit.DAYS;
-      case WEEK -> ChronoUnit.WEEKS;
-      case MONTH -> ChronoUnit.MONTHS;
-      case YEAR -> ChronoUnit.YEARS;
-    };
+    switch(binUnits) {
+      case DAY: return ChronoUnit.DAYS;
+      case WEEK: return ChronoUnit.WEEKS;
+      case MONTH: return ChronoUnit.MONTHS;
+      case YEAR: return ChronoUnit.YEARS;
+      default: throw new IllegalArgumentException();
+    }
   }
 }

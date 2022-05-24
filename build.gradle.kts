@@ -7,7 +7,7 @@
 
 // Project settings
 group   = "org.veupathdb.eda"
-version = "1.0.1"
+version = "1.0.2"
 
 plugins {
   `java-library`
@@ -15,9 +15,8 @@ plugins {
 }
 
 java {
-  toolchain {
-    languageVersion.set(JavaLanguageVersion.of(11))
-  }
+  targetCompatibility = JavaVersion.VERSION_11
+  sourceCompatibility = JavaVersion.VERSION_11
   withSourcesJar()
   withJavadocJar()
 }

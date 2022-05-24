@@ -14,7 +14,7 @@ import org.gusdb.fgputil.functional.FunctionalInterfaces.SupplierWithException;
 import org.junit.jupiter.api.Test;
 import org.veupathdb.service.eda.ss.model.Entity;
 import org.veupathdb.service.eda.ss.model.TestModel;
-import org.veupathdb.service.eda.ss.model.tabular.TabularResponseType;
+import org.veupathdb.service.eda.ss.model.tabular.TabularResponses;
 
 public class TallRowsConversionPerformanceTest {
 
@@ -39,7 +39,7 @@ public class TallRowsConversionPerformanceTest {
     TallRowsGeneratedResultIterator iterator = new TallRowsGeneratedResultIterator(entity, NUM_RECORDS_TO_PROCESS, CACHE_SAMPLE_RECORD);
     try (BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(OUTPUT_STREAM_PROVIDER.get()))) {
       Timer t = new Timer();
-      FilteredResultFactory.writeWideRowsFromTallResult(iterator, TabularResponseType.TABULAR.getFormatter(), writer, outputColumns, entity, false);
+      FilteredResultFactory.writeWideRowsFromTallResult(iterator, TabularResponses.Type.TABULAR.getFormatter().getFormatter(writer), outputColumns, entity, false);
       writer.flush();
       LOG.info("Time to dump " + NUM_RECORDS_TO_PROCESS + " entity records: " + t.getElapsedString());
     }

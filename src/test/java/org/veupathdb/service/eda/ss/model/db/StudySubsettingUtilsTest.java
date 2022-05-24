@@ -7,7 +7,6 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 import java.util.Scanner;
 import java.util.Set;
 import org.apache.logging.log4j.LogManager;
@@ -27,7 +26,7 @@ import org.veupathdb.service.eda.ss.model.Study;
 import org.veupathdb.service.eda.ss.model.tabular.TabularReportConfig;
 import org.veupathdb.service.eda.ss.model.TestModel;
 import org.veupathdb.service.eda.ss.model.filter.Filter;
-import org.veupathdb.service.eda.ss.model.tabular.TabularResponseType;
+import org.veupathdb.service.eda.ss.model.tabular.TabularResponses;
 import org.veupathdb.service.eda.ss.model.variable.Variable;
 import org.veupathdb.service.eda.ss.model.variable.VariableWithValues;
 import org.veupathdb.service.eda.ss.stubdb.StubDb;
@@ -425,7 +424,7 @@ public class StudySubsettingUtilsTest {
     ByteArrayOutputStream outStream = new ByteArrayOutputStream();
 
     FilteredResultFactory.produceTabularSubset(_dataSource, APP_DB_SCHEMA, study, entity,
-        variables, filters, new TabularReportConfig(), TabularResponseType.TABULAR.getFormatter(), outStream);
+        variables, filters, new TabularReportConfig(), TabularResponses.Type.TABULAR.getFormatter(), outStream);
     String[] expected = {
     "Prtcpnt_stable_id", "Hshld_stable_id", "var_p4",  "var_p3",
     "201", "101",     "blond",   "Martin",
@@ -456,7 +455,7 @@ public class StudySubsettingUtilsTest {
     ByteArrayOutputStream outStream = new ByteArrayOutputStream();
 
     FilteredResultFactory.produceTabularSubset(_dataSource, APP_DB_SCHEMA, study, entity,
-        variables, filters, new TabularReportConfig(), TabularResponseType.TABULAR.getFormatter(), outStream);
+        variables, filters, new TabularReportConfig(), TabularResponses.Type.TABULAR.getFormatter(), outStream);
     String[] expected = {
     "Prtcpnt_stable_id", "Hshld_stable_id", "var_p4",  "var_p3",
     "201", "101",     "blond",   "Martin",
@@ -632,7 +631,7 @@ public class StudySubsettingUtilsTest {
   private List<Map<String,String>> getTabularOutputRows(Entity entity, List<Variable> requestedVars) {
     ByteArrayOutputStream buffer = new ByteArrayOutputStream();
     FilteredResultFactory.produceTabularSubset(_dataSource, APP_DB_SCHEMA, _model.study, entity, requestedVars,
-        Collections.emptyList(), new TabularReportConfig(), TabularResponseType.TABULAR.getFormatter(), buffer);
+        Collections.emptyList(), new TabularReportConfig(), TabularResponses.Type.TABULAR.getFormatter(), buffer);
     Scanner scanner = new Scanner(buffer.toString());
     if (!scanner.hasNextLine()) {
       throw new RuntimeException("Tabular output did not contain a header row.");

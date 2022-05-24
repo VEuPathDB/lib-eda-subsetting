@@ -33,7 +33,9 @@ import org.veupathdb.service.eda.ss.model.tabular.TabularHeaderFormat;
 import org.veupathdb.service.eda.ss.model.tabular.TabularReportConfig;
 import org.veupathdb.service.eda.ss.model.db.DB.Tables.Ancestors;
 import org.veupathdb.service.eda.ss.model.filter.Filter;
-import org.veupathdb.service.eda.ss.model.tabular.TabularResponseType;
+import org.veupathdb.service.eda.ss.model.tabular.TabularResponses;
+import org.veupathdb.service.eda.ss.model.tabular.TabularResponses.FormatterFactory;
+import org.veupathdb.service.eda.ss.model.tabular.TabularResponses.ResultConsumer;
 import org.veupathdb.service.eda.ss.model.variable.Variable;
 import org.veupathdb.service.eda.ss.model.variable.VariableType;
 import org.veupathdb.service.eda.ss.model.variable.VariableWithValues;
@@ -62,7 +64,7 @@ public class FilteredResultFactory {
    * responseType (JSON string[][] vs true tabular). Each row is a record containing
    * the primary key columns and requested variables of the specified entity.
    *
-   * @param datasource      DB to run against
+   * @param dataSource      DB to run against
    * @param study           study context
    * @param outputEntity    entity type to return
    * @param outputVariables variables requested
@@ -71,10 +73,23 @@ public class FilteredResultFactory {
    * @param formatter       object that will write response
    * @param outputStream    stream to which report should be written
    */
-  public static void produceTabularSubset(DataSource datasource, String appDbSchema, Study study, Entity outputEntity,
+  public static void produceTabularSubset(DataSource dataSource, String appDbSchema, Study study, Entity outputEntity,
                                           List<Variable> outputVariables, List<Filter> filters,
-                                          TabularReportConfig reportConfig, TabularResponseType.Formatter formatter,
+                                          TabularReportConfig reportConfig, FormatterFactory formatter,
                                           OutputStream outputStream) {
+    // produce output; result consumer will format result and write to passed output stream
+    try (BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(outputStream))) {
+      produceTabularSubset(dataSource, appDbSchema, study, outputEntity, outputVariables, filters, reportConfig, formatter.getFormatter(writer));
+      writer.flush();
+    }
+    catch (IOException e) {
+      throw new RuntimeException(e);
+    }
+  }
+
+  public static void produceTabularSubset(DataSource dataSource, String appDbSchema, Study study, Entity outputEntity,
+                                          List<Variable> outputVariables, List<Filter> filters,
+                                          TabularReportConfig reportConfig, ResultConsumer resultConsumer) {
 
     TreeNode<Entity> prunedEntityTree = pruneTree(study.getEntityTree(), filters, outputEntity);
 
@@ -92,26 +107,24 @@ public class FilteredResultFactory {
     // create a date formatter based on config
     boolean trimTimeFromDateVars = reportConfig.getTrimTimeFromDateVars();
 
-    new SQLRunner(datasource, sql, "Produce tabular subset").executeQuery(rs -> {
-      try(BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(outputStream))) {
-
-        formatter.begin(writer);
+    new SQLRunner(dataSource, sql, "Produce tabular subset").executeQuery(rs -> {
+      try {
+        resultConsumer.begin();
 
         // write header row
-        formatter.writeRow(writer, usePrettyHeader ? getTabularPrettyHeaders(outputEntity, outputVariables) : outputColumns);
+        resultConsumer.consumeRow(usePrettyHeader ? getTabularPrettyHeaders(outputEntity, outputVariables) : outputColumns);
 
         if (reportConfig.requiresSorting())
-          writeWideRowsFromWideResult(rs, formatter, writer, outputColumns, outputEntity, trimTimeFromDateVars);
+          writeWideRowsFromWideResult(rs, resultConsumer, outputColumns, outputEntity, trimTimeFromDateVars);
         else
-          writeWideRowsFromTallResult(convertTallRowsResultSet(rs, outputEntity), formatter, writer, outputColumns, outputEntity, trimTimeFromDateVars);
+          writeWideRowsFromTallResult(convertTallRowsResultSet(rs, outputEntity), resultConsumer, outputColumns, outputEntity, trimTimeFromDateVars);
 
         // close out the response and flush
-        formatter.end(writer);
-        writer.flush();
+        resultConsumer.end();
         return null;
       }
       catch (IOException e) {
-        throw new RuntimeException(e);
+        throw new RuntimeException("Unable to write result", e);
       }
     }, FETCH_SIZE_FOR_TABULAR_QUERIES);
   }
@@ -154,8 +167,7 @@ public class FilteredResultFactory {
   }
 
   static void writeWideRowsFromTallResult(Iterator<Map<String, String>> tallRowsIterator,
-                                          TabularResponseType.Formatter formatter,
-                                          Writer writer, List<String> outputColumns,
+                                          ResultConsumer resultConsumer, List<String> outputColumns,
                                           Entity outputEntity, boolean trimTimeFromDateVars) throws IOException {
 
     // an iterator of lists of maps, each list being the rows of the tall table returned for a single entity id
@@ -180,12 +192,11 @@ public class FilteredResultFactory {
         // add to row
         wideRow.add(value);
       }
-      formatter.writeRow(writer, wideRow);
+      resultConsumer.consumeRow(wideRow);
     }
   }
 
-  static void writeWideRowsFromWideResult(ResultSet rs, TabularResponseType.Formatter formatter,
-                                          Writer writer, List<String> outputColumns, Entity outputEntity,
+  static void writeWideRowsFromWideResult(ResultSet rs, ResultConsumer resultConsumer, List<String> outputColumns, Entity outputEntity,
                                           boolean trimTimeFromDateVars) throws IOException, SQLException {
 
     // iterate through groups and format into strings to be written to stream
@@ -206,7 +217,7 @@ public class FilteredResultFactory {
         }
         wideRow.add(value);
       }
-      formatter.writeRow(writer, wideRow);
+      resultConsumer.consumeRow(wideRow);
     }
   }
 

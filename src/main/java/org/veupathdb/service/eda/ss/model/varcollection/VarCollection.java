@@ -7,7 +7,6 @@ import java.util.Optional;
 import java.util.Set;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.veupathdb.service.eda.generated.model.APICollectionType;
 import org.veupathdb.service.eda.ss.model.Entity;
 import org.veupathdb.service.eda.ss.model.variable.Variable;
 import org.veupathdb.service.eda.ss.model.variable.VariableDataShape;
@@ -23,13 +22,13 @@ public abstract class VarCollection {
 
     public final String id;
     public final String displayName;
-    public final APICollectionType type;
+    public final CollectionType type;
     public final VariableDataShape dataShape;
     public final Long numMembers;
     public final Boolean imputeZero;
 
     public Properties(String id, String displayName,
-                      APICollectionType type, VariableDataShape dataShape,
+                      CollectionType type, VariableDataShape dataShape,
                       Long numMembers, Boolean imputeZero) {
       this.id = id;
       this.displayName = displayName;
@@ -118,7 +117,7 @@ public abstract class VarCollection {
     assignDistributionDefaults(valueVars);
   }
 
-  public APICollectionType getType() {
+  public CollectionType getType() {
     return _properties.type;
   }
 

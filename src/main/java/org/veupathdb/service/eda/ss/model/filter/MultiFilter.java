@@ -45,15 +45,15 @@ public class MultiFilter extends Filter {
         + "  ) -- END OF MULTIFILTER" + NL;
   }
 
-  public MultiFilter(Entity entity, List<MultiFilterSubFilter> subFilters, MultiFilterOperation operation) {
-    super(entity);
+  public MultiFilter(String appDbSchema, Entity entity, List<MultiFilterSubFilter> subFilters, MultiFilterOperation operation) {
+    super(appDbSchema, entity);
     this.subFilters = subFilters;
     this.operation = operation;
   }
 
   private String getSingleFilterSql(MultiFilterSubFilter subFilter) {
     StringVariable stringVar = StringVariable.assertType(subFilter.getVariable());
-    StringSetFilter ssf = new StringSetFilter(entity, stringVar, subFilter.getStringSet());
+    StringSetFilter ssf = new StringSetFilter(_appDbSchema, _entity, stringVar, subFilter.getStringSet());
     return ssf.getSql();
   }
 

@@ -1,7 +1,8 @@
 package org.veupathdb.service.eda.ss.model.varcollection;
 
 import java.util.List;
-import org.veupathdb.service.eda.generated.model.BinUnits;
+
+import org.veupathdb.service.eda.ss.model.distribution.BinUnits;
 import org.veupathdb.service.eda.ss.model.distribution.DateDistributionConfig;
 import org.veupathdb.service.eda.ss.model.variable.DateVariable;
 import org.veupathdb.service.eda.ss.model.variable.VariableWithValues;

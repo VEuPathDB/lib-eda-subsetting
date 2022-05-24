@@ -11,8 +11,8 @@ public class LongitudeRangeFilter extends SingleValueFilter<LongitudeVariable> {
     private Number _left;
     private Number _right;
 
-    public LongitudeRangeFilter(Entity entity, LongitudeVariable variable, Number left, Number right) {
-        super(entity, variable);
+    public LongitudeRangeFilter(String appDbSchema, Entity entity, LongitudeVariable variable, Number left, Number right) {
+        super(appDbSchema, entity, variable);
         _left = left;
         _right = right;
     }

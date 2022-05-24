@@ -3,17 +3,19 @@ package org.veupathdb.service.eda.ss.model.filter;
 import static org.gusdb.fgputil.FormatUtil.NL;
 
 import java.util.Objects;
-import org.veupathdb.service.eda.ss.Resources;
+
 import org.veupathdb.service.eda.ss.model.Entity;
 import org.veupathdb.service.eda.ss.model.db.DB;
 
 public abstract class Filter {
 
-  protected Entity entity;
+  protected final Entity _entity;
+  protected final String _appDbSchema;
 
-  public Filter(Entity entity) {
+  public Filter(String appDbSchema, Entity entity) {
     Objects.nonNull(entity);
-    this.entity = entity;
+    _entity = entity;
+    _appDbSchema = appDbSchema;
   }
 
   public abstract String getSql();
@@ -25,19 +27,19 @@ public abstract class Filter {
 
     // join to ancestors table to get ancestor ID
 
-    return "  SELECT " + entity.getAllPksSelectList("a") + NL
-        + "  FROM " + Resources.getAppDbSchema() + DB.Tables.AttributeValue.NAME(entity) + " t, " + Resources.getAppDbSchema() + DB.Tables.Ancestors.NAME(entity) + " a" + NL
-        + "  WHERE t." + entity.getPKColName() + " = a." + entity.getPKColName();
+    return "  SELECT " + _entity.getAllPksSelectList("a") + NL
+        + "  FROM " + _appDbSchema + DB.Tables.AttributeValue.NAME(_entity) + " t, " + _appDbSchema + DB.Tables.Ancestors.NAME(_entity) + " a" + NL
+        + "  WHERE t." + _entity.getPKColName() + " = a." + _entity.getPKColName();
   }
 
   protected String getSingleFilterCommonSqlNoAncestors() {
 
-    return "  SELECT " + entity.getPKColName() + NL
-        + "  FROM " + Resources.getAppDbSchema() + DB.Tables.AttributeValue.NAME(entity) + NL
+    return "  SELECT " + _entity.getPKColName() + NL
+        + "  FROM " + _appDbSchema + DB.Tables.AttributeValue.NAME(_entity) + NL
         + "  WHERE 1 = 1 --no-op where clause for code generation simplicity";
   }
 
   public Entity getEntity() {
-    return entity;
+    return _entity;
   }
 }

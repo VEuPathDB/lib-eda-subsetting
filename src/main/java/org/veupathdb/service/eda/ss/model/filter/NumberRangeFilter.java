@@ -11,8 +11,8 @@ public class NumberRangeFilter extends SingleValueFilter<NumberVariable> {
   private Number _min;
   private Number _max;
   
-  public NumberRangeFilter(Entity entity, NumberVariable variable, Number min, Number max) {
-    super(entity, variable);
+  public NumberRangeFilter(String appDbSchema, Entity entity, NumberVariable variable, Number min, Number max) {
+    super(appDbSchema, entity, variable);
     _min = min;
     _max = max;
   }

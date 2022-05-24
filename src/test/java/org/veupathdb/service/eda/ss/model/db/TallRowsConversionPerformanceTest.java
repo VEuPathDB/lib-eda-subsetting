@@ -12,9 +12,9 @@ import org.apache.logging.log4j.Logger;
 import org.gusdb.fgputil.Timer;
 import org.gusdb.fgputil.functional.FunctionalInterfaces.SupplierWithException;
 import org.junit.jupiter.api.Test;
-import org.veupathdb.service.eda.common.client.TabularResponseType;
 import org.veupathdb.service.eda.ss.model.Entity;
 import org.veupathdb.service.eda.ss.model.TestModel;
+import org.veupathdb.service.eda.ss.model.tabular.TabularResponseType;
 
 public class TallRowsConversionPerformanceTest {
 

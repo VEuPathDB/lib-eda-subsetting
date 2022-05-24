@@ -11,7 +11,6 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.gusdb.fgputil.db.runner.SQLRunner;
 import org.gusdb.fgputil.functional.TreeNode;
-import org.veupathdb.service.eda.ss.Resources;
 import org.veupathdb.service.eda.ss.model.Entity;
 import org.veupathdb.service.eda.ss.model.Study;
 import org.veupathdb.service.eda.ss.model.StudyOverview;
@@ -21,13 +20,17 @@ public class StudyFactory {
   private static final Logger LOG = LogManager.getLogger(StudyFactory.class);
 
   private final DataSource _dataSource;
+  private final String _appDbSchema;
+  private final boolean _convertAssaysFlag;
 
-  public StudyFactory(DataSource dataSource) {
+  public StudyFactory(DataSource dataSource, String appDbSchema, boolean convertAssaysFlag) {
     _dataSource = dataSource;
+    _appDbSchema = appDbSchema;
+    _convertAssaysFlag = convertAssaysFlag;
   }
 
   public List<StudyOverview> getStudyOverviews() {
-    String sql = getStudyOverviewSql(null);
+    String sql = getStudyOverviewSql(null, _appDbSchema);
     return new SQLRunner(_dataSource, sql, "Get list of study overviews").executeQuery(rs -> {
       List<StudyOverview> studyOverviews = new ArrayList<>();
       while (rs.next()) {
@@ -45,12 +48,12 @@ public class StudyFactory {
     StudyOverview overview =
         getStudyOverview(studyId).orElseThrow(() -> new NotFoundException("Study ID '" + studyId + "' not found:"));
 
-    TreeNode<Entity> entityTree = new EntityFactory(_dataSource).getStudyEntityTree(studyId);
+    TreeNode<Entity> entityTree = new EntityFactory(_dataSource, _appDbSchema, _convertAssaysFlag).getStudyEntityTree(studyId);
 
     Map<String, Entity> entityIdMap = entityTree.flatten().stream().collect(Collectors.toMap(Entity::getId, e -> e));
 
-    VariableFactory variableFactory = new VariableFactory(_dataSource);
-    CollectionFactory collectionFactory = new CollectionFactory(_dataSource);
+    VariableFactory variableFactory = new VariableFactory(_dataSource, _appDbSchema);
+    CollectionFactory collectionFactory = new CollectionFactory(_dataSource, _appDbSchema);
 
     for (Entity entity : entityIdMap.values()) {
       entity.assignVariables(variableFactory.loadVariables(entity));
@@ -64,7 +67,7 @@ public class StudyFactory {
   }
 
   public Optional<StudyOverview> getStudyOverview(String studyId) {
-    String sql = getStudyOverviewSql(studyId);
+    String sql = getStudyOverviewSql(studyId, _appDbSchema);
 
     return new SQLRunner(_dataSource, sql, "Get study overview").executeQuery(rs -> {
       if (!rs.next()) return Optional.empty();
@@ -75,13 +78,13 @@ public class StudyFactory {
   }
 
   // studyId is optional. if provided, constrain returned studies to that one study id.
-  private static String getStudyOverviewSql(String studyId) {
+  private static String getStudyOverviewSql(String studyId, String appDbSchema) {
     String whereClause = "";
     if (studyId != null) whereClause = " where s." + DB.Tables.Study.Columns.STUDY_ID_COL_NAME + " = '" + studyId + "'";
     return
         "select s." + DB.Tables.Study.Columns.STUDY_ID_COL_NAME +
             ", s." + DB.Tables.Study.Columns.STUDY_ABBREV_COL_NAME +
-            " from " + Resources.getAppDbSchema() + DB.Tables.Study.NAME + " s " +
+            " from " + appDbSchema + DB.Tables.Study.NAME + " s " +
             whereClause;
   }
 }

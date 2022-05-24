@@ -21,13 +21,13 @@ import org.gusdb.fgputil.iterator.IteratorUtil;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
-import org.veupathdb.service.eda.common.client.TabularResponseType;
 import org.veupathdb.service.eda.ss.model.Entity;
 import org.veupathdb.service.eda.ss.model.FiltersForTesting;
 import org.veupathdb.service.eda.ss.model.Study;
-import org.veupathdb.service.eda.ss.model.TabularReportConfig;
+import org.veupathdb.service.eda.ss.model.tabular.TabularReportConfig;
 import org.veupathdb.service.eda.ss.model.TestModel;
 import org.veupathdb.service.eda.ss.model.filter.Filter;
+import org.veupathdb.service.eda.ss.model.tabular.TabularResponseType;
 import org.veupathdb.service.eda.ss.model.variable.Variable;
 import org.veupathdb.service.eda.ss.model.variable.VariableWithValues;
 import org.veupathdb.service.eda.ss.stubdb.StubDb;
@@ -39,6 +39,8 @@ import java.util.stream.Stream;
 import static org.gusdb.fgputil.FormatUtil.NL;
 import static org.gusdb.fgputil.FormatUtil.TAB;
 import static org.junit.jupiter.api.Assertions.*;
+import static org.veupathdb.service.eda.ss.model.TestModel.APP_DB_SCHEMA;
+import static org.veupathdb.service.eda.ss.model.TestModel.ASSAY_CONVERSION_FLAG;
 import static org.veupathdb.service.eda.ss.model.db.DB.Tables.AttributeValue.Columns.*;
 
 public class StudySubsettingUtilsTest {
@@ -53,7 +55,7 @@ public class StudySubsettingUtilsTest {
   public static void setUp() {
     _model = new TestModel();
     _dataSource = StubDb.getDataSource();
-    Study study = new StudyFactory(_dataSource).loadStudy(LoadStudyTest.STUDY_ID);
+    Study study = new StudyFactory(_dataSource, APP_DB_SCHEMA, ASSAY_CONVERSION_FLAG).loadStudy(LoadStudyTest.STUDY_ID);
     _filtersForTesting = new FiltersForTesting(study);
   }
 
@@ -168,7 +170,7 @@ public class StudySubsettingUtilsTest {
     List<Filter> filters = new ArrayList<>();
     filters.add(_model.obsWeightFilter);
     filters.add(_model.obsFavNewYearsFilter);
-    String withClause = FilteredResultFactory.generateFilterWithClause(_model.householdObs, filters);
+    String withClause = FilteredResultFactory.generateFilterWithClause(APP_DB_SCHEMA, _model.householdObs, filters);
     String expectedWithClause = _model.householdObs.getWithClauseName() + " as (" + NL +
         "  SELECT " + _model.household.getPKColName() + ", " + _model.householdObs.getPKColName() + " FROM " + DB.Tables.Ancestors.NAME(_model.householdObs) + NL +
         ")";
@@ -186,7 +188,7 @@ public class StudySubsettingUtilsTest {
     filters.add(_model.obsMoodFilter);
     filters.add(_model.obsFavNumberFilter);
     filters.add(_model.houseRoofFilter);
-    String withClause = FilteredResultFactory.generateFilterWithClause(_model.observation, filters);
+    String withClause = FilteredResultFactory.generateFilterWithClause(APP_DB_SCHEMA, _model.observation, filters);
  
     List<String> selectColsList = new ArrayList<>();
     selectColsList.add("a." + _model.observation.getPKColName());
@@ -325,7 +327,7 @@ public class StudySubsettingUtilsTest {
 
     TreeNode<Entity> prunedTree = FilteredResultFactory.pruneTree(_model.study.getEntityTree(), filters, _model.participant);
 
-    String sql = FilteredResultFactory.generateTabularSqlForTallRows(outputVariables, _model.participant, filters, prunedTree);
+    String sql = FilteredResultFactory.generateTabularSqlForTallRows(APP_DB_SCHEMA, outputVariables, _model.participant, filters, prunedTree);
     assertNotEquals("", sql);
     System.out.println("Tabular SQL:" + "\n" + sql);
   }
@@ -338,7 +340,7 @@ public class StudySubsettingUtilsTest {
     
     TreeNode<Entity> prunedTree = FilteredResultFactory.pruneTree(_model.study.getEntityTree(), filters, _model.participant);
 
-    String sql = FilteredResultFactory.generateDistributionSql(_model.participant, _model.shoesize, filters, prunedTree);
+    String sql = FilteredResultFactory.generateDistributionSql(APP_DB_SCHEMA, _model.participant, _model.shoesize, filters, prunedTree);
     assertNotEquals("", sql);
     System.out.println("Distribution SQL:" + "\n" + sql);
   }
@@ -351,7 +353,7 @@ public class StudySubsettingUtilsTest {
     
     TreeNode<Entity> prunedTree = FilteredResultFactory.pruneTree(_model.study.getEntityTree(), filters, _model.participant);
 
-    String sql = FilteredResultFactory.generateEntityCountSql(_model.participant, filters, prunedTree);
+    String sql = FilteredResultFactory.generateEntityCountSql(APP_DB_SCHEMA, _model.participant, filters, prunedTree);
     assertNotEquals("", sql);
     //System.out.println("Entity Count SQL:" + "\n" + sql);
   }
@@ -364,7 +366,7 @@ public class StudySubsettingUtilsTest {
     
     TreeNode<Entity> prunedTree = FilteredResultFactory.pruneTree(_model.study.getEntityTree(), filters, _model.participant);
 
-    String sql = FilteredResultFactory.generateVariableCountSql(_model.participant, _model.networth, filters, prunedTree);
+    String sql = FilteredResultFactory.generateVariableCountSql(APP_DB_SCHEMA, _model.participant, _model.networth, filters, prunedTree);
     assertNotEquals("", sql);
     //System.out.println("Variable Count SQL:" + "\n" + sql);
   }
@@ -373,7 +375,7 @@ public class StudySubsettingUtilsTest {
   @DisplayName("Test get entity count - no filters") 
   void testEntityCountNoFiltersFromDb() {
 
-    Study study = new StudyFactory(_dataSource).loadStudy(LoadStudyTest.STUDY_ID);
+    Study study = new StudyFactory(_dataSource, APP_DB_SCHEMA, ASSAY_CONVERSION_FLAG).loadStudy(LoadStudyTest.STUDY_ID);
 
     String entityId = "GEMS_Part";
     Entity entity = study.getEntity(entityId).orElseThrow();
@@ -381,7 +383,7 @@ public class StudySubsettingUtilsTest {
     List<Filter> filters = Collections.emptyList();
 
     TreeNode<Entity> prunedEntityTree = FilteredResultFactory.pruneTree(study.getEntityTree(), filters, entity);
-    Long count = FilteredResultFactory.getEntityCount(_dataSource, prunedEntityTree, entity, new ArrayList<>());
+    Long count = FilteredResultFactory.getEntityCount(_dataSource, APP_DB_SCHEMA, prunedEntityTree, entity, new ArrayList<>());
     
     assertEquals(4, count);
   }
@@ -390,7 +392,7 @@ public class StudySubsettingUtilsTest {
   @DisplayName("Test get entity count - with filters") 
   void testEntityCountFromDb() {
 
-    Study study = new StudyFactory(_dataSource).loadStudy(LoadStudyTest.STUDY_ID);
+    Study study = new StudyFactory(_dataSource, APP_DB_SCHEMA, ASSAY_CONVERSION_FLAG).loadStudy(LoadStudyTest.STUDY_ID);
 
     String entityId = "GEMS_Part";
     Entity entity = study.getEntity(entityId).orElseThrow();
@@ -400,7 +402,7 @@ public class StudySubsettingUtilsTest {
     filters.add(_filtersForTesting.houseObsWaterSupplyFilter);
 
     TreeNode<Entity> prunedEntityTree = FilteredResultFactory.pruneTree(study.getEntityTree(), filters, entity);
-    Long count = FilteredResultFactory.getEntityCount(_dataSource, prunedEntityTree, entity, filters);
+    Long count = FilteredResultFactory.getEntityCount(_dataSource, APP_DB_SCHEMA, prunedEntityTree, entity, filters);
     
     assertEquals(2, count);
   }
@@ -409,7 +411,7 @@ public class StudySubsettingUtilsTest {
   @DisplayName("Test get tabular report - no filters") 
   void testTabularReportNoFiltersFromDb() {
 
-    Study study = new StudyFactory(_dataSource).loadStudy(LoadStudyTest.STUDY_ID);
+    Study study = new StudyFactory(_dataSource, APP_DB_SCHEMA, ASSAY_CONVERSION_FLAG).loadStudy(LoadStudyTest.STUDY_ID);
 
     String entityId = "GEMS_Part";
     Entity entity = study.getEntity(entityId).orElseThrow();
@@ -422,8 +424,8 @@ public class StudySubsettingUtilsTest {
     
     ByteArrayOutputStream outStream = new ByteArrayOutputStream();
 
-    FilteredResultFactory.produceTabularSubset(_dataSource, study, entity,
-        variables, filters, new TabularReportConfig(entity, Optional.empty()), TabularResponseType.TABULAR.getFormatter(), outStream);
+    FilteredResultFactory.produceTabularSubset(_dataSource, APP_DB_SCHEMA, study, entity,
+        variables, filters, new TabularReportConfig(), TabularResponseType.TABULAR.getFormatter(), outStream);
     String[] expected = {
     "Prtcpnt_stable_id", "Hshld_stable_id", "var_p4",  "var_p3",
     "201", "101",     "blond",   "Martin",
@@ -438,7 +440,7 @@ public class StudySubsettingUtilsTest {
   @DisplayName("Test get tabular report - with filters") 
   void testTestTabularReportFromDb() {
 
-    Study study = new StudyFactory(_dataSource).loadStudy(LoadStudyTest.STUDY_ID);
+    Study study = new StudyFactory(_dataSource, APP_DB_SCHEMA, ASSAY_CONVERSION_FLAG).loadStudy(LoadStudyTest.STUDY_ID);
 
     String entityId = "GEMS_Part";
     Entity entity = study.getEntity(entityId).orElseThrow();
@@ -453,8 +455,8 @@ public class StudySubsettingUtilsTest {
 
     ByteArrayOutputStream outStream = new ByteArrayOutputStream();
 
-    FilteredResultFactory.produceTabularSubset(_dataSource, study, entity,
-        variables, filters, new TabularReportConfig(entity, Optional.empty()), TabularResponseType.TABULAR.getFormatter(), outStream);
+    FilteredResultFactory.produceTabularSubset(_dataSource, APP_DB_SCHEMA, study, entity,
+        variables, filters, new TabularReportConfig(), TabularResponseType.TABULAR.getFormatter(), outStream);
     String[] expected = {
     "Prtcpnt_stable_id", "Hshld_stable_id", "var_p4",  "var_p3",
     "201", "101",     "blond",   "Martin",
@@ -469,7 +471,7 @@ public class StudySubsettingUtilsTest {
   @DisplayName("Test get variable count - no filters") 
   void testVariableCountNoFiltersFromDb() {
 
-    Study study = new StudyFactory(_dataSource).loadStudy(LoadStudyTest.STUDY_ID);
+    Study study = new StudyFactory(_dataSource, APP_DB_SCHEMA, ASSAY_CONVERSION_FLAG).loadStudy(LoadStudyTest.STUDY_ID);
 
     String entityId = "GEMS_Part";
     Entity entity = study.getEntity(entityId).orElseThrow();
@@ -481,7 +483,7 @@ public class StudySubsettingUtilsTest {
 
     TreeNode<Entity> prunedEntityTree = FilteredResultFactory.pruneTree(study.getEntityTree(), filters, entity);
 
-    Long count = FilteredResultFactory.getVariableCount(_dataSource, prunedEntityTree, entity, var, filters);
+    Long count = FilteredResultFactory.getVariableCount(_dataSource, APP_DB_SCHEMA, prunedEntityTree, entity, var, filters);
     
     assertEquals(4, count);
   }
@@ -490,7 +492,7 @@ public class StudySubsettingUtilsTest {
   @DisplayName("Test get variable count - with filters") 
   void testVariableCountFromDb() {
 
-    Study study = new StudyFactory(_dataSource).loadStudy(LoadStudyTest.STUDY_ID);
+    Study study = new StudyFactory(_dataSource, APP_DB_SCHEMA, ASSAY_CONVERSION_FLAG).loadStudy(LoadStudyTest.STUDY_ID);
 
     String entityId = "GEMS_Part";
     Entity entity = study.getEntity(entityId).orElseThrow();
@@ -504,7 +506,7 @@ public class StudySubsettingUtilsTest {
 
     TreeNode<Entity> prunedEntityTree = FilteredResultFactory.pruneTree(study.getEntityTree(), filters, entity);
 
-    Long count = FilteredResultFactory.getVariableCount(_dataSource, prunedEntityTree, entity, var, filters);
+    Long count = FilteredResultFactory.getVariableCount(_dataSource, APP_DB_SCHEMA, prunedEntityTree, entity, var, filters);
     
     assertEquals(2, count);
   }
@@ -513,7 +515,7 @@ public class StudySubsettingUtilsTest {
   @DisplayName("Test variable distribution - no filters") 
   void testVariableDistributionNoFilters() {
 
-    Study study = new StudyFactory(_dataSource).loadStudy(LoadStudyTest.STUDY_ID);
+    Study study = new StudyFactory(_dataSource, APP_DB_SCHEMA, ASSAY_CONVERSION_FLAG).loadStudy(LoadStudyTest.STUDY_ID);
 
     String entityId = "GEMS_Part";
     Entity entity = study.getEntity(entityId).orElseThrow();
@@ -536,7 +538,7 @@ public class StudySubsettingUtilsTest {
   @DisplayName("Test variable distribution - with filters") 
   void testVariableDistribution() {
 
-    Study study = new StudyFactory(_dataSource).loadStudy(LoadStudyTest.STUDY_ID);
+    Study study = new StudyFactory(_dataSource, APP_DB_SCHEMA, ASSAY_CONVERSION_FLAG).loadStudy(LoadStudyTest.STUDY_ID);
 
     String entityId = "GEMS_Part";
     Entity entity = study.getEntity(entityId).orElseThrow();
@@ -561,7 +563,7 @@ public class StudySubsettingUtilsTest {
     TreeNode<Entity> prunedEntityTree = FilteredResultFactory.pruneTree(study.getEntityTree(), filters, entity);
 
     Stream<TwoTuple<String,Long>> distributionStream = FilteredResultFactory.produceVariableDistribution(
-        _dataSource, prunedEntityTree, entity, var, filters);
+        _dataSource, APP_DB_SCHEMA, prunedEntityTree, entity, var, filters);
 
     Map<String,Long> result = Functions.getMapFromList(IteratorUtil.toIterable(distributionStream.iterator()), tuple -> tuple);
 
@@ -629,8 +631,8 @@ public class StudySubsettingUtilsTest {
 
   private List<Map<String,String>> getTabularOutputRows(Entity entity, List<Variable> requestedVars) {
     ByteArrayOutputStream buffer = new ByteArrayOutputStream();
-    FilteredResultFactory.produceTabularSubset(_dataSource, _model.study, entity, requestedVars,
-        Collections.emptyList(), new TabularReportConfig(entity, Optional.empty()), TabularResponseType.TABULAR.getFormatter(), buffer);
+    FilteredResultFactory.produceTabularSubset(_dataSource, APP_DB_SCHEMA, _model.study, entity, requestedVars,
+        Collections.emptyList(), new TabularReportConfig(), TabularResponseType.TABULAR.getFormatter(), buffer);
     Scanner scanner = new Scanner(buffer.toString());
     if (!scanner.hasNextLine()) {
       throw new RuntimeException("Tabular output did not contain a header row.");

@@ -12,14 +12,12 @@ import java.util.stream.Collectors;
 import javax.sql.DataSource;
 import org.gusdb.fgputil.db.runner.SQLRunner;
 import org.gusdb.fgputil.functional.TreeNode;
-import org.veupathdb.service.eda.ss.Resources;
 import org.veupathdb.service.eda.ss.model.Entity;
 
 import static org.gusdb.fgputil.FormatUtil.NL;
 import static org.veupathdb.service.eda.ss.model.db.DB.Tables.EntityTypeGraph.Columns.*;
 import static org.veupathdb.service.eda.ss.model.db.ResultSetUtils.getIntegerFromString;
 import static org.veupathdb.service.eda.ss.model.db.ResultSetUtils.getRsOptionalString;
-import static org.veupathdb.service.eda.ss.model.db.ResultSetUtils.getRsRequiredBoolean;
 import static org.veupathdb.service.eda.ss.model.db.ResultSetUtils.getRsRequiredString;
 
 public class EntityFactory {
@@ -27,14 +25,18 @@ public class EntityFactory {
   private final static String STDY_ABBRV_COL_NM = "study_abbrev"; // for private queries
 
   private final DataSource _dataSource;
+  private final String _appDbSchema;
+  private final boolean _convertAssaysFlag;
 
-  public EntityFactory(DataSource dataSource) {
+  public EntityFactory(DataSource dataSource, String appDbSchema, boolean convertAssaysFlag) {
     _dataSource = dataSource;
+    _appDbSchema = appDbSchema;
+    _convertAssaysFlag = convertAssaysFlag;
   }
 
   public TreeNode<Entity> getStudyEntityTree(String studyId) {
 
-    String sql = generateEntityTreeSql(studyId);
+    String sql = generateEntityTreeSql(studyId, _appDbSchema);
 
     // entityID -> list of child entities
     Map<String, List<Entity>> childrenMap = new HashMap<>();
@@ -42,7 +44,7 @@ public class EntityFactory {
     Entity rootEntity = new SQLRunner(_dataSource, sql, "Get entity tree").executeQuery(rs -> {
       Entity root = null;
       while (rs.next()) {
-        Entity entity = createEntityFromResultSet(rs);
+        Entity entity = createEntityFromResultSet(rs, _convertAssaysFlag);
         String parentId = rs.getString(DB.Tables.EntityTypeGraph.Columns.ENTITY_PARENT_ID_COL_NAME);
         if (parentId == null) {
           if (root != null) throw new RuntimeException("In Study " + studyId +
@@ -80,15 +82,15 @@ public class EntityFactory {
     return rootNode;
   }
 
-  static String generateEntityTreeSql(String studyId) {
+  static String generateEntityTreeSql(String studyId, String appDbSchema) {
     return "SELECT " +
         "e2." + DB.Tables.EntityType.Columns.ISA_TYPE + ", " +
         "e." + String.join(", e.", DB.Tables.EntityTypeGraph.Columns.ALL) + ", " +
         "s." + DB.Tables.Study.Columns.STUDY_ABBREV_COL_NAME + " as " + STDY_ABBRV_COL_NM + NL +
         "FROM " +
-        Resources.getAppDbSchema() + DB.Tables.EntityTypeGraph.NAME + " e, " +
-        Resources.getAppDbSchema() + DB.Tables.Study.NAME + " s, " +
-        Resources.getAppDbSchema() + DB.Tables.EntityType.NAME + " e2 " + NL +
+        appDbSchema + DB.Tables.EntityTypeGraph.NAME + " e, " +
+        appDbSchema + DB.Tables.Study.NAME + " s, " +
+        appDbSchema + DB.Tables.EntityType.NAME + " e2 " + NL +
         "WHERE s." + DB.Tables.Study.Columns.STUDY_ID_COL_NAME + " = '" + studyId + "'" + NL +
         "AND e." + DB.Tables.EntityTypeGraph.Columns.ENTITY_STUDY_ID_COL_NAME + " = s." + DB.Tables.Study.Columns.STUDY_ID_COL_NAME + NL +
         "AND e." + DB.Tables.EntityTypeGraph.Columns.ENTITY_LOAD_ORDER_ID + " = e2." + DB.Tables.EntityType.Columns.ENTITY_TYPE_ID + NL +
@@ -97,7 +99,7 @@ public class EntityFactory {
         "ORDER BY e." + DB.Tables.EntityTypeGraph.Columns.ENTITY_LOAD_ORDER_ID + " ASC";
   }
 
-  static Entity createEntityFromResultSet(ResultSet rs) {
+  static Entity createEntityFromResultSet(ResultSet rs, boolean convertAssaysFlag) {
     try {
       String name = getRsRequiredString(rs, DISPLAY_NAME_COL_NAME);
       // TODO remove this hack when db has plurals
@@ -107,7 +109,7 @@ public class EntityFactory {
       String descrip = getRsOptionalString(rs, DESCRIP_COL_NAME, "No Entity Description available");
       String abbrev = getRsRequiredString(rs, ENTITY_ABBREV_COL_NAME);
       long loadOrder = getIntegerFromString(rs, ENTITY_LOAD_ORDER_ID, true);
-      boolean hasCollections = determineHasCollections(getRsRequiredString(rs, DB.Tables.EntityType.Columns.ISA_TYPE)); // getRsRequiredBoolean(rs, ENTITY_HAS_ATTRIBUTE_COLLECTIONS);
+      boolean hasCollections = determineHasCollections(convertAssaysFlag, getRsRequiredString(rs, DB.Tables.EntityType.Columns.ISA_TYPE)); // getRsRequiredBoolean(rs, ENTITY_HAS_ATTRIBUTE_COLLECTIONS);
       boolean isManyToOneWithParent = false; //getRsRequiredBoolean(rs, ENTITY_IS_MANY_TO_ONE_WITH_PARENT);
 
       return new Entity(id, studyAbbrev, name, namePlural, descrip, abbrev, loadOrder, hasCollections, isManyToOneWithParent);
@@ -117,7 +119,7 @@ public class EntityFactory {
     }
   }
 
-  private static boolean determineHasCollections(String isaEntityType) {
-    return Resources.getConvertAssaysFlag() && isaEntityType.equals("Assay");
+  private static boolean determineHasCollections(boolean _convertAssaysFlag, String isaEntityType) {
+    return _convertAssaysFlag && isaEntityType.equals("Assay");
   }
 }

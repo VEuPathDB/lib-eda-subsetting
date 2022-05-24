@@ -15,7 +15,8 @@ import org.veupathdb.service.eda.ss.model.filter.StringSetFilter;
 import org.veupathdb.service.eda.ss.model.variable.DateVariable;
 import org.veupathdb.service.eda.ss.model.variable.NumberVariable;
 import org.veupathdb.service.eda.ss.model.variable.StringVariable;
-import org.veupathdb.service.eda.ss.model.variable.Variable;
+
+import static org.veupathdb.service.eda.ss.model.TestModel.APP_DB_SCHEMA;
 
 public class FiltersForTesting {
 
@@ -46,14 +47,14 @@ public class FiltersForTesting {
     DateVariable visitDate = DateVariable.assertType(observation.getVariable("var_o4").orElseThrow());
 
     List<String> haircolors = Arrays.asList("blond");
-    partHairFilter = new StringSetFilter(participant, haircolor, haircolors);
+    partHairFilter = new StringSetFilter(APP_DB_SCHEMA, participant, haircolor, haircolors);
 
-    obsWeightFilter = new NumberRangeFilter(observation, weight, 10, 20);
+    obsWeightFilter = new NumberRangeFilter(APP_DB_SCHEMA, observation, weight, 10, 20);
 
     List<Number> favNums = Arrays.asList(new Number[]{5,7,9});
-    obsFavNumberFilter = new NumberSetFilter(observation, favNumber, favNums);
+    obsFavNumberFilter = new NumberSetFilter(APP_DB_SCHEMA, observation, favNumber, favNums);
 
-    obsBirthDateFilter = new DateRangeFilter(observation, startDate,
+    obsBirthDateFilter = new DateRangeFilter(APP_DB_SCHEMA, observation, startDate,
         LocalDateTime.of(2019, Month.MARCH, 21, 0, 0),
         LocalDateTime.of(2019, Month.MARCH, 28, 0, 0));
 
@@ -61,17 +62,17 @@ public class FiltersForTesting {
     dates.add(LocalDateTime.of(2019, Month.MARCH, 21, 0, 0));
     dates.add(LocalDateTime.of(2019, Month.MARCH, 28, 0, 0));
     dates.add(LocalDateTime.of(2019, Month.JUNE, 12, 0, 0));
-    obsVisitDateFilter = new DateSetFilter(observation, visitDate, dates);
+    obsVisitDateFilter = new DateSetFilter(APP_DB_SCHEMA, observation, visitDate, dates);
 
     List<String> moods = Arrays.asList("happy", "jolly", "giddy");
-    obsMoodFilter = new StringSetFilter(observation, mood, moods);
+    obsMoodFilter = new StringSetFilter(APP_DB_SCHEMA, observation, mood, moods);
 
-    obsWeightFilter = new NumberRangeFilter(observation, weight, 10, 20);
+    obsWeightFilter = new NumberRangeFilter(APP_DB_SCHEMA, observation, weight, 10, 20);
 
     List<String> cities = Collections.singletonList("Boston");
-    houseCityFilter = new StringSetFilter(household, city, cities);
+    houseCityFilter = new StringSetFilter(APP_DB_SCHEMA, household, city, cities);
 
     List<String> waterSupplies = Arrays.asList("piped", "well");
-    houseObsWaterSupplyFilter = new StringSetFilter(householdObs, watersupply, waterSupplies);
+    houseObsWaterSupplyFilter = new StringSetFilter(APP_DB_SCHEMA, householdObs, watersupply, waterSupplies);
   }
 }

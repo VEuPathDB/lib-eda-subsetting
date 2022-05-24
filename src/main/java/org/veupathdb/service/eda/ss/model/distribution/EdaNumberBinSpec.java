@@ -3,8 +3,6 @@ package org.veupathdb.service.eda.ss.model.distribution;
 import java.util.Optional;
 import jakarta.ws.rs.BadRequestException;
 import org.gusdb.fgputil.functional.Functions;
-import org.veupathdb.service.eda.generated.model.BinSpecWithRange;
-import org.veupathdb.service.eda.generated.model.BinUnits;
 import org.gusdb.fgputil.distribution.NumberBinDistribution.NumberBinSpec;
 import org.veupathdb.service.eda.ss.model.variable.NumberVariable;
 
@@ -21,7 +19,7 @@ public class EdaNumberBinSpec implements NumberBinSpec {
 
   @Override
   public Object getDisplayRangeMin() {
-    return _binSpec.map(spec -> spec.getDisplayRangeMin())
+    return _binSpec.map(spec -> spec.get_displayRangeMin())
         .orElse(_variable.getDistributionConfig().getDisplayRangeMin());
   }
 

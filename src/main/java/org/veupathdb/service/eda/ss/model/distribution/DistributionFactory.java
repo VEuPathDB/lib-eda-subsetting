@@ -7,8 +7,6 @@ import javax.sql.DataSource;
 import jakarta.ws.rs.BadRequestException;
 import org.gusdb.fgputil.Tuples;
 import org.gusdb.fgputil.functional.TreeNode;
-import org.veupathdb.service.eda.generated.model.BinSpecWithRange;
-import org.veupathdb.service.eda.generated.model.ValueSpec;
 import org.veupathdb.service.eda.ss.model.Entity;
 import org.veupathdb.service.eda.ss.model.Study;
 import org.veupathdb.service.eda.ss.model.db.FilteredResultFactory;
@@ -32,6 +30,7 @@ public class DistributionFactory {
 
     // used to produce the stream of distribution tuples
     private final DataSource _ds;
+    private final String _appDbSchema;
     private final Entity _targetEntity;
     protected final T _variable;
     private final List<Filter> _filters;
@@ -40,8 +39,9 @@ public class DistributionFactory {
     private final long _subsetEntityCount;
 
     public EdaDistributionStreamProvider(
-        DataSource ds, Study study, Entity targetEntity, T variable, List<Filter> filters) {
+        DataSource ds, String appDbSchema, Study study, Entity targetEntity, T variable, List<Filter> filters) {
       _ds = ds;
+      _appDbSchema = appDbSchema;
       _targetEntity = targetEntity;
       _variable = variable;
       _filters = filters;
@@ -52,13 +52,13 @@ public class DistributionFactory {
 
       // get the number of entities in the subset
       _subsetEntityCount = FilteredResultFactory.getEntityCount(
-          _ds, _prunedEntityTree, _targetEntity, _filters);
+          _ds, _appDbSchema, _prunedEntityTree, _targetEntity, _filters);
     }
 
     @Override
     public Stream<Tuples.TwoTuple<String, Long>> getDistributionStream() {
       return FilteredResultFactory.produceVariableDistribution(
-          _ds, _prunedEntityTree, _targetEntity, _variable, _filters);
+          _ds, _appDbSchema, _prunedEntityTree, _targetEntity, _variable, _filters);
     }
 
     @Override
@@ -68,7 +68,7 @@ public class DistributionFactory {
   }
 
   public static DistributionResult processDistributionRequest(
-      DataSource ds, Study study, Entity targetEntity,
+      DataSource ds, String appDbSchema, Study study, Entity targetEntity,
       VariableWithValues var, List<Filter> filters,
       ValueSpec apiValueSpec, Optional<BinSpecWithRange> incomingBinSpec) {
     try {
@@ -79,13 +79,13 @@ public class DistributionFactory {
       if (var.getDataShape() == VariableDataShape.CONTINUOUS) {
         distribution = switch(var.getType()) {
           case INTEGER -> new IntegerBinDistribution(
-              new EdaDistributionStreamProvider<>(ds, study, targetEntity, (IntegerVariable)var, filters),
+              new EdaDistributionStreamProvider<>(ds, appDbSchema, study, targetEntity, (IntegerVariable)var, filters),
               valueSpec, new EdaNumberBinSpec((IntegerVariable)var, incomingBinSpec));
           case NUMBER -> new FloatingPointBinDistribution(
-              new EdaDistributionStreamProvider<>(ds, study, targetEntity, (FloatingPointVariable)var, filters),
+              new EdaDistributionStreamProvider<>(ds, appDbSchema, study, targetEntity, (FloatingPointVariable)var, filters),
               valueSpec, new EdaNumberBinSpec((FloatingPointVariable)var, incomingBinSpec));
           case DATE -> new DateBinDistribution(
-              new EdaDistributionStreamProvider<>(ds, study, targetEntity, (DateVariable)var, filters),
+              new EdaDistributionStreamProvider<>(ds, appDbSchema, study, targetEntity, (DateVariable)var, filters),
               valueSpec, new EdaDateBinSpec((DateVariable)var, incomingBinSpec));
           default -> throw new BadRequestException("Among continuous variables, " +
               "distribution endpoint supports only date, integer, and number types; " +
@@ -98,7 +98,7 @@ public class DistributionFactory {
         }
         distribution = new DiscreteDistribution(
             new EdaDistributionStreamProvider<>(
-                ds, study, targetEntity, var, filters), valueSpec);
+                ds, appDbSchema, study, targetEntity, var, filters), valueSpec);
       }
 
       return distribution.generateDistribution();

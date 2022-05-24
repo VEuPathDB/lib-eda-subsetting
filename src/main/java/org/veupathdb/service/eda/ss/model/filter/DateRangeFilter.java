@@ -14,8 +14,8 @@ public class DateRangeFilter extends SingleValueFilter<DateVariable> {
   private LocalDateTime _min;
   private LocalDateTime _max;
   
-  public DateRangeFilter(Entity entity, DateVariable variable, LocalDateTime min, LocalDateTime max) {
-    super(entity, variable);
+  public DateRangeFilter(String appDbSchema, Entity entity, DateVariable variable, LocalDateTime min, LocalDateTime max) {
+    super(appDbSchema, entity, variable);
     _min = min;
     _max = max;
   }

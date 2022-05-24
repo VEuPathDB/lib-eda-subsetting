@@ -13,9 +13,8 @@ public class DateSetFilter extends SingleValueFilter<DateVariable> {
 
   private List<LocalDateTime> _dateSet;
 
-   
-  public DateSetFilter(Entity entity, DateVariable variable, List<LocalDateTime> dateSet) {
-    super(entity, variable);
+  public DateSetFilter(String appDbSchema, Entity entity, DateVariable variable, List<LocalDateTime> dateSet) {
+    super(appDbSchema, entity, variable);
     _dateSet = dateSet;
   }
 

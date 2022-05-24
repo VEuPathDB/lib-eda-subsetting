@@ -14,8 +14,8 @@ public class NumberSetFilter extends SingleValueFilter<NumberVariable> {
 
   private List<Number> _numberSet;
   
-  public NumberSetFilter(Entity entity, NumberVariable variable, List<Number> numberSet) {
-    super(entity, variable);
+  public NumberSetFilter(String appDbSchema, Entity entity, NumberVariable variable, List<Number> numberSet) {
+    super(appDbSchema, entity, variable);
     _numberSet = numberSet;
   }
 

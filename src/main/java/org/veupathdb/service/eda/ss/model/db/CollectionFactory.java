@@ -11,13 +11,8 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.gusdb.fgputil.db.runner.SQLRunner;
 import org.gusdb.fgputil.functional.Functions;
-import org.veupathdb.service.eda.generated.model.APICollectionType;
-import org.veupathdb.service.eda.ss.Resources;
 import org.veupathdb.service.eda.ss.model.Entity;
-import org.veupathdb.service.eda.ss.model.varcollection.DateVarCollection;
-import org.veupathdb.service.eda.ss.model.varcollection.FloatingPointVarCollection;
-import org.veupathdb.service.eda.ss.model.varcollection.IntegerVarCollection;
-import org.veupathdb.service.eda.ss.model.varcollection.VarCollection;
+import org.veupathdb.service.eda.ss.model.varcollection.*;
 import org.veupathdb.service.eda.ss.model.variable.VariableDataShape;
 
 import static org.veupathdb.service.eda.ss.model.db.DB.Tables.Collection.Columns.*;
@@ -35,9 +30,11 @@ public class CollectionFactory {
   private static final Logger LOG = LogManager.getLogger(CollectionFactory.class);
 
   private final DataSource _dataSource;
+  private final String _appDbSchema;
 
-  public CollectionFactory(DataSource dataSource) {
+  public CollectionFactory(DataSource dataSource, String appDbSchema) {
     _dataSource = dataSource;
+    _appDbSchema = appDbSchema;
   }
 
   public List<VarCollection> loadCollections(Entity entity) {
@@ -59,7 +56,7 @@ public class CollectionFactory {
   private void assignMemberVariables(Entity entity, Map<String, VarCollection> collectionMap) {
     String sql =
         "select " + String.join(", ", DB.Tables.CollectionAttribute.Columns.ALL) +
-        " from " + Resources.getAppDbSchema() + DB.Tables.CollectionAttribute.NAME(entity);
+        " from " + _appDbSchema + DB.Tables.CollectionAttribute.NAME(entity);
     new SQLRunner(_dataSource, sql, "select-collection-vars").executeQuery(rs -> {
       while (rs.next()) {
         // assign variable to its collection
@@ -74,7 +71,7 @@ public class CollectionFactory {
   private Map<String, VarCollection> loadCollectionMap(Entity entity) {
     String sql =
         "select " + String.join(", ", DB.Tables.Collection.Columns.ALL) +
-        " from " + Resources.getAppDbSchema() + DB.Tables.Collection.NAME(entity);
+        " from " + _appDbSchema + DB.Tables.Collection.NAME(entity);
     return new SQLRunner(_dataSource, sql, "select-collection").executeQuery(rs -> {
       // build map of collections for this entity
       Map<String, VarCollection> map = new HashMap<>();
@@ -90,8 +87,8 @@ public class CollectionFactory {
   private static VarCollection loadCollection(ResultSet rs) throws SQLException {
 
     // find data type of this collection
-    APICollectionType type = Functions.mapException(() ->
-        APICollectionType.valueOf(rs.getString(DB.Tables.Collection.Columns.DATA_TYPE).toUpperCase()),
+    CollectionType type = Functions.mapException(() ->
+        CollectionType.valueOf(rs.getString(DB.Tables.Collection.Columns.DATA_TYPE).toUpperCase()),
         e -> new RuntimeException("Invalid collection data type", e));
 
     // load properties common to all types

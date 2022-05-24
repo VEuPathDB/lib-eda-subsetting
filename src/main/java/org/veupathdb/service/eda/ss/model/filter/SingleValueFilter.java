@@ -10,8 +10,8 @@ public abstract class SingleValueFilter<T extends VariableWithValues> extends Fi
 
   protected T _variable;
 
-  public SingleValueFilter(Entity entity, T variable) {
-    super(entity);
+  public SingleValueFilter(String appDbSchema, Entity entity, T variable) {
+    super(appDbSchema, entity);
     entity.getVariable(variable.getId()).orElseThrow(
         () -> new RuntimeException("Entity " + entity.getId() + " does not contain variable " + variable.getId()));
     _variable = variable;
@@ -19,7 +19,7 @@ public abstract class SingleValueFilter<T extends VariableWithValues> extends Fi
 
   @Override
   public String getSql() {
-    return entity.getAncestorPkColNames().isEmpty() ? getSqlNoAncestors() : getSqlWithAncestors();
+    return _entity.getAncestorPkColNames().isEmpty() ? getSqlNoAncestors() : getSqlWithAncestors();
   }
 
   /**

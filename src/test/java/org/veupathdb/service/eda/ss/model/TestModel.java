@@ -34,6 +34,9 @@ import org.veupathdb.service.eda.ss.model.variable.VariableWithValues;
  */
 public class TestModel {
 
+  public static final String APP_DB_SCHEMA = "";             // empty schema for test DB
+  public static final boolean ASSAY_CONVERSION_FLAG = false; // no tests use collections
+
   // reusable study objects
   public Study study; 
   
@@ -192,12 +195,12 @@ public class TestModel {
   private void createFilters() {
 
     // create observation weight filter
-    obsWeightFilter = new NumberRangeFilter(observation, weight, 10, 20);
+    obsWeightFilter = new NumberRangeFilter(APP_DB_SCHEMA, observation, weight, 10, 20);
 
     List<Number> favNums = Arrays.asList(new Number[]{5,7,9});
-    obsFavNumberFilter = new NumberSetFilter(observation, favNumber, favNums);
+    obsFavNumberFilter = new NumberSetFilter(APP_DB_SCHEMA, observation, favNumber, favNums);
 
-    obsBirthDateFilter = new DateRangeFilter(observation, birthDate,
+    obsBirthDateFilter = new DateRangeFilter(APP_DB_SCHEMA, observation, birthDate,
         LocalDateTime.of(2019, Month.MARCH, 21, 0, 0),
         LocalDateTime.of(2019, Month.MARCH, 28, 0, 0));
 
@@ -205,19 +208,19 @@ public class TestModel {
     dates.add(LocalDateTime.of(2019, Month.MARCH, 21, 0, 0));
     dates.add(LocalDateTime.of(2019, Month.MARCH, 28, 0, 0));
     dates.add(LocalDateTime.of(2019, Month.JUNE, 12, 0, 0));
-    obsFavNewYearsFilter = new DateSetFilter(observation, startDate, dates);
+    obsFavNewYearsFilter = new DateSetFilter(APP_DB_SCHEMA, observation, startDate, dates);
 
     List<String> moods = Arrays.asList("happy", "jolly", "giddy");
-    obsMoodFilter = new StringSetFilter(observation, mood, moods);
+    obsMoodFilter = new StringSetFilter(APP_DB_SCHEMA, observation, mood, moods);
 
-    obsWeightFilter = new NumberRangeFilter(observation, weight, 10, 20);
+    obsWeightFilter = new NumberRangeFilter(APP_DB_SCHEMA, observation, weight, 10, 20);
 
     // create household roof filter
     List<String> roofs = Arrays.asList("metal", "tile");
-    houseRoofFilter = new StringSetFilter(household, roof, roofs);
+    houseRoofFilter = new StringSetFilter(APP_DB_SCHEMA, household, roof, roofs);
 
     // create household observation filter
     List<String> waterSupplies = Arrays.asList("piped", "well");
-    houseObsWaterSupplyFilter = new StringSetFilter(householdObs, waterSupply, waterSupplies);
+    houseObsWaterSupplyFilter = new StringSetFilter(APP_DB_SCHEMA, householdObs, waterSupply, waterSupplies);
   }
 }

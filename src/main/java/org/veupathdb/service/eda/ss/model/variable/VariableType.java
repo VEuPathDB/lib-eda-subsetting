@@ -9,7 +9,7 @@ import org.gusdb.fgputil.FormatUtil;
 import org.gusdb.fgputil.functional.FunctionalInterfaces.FunctionWithException;
 import org.gusdb.fgputil.functional.Functions;
 import org.json.JSONArray;
-import org.veupathdb.service.eda.generated.model.APICollectionType;
+import org.veupathdb.service.eda.ss.model.varcollection.CollectionType;
 
 public enum VariableType {
   STRING("string_value", "string", rs -> rs.getString("string_value"),
@@ -115,7 +115,7 @@ public enum VariableType {
     return "number_value".equals(tallTableColumnName);
   }
 
-  public boolean isSameTypeAs(APICollectionType type) {
+  public boolean isSameTypeAs(CollectionType type) {
     return type.name().equals(name());
   }
 }

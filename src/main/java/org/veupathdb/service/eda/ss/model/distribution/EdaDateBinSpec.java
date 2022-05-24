@@ -3,15 +3,11 @@ package org.veupathdb.service.eda.ss.model.distribution;
 import java.time.temporal.ChronoUnit;
 import java.util.Optional;
 import jakarta.ws.rs.BadRequestException;
-import org.gusdb.fgputil.functional.Functions;
-import org.veupathdb.service.eda.generated.model.BinSpecWithRange;
-import org.veupathdb.service.eda.generated.model.BinUnits;
 import org.gusdb.fgputil.distribution.DateBinDistribution.DateBinSpec;
+import org.veupathdb.service.eda.ss.Utils;
 import org.veupathdb.service.eda.ss.model.variable.DateVariable;
-import org.veupathdb.service.eda.ss.service.RequestBundle;
 
 import static org.gusdb.fgputil.functional.Functions.doThrow;
-import static org.veupathdb.service.eda.ss.service.RequestBundle.standardizeLocalDateTime;
 
 public class EdaDateBinSpec implements DateBinSpec {
 
@@ -44,14 +40,14 @@ public class EdaDateBinSpec implements DateBinSpec {
   @Override
   public String getDisplayRangeMin() {
     return _binSpec
-        .map(spec -> standardizeLocalDateTime(castToString(spec.getDisplayRangeMin())))
+        .map(spec -> Utils.standardizeLocalDateTime(castToString(spec.get_displayRangeMin())))
         .orElse(_variable.getDistributionConfig().displayRangeMin);
   }
 
   @Override
   public String getDisplayRangeMax() {
     return _binSpec
-        .map(spec -> standardizeLocalDateTime(castToString(spec.getDisplayRangeMax())))
+        .map(spec -> Utils.standardizeLocalDateTime(castToString(spec.getDisplayRangeMax())))
         .orElse(_variable.getDistributionConfig().displayRangeMax);
   }
 

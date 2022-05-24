@@ -23,6 +23,8 @@ import org.veupathdb.service.eda.ss.model.variable.VariableWithValues;
 import org.veupathdb.service.eda.ss.stubdb.StubDb;
 
 import static org.junit.jupiter.api.Assertions.*;
+import static org.veupathdb.service.eda.ss.model.TestModel.APP_DB_SCHEMA;
+import static org.veupathdb.service.eda.ss.model.TestModel.ASSAY_CONVERSION_FLAG;
 
 public class LoadStudyTest {
   
@@ -39,12 +41,12 @@ public class LoadStudyTest {
   @DisplayName("Test reading of entity table") 
   void testReadEntityTable() {
     
-    String sql = EntityFactory.generateEntityTreeSql(STUDY_ID);
+    String sql = EntityFactory.generateEntityTreeSql(STUDY_ID, APP_DB_SCHEMA);
 
     // get the alphabetically first entity
     Entity entity = new SQLRunner(datasource, sql).executeQuery(rs -> {
       rs.next();
-      return EntityFactory.createEntityFromResultSet(rs);
+      return EntityFactory.createEntityFromResultSet(rs, ASSAY_CONVERSION_FLAG);
     });
 
     assertEquals("GEMS_House", entity.getId());
@@ -57,7 +59,7 @@ public class LoadStudyTest {
   @Test
   @DisplayName("Test creating entity tree") 
   void testCreateEntityTree() {
-    TreeNode<Entity> entityTree = new EntityFactory(datasource).getStudyEntityTree(STUDY_ID);
+    TreeNode<Entity> entityTree = new EntityFactory(datasource, APP_DB_SCHEMA, ASSAY_CONVERSION_FLAG).getStudyEntityTree(STUDY_ID);
     
     List<String> entityIds = entityTree.flatten().stream().map(Entity::getId).collect(Collectors.toList());
 
@@ -71,13 +73,13 @@ public class LoadStudyTest {
   @DisplayName("Test reading of variable table") 
   void testReadVariableTable() {
 
-    TreeNode<Entity> entityTree = new EntityFactory(datasource).getStudyEntityTree(STUDY_ID);
+    TreeNode<Entity> entityTree = new EntityFactory(datasource, APP_DB_SCHEMA, ASSAY_CONVERSION_FLAG).getStudyEntityTree(STUDY_ID);
     
     Map<String, Entity> entityIdMap = entityTree.flatten().stream().collect(Collectors.toMap(Entity::getId, e -> e));
 
     Entity entity = entityIdMap.get("GEMS_Part");
     
-    String sql = VariableFactory.generateStudyVariablesListSql(new TestModel().participant);
+    String sql = VariableFactory.generateStudyVariablesListSql(new TestModel().participant, APP_DB_SCHEMA);
     
     Variable var = new SQLRunner(datasource, sql).executeQuery(rs -> {
       rs.next();
@@ -108,13 +110,13 @@ public class LoadStudyTest {
   @DisplayName("Test reading all participant variables")
   void testReadAllVariables() {
 
-    TreeNode<Entity> entityTree = new EntityFactory(datasource).getStudyEntityTree(STUDY_ID);
+    TreeNode<Entity> entityTree = new EntityFactory(datasource, APP_DB_SCHEMA, ASSAY_CONVERSION_FLAG).getStudyEntityTree(STUDY_ID);
     
     Map<String, Entity> entityIdMap = entityTree.flatten().stream().collect(Collectors.toMap(Entity::getId, e -> e));
 
     Entity entity = entityIdMap.get("GEMS_Part");
 
-    List<Variable> variables = new VariableFactory(datasource).loadVariables(entity);
+    List<Variable> variables = new VariableFactory(datasource, APP_DB_SCHEMA).loadVariables(entity);
     
     assertEquals(5, variables.size());
   }
@@ -122,7 +124,7 @@ public class LoadStudyTest {
   @Test
   @DisplayName("Load study test") 
   void testLoadStudy() {
-    Study study = new StudyFactory(datasource).loadStudy(STUDY_ID);
+    Study study = new StudyFactory(datasource, APP_DB_SCHEMA, ASSAY_CONVERSION_FLAG).loadStudy(STUDY_ID);
     assertNotNull(study);
   }
 }

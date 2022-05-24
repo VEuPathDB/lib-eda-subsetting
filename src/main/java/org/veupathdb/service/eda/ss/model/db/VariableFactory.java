@@ -4,10 +4,8 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.Collectors;
 import javax.sql.DataSource;
 import org.gusdb.fgputil.db.runner.SQLRunner;
-import org.veupathdb.service.eda.ss.Resources;
 import org.veupathdb.service.eda.ss.model.Entity;
 import org.veupathdb.service.eda.ss.model.distribution.NumberDistributionConfig;
 import org.veupathdb.service.eda.ss.model.distribution.DateDistributionConfig;
@@ -37,14 +35,16 @@ import static org.veupathdb.service.eda.ss.model.db.ResultSetUtils.parseJsonArra
 class VariableFactory {
 
   private final DataSource _dataSource;
+  private final String _appDbSchema;
 
-  public VariableFactory(DataSource dataSource) {
+  public VariableFactory(DataSource dataSource, String appDbSchema) {
     _dataSource = dataSource;
+    _appDbSchema = appDbSchema;
   }
 
   List<Variable> loadVariables(Entity entity) {
 
-    String sql = generateStudyVariablesListSql(entity);
+    String sql = generateStudyVariablesListSql(entity, _appDbSchema);
     
     return new SQLRunner(_dataSource, sql, "Get entity variables metadata for: '" + entity.getDisplayName() + "'").executeQuery(rs -> {
       List<Variable> variables = new ArrayList<>();
@@ -55,11 +55,11 @@ class VariableFactory {
     });
   }
 
-  static String generateStudyVariablesListSql(Entity entity) {
+  static String generateStudyVariablesListSql(Entity entity, String appDbSchema) {
     // This SQL safe from injection because entities declare their own table names (no parameters)
     // TODO: remove hack distinct
     return "SELECT distinct " + String.join(", ", DB.Tables.AttributeGraph.Columns.ALL) + NL
-        + "FROM " + Resources.getAppDbSchema() + DB.Tables.AttributeGraph.NAME(entity) + NL
+        + "FROM " + appDbSchema + DB.Tables.AttributeGraph.NAME(entity) + NL
         + "ORDER BY " + DB.Tables.AttributeGraph.Columns.VARIABLE_ID_COL_NAME;  // stable ordering supports unit testing
   }
 

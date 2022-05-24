@@ -1,6 +1,5 @@
 package org.veupathdb.service.eda.ss.model.distribution;
 
-import org.veupathdb.service.eda.generated.model.BinUnits;
 import org.veupathdb.service.eda.ss.model.variable.VariableDataShape;
 
 public class DateDistributionConfig {

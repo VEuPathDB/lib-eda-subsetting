@@ -26,15 +26,14 @@ import org.gusdb.fgputil.db.stream.ResultSetIterator;
 import org.gusdb.fgputil.db.stream.ResultSets;
 import org.gusdb.fgputil.functional.TreeNode;
 import org.gusdb.fgputil.iterator.GroupingIterator;
-import org.veupathdb.service.eda.common.client.TabularResponseType;
-import org.veupathdb.service.eda.generated.model.SortSpecEntry;
-import org.veupathdb.service.eda.generated.model.TabularHeaderFormat;
-import org.veupathdb.service.eda.ss.Resources;
 import org.veupathdb.service.eda.ss.model.Entity;
 import org.veupathdb.service.eda.ss.model.Study;
-import org.veupathdb.service.eda.ss.model.TabularReportConfig;
+import org.veupathdb.service.eda.ss.model.tabular.SortSpecEntry;
+import org.veupathdb.service.eda.ss.model.tabular.TabularHeaderFormat;
+import org.veupathdb.service.eda.ss.model.tabular.TabularReportConfig;
 import org.veupathdb.service.eda.ss.model.db.DB.Tables.Ancestors;
 import org.veupathdb.service.eda.ss.model.filter.Filter;
+import org.veupathdb.service.eda.ss.model.tabular.TabularResponseType;
 import org.veupathdb.service.eda.ss.model.variable.Variable;
 import org.veupathdb.service.eda.ss.model.variable.VariableType;
 import org.veupathdb.service.eda.ss.model.variable.VariableWithValues;
@@ -72,7 +71,7 @@ public class FilteredResultFactory {
    * @param formatter       object that will write response
    * @param outputStream    stream to which report should be written
    */
-  public static void produceTabularSubset(DataSource datasource, Study study, Entity outputEntity,
+  public static void produceTabularSubset(DataSource datasource, String appDbSchema, Study study, Entity outputEntity,
                                           List<Variable> outputVariables, List<Filter> filters,
                                           TabularReportConfig reportConfig, TabularResponseType.Formatter formatter,
                                           OutputStream outputStream) {
@@ -80,8 +79,8 @@ public class FilteredResultFactory {
     TreeNode<Entity> prunedEntityTree = pruneTree(study.getEntityTree(), filters, outputEntity);
 
     String sql = reportConfig.requiresSorting()
-        ? generateTabularSqlForWideRows(outputVariables, outputEntity, filters, reportConfig, prunedEntityTree)
-        : generateTabularSqlForTallRows(outputVariables, outputEntity, filters, prunedEntityTree);
+        ? generateTabularSqlForWideRows(appDbSchema, outputVariables, outputEntity, filters, reportConfig, prunedEntityTree)
+        : generateTabularSqlForTallRows(appDbSchema, outputVariables, outputEntity, filters, prunedEntityTree);
     LOG.debug("Generated the following tabular SQL: " + sql);
 
     // gather the output columns; these will be used for the standard header and to look up DB column values
@@ -218,25 +217,25 @@ public class FilteredResultFactory {
    * @return stream of distribution tuples
    */
   public static Stream<TwoTuple<String, Long>> produceVariableDistribution(
-      DataSource datasource, TreeNode<Entity> prunedEntityTree, Entity outputEntity,
+      DataSource datasource, String appDbSchema, TreeNode<Entity> prunedEntityTree, Entity outputEntity,
       VariableWithValues distributionVariable, List<Filter> filters) {
-    String sql = generateDistributionSql(outputEntity, distributionVariable, filters, prunedEntityTree);
+    String sql = generateDistributionSql(appDbSchema, outputEntity, distributionVariable, filters, prunedEntityTree);
     LOG.info("Generated the following distribution SQL: " + NL + sql + NL);
     return ResultSets.openStream(datasource, sql, "Produce variable distribution", row -> Optional.of(
         new TwoTuple<>(distributionVariable.getType().convertRowValueToStringValue(row), row.getLong(COUNT_COLUMN_NAME))));
   }
 
   public static long getVariableCount(
-      DataSource datasource, TreeNode<Entity> prunedEntityTree, Entity outputEntity,
+      DataSource datasource, String appDbSchema, TreeNode<Entity> prunedEntityTree, Entity outputEntity,
       Variable distributionVariable, List<Filter> filters) {
-    String sql = generateVariableCountSql(outputEntity, distributionVariable, filters, prunedEntityTree);
+    String sql = generateVariableCountSql(appDbSchema, outputEntity, distributionVariable, filters, prunedEntityTree);
     return new SQLRunner(datasource, sql, "Get variable count for distribution").executeQuery(new SingleLongResultSetHandler())
         .orElseThrow(() -> new RuntimeException("Could not retrieve variable count"));
   }
 
   public static long getEntityCount(
-      DataSource datasource, TreeNode<Entity> prunedEntityTree, Entity targetEntity, List<Filter> filters) {
-    String sql = generateEntityCountSql(targetEntity, filters, prunedEntityTree);
+      DataSource datasource, String appDbSchema, TreeNode<Entity> prunedEntityTree, Entity targetEntity, List<Filter> filters) {
+    String sql = generateEntityCountSql(appDbSchema, targetEntity, filters, prunedEntityTree);
     return new SQLRunner(datasource, sql, "Get entity count").executeQuery(new SingleLongResultSetHandler())
         .orElseThrow(() -> new RuntimeException("Could not retrieve variable count"));
   }
@@ -262,7 +261,7 @@ public class FilteredResultFactory {
   /**
    * Generate SQL to produce a tall stream of Entity ID, ancestry IDs, variable ID and values.
    */
-  static String generateTabularSqlForTallRows(List<Variable> outputVariables, Entity outputEntity, List<Filter> filters, TreeNode<Entity> prunedEntityTree) {
+  static String generateTabularSqlForTallRows(String appDbSchema, List<Variable> outputVariables, Entity outputEntity, List<Filter> filters, TreeNode<Entity> prunedEntityTree) {
 
     LOG.debug("--------------------- generateTabularSql ------------------");
 
@@ -270,14 +269,14 @@ public class FilteredResultFactory {
     String ancestorTblAbbrev = "subset";
     return
         // with clauses create an entity-named filtered result for each relevant entity
-        generateFilterWithClauses(prunedEntityTree, filters) + NL +
+        generateFilterWithClauses(appDbSchema, prunedEntityTree, filters) + NL +
             // select
             generateTabularSelectClause(outputEntity, ancestorTblAbbrev) + NL +
             generateTabularFromClause(outputEntity, prunedEntityTree, ancestorTblAbbrev) + NL +
             // left join to attributes table so we always get at least one row per subset
             //   record, even if no data exists for requested vars (or no vars requested).
             // null rows will be handled in the tall-to-wide rows conversion
-            generateLeftJoin(outputEntity, outputVariables, ancestorTblAbbrev, tallTblAbbrev) + NL +
+            generateLeftJoin(appDbSchema, outputEntity, outputVariables, ancestorTblAbbrev, tallTblAbbrev) + NL +
             generateTabularOrderByClause(outputEntity) + NL;
   }
 
@@ -311,7 +310,7 @@ public class FilteredResultFactory {
    * order by Sample_stable_id;
    * </pre>
    */
-  static String generateTabularSqlForWideRows(List<Variable> outputVariables, Entity outputEntity, List<Filter> filters,
+  static String generateTabularSqlForWideRows(String appDbSchema, List<Variable> outputVariables, Entity outputEntity, List<Filter> filters,
                                               TabularReportConfig reportConfig, TreeNode<Entity> prunedEntityTree) {
     LOG.debug("--------------------- generateTabularSql paging sorting ------------------");
 
@@ -322,12 +321,12 @@ public class FilteredResultFactory {
     //
     // build up WITH clauses
     //
-    String wideTabularInnerStmt = generateRawWideTabularInnerStmt(outputEntity, outputVariables, subsetWithClauseName, reportConfig);
+    String wideTabularInnerStmt = generateRawWideTabularInnerStmt(appDbSchema, outputEntity, outputVariables, subsetWithClauseName, reportConfig);
     String wideTabularStmt = generateRawWideTabularOuterStmt(wideTabularInnerStmt);
     String subsetSelectClause = generateSubsetSelectClause(prunedEntityTree, outputEntity, false);
 
     List<String> filterWithClauses = prunedEntityTree.flatten().stream()
-        .map(e -> generateFilterWithClause(e, filters)).collect(Collectors.toList());
+        .map(e -> generateFilterWithClause(appDbSchema, e, filters)).collect(Collectors.toList());
     List<String> withClausesList = new ArrayList<String>(filterWithClauses);
     withClausesList.add(subsetWithClauseName + " AS (" + NL + subsetSelectClause + ")");
     withClausesList.add(wideTabularWithClauseName + " AS (" + NL + wideTabularStmt + NL + ")");
@@ -374,10 +373,8 @@ public class FilteredResultFactory {
           select * from subset
         )
    */
-  static String generateRawWideTabularInnerStmt(Entity outputEntity, List<Variable> outputVariables,
+  static String generateRawWideTabularInnerStmt(String appDbSchema, Entity outputEntity, List<Variable> outputVariables,
                                                 String subsetWithClauseName, TabularReportConfig reportConfig) {
-
-    String schema = Resources.getAppDbSchema();
 
     List<String> columns = new ArrayList<String>();
     columns.add(outputEntity.getPKColName());
@@ -387,7 +384,7 @@ public class FilteredResultFactory {
     columns.add("ea.stable_id");
     return
         "    select " + String.join(", " + NL + "    ", columns) + NL +
-        "    from " + schema + DB.Tables.Attributes.NAME(outputEntity) + " ea, " + schema + Ancestors.NAME(outputEntity) + " a" + NL +
+        "    from " + appDbSchema + DB.Tables.Attributes.NAME(outputEntity) + " ea, " + appDbSchema + Ancestors.NAME(outputEntity) + " a" + NL +
         "    where ea.stable_id in (select * from " + subsetWithClauseName + ")" + NL +
         "    and ea.stable_id = a." + outputEntity.getPKColName() + NL +
         reportConfigOrderByClause(reportConfig.getSorting(), "    ");
@@ -405,7 +402,7 @@ public class FilteredResultFactory {
     return oracleQuery != null ? oracleQuery : postgresQuery;
   }
 
-  private static String generateLeftJoin(Entity outputEntity, List<Variable> outputVariables, String ancestorTblAbbrev, String tallTblAbbrev) {
+  private static String generateLeftJoin(String appDbSchema, Entity outputEntity, List<Variable> outputVariables, String ancestorTblAbbrev, String tallTblAbbrev) {
     if (outputVariables.isEmpty()) {
       return " LEFT JOIN ( SELECT " +
           "null as " + TT_VARIABLE_ID_COL_NAME + ", " +
@@ -416,7 +413,7 @@ public class FilteredResultFactory {
     }
     String pkColName = outputEntity.getPKColName();
     return " LEFT JOIN (" + NL
-        + " SELECT * FROM " + Resources.getAppDbSchema() + DB.Tables.AttributeValue.NAME(outputEntity) + " " + NL
+        + " SELECT * FROM " + appDbSchema + DB.Tables.AttributeValue.NAME(outputEntity) + " " + NL
         + generateTabularWhereClause(outputVariables, pkColName) + NL
         + " ) " + tallTblAbbrev + NL
         + " ON " + ancestorTblAbbrev + "." + pkColName + " = " + tallTblAbbrev + "." + pkColName;
@@ -425,9 +422,9 @@ public class FilteredResultFactory {
   /*
    * Generate SQL to produce a multi-column tabular output (the requested variables), for the specified subset.
    */
-  static String generateEntityCountSql(Entity outputEntity, List<Filter> filters, TreeNode<Entity> prunedEntityTree) {
+  static String generateEntityCountSql(String appDbSchema, Entity outputEntity, List<Filter> filters, TreeNode<Entity> prunedEntityTree) {
 
-    return generateFilterWithClauses(prunedEntityTree, filters) + NL
+    return generateFilterWithClauses(appDbSchema, prunedEntityTree, filters) + NL
         + "SELECT count(distinct " + outputEntity.getPKColName() + ") as " + COUNT_COLUMN_NAME + NL
         + "FROM (" + NL
         + generateSubsetSelectClause(prunedEntityTree, outputEntity, false) + NL
@@ -437,17 +434,17 @@ public class FilteredResultFactory {
   /**
    * Generate SQL to produce a count of the entities that have a value for a variable, for the specified subset.
    */
-  static String generateVariableCountSql(Entity outputEntity, Variable variable, List<Filter> filters, TreeNode<Entity> prunedEntityTree) {
-    return generateFilterWithClauses(prunedEntityTree, filters) + NL
+  static String generateVariableCountSql(String appDbSchema, Entity outputEntity, Variable variable, List<Filter> filters, TreeNode<Entity> prunedEntityTree) {
+    return generateFilterWithClauses(appDbSchema, prunedEntityTree, filters) + NL
         + generateVariableCountSelectClause(variable) + NL
-        + generateDistributionFromClause(outputEntity) + NL
+        + generateDistributionFromClause(appDbSchema, outputEntity) + NL
         + generateDistributionWhereClause(variable) + NL
         + generateSubsetInClause(prunedEntityTree, outputEntity, DB.Tables.AttributeValue.NAME(outputEntity));
 
   }
 
-  static String generateFilterWithClauses(TreeNode<Entity> prunedEntityTree, List<Filter> filters) {
-    List<String> withClauses = prunedEntityTree.flatten().stream().map(e -> generateFilterWithClause(e, filters)).collect(Collectors.toList());
+  static String generateFilterWithClauses(String appDbSchema, TreeNode<Entity> prunedEntityTree, List<Filter> filters) {
+    List<String> withClauses = prunedEntityTree.flatten().stream().map(e -> generateFilterWithClause(appDbSchema, e, filters)).collect(Collectors.toList());
     return joinWithClauses(withClauses);
   }
 
@@ -460,14 +457,14 @@ public class FilteredResultFactory {
    * Get a with clause for this entity.  If the filters don't include any from this entity,
    * then the with clause will just select * from the entity's ancestor table
    */
-  static String generateFilterWithClause(Entity entity, List<Filter> filters) {
+  static String generateFilterWithClause(String appDbSchema, Entity entity, List<Filter> filters) {
 
     List<String> selectColsList = new ArrayList<>(entity.getAncestorPkColNames());
     selectColsList.add(entity.getPKColName());
     String selectCols = String.join(", ", selectColsList);
 
     // default WITH body assumes no filters. we use the ancestor table because it is small
-    String withBody = "  SELECT " + selectCols + " FROM " + Resources.getAppDbSchema() + DB.Tables.Ancestors.NAME(entity) + NL;
+    String withBody = "  SELECT " + selectCols + " FROM " + appDbSchema + DB.Tables.Ancestors.NAME(entity) + NL;
 
     List<Filter> filtersOnThisEntity = filters.stream().filter(f -> f.getEntity().getId().equals(entity.getId())).collect(Collectors.toList());
 
@@ -513,13 +510,13 @@ on tall.Participant_stable_id = subset.Participant_stable_id
 group by number_value
 order by number_value desc;
    */
-  static String generateDistributionSql(Entity outputEntity, VariableWithValues distributionVariable, List<Filter> filters, TreeNode<Entity> prunedEntityTree) {
+  static String generateDistributionSql(String appDbSchema, Entity outputEntity, VariableWithValues distributionVariable, List<Filter> filters, TreeNode<Entity> prunedEntityTree) {
 
     String tallTblAbbrev = "tall";
     String ancestorTblAbbrev = "subset";
     return
         // with clauses create an entity-named filtered result for each relevant entity
-        generateFilterWithClauses(prunedEntityTree, filters) + NL +
+        generateFilterWithClauses(appDbSchema, prunedEntityTree, filters) + NL +
             generateDistributionSelectClause(distributionVariable) + NL +
             " FROM ( " + NL +
             generateTabularSelectClause(outputEntity, ancestorTblAbbrev) + NL +
@@ -527,7 +524,7 @@ order by number_value desc;
             // left join to attributes table so we always get at least one row per subset
             //   record, even if no data exists for requested vars (or no vars requested).
             // null rows will be handled in the tall-to-wide rows conversion
-            generateLeftJoin(outputEntity, ListBuilder.asList(distributionVariable), ancestorTblAbbrev, tallTblAbbrev) + NL +
+            generateLeftJoin(appDbSchema, outputEntity, ListBuilder.asList(distributionVariable), ancestorTblAbbrev, tallTblAbbrev) + NL +
             " ) " + NL +
             generateDistributionGroupByClause(distributionVariable) + NL +
             "ORDER BY " + distributionVariable.getType().getTallTableColumnName() + " ASC";
@@ -539,8 +536,8 @@ order by number_value desc;
         ", count(" + distributionVariable.getEntity().getPKColName() + ") as " + COUNT_COLUMN_NAME;
   }
 
-  static String generateDistributionFromClause(Entity outputEntity) {
-    return "FROM " + Resources.getAppDbSchema() + DB.Tables.AttributeValue.NAME(outputEntity);
+  static String generateDistributionFromClause(String appDbSchema, Entity outputEntity) {
+    return "FROM " + appDbSchema + DB.Tables.AttributeValue.NAME(outputEntity);
   }
 
   private static String generateTabularFromClause(Entity outputEntity, TreeNode<Entity> prunedEntityTree, String ancestorTblAbbrev) {

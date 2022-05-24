@@ -12,8 +12,8 @@ public class StringSetFilter extends SingleValueFilter<StringVariable> {
 
   private final List<String> _stringSet;
   
-  public StringSetFilter(Entity entity, StringVariable variable, List<String> stringSet) {
-    super(entity, variable);
+  public StringSetFilter(String appDbSchema, Entity entity, StringVariable variable, List<String> stringSet) {
+    super(appDbSchema, entity, variable);
     _stringSet = stringSet;
   }
 

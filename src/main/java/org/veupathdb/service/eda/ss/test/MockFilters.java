@@ -1,4 +1,4 @@
-package org.veupathdb.service.eda.ss.model;
+package org.veupathdb.service.eda.ss.test;
 
 import java.time.LocalDateTime;
 import java.time.Month;
@@ -6,6 +6,9 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+
+import org.veupathdb.service.eda.ss.model.Entity;
+import org.veupathdb.service.eda.ss.model.Study;
 import org.veupathdb.service.eda.ss.model.filter.DateRangeFilter;
 import org.veupathdb.service.eda.ss.model.filter.DateSetFilter;
 import org.veupathdb.service.eda.ss.model.filter.Filter;
@@ -16,21 +19,23 @@ import org.veupathdb.service.eda.ss.model.variable.DateVariable;
 import org.veupathdb.service.eda.ss.model.variable.NumberVariable;
 import org.veupathdb.service.eda.ss.model.variable.StringVariable;
 
-import static org.veupathdb.service.eda.ss.model.TestModel.APP_DB_SCHEMA;
+import static org.veupathdb.service.eda.ss.test.StubDb.APP_DB_SCHEMA;
 
-public class FiltersForTesting {
+public class MockFilters {
 
   // filters using data from the test db
   public Filter houseCityFilter;
+  public Filter houseRoofFilter;
   public Filter obsWeightFilter;
   public Filter partHairFilter;
   public Filter obsFavNumberFilter; // categorical numeric
   public Filter obsBirthDateFilter;  // continuous date
   public Filter obsVisitDateFilter;  // categorical numeric
+  public Filter obsFavNewYearsFilter;
   public Filter obsMoodFilter; // string
   public Filter houseObsWaterSupplyFilter; // string
 
-  public FiltersForTesting(Study study) {
+  public MockFilters(Study study) {
 
     Entity household = study.getEntity("GEMS_House").orElseThrow();
     Entity householdObs = study.getEntity("GEMS_HouseObs").orElseThrow();
@@ -38,6 +43,7 @@ public class FiltersForTesting {
     Entity observation = study.getEntity("GEMS_PartObs").orElseThrow();
 
     StringVariable city = StringVariable.assertType(household.getVariable("var_h1").orElseThrow());
+    StringVariable roof = StringVariable.assertType(household.getVariable("var_h2").orElseThrow());
     StringVariable watersupply = StringVariable.assertType(householdObs.getVariable("var_ho1").orElseThrow());
     StringVariable haircolor = StringVariable.assertType(participant.getVariable("var_p4").orElseThrow());
     StringVariable mood = StringVariable.assertType(observation.getVariable("var_o5").orElseThrow());
@@ -63,6 +69,7 @@ public class FiltersForTesting {
     dates.add(LocalDateTime.of(2019, Month.MARCH, 28, 0, 0));
     dates.add(LocalDateTime.of(2019, Month.JUNE, 12, 0, 0));
     obsVisitDateFilter = new DateSetFilter(APP_DB_SCHEMA, observation, visitDate, dates);
+    obsFavNewYearsFilter = new DateSetFilter(APP_DB_SCHEMA, observation, startDate, dates);
 
     List<String> moods = Arrays.asList("happy", "jolly", "giddy");
     obsMoodFilter = new StringSetFilter(APP_DB_SCHEMA, observation, mood, moods);
@@ -74,5 +81,9 @@ public class FiltersForTesting {
 
     List<String> waterSupplies = Arrays.asList("piped", "well");
     houseObsWaterSupplyFilter = new StringSetFilter(APP_DB_SCHEMA, householdObs, watersupply, waterSupplies);
+
+    List<String> roofs = Arrays.asList("metal", "tile");
+    houseRoofFilter = new StringSetFilter(APP_DB_SCHEMA, household, roof, roofs);
   }
+
 }

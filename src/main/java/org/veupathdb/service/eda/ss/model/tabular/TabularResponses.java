@@ -34,12 +34,12 @@ public class TabularResponses {
     public String getMediaType() {
       return _mediaType;
     }
-  }
 
-  public static Type fromAcceptHeader(ContainerRequestContext request) {
-    String header = request.getHeaders().getFirst(HttpHeaders.ACCEPT);
-    return header == null || !Type.JSON.getMediaType().equals(header)
-        ? Type.TABULAR : Type.JSON;
+    public static Type fromAcceptHeader(ContainerRequestContext request) {
+      String header = request.getHeaders().getFirst(HttpHeaders.ACCEPT);
+      return header == null || !JSON.getMediaType().equals(header)
+          ? TABULAR : JSON;
+    }
   }
 
   public interface ResultConsumer {

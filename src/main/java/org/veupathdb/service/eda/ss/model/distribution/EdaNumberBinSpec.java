@@ -19,7 +19,7 @@ public class EdaNumberBinSpec implements NumberBinSpec {
 
   @Override
   public Object getDisplayRangeMin() {
-    return _binSpec.map(spec -> spec.get_displayRangeMin())
+    return _binSpec.map(spec -> spec.getDisplayRangeMin())
         .orElse(_variable.getDistributionConfig().getDisplayRangeMin());
   }
 

@@ -40,7 +40,7 @@ public class EdaDateBinSpec implements DateBinSpec {
   @Override
   public String getDisplayRangeMin() {
     return _binSpec
-        .map(spec -> Utils.standardizeLocalDateTime(castToString(spec.get_displayRangeMin())))
+        .map(spec -> Utils.standardizeLocalDateTime(castToString(spec.getDisplayRangeMin())))
         .orElse(_variable.getDistributionConfig().displayRangeMin);
   }
 

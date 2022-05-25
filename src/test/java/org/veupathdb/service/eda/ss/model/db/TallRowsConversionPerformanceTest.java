@@ -13,7 +13,7 @@ import org.gusdb.fgputil.Timer;
 import org.gusdb.fgputil.functional.FunctionalInterfaces.SupplierWithException;
 import org.junit.jupiter.api.Test;
 import org.veupathdb.service.eda.ss.model.Entity;
-import org.veupathdb.service.eda.ss.model.TestModel;
+import org.veupathdb.service.eda.ss.test.MockModel;
 import org.veupathdb.service.eda.ss.model.tabular.TabularResponses;
 
 public class TallRowsConversionPerformanceTest {
@@ -21,7 +21,7 @@ public class TallRowsConversionPerformanceTest {
   private static final Logger LOG = LogManager.getLogger(TallRowsConversionPerformanceTest.class);
 
   // specify the entity to convert
-  private static final Function<TestModel, Entity> TEST_ENTITY = m -> m.observation;
+  private static final Function<MockModel, Entity> TEST_ENTITY = m -> m.observation;
 
   // specify how many records of that entity to convert
   private static final int NUM_RECORDS_TO_PROCESS = 20000;
@@ -34,7 +34,7 @@ public class TallRowsConversionPerformanceTest {
 
   @Test
   public void doTallRowsPerfTest() throws Exception {
-    Entity entity = TEST_ENTITY.apply(new TestModel());
+    Entity entity = TEST_ENTITY.apply(new MockModel());
     List<String> outputColumns = FilteredResultFactory.getTabularOutputColumns(entity, entity.getVariables());
     TallRowsGeneratedResultIterator iterator = new TallRowsGeneratedResultIterator(entity, NUM_RECORDS_TO_PROCESS, CACHE_SAMPLE_RECORD);
     try (BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(OUTPUT_STREAM_PROVIDER.get()))) {

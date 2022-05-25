@@ -178,7 +178,7 @@ public class Entity {
     return Collections.unmodifiableList(variablesList);
   }
  
-  void addVariable(Variable var) {
+  public void addVariable(Variable var) {
     if (variablesMap.containsKey(var.getId()))
       throw new RuntimeException("In Entity '" + getId() + "', trying to add duplicate variable: " + var.getId());
     variablesMap.put(var.getId(), var);

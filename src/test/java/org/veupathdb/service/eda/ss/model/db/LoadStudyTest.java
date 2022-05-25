@@ -14,17 +14,17 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.veupathdb.service.eda.ss.model.Entity;
 import org.veupathdb.service.eda.ss.model.Study;
-import org.veupathdb.service.eda.ss.model.TestModel;
+import org.veupathdb.service.eda.ss.test.MockModel;
 import org.veupathdb.service.eda.ss.model.variable.Variable;
 import org.veupathdb.service.eda.ss.model.variable.VariableDataShape;
 import org.veupathdb.service.eda.ss.model.variable.VariableDisplayType;
 import org.veupathdb.service.eda.ss.model.variable.VariableType;
 import org.veupathdb.service.eda.ss.model.variable.VariableWithValues;
-import org.veupathdb.service.eda.ss.stubdb.StubDb;
+import org.veupathdb.service.eda.ss.test.StubDb;
 
 import static org.junit.jupiter.api.Assertions.*;
-import static org.veupathdb.service.eda.ss.model.TestModel.APP_DB_SCHEMA;
-import static org.veupathdb.service.eda.ss.model.TestModel.ASSAY_CONVERSION_FLAG;
+import static org.veupathdb.service.eda.ss.test.StubDb.APP_DB_SCHEMA;
+import static org.veupathdb.service.eda.ss.test.StubDb.ASSAY_CONVERSION_FLAG;
 
 public class LoadStudyTest {
   
@@ -79,7 +79,7 @@ public class LoadStudyTest {
 
     Entity entity = entityIdMap.get("GEMS_Part");
     
-    String sql = VariableFactory.generateStudyVariablesListSql(new TestModel().participant, APP_DB_SCHEMA);
+    String sql = VariableFactory.generateStudyVariablesListSql(new MockModel().participant, APP_DB_SCHEMA);
     
     Variable var = new SQLRunner(datasource, sql).executeQuery(rs -> {
       rs.next();

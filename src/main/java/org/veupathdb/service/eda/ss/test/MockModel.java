@@ -1,44 +1,23 @@
-package org.veupathdb.service.eda.ss.model;
-
-import java.time.LocalDateTime;
-import java.time.Month;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+package org.veupathdb.service.eda.ss.test;
 
 import org.gusdb.fgputil.functional.TreeNode;
-import org.veupathdb.service.eda.ss.model.distribution.NumberDistributionConfig;
+import org.veupathdb.service.eda.ss.model.Entity;
+import org.veupathdb.service.eda.ss.model.Study;
+import org.veupathdb.service.eda.ss.model.StudyOverview;
 import org.veupathdb.service.eda.ss.model.distribution.DateDistributionConfig;
-import org.veupathdb.service.eda.ss.model.variable.DateVariable;
-import org.veupathdb.service.eda.ss.model.variable.FloatingPointVariable;
-import org.veupathdb.service.eda.ss.model.variable.StringVariable;
-import org.veupathdb.service.eda.ss.model.variable.Variable;
-import org.veupathdb.service.eda.ss.model.variable.VariableDataShape;
-import org.veupathdb.service.eda.ss.model.filter.DateRangeFilter;
-import org.veupathdb.service.eda.ss.model.filter.DateSetFilter;
-import org.veupathdb.service.eda.ss.model.filter.Filter;
-import org.veupathdb.service.eda.ss.model.filter.NumberRangeFilter;
-import org.veupathdb.service.eda.ss.model.filter.NumberSetFilter;
-import org.veupathdb.service.eda.ss.model.filter.StringSetFilter;
-import org.veupathdb.service.eda.ss.model.variable.VariableDisplayType;
-import org.veupathdb.service.eda.ss.model.variable.VariableType;
-import org.veupathdb.service.eda.ss.model.variable.VariableWithValues;
+import org.veupathdb.service.eda.ss.model.distribution.NumberDistributionConfig;
+import org.veupathdb.service.eda.ss.model.variable.*;
+
+import java.util.*;
 
 /**
  * A class that holds a test model of a study and supporting objects
  * @author Steve
- *
  */
-public class TestModel {
-
-  public static final String APP_DB_SCHEMA = "";             // empty schema for test DB
-  public static final boolean ASSAY_CONVERSION_FLAG = false; // no tests use collections
+public class MockModel {
 
   // reusable study objects
-  public Study study; 
+  public Study study;
   
   public Entity household;
   public Entity householdObs;
@@ -52,7 +31,7 @@ public class TestModel {
   public FloatingPointVariable shoesize;
   public FloatingPointVariable weight;
   public FloatingPointVariable favNumber;
-  public DateVariable birthDate;
+  public DateVariable visitDate;
   public DateVariable startDate;
   public StringVariable mood;
   public StringVariable haircolor;
@@ -60,20 +39,11 @@ public class TestModel {
   public StringVariable earsize;
   public StringVariable waterSupply;
   
-  public Filter obsWeightFilter;
-  public Filter houseRoofFilter;
-  public Filter obsFavNumberFilter; // categorical numeric
-  public Filter obsBirthDateFilter;  // continuous date
-  public Filter obsFavNewYearsFilter;  // categorical numeric
-  public Filter obsMoodFilter; // string 
-  public Filter houseObsWaterSupplyFilter; // string 
-  
-  public TestModel() {
+  public MockModel() {
     createTestEntities();
     StudyOverview overview = new StudyOverview("GEMS", "ds2324");
     study = new Study(overview, constructEntityTree(), createIdMap());
     constructVariables();
-    createFilters();
   }
   
   private void createTestEntities() {
@@ -184,43 +154,12 @@ public class TestModel {
 
     /**************** Date Variables ****************/
 
-    birthDate = getMockDateVar("visitDate", "var_o4", observation, VariableDataShape.CONTINUOUS, 13);
-    observation.addVariable(birthDate);
+    visitDate = getMockDateVar("visitDate", "var_o4", observation, VariableDataShape.CONTINUOUS, 13);
+    observation.addVariable(visitDate);
     
     startDate = getMockDateVar("startDate", "var_o3", observation, VariableDataShape.CATEGORICAL, 74);
     observation.addVariable(startDate);
 
   }
 
-  private void createFilters() {
-
-    // create observation weight filter
-    obsWeightFilter = new NumberRangeFilter(APP_DB_SCHEMA, observation, weight, 10, 20);
-
-    List<Number> favNums = Arrays.asList(new Number[]{5,7,9});
-    obsFavNumberFilter = new NumberSetFilter(APP_DB_SCHEMA, observation, favNumber, favNums);
-
-    obsBirthDateFilter = new DateRangeFilter(APP_DB_SCHEMA, observation, birthDate,
-        LocalDateTime.of(2019, Month.MARCH, 21, 0, 0),
-        LocalDateTime.of(2019, Month.MARCH, 28, 0, 0));
-
-    List<LocalDateTime> dates = new ArrayList<>();
-    dates.add(LocalDateTime.of(2019, Month.MARCH, 21, 0, 0));
-    dates.add(LocalDateTime.of(2019, Month.MARCH, 28, 0, 0));
-    dates.add(LocalDateTime.of(2019, Month.JUNE, 12, 0, 0));
-    obsFavNewYearsFilter = new DateSetFilter(APP_DB_SCHEMA, observation, startDate, dates);
-
-    List<String> moods = Arrays.asList("happy", "jolly", "giddy");
-    obsMoodFilter = new StringSetFilter(APP_DB_SCHEMA, observation, mood, moods);
-
-    obsWeightFilter = new NumberRangeFilter(APP_DB_SCHEMA, observation, weight, 10, 20);
-
-    // create household roof filter
-    List<String> roofs = Arrays.asList("metal", "tile");
-    houseRoofFilter = new StringSetFilter(APP_DB_SCHEMA, household, roof, roofs);
-
-    // create household observation filter
-    List<String> waterSupplies = Arrays.asList("piped", "well");
-    houseObsWaterSupplyFilter = new StringSetFilter(APP_DB_SCHEMA, householdObs, waterSupply, waterSupplies);
-  }
 }

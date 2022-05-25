@@ -6,33 +6,32 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.veupathdb.service.eda.ss.model.Entity;
-import org.veupathdb.service.eda.ss.model.FiltersForTesting;
+import org.veupathdb.service.eda.ss.test.MockFilters;
 import org.veupathdb.service.eda.ss.model.Study;
-import org.veupathdb.service.eda.ss.model.TestModel;
 import org.veupathdb.service.eda.ss.model.db.StudyFactory;
 import org.veupathdb.service.eda.ss.model.distribution.DistributionFactory;
 import org.veupathdb.service.eda.ss.model.distribution.ValueSpec;
 import org.veupathdb.service.eda.ss.model.filter.Filter;
 import org.veupathdb.service.eda.ss.model.variable.VariableWithValues;
-import org.veupathdb.service.eda.ss.stubdb.StubDb;
+import org.veupathdb.service.eda.ss.test.StubDb;
 
 import javax.sql.DataSource;
 import java.util.*;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.veupathdb.service.eda.ss.model.TestModel.APP_DB_SCHEMA;
-import static org.veupathdb.service.eda.ss.model.TestModel.ASSAY_CONVERSION_FLAG;
+import static org.veupathdb.service.eda.ss.test.StubDb.APP_DB_SCHEMA;
+import static org.veupathdb.service.eda.ss.test.StubDb.ASSAY_CONVERSION_FLAG;
 
 public class StudiesTest {
 
   private static DataSource _dataSource;
-  private static FiltersForTesting _filtersForTesting;
+  private static MockFilters _filtersForTesting;
 
   @BeforeAll
   public static void setUp() {
     _dataSource = StubDb.getDataSource();
     Study study = new StudyFactory(_dataSource, APP_DB_SCHEMA, ASSAY_CONVERSION_FLAG).loadStudy("DS-2324");
-    _filtersForTesting = new FiltersForTesting(study);
+    _filtersForTesting = new MockFilters(study);
   }
 
 

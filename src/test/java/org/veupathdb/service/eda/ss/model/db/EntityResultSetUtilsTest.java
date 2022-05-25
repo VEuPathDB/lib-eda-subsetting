@@ -8,28 +8,28 @@ import java.util.Map;
 
 import javax.sql.DataSource;
 
-import static org.veupathdb.service.eda.ss.model.TestModel.APP_DB_SCHEMA;
-import static org.veupathdb.service.eda.ss.model.TestModel.ASSAY_CONVERSION_FLAG;
+import static org.veupathdb.service.eda.ss.test.StubDb.APP_DB_SCHEMA;
+import static org.veupathdb.service.eda.ss.test.StubDb.ASSAY_CONVERSION_FLAG;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
-import org.veupathdb.service.eda.ss.model.FiltersForTesting;
+import org.veupathdb.service.eda.ss.test.MockFilters;
 import org.veupathdb.service.eda.ss.model.Study;
-import org.veupathdb.service.eda.ss.model.TestModel;
+import org.veupathdb.service.eda.ss.test.MockModel;
 import org.veupathdb.service.eda.ss.model.variable.VariableWithValues;
-import org.veupathdb.service.eda.ss.stubdb.StubDb;
+import org.veupathdb.service.eda.ss.test.StubDb;
 
 public class EntityResultSetUtilsTest {
 
-  private static TestModel _model;
+  private static MockModel _model;
   private static DataSource _dataSource;
 
   @BeforeAll
   public static void setUp() {
-    _model = new TestModel();
+    _model = new MockModel();
     _dataSource = StubDb.getDataSource();
     Study study = new StudyFactory(_dataSource, APP_DB_SCHEMA, ASSAY_CONVERSION_FLAG).loadStudy(LoadStudyTest.STUDY_ID);
-    new FiltersForTesting(study);
+    new MockFilters(study);
   }
   
   @Test

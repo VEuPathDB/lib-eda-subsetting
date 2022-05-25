@@ -21,15 +21,15 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.veupathdb.service.eda.ss.model.Entity;
-import org.veupathdb.service.eda.ss.model.FiltersForTesting;
+import org.veupathdb.service.eda.ss.test.MockFilters;
 import org.veupathdb.service.eda.ss.model.Study;
 import org.veupathdb.service.eda.ss.model.tabular.TabularReportConfig;
-import org.veupathdb.service.eda.ss.model.TestModel;
+import org.veupathdb.service.eda.ss.test.MockModel;
 import org.veupathdb.service.eda.ss.model.filter.Filter;
 import org.veupathdb.service.eda.ss.model.tabular.TabularResponses;
 import org.veupathdb.service.eda.ss.model.variable.Variable;
 import org.veupathdb.service.eda.ss.model.variable.VariableWithValues;
-import org.veupathdb.service.eda.ss.stubdb.StubDb;
+import org.veupathdb.service.eda.ss.test.StubDb;
 
 import javax.sql.DataSource;
 import java.io.ByteArrayOutputStream;
@@ -38,24 +38,26 @@ import java.util.stream.Stream;
 import static org.gusdb.fgputil.FormatUtil.NL;
 import static org.gusdb.fgputil.FormatUtil.TAB;
 import static org.junit.jupiter.api.Assertions.*;
-import static org.veupathdb.service.eda.ss.model.TestModel.APP_DB_SCHEMA;
-import static org.veupathdb.service.eda.ss.model.TestModel.ASSAY_CONVERSION_FLAG;
+import static org.veupathdb.service.eda.ss.test.StubDb.APP_DB_SCHEMA;
+import static org.veupathdb.service.eda.ss.test.StubDb.ASSAY_CONVERSION_FLAG;
 import static org.veupathdb.service.eda.ss.model.db.DB.Tables.AttributeValue.Columns.*;
 
 public class StudySubsettingUtilsTest {
 
   private static final Logger LOG = LogManager.getLogger(StudySubsettingUtilsTest.class);
 
-  private static TestModel _model;
+  private static MockModel _model;
+  private static MockFilters _filtesFromMockStudy;
   private static DataSource _dataSource;
-  private static FiltersForTesting _filtersForTesting;
+  private static MockFilters _filtersFromDbStudy;
 
   @BeforeAll
   public static void setUp() {
-    _model = new TestModel();
+    _model = new MockModel();
+    _filtesFromMockStudy = new MockFilters(_model.study);
     _dataSource = StubDb.getDataSource();
     Study study = new StudyFactory(_dataSource, APP_DB_SCHEMA, ASSAY_CONVERSION_FLAG).loadStudy(LoadStudyTest.STUDY_ID);
-    _filtersForTesting = new FiltersForTesting(study);
+    _filtersFromDbStudy = new MockFilters(study);
   }
 
   @Test
@@ -64,8 +66,8 @@ public class StudySubsettingUtilsTest {
    
     // add it to a set
     List<Filter> filters = new ArrayList<>();
-    filters.add(_model.obsWeightFilter);
-    filters.add(_model.houseRoofFilter);
+    filters.add(_filtesFromMockStudy.obsWeightFilter);
+    filters.add(_filtesFromMockStudy.houseRoofFilter);
     
     List<String> entityIdsInFilters = FilteredResultFactory.getEntityIdsInFilters(filters);
 
@@ -80,7 +82,7 @@ public class StudySubsettingUtilsTest {
     
     // create filter set with obs filter
     List<Filter> filters = new ArrayList<>();
-    filters.add(_model.obsWeightFilter);
+    filters.add(_filtesFromMockStudy.obsWeightFilter);
     
     // set output entity
     Entity outputEntity = _model.household;
@@ -102,7 +104,7 @@ public class StudySubsettingUtilsTest {
     
     // add household roof filter to set
     List<Filter> filters = new ArrayList<>();
-    filters.add(_model.houseRoofFilter);
+    filters.add(_filtesFromMockStudy.houseRoofFilter);
     
     // set output entity
     Entity outputEntity = _model.observation;
@@ -123,7 +125,7 @@ public class StudySubsettingUtilsTest {
   void testPruning3() {
     
     List<Filter> filters = new ArrayList<>();
-    filters.add(_model.obsWeightFilter);
+    filters.add(_filtesFromMockStudy.obsWeightFilter);
     // set output entity
     Entity outputEntity = _model.householdObs;
     
@@ -167,8 +169,8 @@ public class StudySubsettingUtilsTest {
   void testWithClauseNoFilters() {
     
     List<Filter> filters = new ArrayList<>();
-    filters.add(_model.obsWeightFilter);
-    filters.add(_model.obsFavNewYearsFilter);
+    filters.add(_filtesFromMockStudy.obsWeightFilter);
+    filters.add(_filtesFromMockStudy.obsFavNewYearsFilter);
     String withClause = FilteredResultFactory.generateFilterWithClause(APP_DB_SCHEMA, _model.householdObs, filters);
     String expectedWithClause = _model.householdObs.getWithClauseName() + " as (" + NL +
         "  SELECT " + _model.household.getPKColName() + ", " + _model.householdObs.getPKColName() + " FROM " + DB.Tables.Ancestors.NAME(_model.householdObs) + NL +
@@ -179,14 +181,14 @@ public class StudySubsettingUtilsTest {
   @Test
   @DisplayName("Test creating a WITH clause with filters")
   void testWithClause() {
-    
+    //expected o4 (visit date) got o3 (start date), range filter
     List<Filter> filters = new ArrayList<>();
-    filters.add(_model.obsWeightFilter);
-    filters.add(_model.obsFavNewYearsFilter);
-    filters.add(_model.obsBirthDateFilter);
-    filters.add(_model.obsMoodFilter);
-    filters.add(_model.obsFavNumberFilter);
-    filters.add(_model.houseRoofFilter);
+    filters.add(_filtesFromMockStudy.obsWeightFilter);
+    filters.add(_filtesFromMockStudy.obsFavNewYearsFilter);
+    filters.add(_filtesFromMockStudy.obsBirthDateFilter);
+    filters.add(_filtesFromMockStudy.obsMoodFilter);
+    filters.add(_filtesFromMockStudy.obsFavNumberFilter);
+    filters.add(_filtesFromMockStudy.houseRoofFilter);
     String withClause = FilteredResultFactory.generateFilterWithClause(APP_DB_SCHEMA, _model.observation, filters);
  
     List<String> selectColsList = new ArrayList<>();
@@ -212,7 +214,7 @@ public class StudySubsettingUtilsTest {
         "  AND " + DATE_VALUE_COL_NAME + " IN (TO_DATE('2019-03-21T00:00:00', 'YYYY-MM-DD\"T\"HH24:MI:SS'), TO_DATE('2019-03-28T00:00:00', 'YYYY-MM-DD\"T\"HH24:MI:SS'), TO_DATE('2019-06-12T00:00:00', 'YYYY-MM-DD\"T\"HH24:MI:SS'))" + NL +
         "INTERSECT" + NL +
         obsBase + 
-        "  AND " + TT_VARIABLE_ID_COL_NAME + " = '" + _model.birthDate.getId() + "'" + NL +
+        "  AND " + TT_VARIABLE_ID_COL_NAME + " = '" + _model.startDate.getId() + "'" + NL +
         "  AND " + DATE_VALUE_COL_NAME + " >= TO_DATE('2019-03-21T00:00:00', 'YYYY-MM-DD\"T\"HH24:MI:SS') AND " + DATE_VALUE_COL_NAME + " <= TO_DATE('2019-03-28T00:00:00', 'YYYY-MM-DD\"T\"HH24:MI:SS')" + NL +
         "INTERSECT" + NL +
         obsBase + 
@@ -284,10 +286,10 @@ public class StudySubsettingUtilsTest {
   @DisplayName("Test creating a where clause for tabular report")
   void testGenerateTabularWhereClause() {
     
-    List<Variable> vars = Arrays.asList(_model.birthDate, _model.favNumber);
+    List<Variable> vars = Arrays.asList(_model.visitDate, _model.favNumber);
     String where = FilteredResultFactory.generateTabularWhereClause(vars, _model.observation.getPKColName());
     String expected = " WHERE (" + NL +
-        " " + TT_VARIABLE_ID_COL_NAME + " = '" + _model.birthDate.getId() + "' OR" + NL +
+        " " + TT_VARIABLE_ID_COL_NAME + " = '" + _model.visitDate.getId() + "' OR" + NL +
         " " + TT_VARIABLE_ID_COL_NAME + " = '" + _model.favNumber.getId() + "'" + NL +
         ")" + NL;
 
@@ -300,7 +302,7 @@ public class StudySubsettingUtilsTest {
     
     // construct pruned tree with a pivot (H, HO, O)
     List<Filter> filters = new ArrayList<>();
-    filters.add(_model.obsWeightFilter);
+    filters.add(_filtesFromMockStudy.obsWeightFilter);
     Entity outputEntity = _model.householdObs;
     TreeNode<Entity> prunedTree = FilteredResultFactory.pruneTree(_model.study.getEntityTree(), filters, outputEntity);
 
@@ -397,8 +399,8 @@ public class StudySubsettingUtilsTest {
     Entity entity = study.getEntity(entityId).orElseThrow();
 
     List<Filter> filters = new ArrayList<>();
-    filters.add(_filtersForTesting.partHairFilter);
-    filters.add(_filtersForTesting.houseObsWaterSupplyFilter);
+    filters.add(_filtersFromDbStudy.partHairFilter);
+    filters.add(_filtersFromDbStudy.houseObsWaterSupplyFilter);
 
     TreeNode<Entity> prunedEntityTree = FilteredResultFactory.pruneTree(study.getEntityTree(), filters, entity);
     Long count = FilteredResultFactory.getEntityCount(_dataSource, APP_DB_SCHEMA, prunedEntityTree, entity, filters);
@@ -449,8 +451,8 @@ public class StudySubsettingUtilsTest {
     variables.add(entity.getVariable("var_p3").orElseThrow()); // name
 
     List<Filter> filters = new ArrayList<>();
-    filters.add(_filtersForTesting.partHairFilter);
-    filters.add(_filtersForTesting.houseObsWaterSupplyFilter);
+    filters.add(_filtersFromDbStudy.partHairFilter);
+    filters.add(_filtersFromDbStudy.houseObsWaterSupplyFilter);
 
     ByteArrayOutputStream outStream = new ByteArrayOutputStream();
 
@@ -500,8 +502,8 @@ public class StudySubsettingUtilsTest {
     Variable var = entity.getVariable(varId).orElseThrow();
 
     List<Filter> filters = new ArrayList<>();
-    filters.add(_filtersForTesting.partHairFilter);
-    filters.add(_filtersForTesting.houseObsWaterSupplyFilter);
+    filters.add(_filtersFromDbStudy.partHairFilter);
+    filters.add(_filtersFromDbStudy.houseObsWaterSupplyFilter);
 
     TreeNode<Entity> prunedEntityTree = FilteredResultFactory.pruneTree(study.getEntityTree(), filters, entity);
 
@@ -546,8 +548,8 @@ public class StudySubsettingUtilsTest {
     VariableWithValues var = (VariableWithValues)entity.getVariable(varId).orElseThrow();
     
     List<Filter> filters = new ArrayList<>();
-    filters.add(_filtersForTesting.houseCityFilter);
-    filters.add(_filtersForTesting.houseObsWaterSupplyFilter);
+    filters.add(_filtersFromDbStudy.houseCityFilter);
+    filters.add(_filtersFromDbStudy.houseObsWaterSupplyFilter);
 
     Map<String, Long> expectedDistribution = new HashMap<>(){{
       put("brown", 1L);
@@ -571,13 +573,13 @@ public class StudySubsettingUtilsTest {
 
   List<Filter> getSomeFilters() {
     List<Filter> filters = new ArrayList<>();
-    filters.add(_model.obsWeightFilter);
-    filters.add(_model.obsFavNewYearsFilter);
-    filters.add(_model.obsBirthDateFilter);
-    filters.add(_model.obsMoodFilter);
-    filters.add(_model.obsFavNumberFilter);
-    filters.add(_model.houseRoofFilter);
-    filters.add(_model.houseObsWaterSupplyFilter);
+    filters.add(_filtesFromMockStudy.obsWeightFilter);
+    filters.add(_filtesFromMockStudy.obsFavNewYearsFilter);
+    filters.add(_filtesFromMockStudy.obsBirthDateFilter);
+    filters.add(_filtesFromMockStudy.obsMoodFilter);
+    filters.add(_filtesFromMockStudy.obsFavNumberFilter);
+    filters.add(_filtesFromMockStudy.houseRoofFilter);
+    filters.add(_filtesFromMockStudy.houseObsWaterSupplyFilter);
     return filters;
   }
 

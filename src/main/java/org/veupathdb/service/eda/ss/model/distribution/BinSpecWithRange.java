@@ -7,11 +7,11 @@ public class BinSpecWithRange {
   private Number _binWidth;
   private BinUnits _binUnits;
 
-  public Object get_displayRangeMin() {
+  public Object getDisplayRangeMin() {
     return _displayRangeMin;
   }
 
-  public BinSpecWithRange set_displayRangeMin(Object displayRangeMin) {
+  public BinSpecWithRange setDisplayRangeMin(Object displayRangeMin) {
     _displayRangeMin = _displayRangeMin;
     return this;
   }

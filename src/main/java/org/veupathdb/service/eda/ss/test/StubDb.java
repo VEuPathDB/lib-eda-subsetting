@@ -1,4 +1,4 @@
-package org.veupathdb.service.eda.ss.stubdb;
+package org.veupathdb.service.eda.ss.test;
 
 import org.gusdb.fgputil.db.SqlScriptRunner;
 import org.hsqldb.jdbc.JDBCDataSource;
@@ -13,6 +13,12 @@ public class StubDb {
   private static final String DB_DATA_SCRIPT = "org/veupathdb/service/eda/ss/stubdb/insertDbData.sql";
 
   private static final String STUB_DB_NAME = "stubDb";
+
+  // empty schema for test DB
+  public static final String APP_DB_SCHEMA = "";
+
+  // no tests use collections
+  public static final boolean ASSAY_CONVERSION_FLAG = false;
 
   private static DataSource _ds;
 

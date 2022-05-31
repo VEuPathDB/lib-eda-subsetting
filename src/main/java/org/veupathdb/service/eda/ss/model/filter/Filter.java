@@ -7,7 +7,6 @@ import java.util.Objects;
 import org.veupathdb.service.eda.ss.model.Entity;
 import org.veupathdb.service.eda.ss.model.db.DB;
 
-// TODO: Add predicate?
 public abstract class Filter {
 
   protected final Entity _entity;

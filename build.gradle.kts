@@ -93,4 +93,5 @@ dependencies {
 
   // Unit Testing
   testImplementation("org.junit.jupiter:junit-jupiter:${junit}")
+  testImplementation("org.hamcrest:hamcrest:2.2")
 }

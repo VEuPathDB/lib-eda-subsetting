@@ -3,10 +3,12 @@ package org.veupathdb.service.eda.ss.model.filter;
 import org.veupathdb.service.eda.ss.model.Entity;
 import org.veupathdb.service.eda.ss.model.variable.LongitudeVariable;
 
+import java.util.function.Predicate;
+
 import static org.gusdb.fgputil.FormatUtil.NL;
 import static org.veupathdb.service.eda.ss.model.db.DB.Tables.AttributeValue.Columns.NUMBER_VALUE_COL_NAME;
 
-public class LongitudeRangeFilter extends SingleValueFilter<LongitudeVariable> {
+public class LongitudeRangeFilter<T extends Number & Comparable> extends SingleValueFilter<LongitudeVariable, T> {
 
     private Number _left;
     private Number _right;
@@ -32,5 +34,10 @@ public class LongitudeRangeFilter extends SingleValueFilter<LongitudeVariable> {
         //   50  ============== 180/-180 =============== -50
         String op = left < right ? " AND " : " OR ";
         return "  AND (" + NUMBER_VALUE_COL_NAME + " >= " + left + op + NUMBER_VALUE_COL_NAME + " <= " + right + ")" + NL;
+    }
+
+    @Override
+    public Predicate<T> getPredicate() {
+        return n -> n.compareTo(_left) >= 0 && n.compareTo(_right) <= 0;
     }
 }

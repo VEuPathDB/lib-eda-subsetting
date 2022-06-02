@@ -1,13 +1,18 @@
-package org.veupathdb.service.eda.ss.model.variable.serializer;
+package org.veupathdb.service.eda.ss.model.variable.converter;
 
 import org.gusdb.fgputil.FormatUtil;
 
-public class StringValueSerializer implements ValueSerializer<String> {
+public class StringValueConverter implements ValueConverter<String> {
 
   private final int _numBytes;
 
-  public StringValueSerializer(int numBytes) {
+  public StringValueConverter(int numBytes) {
     _numBytes = numBytes;
+  }
+
+  @Override
+  public String fromString(String s) {
+    return s;
   }
 
   @Override

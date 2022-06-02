@@ -2,8 +2,8 @@ package org.veupathdb.service.eda.ss.model.reducer;
 
 import org.veupathdb.service.eda.ss.model.filter.SingleValueFilter;
 import org.veupathdb.service.eda.ss.model.variable.VariableWithValues;
-import org.veupathdb.service.eda.ss.model.variable.serializer.ValueSerializer;
-import org.veupathdb.service.eda.ss.model.variable.serializer.ValueWithIdSerializer;
+import org.veupathdb.service.eda.ss.model.variable.converter.ValueConverter;
+import org.veupathdb.service.eda.ss.model.variable.converter.ValueWithIdSerializer;
 
 import java.io.IOException;
 import java.nio.file.Path;
@@ -15,12 +15,12 @@ public class ValuesFileFactory {
     this.entityRepositoryDir = entityRepositoryDir;
   }
 
-  public <U, V extends VariableWithValues> FilteredValueStream<U> createFromSingleValue(
+  public <U, V extends VariableWithValues> FilteredValueStream<U> createFromFilter(
       SingleValueFilter<V, U> filter) throws IOException {
     /**
      * TODO Read metadata from files here for Long vs. Integer or String bytes length?
      */
-    ValueSerializer<U> serializer = filter.getVariable().getType().getBinarySerializer();
+    ValueConverter<U> serializer = filter.getVariable().getType().getValueConverter();
     return new FilteredValueStream<>(
         constructPath(filter),
         filter.getPredicate(),

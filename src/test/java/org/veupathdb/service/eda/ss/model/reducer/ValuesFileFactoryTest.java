@@ -9,8 +9,8 @@ import org.veupathdb.service.eda.ss.model.Entity;
 import org.veupathdb.service.eda.ss.model.filter.NumberRangeFilter;
 import org.veupathdb.service.eda.ss.model.filter.NumberSetFilter;
 import org.veupathdb.service.eda.ss.model.variable.*;
-import org.veupathdb.service.eda.ss.model.variable.serializer.IntValueSerializer;
-import org.veupathdb.service.eda.ss.model.variable.serializer.ValueWithIdSerializer;
+import org.veupathdb.service.eda.ss.model.variable.converter.LongValueConverter;
+import org.veupathdb.service.eda.ss.model.variable.converter.ValueWithIdSerializer;
 import org.veupathdb.service.eda.ss.testutil.VariableWriter;
 
 import java.io.File;
@@ -20,6 +20,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.Iterator;
 import java.util.List;
 import java.util.stream.Stream;
 
@@ -40,14 +41,14 @@ public class ValuesFileFactoryTest {
     final File entityDir = new File(studyDir.getAbsolutePath(), ENTITY_ID);
     entityDir.mkdir();
     Path varFile = Path.of(directory, STUDY_ID, ENTITY_ID, VARIABLE_ID);
-    ValueWithIdSerializer<Integer> serializer = new ValueWithIdSerializer<>(new IntValueSerializer());
-    try (VariableWriter<Integer, Integer> writer = new VariableWriter<>(new FileOutputStream(varFile.toString()), serializer)) {
-      writer.writeVar(new VariableValue<>(0,0));
-      writer.writeVar(new VariableValue<>(1,1));
-      writer.writeVar(new VariableValue<>(2,2));
-      writer.writeVar(new VariableValue<>(3,3));
-      writer.writeVar(new VariableValue<>(4,4));
-      writer.writeVar(new VariableValue<>(5,5));
+    ValueWithIdSerializer<Long> serializer = new ValueWithIdSerializer<>(new LongValueConverter());
+    try (VariableWriter<Long> writer = new VariableWriter<>(new FileOutputStream(varFile.toString()), serializer)) {
+      writer.writeVar(new VariableValueIdPair<>("0",0L));
+      writer.writeVar(new VariableValueIdPair<>("1",1L));
+      writer.writeVar(new VariableValueIdPair<>("2",2L));
+      writer.writeVar(new VariableValueIdPair<>("3",3L));
+      writer.writeVar(new VariableValueIdPair<>("4",4L));
+      writer.writeVar(new VariableValueIdPair<>("5",5L));
     }
   }
 
@@ -66,8 +67,9 @@ public class ValuesFileFactoryTest {
     Entity entity = constructEntity();
     IntegerVariable intVariable = constructIntVariable(entity);
     entity.addVariable(intVariable);
-    NumberSetFilter filter = new NumberSetFilter("test", entity, intVariable, List.of(1, 2, 3));
-    MatcherAssert.assertThat(fileFactory.createFromSingleValue(filter), Matchers.contains(1, 2, 3));
+    NumberSetFilter filter = new NumberSetFilter("test", entity, intVariable, List.of(1L, 2L, 3L));
+    Iterator<String> valueFilter = fileFactory.createFromFilter(filter);
+    MatcherAssert.assertThat(() -> valueFilter, Matchers.contains("1", "2", "3"));
   }
 
   @Test
@@ -75,8 +77,9 @@ public class ValuesFileFactoryTest {
     Entity entity = constructEntity();
     IntegerVariable intVariable = constructIntVariable(entity);
     entity.addVariable(intVariable);
-    NumberRangeFilter<Long> filter = new NumberRangeFilter<>("test", entity, intVariable, 1, 3);
-    MatcherAssert.assertThat(fileFactory.createFromSingleValue(filter), Matchers.contains(1, 2, 3));
+    NumberRangeFilter<Long> filter = new NumberRangeFilter<>("test", entity, intVariable, 1L, 3L);
+    Iterator<String> valueFilter = fileFactory.createFromFilter(filter);
+    MatcherAssert.assertThat(() -> valueFilter, Matchers.contains("1", "2", "3"));
   }
   private Entity constructEntity() {
     return new Entity(

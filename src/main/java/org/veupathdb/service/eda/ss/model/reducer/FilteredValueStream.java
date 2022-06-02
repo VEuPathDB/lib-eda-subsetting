@@ -1,8 +1,8 @@
 package org.veupathdb.service.eda.ss.model.reducer;
 
 import org.gusdb.fgputil.DualBufferBinaryRecordReader;
-import org.veupathdb.service.eda.ss.model.variable.VariableValue;
-import org.veupathdb.service.eda.ss.model.variable.serializer.ValueWithIdSerializer;
+import org.veupathdb.service.eda.ss.model.variable.VariableValueIdPair;
+import org.veupathdb.service.eda.ss.model.variable.converter.ValueWithIdSerializer;
 
 import java.io.IOException;
 import java.nio.file.Path;
@@ -17,12 +17,14 @@ import java.util.function.Predicate;
  * TODO Maybe take an OptionStream to more easily swap out files
  *
  * Filtered stream
- * @param <V>
+ * @param <V> type of the value
  */
-public class FilteredValueStream<V> implements AutoCloseable, Iterable<Integer> {
+public class FilteredValueStream<V> implements AutoCloseable, Iterator<String> {
   private Predicate<V> filterPredicate;
   private DualBufferBinaryRecordReader reader;
   private ValueWithIdSerializer<V> serializer;
+  private Optional<String> next;
+  private boolean hasStarted;
 
   public FilteredValueStream(Path path,
                              Predicate<V> filterPredicate,
@@ -33,54 +35,40 @@ public class FilteredValueStream<V> implements AutoCloseable, Iterable<Integer> 
   }
 
   @Override
-  public Iterator<Integer> iterator() {
-    return new FilteredIterator();
+  public boolean hasNext() {
+    if (!hasStarted) {
+      nextMatch();
+    }
+    return next.isPresent();
   }
 
   @Override
-  public void close() {
-    reader.close();
+  public String next() {
+    if (!hasStarted) {
+      nextMatch();
+    }
+    String curr = next.orElseThrow(() -> new NoSuchElementException());
+    nextMatch();
+    return curr;
   }
 
-  private class FilteredIterator implements Iterator<Integer> {
-    private Optional<Integer> next;
-    private boolean hasStarted;
-
-    public FilteredIterator() {
-      hasStarted = false;
-    }
-
-    @Override
-    public boolean hasNext() {
-      if (!hasStarted) {
-        nextMatch();
+  private void nextMatch() {
+    do {
+      hasStarted = true;
+      Optional<byte[]> bytes = reader.next();
+      if (bytes.isEmpty()) {
+        next = Optional.empty();
+        return;
       }
-      return next.isPresent();
-    }
+      next = bytes
+          .map(serializer::convertFromBytes)
+          .filter(var -> filterPredicate.test(var.getValue()))
+          .map(VariableValueIdPair::getEntityId);
+    } while (next.isEmpty());
+  }
 
-    @Override
-    public Integer next() {
-      if (!hasStarted) {
-        nextMatch();
-      }
-      Integer curr = next.orElseThrow(() -> new NoSuchElementException());
-      nextMatch();
-      return curr;
-    }
-
-    private void nextMatch() {
-      do {
-        hasStarted = true;
-        Optional<byte[]> bytes = reader.next();
-        if (bytes.isEmpty()) {
-          next = Optional.empty();
-          return;
-        }
-        next = bytes
-            .map(serializer::convertFromBytes)
-            .filter(var -> filterPredicate.test(var.getValue()))
-            .map(VariableValue::getEntityId);
-      } while (next.isEmpty());
-    }
+  @Override
+  public void close() throws Exception {
+    reader.close();
   }
 }

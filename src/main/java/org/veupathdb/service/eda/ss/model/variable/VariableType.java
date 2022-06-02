@@ -10,40 +10,40 @@ import org.gusdb.fgputil.functional.FunctionalInterfaces.FunctionWithException;
 import org.gusdb.fgputil.functional.Functions;
 import org.json.JSONArray;
 import org.veupathdb.service.eda.ss.model.varcollection.CollectionType;
-import org.veupathdb.service.eda.ss.model.variable.serializer.*;
+import org.veupathdb.service.eda.ss.model.variable.converter.*;
 
 public enum VariableType {
   STRING("string_value", "string", rs -> rs.getString("string_value"),
-      strings -> StringListToJsonStringArray(strings), new StringValueSerializer(100)),
+      strings -> StringListToJsonStringArray(strings), new StringValueConverter(100)),
 
   NUMBER("number_value", "number", rs -> doubleValueOrNull(rs, rs.getDouble("number_value")),
-      strings -> StringListToJsonFloatArray(strings), new FloatValueSerializer()),
+      strings -> StringListToJsonFloatArray(strings), new DoubleValueConverter()),
   
   INTEGER("number_value", "integer", rs -> integerValueOrNull(rs, rs.getLong("number_value")),
-      strings -> StringListToJsonIntegerArray(strings), new IntValueSerializer()),
+      strings -> StringListToJsonIntegerArray(strings), new LongValueConverter()),
   
   DATE("date_value", "date", rs -> dateValueOrNull(rs.getDate("date_value")),
-      strings -> StringListToJsonStringArray(strings), new DateValueSerializer()),
+      strings -> StringListToJsonStringArray(strings), new DateValueConverter()),
   
   LONGITUDE("number_value", "longitude", rs -> doubleValueOrNull(rs, rs.getDouble("number_value")),
-      strings -> StringListToJsonFloatArray(strings), new FloatValueSerializer());
+      strings -> StringListToJsonFloatArray(strings), new DoubleValueConverter());
 
   private final String tallTableColumnName;
   private final String typeString;
   private final FunctionWithException<ResultSet, String> resultSetToStringValue;
   private final FunctionWithException<List<String>, JSONArray> multiValStringListToJsonArray;
-  private final ValueSerializer binarySerializer;
+  private final ValueConverter valueConverter;
 
   VariableType(String tallTableColumnName,
                String typeString,
                FunctionWithException<ResultSet, String> resultSetToStringValue,
                FunctionWithException<List<String>, JSONArray> multiValStringListToJsonArray,
-               ValueSerializer<?> binarySerializer) {
+               ValueConverter<?> valueConverter) {
     this.tallTableColumnName = tallTableColumnName;
     this.resultSetToStringValue = resultSetToStringValue;
     this.multiValStringListToJsonArray = multiValStringListToJsonArray;
     this.typeString = typeString;
-    this.binarySerializer = binarySerializer;
+    this.valueConverter = valueConverter;
   }
 
   public String getTallTableColumnName() {
@@ -77,8 +77,8 @@ public enum VariableType {
     }
   }
 
-  public <U, V> ValueSerializer<V> getBinarySerializer() {
-    return binarySerializer;
+  public <U, V> ValueConverter<V> getValueConverter() {
+    return valueConverter;
   }
 
   // utility to convert null DB double values to real null

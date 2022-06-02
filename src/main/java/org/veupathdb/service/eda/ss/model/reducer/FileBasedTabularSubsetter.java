@@ -9,7 +9,7 @@ import org.veupathdb.service.eda.ss.model.variable.Variable;
 
 import java.util.List;
 
-public class ResultSubsetReducer {
+public class FileBasedTabularSubsetter {
 
   /**
    * Writes to the passed output stream a "tabular" result.  Exact format depends on the passed

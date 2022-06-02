@@ -30,7 +30,7 @@ public class DateRangeFilter extends SingleValueFilter<DateVariable, LocalDateTi
 
   @Override
   public Predicate<LocalDateTime> getPredicate() {
-    return date -> date.isAfter(_min) && date.isBefore(_max);
+    return date -> !date.isBefore(_min) && !date.isAfter(_max);
   }
 
   static String dbDateTimeIsoValue(LocalDateTime dateTime) {

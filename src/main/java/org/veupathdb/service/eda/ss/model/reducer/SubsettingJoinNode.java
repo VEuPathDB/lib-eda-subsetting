@@ -12,16 +12,15 @@ public class SubsettingJoinNode {
   private List<FilteredValueStream> filters;
   private Entity entity;
 
-
   public SubsettingJoinNode(List<FilteredValueStream> filters) {
     this.filters = filters;
   }
 
-  public Iterator<Integer> reduce() {
+  public Iterator<String> reduce() {
     // TODO include children.
-    final List<Iterator<Integer>> idStreams = new ArrayList<>();
+    final List<Iterator<String>> idStreams = new ArrayList<>();
     for (FilteredValueStream file: filters) {
-      idStreams.add(file.iterator());
+      idStreams.add(file);
     }
     final Comparator<Integer> comparator = Comparator.naturalOrder();
     final StreamIntersectMerger intersectMerger = new StreamIntersectMerger(idStreams, comparator);

@@ -8,9 +8,9 @@ import org.veupathdb.service.eda.ss.model.variable.*;
 import java.util.Collections;
 
 public class TestDataProvider {
-  private static String ENTITY_ID = "EUPA_1024";
-  private static String STUDY_ID = "GEMS1A";
-  private static String VARIABLE_ID = "EUPA_1111";
+  public static final String ENTITY_ID = "EUPA_1024";
+  public static final String STUDY_ID = "GEMS1A";
+  public static final String VARIABLE_ID = "EUPA_1111";
 
   public static Entity constructEntity() {
     return new Entity(

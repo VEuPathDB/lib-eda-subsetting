@@ -19,17 +19,12 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.Collections;
 import java.util.Comparator;
 import java.util.Iterator;
 import java.util.List;
 import java.util.stream.Stream;
 
 public class ValuesFileFactoryTest {
-  private static final String STUDY_ID = "GEMS1A";
-  private static final String ENTITY_ID = "EUPA_12345";
-  private static final String VARIABLE_ID = "EUPA_22222";
-
   private static String directory;
   private static ValuesFileFactory fileFactory;
 
@@ -37,11 +32,11 @@ public class ValuesFileFactoryTest {
   public static void setup() throws Exception {
     directory = Files.createTempDirectory("tmpDirPrefix").toFile().getAbsolutePath();
     fileFactory = new ValuesFileFactory(Path.of(directory));
-    final File studyDir = new File(directory, STUDY_ID);
+    final File studyDir = new File(directory, TestDataProvider.STUDY_ID);
     studyDir.mkdir();
-    final File entityDir = new File(studyDir.getAbsolutePath(), ENTITY_ID);
+    final File entityDir = new File(studyDir.getAbsolutePath(), TestDataProvider.ENTITY_ID);
     entityDir.mkdir();
-    Path varFile = Path.of(directory, STUDY_ID, ENTITY_ID, VARIABLE_ID);
+    Path varFile = Path.of(directory, TestDataProvider.STUDY_ID, TestDataProvider.ENTITY_ID, TestDataProvider.VARIABLE_ID);
     ValueWithIdSerializer<Long> serializer = new ValueWithIdSerializer<>(new LongValueConverter());
     try (VariableWriter<Long> writer = new VariableWriter<>(new FileOutputStream(varFile.toString()), serializer)) {
       writer.writeVar(new VariableValueIdPair<>("0",0L));

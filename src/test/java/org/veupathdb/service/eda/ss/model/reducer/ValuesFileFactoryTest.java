@@ -11,6 +11,7 @@ import org.veupathdb.service.eda.ss.model.filter.NumberSetFilter;
 import org.veupathdb.service.eda.ss.model.variable.*;
 import org.veupathdb.service.eda.ss.model.variable.converter.LongValueConverter;
 import org.veupathdb.service.eda.ss.model.variable.converter.ValueWithIdSerializer;
+import org.veupathdb.service.eda.ss.testutil.TestDataProvider;
 import org.veupathdb.service.eda.ss.testutil.VariableWriter;
 
 import java.io.File;
@@ -64,8 +65,8 @@ public class ValuesFileFactoryTest {
 
   @Test
   public void testNumberSetFilter() throws IOException {
-    Entity entity = constructEntity();
-    IntegerVariable intVariable = constructIntVariable(entity);
+    Entity entity = TestDataProvider.constructEntity();
+    IntegerVariable intVariable = TestDataProvider.constructIntVariable(entity);
     entity.addVariable(intVariable);
     NumberSetFilter filter = new NumberSetFilter("test", entity, intVariable, List.of(1L, 2L, 3L));
     Iterator<String> valueFilter = fileFactory.createFromFilter(filter);
@@ -74,52 +75,11 @@ public class ValuesFileFactoryTest {
 
   @Test
   public void testNumberRangeFilter() throws IOException {
-    Entity entity = constructEntity();
-    IntegerVariable intVariable = constructIntVariable(entity);
+    Entity entity = TestDataProvider.constructEntity();
+    IntegerVariable intVariable = TestDataProvider.constructIntVariable(entity);
     entity.addVariable(intVariable);
     NumberRangeFilter<Long> filter = new NumberRangeFilter<>("test", entity, intVariable, 1L, 3L);
     Iterator<String> valueFilter = fileFactory.createFromFilter(filter);
     MatcherAssert.assertThat(() -> valueFilter, Matchers.contains("1", "2", "3"));
-  }
-  private Entity constructEntity() {
-    return new Entity(
-        ENTITY_ID,
-        STUDY_ID,
-        "My Study",
-        "My Studies",
-        "My favority study",
-        "Mine",
-        0L,
-        false,
-        false);
-  }
-
-  private IntegerVariable constructIntVariable(Entity entity) {
-    return new IntegerVariable(
-        new Variable.Properties(
-            "label",
-            VARIABLE_ID,
-            entity,
-            null,
-            null,
-            0L,
-            "50",
-            null,
-            null
-        ),
-        new VariableWithValues.Properties(
-            VariableType.INTEGER,
-            null,
-            Collections.emptyList(),
-            0L,
-            false,
-            false,
-            false,
-            false,
-            false
-        ),
-        null,
-        new IntegerVariable.Properties("bleep bloops")
-    );
   }
 }

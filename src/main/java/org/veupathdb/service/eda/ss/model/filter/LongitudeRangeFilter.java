@@ -3,10 +3,13 @@ package org.veupathdb.service.eda.ss.model.filter;
 import org.veupathdb.service.eda.ss.model.Entity;
 import org.veupathdb.service.eda.ss.model.variable.LongitudeVariable;
 
+import java.util.function.Predicate;
+
 import static org.gusdb.fgputil.FormatUtil.NL;
 import static org.veupathdb.service.eda.ss.model.db.DB.Tables.AttributeValue.Columns.NUMBER_VALUE_COL_NAME;
 
-public class LongitudeRangeFilter extends SingleValueFilter<LongitudeVariable> {
+public class LongitudeRangeFilter extends SingleValueFilter<LongitudeVariable, Double> {
+    private static double EPSILON = .00000001;
 
     private Number _left;
     private Number _right;
@@ -24,7 +27,7 @@ public class LongitudeRangeFilter extends SingleValueFilter<LongitudeVariable> {
         double right = _right.doubleValue();
 
         // if left and right are the same, or very close to it, then apply nop filter
-        if (Math.abs(left - right) < .00000001)
+        if (Math.abs(left - right) < EPSILON)
             return " AND 1 = 1" + NL;
 
         // if  passing thru intl date line, then use OR, else use AND
@@ -32,5 +35,23 @@ public class LongitudeRangeFilter extends SingleValueFilter<LongitudeVariable> {
         //   50  ============== 180/-180 =============== -50
         String op = left < right ? " AND " : " OR ";
         return "  AND (" + NUMBER_VALUE_COL_NAME + " >= " + left + op + NUMBER_VALUE_COL_NAME + " <= " + right + ")" + NL;
+    }
+
+    @Override
+    public Predicate<Double> getPredicate() {
+        return num -> {
+            double left = _left.doubleValue();
+            double right = _right.doubleValue();
+
+            if (Math.abs(left - right) < EPSILON) {
+                return true;
+            }
+
+            if (left < right) {
+                return (num >= left && num <= right);
+            } else {
+                return (num >= left || num <= right);
+            }
+        };
     }
 }

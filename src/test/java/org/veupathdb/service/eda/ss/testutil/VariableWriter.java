@@ -1,0 +1,31 @@
+package org.veupathdb.service.eda.ss.testutil;
+
+import org.veupathdb.service.eda.ss.model.variable.VariableValueIdPair;
+import org.veupathdb.service.eda.ss.model.variable.converter.ValueWithIdSerializer;
+
+import java.io.IOException;
+import java.io.OutputStream;
+
+public class VariableWriter<T> implements AutoCloseable {
+
+  private OutputStream outputStream;
+  private ValueWithIdSerializer<T> variableSerializer;
+
+  public VariableWriter(final OutputStream outputStream, final ValueWithIdSerializer<T> byteConverter) {
+    this.outputStream = outputStream;
+    this.variableSerializer = byteConverter;
+  }
+
+  public void writeVar(VariableValueIdPair<T> variable) {
+    try {
+      outputStream.write(variableSerializer.convertToBytes(variable));
+    } catch (IOException e) {
+      throw new RuntimeException(e);
+    }
+  }
+
+  @Override
+  public void close() throws Exception {
+    this.outputStream.close();
+  }
+}

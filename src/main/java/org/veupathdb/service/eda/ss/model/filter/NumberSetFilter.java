@@ -1,6 +1,7 @@
 package org.veupathdb.service.eda.ss.model.filter;
 
 import java.util.List;
+import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import org.veupathdb.service.eda.ss.model.Entity;
 import org.veupathdb.service.eda.ss.model.db.DB;
@@ -10,7 +11,7 @@ import static org.veupathdb.service.eda.ss.model.db.DB.Tables.AttributeValue.Col
 
 import static org.gusdb.fgputil.FormatUtil.NL;
 
-public class NumberSetFilter extends SingleValueFilter<NumberVariable> {
+public class NumberSetFilter extends SingleValueFilter<NumberVariable, Number> {
 
   private List<Number> _numberSet;
   
@@ -23,6 +24,11 @@ public class NumberSetFilter extends SingleValueFilter<NumberVariable> {
   @Override
   public String getFilteringAndClausesSql() {
     return "  AND " + NUMBER_VALUE_COL_NAME + " IN (" + createSqlInExpression() + " )" + NL;
+  }
+
+  @Override
+  public Predicate<Number> getPredicate() {
+    return num -> _numberSet.contains(num);
   }
 
   private String createSqlInExpression() {

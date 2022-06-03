@@ -10,36 +10,40 @@ import org.gusdb.fgputil.functional.FunctionalInterfaces.FunctionWithException;
 import org.gusdb.fgputil.functional.Functions;
 import org.json.JSONArray;
 import org.veupathdb.service.eda.ss.model.varcollection.CollectionType;
+import org.veupathdb.service.eda.ss.model.variable.converter.*;
 
 public enum VariableType {
   STRING("string_value", "string", rs -> rs.getString("string_value"),
-      strings -> StringListToJsonStringArray(strings)),
+      strings -> StringListToJsonStringArray(strings), new StringValueConverter(100)),
 
   NUMBER("number_value", "number", rs -> doubleValueOrNull(rs, rs.getDouble("number_value")),
-      strings -> StringListToJsonFloatArray(strings)),
+      strings -> StringListToJsonFloatArray(strings), new DoubleValueConverter()),
   
   INTEGER("number_value", "integer", rs -> integerValueOrNull(rs, rs.getLong("number_value")),
-      strings -> StringListToJsonIntegerArray(strings)),
+      strings -> StringListToJsonIntegerArray(strings), new LongValueConverter()),
   
   DATE("date_value", "date", rs -> dateValueOrNull(rs.getDate("date_value")),
-      strings -> StringListToJsonStringArray(strings)),
+      strings -> StringListToJsonStringArray(strings), new DateValueConverter()),
   
   LONGITUDE("number_value", "longitude", rs -> doubleValueOrNull(rs, rs.getDouble("number_value")),
-      strings -> StringListToJsonFloatArray(strings));
+      strings -> StringListToJsonFloatArray(strings), new DoubleValueConverter());
 
   private final String tallTableColumnName;
   private final String typeString;
   private final FunctionWithException<ResultSet, String> resultSetToStringValue;
   private final FunctionWithException<List<String>, JSONArray> multiValStringListToJsonArray;
+  private final ValueConverter valueConverter;
 
   VariableType(String tallTableColumnName,
                String typeString,
                FunctionWithException<ResultSet, String> resultSetToStringValue,
-               FunctionWithException<List<String>, JSONArray> multiValStringListToJsonArray) {
+               FunctionWithException<List<String>, JSONArray> multiValStringListToJsonArray,
+               ValueConverter<?> valueConverter) {
     this.tallTableColumnName = tallTableColumnName;
     this.resultSetToStringValue = resultSetToStringValue;
     this.multiValStringListToJsonArray = multiValStringListToJsonArray;
     this.typeString = typeString;
+    this.valueConverter = valueConverter;
   }
 
   public String getTallTableColumnName() {
@@ -71,6 +75,10 @@ public enum VariableType {
     catch (Exception e) {
       throw new RuntimeException(e);
     }
+  }
+
+  public <U, V> ValueConverter<V> getValueConverter() {
+    return valueConverter;
   }
 
   // utility to convert null DB double values to real null

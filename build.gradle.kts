@@ -7,7 +7,7 @@
 
 // Project settings
 group   = "org.veupathdb.eda"
-version = "1.2.0"
+version = "1.2.1"
 
 plugins {
   `java-library`
@@ -60,8 +60,14 @@ publishing {
 //
 // // // // // // // // // // // // // // // // // // // // // // // // // //
 
+// Never cache changing dependencies
+configurations.all {
+  resolutionStrategy.cacheChangingModulesFor(0, TimeUnit.SECONDS)
+}
+
 repositories {
   mavenCentral()
+  mavenLocal()
   maven {
     name = "GitHubPackages"
     url  = uri("https://maven.pkg.github.com/veupathdb/maven-packages")

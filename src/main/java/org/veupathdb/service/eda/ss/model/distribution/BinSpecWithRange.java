@@ -12,7 +12,7 @@ public class BinSpecWithRange {
   }
 
   public BinSpecWithRange setDisplayRangeMin(Object displayRangeMin) {
-    _displayRangeMin = _displayRangeMin;
+    _displayRangeMin = displayRangeMin;
     return this;
   }
 

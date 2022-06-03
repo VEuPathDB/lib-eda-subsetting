@@ -1,28 +1,19 @@
 package org.veupathdb.service.eda.ss.model.distribution;
 
-import java.util.List;
-import java.util.Optional;
-import java.util.stream.Stream;
-import javax.sql.DataSource;
 import jakarta.ws.rs.BadRequestException;
 import org.gusdb.fgputil.Tuples;
+import org.gusdb.fgputil.distribution.*;
 import org.gusdb.fgputil.functional.TreeNode;
 import org.veupathdb.service.eda.ss.model.Entity;
 import org.veupathdb.service.eda.ss.model.Study;
 import org.veupathdb.service.eda.ss.model.db.FilteredResultFactory;
-import org.gusdb.fgputil.distribution.AbstractDistribution;
-import org.gusdb.fgputil.distribution.DateBinDistribution;
-import org.gusdb.fgputil.distribution.DiscreteDistribution;
-import org.gusdb.fgputil.distribution.DistributionResult;
-import org.gusdb.fgputil.distribution.DistributionStreamProvider;
-import org.gusdb.fgputil.distribution.FloatingPointBinDistribution;
-import org.gusdb.fgputil.distribution.IntegerBinDistribution;
 import org.veupathdb.service.eda.ss.model.filter.Filter;
-import org.veupathdb.service.eda.ss.model.variable.DateVariable;
-import org.veupathdb.service.eda.ss.model.variable.FloatingPointVariable;
-import org.veupathdb.service.eda.ss.model.variable.IntegerVariable;
-import org.veupathdb.service.eda.ss.model.variable.VariableDataShape;
-import org.veupathdb.service.eda.ss.model.variable.VariableWithValues;
+import org.veupathdb.service.eda.ss.model.variable.*;
+
+import javax.sql.DataSource;
+import java.util.List;
+import java.util.Optional;
+import java.util.stream.Stream;
 
 public class DistributionFactory {
 
@@ -78,15 +69,21 @@ public class DistributionFactory {
       AbstractDistribution distribution;
       if (var.getDataShape() == VariableDataShape.CONTINUOUS) {
         switch(var.getType()) {
-          case INTEGER: distribution = new IntegerBinDistribution(
+          case INTEGER:
+            distribution = new IntegerBinDistribution(
               new EdaDistributionStreamProvider<>(ds, appDbSchema, study, targetEntity, (IntegerVariable)var, filters),
               valueSpec, new EdaNumberBinSpec((IntegerVariable)var, incomingBinSpec));
-          case NUMBER: distribution = new FloatingPointBinDistribution(
+            break;
+          case NUMBER:
+            distribution = new FloatingPointBinDistribution(
               new EdaDistributionStreamProvider<>(ds, appDbSchema, study, targetEntity, (FloatingPointVariable)var, filters),
               valueSpec, new EdaNumberBinSpec((FloatingPointVariable)var, incomingBinSpec));
-          case DATE: distribution = new DateBinDistribution(
+            break;
+          case DATE:
+            distribution = new DateBinDistribution(
               new EdaDistributionStreamProvider<>(ds, appDbSchema, study, targetEntity, (DateVariable)var, filters),
               valueSpec, new EdaDateBinSpec((DateVariable)var, incomingBinSpec));
+            break;
           default: throw new BadRequestException("Among continuous variables, " +
               "distribution endpoint supports only date, integer, and number types; " +
               "requested variable '" + var.getId() + "' is type " + var.getType());
@@ -105,7 +102,7 @@ public class DistributionFactory {
     }
     catch(IllegalArgumentException e) {
       // underlying lib sometimes throws this; indicates bad request data coming in
-      throw new BadRequestException("Variable " + var.getId() + " of type " + var.getType() + ": " + e.getMessage());
+      throw new BadRequestException("Variable " + var.getId() + " of type " + var.getType() + ": " + e.getMessage(), e);
     }
   }
 

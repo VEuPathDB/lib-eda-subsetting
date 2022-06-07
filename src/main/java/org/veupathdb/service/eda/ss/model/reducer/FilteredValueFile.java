@@ -19,18 +19,18 @@ import java.util.function.Predicate;
  * Filtered stream
  * @param <V> type of the value
  */
-public class FilteredValueStream<V> implements AutoCloseable, Iterator<Long> {
+public class FilteredValueFile<V> implements AutoCloseable, Iterator<Long> {
   private final Predicate<V> filterPredicate;
   private final DualBufferBinaryRecordReader reader;
   private final ValueWithIdSerializer<V> serializer;
   private Optional<Long> next;
   private boolean hasStarted;
 
-  public FilteredValueStream(Path path,
-                             Predicate<V> filterPredicate,
-                             ValueWithIdSerializer<V> serializer) throws IOException {
+  public FilteredValueFile(Path path,
+                           Predicate<V> filterPredicate,
+                           ValueWithIdSerializer<V> serializer) throws IOException {
     this.filterPredicate = filterPredicate;
-    this.reader = new DualBufferBinaryRecordReader(path, serializer.totalBytesNeeded(), 1024);
+    this.reader = new DualBufferBinaryRecordReader(path, serializer.numBytes(), 1024);
     this.serializer = serializer;
   }
 
@@ -61,7 +61,7 @@ public class FilteredValueStream<V> implements AutoCloseable, Iterator<Long> {
         return;
       }
       next = bytes
-          .map(serializer::convertFromBytes)
+          .map(serializer::fromBytes)
           .filter(var -> filterPredicate.test(var.getValue()))
           .map(VariableValueIdPair::getIndex);
     } while (next.isEmpty());

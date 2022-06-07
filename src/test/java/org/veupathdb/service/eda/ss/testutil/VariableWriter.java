@@ -18,7 +18,7 @@ public class VariableWriter<T> implements AutoCloseable {
 
   public void writeVar(VariableValueIdPair<T> variable) {
     try {
-      outputStream.write(variableSerializer.convertToBytes(variable));
+      outputStream.write(variableSerializer.toBytes(variable));
     } catch (IOException e) {
       throw new RuntimeException(e);
     }

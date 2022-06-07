@@ -1,12 +1,10 @@
 package org.veupathdb.service.eda.ss.model.variable.converter;
 
-import org.gusdb.fgputil.FormatUtil;
 import org.veupathdb.service.eda.ss.model.variable.VariableValueIdPair;
 
 import java.nio.ByteBuffer;
 
-public class ValueWithIdSerializer<T> {
-  private static final int ID_BYTE_COUNT = 20;
+public class ValueWithIdSerializer<T> implements BinarySerializer<VariableValueIdPair<T>> {
 
   private final ValueConverter<T> _valueConverter;
 
@@ -20,10 +18,11 @@ public class ValueWithIdSerializer<T> {
    * @param variable to convert to bytes
    * @return Deserialized variable object
    */
-  public byte[] convertToBytes(VariableValueIdPair<T> variable) {
-    final int bufferSize = totalBytesNeeded();
+  @Override
+  public byte[] toBytes(VariableValueIdPair<T> variable) {
+    final int bufferSize = numBytes();
     final ByteBuffer byteBuffer = ByteBuffer.allocate(bufferSize);
-    byteBuffer.put(FormatUtil.stringToPaddedBinary(variable.getEntityId(), ID_BYTE_COUNT));
+    byteBuffer.putLong(variable.getIndex());
     byteBuffer.put(_valueConverter.toBytes(variable.getValue()));
     return byteBuffer.array();
   }
@@ -34,19 +33,19 @@ public class ValueWithIdSerializer<T> {
    * @param bytes to convert to variable
    * @return Deserialized variable object
    */
-  public VariableValueIdPair<T> convertFromBytes(byte[] bytes) {
+  @Override
+  public VariableValueIdPair<T> fromBytes(byte[] bytes) {
     final ByteBuffer byteBuffer = ByteBuffer.wrap(bytes);
-    final byte[] idBytes = new byte[ID_BYTE_COUNT];
     final byte[] varValueBytes = new byte[_valueConverter.numBytes()];
-    byteBuffer.get(idBytes);
-    final String id = FormatUtil.paddedBinaryToString(idBytes);
+    final Long index = byteBuffer.getLong();
     byteBuffer.get(varValueBytes);
     final T varValue = _valueConverter.fromBytes(varValueBytes);
-    return new VariableValueIdPair<>(id, varValue);
+    return new VariableValueIdPair<>(index, varValue);
   }
 
-  public int totalBytesNeeded() {
-    return ID_BYTE_COUNT + _valueConverter.numBytes();
+  @Override
+  public int numBytes() {
+    return Long.BYTES + _valueConverter.numBytes();
   }
 }
 

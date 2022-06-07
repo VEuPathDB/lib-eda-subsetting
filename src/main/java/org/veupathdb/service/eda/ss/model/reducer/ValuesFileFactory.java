@@ -16,13 +16,21 @@ public class ValuesFileFactory {
     this.entityRepositoryDir = entityRepositoryDir;
   }
 
-  public <U, V extends VariableWithValues<U>> FilteredValueStream<U> createFromFilter(
-      SingleValueFilter<U, V> filter) throws IOException {
+  /**
+   * Open a binary file based on the filter passed in. Passes the predicate associated with the filter to the
+   * {@link FilteredValueFile} which produces a stream of IDs based on the filter.
+   * @param filter Filter for which to create a {@link FilteredValueFile}.
+   * @param <V> Type of variable {@link VariableWithValues}
+   * @param <T> Type of value associated with {@link V}
+   * @throws IOException
+   */
+  public <V, T extends VariableWithValues<V>> FilteredValueFile<V> createFromFilter(
+      SingleValueFilter<V, T> filter) throws IOException {
     /**
      * TODO Read metadata from files here for Long vs. Integer or String bytes length?
      */
-    ValueConverter<U> serializer = filter.getVariable().getValueConverter();
-    return new FilteredValueStream<>(
+    ValueConverter<V> serializer = filter.getVariable().getValueConverter();
+    return new FilteredValueFile<>(
         constructPath(filter),
         filter.getPredicate(),
         new ValueWithIdSerializer<>(serializer));

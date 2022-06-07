@@ -19,18 +19,18 @@ import java.util.function.Predicate;
  * Filtered stream
  * @param <V> type of the value
  */
-public class FilteredValueStream<V> implements AutoCloseable, Iterator<String> {
+public class FilteredValueFile<V> implements AutoCloseable, Iterator<Long> {
   private final Predicate<V> filterPredicate;
   private final DualBufferBinaryRecordReader reader;
   private final ValueWithIdSerializer<V> serializer;
-  private Optional<String> next;
+  private Optional<Long> next;
   private boolean hasStarted;
 
-  public FilteredValueStream(Path path,
-                             Predicate<V> filterPredicate,
-                             ValueWithIdSerializer<V> serializer) throws IOException {
+  public FilteredValueFile(Path path,
+                           Predicate<V> filterPredicate,
+                           ValueWithIdSerializer<V> serializer) throws IOException {
     this.filterPredicate = filterPredicate;
-    this.reader = new DualBufferBinaryRecordReader(path, serializer.totalBytesNeeded(), 1024);
+    this.reader = new DualBufferBinaryRecordReader(path, serializer.numBytes(), 1024);
     this.serializer = serializer;
   }
 
@@ -43,11 +43,11 @@ public class FilteredValueStream<V> implements AutoCloseable, Iterator<String> {
   }
 
   @Override
-  public String next() {
+  public Long next() {
     if (!hasStarted) {
       nextMatch();
     }
-    String curr = next.orElseThrow(() -> new NoSuchElementException());
+    Long curr = next.orElseThrow(NoSuchElementException::new);
     nextMatch();
     return curr;
   }
@@ -61,14 +61,14 @@ public class FilteredValueStream<V> implements AutoCloseable, Iterator<String> {
         return;
       }
       next = bytes
-          .map(serializer::convertFromBytes)
+          .map(serializer::fromBytes)
           .filter(var -> filterPredicate.test(var.getValue()))
-          .map(VariableValueIdPair::getEntityId);
+          .map(VariableValueIdPair::getIndex);
     } while (next.isEmpty());
   }
 
   @Override
-  public void close() throws Exception {
+  public void close() {
     reader.close();
   }
 }

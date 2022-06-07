@@ -1,6 +1,5 @@
 package org.veupathdb.service.eda.ss.model.variable.converter;
 
-import org.gusdb.fgputil.FormatUtil;
 import org.veupathdb.service.eda.ss.model.variable.VariableValueIdPair;
 
 import java.nio.ByteBuffer;
@@ -23,7 +22,7 @@ public class ValueWithIdSerializer<T> {
   public byte[] convertToBytes(VariableValueIdPair<T> variable) {
     final int bufferSize = totalBytesNeeded();
     final ByteBuffer byteBuffer = ByteBuffer.allocate(bufferSize);
-    byteBuffer.put(FormatUtil.stringToPaddedBinary(variable.getEntityId(), ID_BYTE_COUNT));
+    byteBuffer.putLong(variable.getIndex());
     byteBuffer.put(_valueConverter.toBytes(variable.getValue()));
     return byteBuffer.array();
   }
@@ -36,13 +35,11 @@ public class ValueWithIdSerializer<T> {
    */
   public VariableValueIdPair<T> convertFromBytes(byte[] bytes) {
     final ByteBuffer byteBuffer = ByteBuffer.wrap(bytes);
-    final byte[] idBytes = new byte[ID_BYTE_COUNT];
     final byte[] varValueBytes = new byte[_valueConverter.numBytes()];
-    byteBuffer.get(idBytes);
-    final String id = FormatUtil.paddedBinaryToString(idBytes);
+    final Long index = byteBuffer.getLong();
     byteBuffer.get(varValueBytes);
     final T varValue = _valueConverter.fromBytes(varValueBytes);
-    return new VariableValueIdPair<>(id, varValue);
+    return new VariableValueIdPair<>(index, varValue);
   }
 
   public int totalBytesNeeded() {

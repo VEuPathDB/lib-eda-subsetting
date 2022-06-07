@@ -9,7 +9,7 @@ public class VariableWithIdSerializerTest {
 
   @Test
   public void testToAndFromBytes() {
-    final VariableValueIdPair<Long> expected = new VariableValueIdPair<>("100", 1000L);
+    final VariableValueIdPair<Long> expected = new VariableValueIdPair<>(100L, 1000L);
     ValueWithIdSerializer<Long> ser = new ValueWithIdSerializer<>(new LongValueConverter());
     byte[] serialized = ser.convertToBytes(expected);
     VariableValueIdPair<Long> deserialized = ser.convertFromBytes(serialized);

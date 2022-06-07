@@ -39,12 +39,12 @@ public class ValuesFileFactoryTest {
     Path varFile = Path.of(directory, TestDataProvider.STUDY_ID, TestDataProvider.ENTITY_ID, TestDataProvider.VARIABLE_ID);
     ValueWithIdSerializer<Long> serializer = new ValueWithIdSerializer<>(new LongValueConverter());
     try (VariableWriter<Long> writer = new VariableWriter<>(new FileOutputStream(varFile.toString()), serializer)) {
-      writer.writeVar(new VariableValueIdPair<>("0",0L));
-      writer.writeVar(new VariableValueIdPair<>("1",1L));
-      writer.writeVar(new VariableValueIdPair<>("2",2L));
-      writer.writeVar(new VariableValueIdPair<>("3",3L));
-      writer.writeVar(new VariableValueIdPair<>("4",4L));
-      writer.writeVar(new VariableValueIdPair<>("5",5L));
+      writer.writeVar(new VariableValueIdPair<>(0L,0L));
+      writer.writeVar(new VariableValueIdPair<>(1L,1L));
+      writer.writeVar(new VariableValueIdPair<>(2L,2L));
+      writer.writeVar(new VariableValueIdPair<>(3L,3L));
+      writer.writeVar(new VariableValueIdPair<>(4L,4L));
+      writer.writeVar(new VariableValueIdPair<>(5L,5L));
     }
   }
 
@@ -64,8 +64,8 @@ public class ValuesFileFactoryTest {
     IntegerVariable intVariable = TestDataProvider.constructIntVariable(entity);
     entity.addVariable(intVariable);
     NumberSetFilter<Long> filter = new NumberSetFilter<>("test", entity, intVariable, List.of(1L, 2L, 3L));
-    Iterator<String> valueFilter = fileFactory.createFromFilter(filter);
-    MatcherAssert.assertThat(() -> valueFilter, Matchers.contains("1", "2", "3"));
+    Iterator<Long> valueFilter = fileFactory.createFromFilter(filter);
+    MatcherAssert.assertThat(() -> valueFilter, Matchers.contains(1L, 2L, 3L));
   }
 
   @Test
@@ -74,7 +74,7 @@ public class ValuesFileFactoryTest {
     IntegerVariable intVariable = TestDataProvider.constructIntVariable(entity);
     entity.addVariable(intVariable);
     NumberRangeFilter<Long> filter = new NumberRangeFilter<>("test", entity, intVariable, 1L, 3L);
-    Iterator<String> valueFilter = fileFactory.createFromFilter(filter);
-    MatcherAssert.assertThat(() -> valueFilter, Matchers.contains("1", "2", "3"));
+    Iterator<Long> valueFilter = fileFactory.createFromFilter(filter);
+    MatcherAssert.assertThat(() -> valueFilter, Matchers.contains(1L, 2L, 3L));
   }
 }

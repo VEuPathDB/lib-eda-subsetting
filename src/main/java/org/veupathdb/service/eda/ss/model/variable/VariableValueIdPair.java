@@ -3,8 +3,8 @@ package org.veupathdb.service.eda.ss.model.variable;
 import java.util.Objects;
 
 public class VariableValueIdPair<T> {
-  public String entityId;
-  public T value;
+  public final String entityId;
+  public final T value;
 
   public VariableValueIdPair(String entityId, T value) {
     this.entityId = entityId;

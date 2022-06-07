@@ -7,7 +7,7 @@ import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
 
 public class DateValueConverterTest {
-  private DateValueConverter serializer = new DateValueConverter();
+  private final DateValueConverter serializer = new DateValueConverter();
 
   @Test
   public void testSerializeAndDeserialize() {

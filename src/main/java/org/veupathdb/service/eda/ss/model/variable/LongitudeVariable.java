@@ -1,8 +1,10 @@
 package org.veupathdb.service.eda.ss.model.variable;
 
 import jakarta.ws.rs.BadRequestException;
+import org.veupathdb.service.eda.ss.model.variable.converter.DoubleValueConverter;
+import org.veupathdb.service.eda.ss.model.variable.converter.ValueConverter;
 
-public class LongitudeVariable extends VariableWithValues {
+public class LongitudeVariable extends VariableWithValues<Double> {
 
   public static class Properties {
 
@@ -19,6 +21,11 @@ public class LongitudeVariable extends VariableWithValues {
     super(varProps, valueProps);
     validateType(VariableType.LONGITUDE);
     _properties = properties;
+  }
+
+  @Override
+  public ValueConverter<Double> getValueConverter() {
+    return new DoubleValueConverter();
   }
 
   public Long getPrecision() {

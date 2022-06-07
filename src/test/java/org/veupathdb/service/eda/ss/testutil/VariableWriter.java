@@ -8,8 +8,8 @@ import java.io.OutputStream;
 
 public class VariableWriter<T> implements AutoCloseable {
 
-  private OutputStream outputStream;
-  private ValueWithIdSerializer<T> variableSerializer;
+  private final OutputStream outputStream;
+  private final ValueWithIdSerializer<T> variableSerializer;
 
   public VariableWriter(final OutputStream outputStream, final ValueWithIdSerializer<T> byteConverter) {
     this.outputStream = outputStream;

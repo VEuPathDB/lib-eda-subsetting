@@ -8,11 +8,11 @@ import java.util.function.Predicate;
 import static org.gusdb.fgputil.FormatUtil.NL;
 import static org.veupathdb.service.eda.ss.model.db.DB.Tables.AttributeValue.Columns.NUMBER_VALUE_COL_NAME;
 
-public class LongitudeRangeFilter extends SingleValueFilter<LongitudeVariable, Double> {
-    private static double EPSILON = .00000001;
+public class LongitudeRangeFilter extends SingleValueFilter<Double, LongitudeVariable> {
+    private static final double EPSILON = .00000001;
 
-    private Number _left;
-    private Number _right;
+    private final Number _left;
+    private final Number _right;
 
     public LongitudeRangeFilter(String appDbSchema, Entity entity, LongitudeVariable variable, Number left, Number right) {
         super(appDbSchema, entity, variable);

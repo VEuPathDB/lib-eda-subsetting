@@ -11,8 +11,8 @@ import java.util.stream.Collectors;
  * This class is used to take the intersection of two or more streams of sequenced subsets.
  */
 public class StreamIntersectMerger<T> implements Iterator<T> {
-  private List<PeekableIterator<T>> streams;
-  private Comparator<T> comparator;
+  private final List<PeekableIterator<T>> streams;
+  private final Comparator<T> comparator;
   private T currentElement;
   private int currentStream;
   private boolean hasStarted;
@@ -61,7 +61,7 @@ public class StreamIntersectMerger<T> implements Iterator<T> {
   }
 
   /**
-   * Consumes all streams until they all point an element that is equal according to the {@link comparator}.
+   * Consumes all streams until they all point an element that is equal according to the {@link Comparator}.
    */
   private void setCurrentElement() {
     T curr = streams.get(currentStream).peek();
@@ -90,7 +90,7 @@ public class StreamIntersectMerger<T> implements Iterator<T> {
    */
   private static class PeekableIterator<T> implements Iterator<T> {
     private T next;
-    private Iterator<T> stream;
+    private final Iterator<T> stream;
 
     public PeekableIterator(Iterator<T> stream) {
       this.stream = stream;

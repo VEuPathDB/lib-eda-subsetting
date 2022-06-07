@@ -4,7 +4,6 @@ import java.io.BufferedWriter;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
-import java.io.Writer;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.*;
@@ -33,7 +32,6 @@ import org.veupathdb.service.eda.ss.model.tabular.TabularHeaderFormat;
 import org.veupathdb.service.eda.ss.model.tabular.TabularReportConfig;
 import org.veupathdb.service.eda.ss.model.db.DB.Tables.Ancestors;
 import org.veupathdb.service.eda.ss.model.filter.Filter;
-import org.veupathdb.service.eda.ss.model.tabular.TabularResponses;
 import org.veupathdb.service.eda.ss.model.tabular.TabularResponses.FormatterFactory;
 import org.veupathdb.service.eda.ss.model.tabular.TabularResponses.ResultConsumer;
 import org.veupathdb.service.eda.ss.model.variable.Variable;
@@ -336,9 +334,9 @@ public class FilteredResultFactory {
     String wideTabularStmt = generateRawWideTabularOuterStmt(wideTabularInnerStmt);
     String subsetSelectClause = generateSubsetSelectClause(prunedEntityTree, outputEntity, false);
 
-    List<String> filterWithClauses = prunedEntityTree.flatten().stream()
-        .map(e -> generateFilterWithClause(appDbSchema, e, filters)).collect(Collectors.toList());
-    List<String> withClausesList = new ArrayList<String>(filterWithClauses);
+    List<String> withClausesList = prunedEntityTree.flatten().stream()
+        .map(e -> generateFilterWithClause(appDbSchema, e, filters))
+        .collect(Collectors.toCollection(ArrayList::new)); // require mutability for adds below
     withClausesList.add(subsetWithClauseName + " AS (" + NL + subsetSelectClause + ")");
     withClausesList.add(wideTabularWithClauseName + " AS (" + NL + wideTabularStmt + NL + ")");
     String withClauses = joinWithClauses(withClausesList);
@@ -664,7 +662,7 @@ order by number_value desc;
    *
    * Using a concrete example: ----H---- | | --P-- E | | | O S T
    *
-   * If O and and T are active (have filters or are the output entity), then we ultimately need this join:
+   * If O and T are active (have filters or are the output entity), then we ultimately need this join:
    * where O.H_id = H.H_id and T.H_id = H.H_id
    *
    * (The graceful implementation below is courtesy of Ryan)

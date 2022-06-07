@@ -2,7 +2,6 @@ package org.veupathdb.service.eda.ss.model.db;
 
 import java.io.BufferedWriter;
 import java.io.FileOutputStream;
-import java.io.IOException;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.util.List;
@@ -49,7 +48,7 @@ public class TallRowsConversionPerformanceTest {
       () -> OUTPUT_FILE_LOCATION == null
 
       // write to nowhere for general performance testing
-      ? new OutputStream() { @Override public void write(int b) throws IOException { } }
+      ? new OutputStream() { @Override public void write(int b) { } }
 
       // use local file if you want to look at the results after the test runs
       : new FileOutputStream(OUTPUT_FILE_LOCATION);

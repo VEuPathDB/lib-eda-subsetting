@@ -96,7 +96,7 @@ public class TallRowConversionUtils {
           // validate row, and add this var to variablesMap if not already there
           validateTallRow(entity, tallRow, errPrefix, tallRowEntityId, variableId, variablesMap);
 
-          // handle multi valued variable.
+          // handle multi-valued variable.
           // (this is a rare case, so only allocate the array if needed)
           if (variablesMap.get(variableId).getIsMultiValued()) {
             multiValues = updateMultiValuesMap(variableId, tallRow, multiValues);

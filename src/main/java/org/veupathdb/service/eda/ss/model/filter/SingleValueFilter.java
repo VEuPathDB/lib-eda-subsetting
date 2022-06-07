@@ -13,9 +13,9 @@ import static org.veupathdb.service.eda.ss.model.db.DB.Tables.AttributeValue.Col
  * @param <T> VariableType that this filter is applied to.
  * @param <U> Encoded representation of variable values.
  */
-public abstract class SingleValueFilter<T extends VariableWithValues, U> extends Filter {
+public abstract class SingleValueFilter<U, T extends VariableWithValues<U>> extends Filter {
 
-  protected T _variable;
+  protected final T _variable;
 
   public SingleValueFilter(String appDbSchema, Entity entity, T variable) {
     super(appDbSchema, entity);

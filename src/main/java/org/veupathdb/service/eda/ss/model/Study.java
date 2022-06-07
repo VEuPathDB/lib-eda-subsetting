@@ -10,39 +10,39 @@ import org.gusdb.fgputil.functional.TreeNode;
 
 public class Study extends StudyOverview {
 
-  private TreeNode<Entity> entityTree;
-  private final Map<String, Entity> entityIdMap;
-  
+  private TreeNode<Entity> _entityTree;
+  private final Map<String, Entity> _entityIdMap;
+
   public Study(StudyOverview overview, TreeNode<Entity> entityTree, Map<String, Entity> entityIdMap) {
-    super(overview.getStudyId(), overview.getInternalAbbrev());
-    this.entityTree = entityTree;
-    this.entityIdMap = entityIdMap;
+    super(overview.getStudyId(), overview.getInternalAbbrev(), overview.isUserStudy());
+    _entityTree = entityTree;
+    _entityIdMap = entityIdMap;
     initEntities(entityTree);
   }
-  
+
   /**
    * Build internal (convenience) state from the raw variables set
    */
   void initEntities(TreeNode<Entity> rootEntityNode) {
-    entityTree = rootEntityNode;
+    _entityTree = rootEntityNode;
     validateEntityTreeIds(rootEntityNode);
-    
+
     // give each entity a set of its ancestor entities.
     populateEntityAncestors(rootEntityNode);
   }
 
   public Optional<Entity> getEntity(String entityId) {
-    return Optional.ofNullable(entityIdMap.get(entityId));
+    return Optional.ofNullable(_entityIdMap.get(entityId));
   }
-   
+
   public TreeNode<Entity> getEntityTree() {
-    return entityTree.clone();
+    return _entityTree.clone();
   }
-  
+
   private static void populateEntityAncestors(TreeNode<Entity> rootEntityNode) {
     populateEntityAncestors(rootEntityNode, new ArrayList<>());
   }
-  
+
   private static void populateEntityAncestors(TreeNode<Entity> entityNode, List<Entity> ancestorEntities) {
     Entity entity = entityNode.getContents();
     entity.setAncestorEntities(ancestorEntities);
@@ -51,7 +51,7 @@ public class Study extends StudyOverview {
       populateEntityAncestors(childNode, new ArrayList<>(ancestorEntities));
     }
   }
-  
+
   /*
    * Confirm that children have non-conflicting entity IDs. Throw runtime exception if invalid
    */
@@ -70,6 +70,4 @@ public class Study extends StudyOverview {
       childEntityIds.add(childEntity.getId());
     }
   }
-
-
 }

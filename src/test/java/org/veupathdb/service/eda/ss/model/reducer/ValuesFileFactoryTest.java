@@ -63,7 +63,7 @@ public class ValuesFileFactoryTest {
     Entity entity = TestDataProvider.constructEntity();
     IntegerVariable intVariable = TestDataProvider.constructIntVariable(entity);
     entity.addVariable(intVariable);
-    NumberSetFilter filter = new NumberSetFilter("test", entity, intVariable, List.of(1L, 2L, 3L));
+    NumberSetFilter<Long> filter = new NumberSetFilter<>("test", entity, intVariable, List.of(1L, 2L, 3L));
     Iterator<String> valueFilter = fileFactory.createFromFilter(filter);
     MatcherAssert.assertThat(() -> valueFilter, Matchers.contains("1", "2", "3"));
   }

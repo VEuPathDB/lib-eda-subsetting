@@ -9,25 +9,26 @@ import java.io.IOException;
 import java.nio.file.Path;
 
 public class ValuesFileFactory {
+
   private final Path entityRepositoryDir;
 
   public ValuesFileFactory(Path entityRepositoryDir) {
     this.entityRepositoryDir = entityRepositoryDir;
   }
 
-  public <U, V extends VariableWithValues> FilteredValueStream<U> createFromFilter(
-      SingleValueFilter<V, U> filter) throws IOException {
+  public <U, V extends VariableWithValues<U>> FilteredValueStream<U> createFromFilter(
+      SingleValueFilter<U, V> filter) throws IOException {
     /**
      * TODO Read metadata from files here for Long vs. Integer or String bytes length?
      */
-    ValueConverter<U> serializer = filter.getVariable().getType().getValueConverter();
+    ValueConverter<U> serializer = filter.getVariable().getValueConverter();
     return new FilteredValueStream<>(
         constructPath(filter),
         filter.getPredicate(),
         new ValueWithIdSerializer<>(serializer));
   }
 
-  private Path constructPath(SingleValueFilter filter) {
+  private Path constructPath(SingleValueFilter<?,?> filter) {
     // TODO: Study ID instead of StudyAbbrev?
     return Path.of(entityRepositoryDir.toString(),
         filter.getEntity().getStudyAbbrev(),

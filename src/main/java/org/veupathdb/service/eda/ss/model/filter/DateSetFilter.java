@@ -11,9 +11,9 @@ import org.veupathdb.service.eda.ss.model.variable.DateVariable;
 import static org.gusdb.fgputil.FormatUtil.NL;
 import static org.veupathdb.service.eda.ss.model.db.DB.Tables.AttributeValue.Columns.DATE_VALUE_COL_NAME;
 
-public class DateSetFilter extends SingleValueFilter<DateVariable, LocalDateTime> {
+public class DateSetFilter extends SingleValueFilter<LocalDateTime, DateVariable> {
 
-  private List<LocalDateTime> _dateSet;
+  private final List<LocalDateTime> _dateSet;
 
   public DateSetFilter(String appDbSchema, Entity entity, DateVariable variable, List<LocalDateTime> dateSet) {
     super(appDbSchema, entity, variable);

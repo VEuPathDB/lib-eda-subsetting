@@ -23,8 +23,7 @@ import org.veupathdb.service.eda.ss.model.variable.VariableWithValues;
 import org.veupathdb.service.eda.ss.test.StubDb;
 
 import static org.junit.jupiter.api.Assertions.*;
-import static org.veupathdb.service.eda.ss.test.StubDb.APP_DB_SCHEMA;
-import static org.veupathdb.service.eda.ss.test.StubDb.ASSAY_CONVERSION_FLAG;
+import static org.veupathdb.service.eda.ss.test.StubDb.*;
 
 public class LoadStudyTest {
   
@@ -124,7 +123,7 @@ public class LoadStudyTest {
   @Test
   @DisplayName("Load study test") 
   void testLoadStudy() {
-    Study study = new StudyFactory(datasource, APP_DB_SCHEMA, ASSAY_CONVERSION_FLAG).loadStudy(STUDY_ID);
+    Study study = new StudyFactory(datasource, APP_DB_SCHEMA, USER_STUDIES_FLAG, ASSAY_CONVERSION_FLAG).getStudyById(STUDY_ID);
     assertNotNull(study);
   }
 }

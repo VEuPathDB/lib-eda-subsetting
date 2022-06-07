@@ -4,7 +4,7 @@ public enum TabularHeaderFormat {
   STANDARD("standard"),
   DISPLAY("display");
 
-  private String name;
+  private final String name;
 
   TabularHeaderFormat(String name) {
     this.name = name;

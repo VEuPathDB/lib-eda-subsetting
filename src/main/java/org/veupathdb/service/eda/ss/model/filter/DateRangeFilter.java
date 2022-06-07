@@ -5,16 +5,15 @@ import java.time.format.DateTimeFormatter;
 import java.util.function.Predicate;
 
 import org.veupathdb.service.eda.ss.model.Entity;
-import org.veupathdb.service.eda.ss.model.db.DB;
 import org.veupathdb.service.eda.ss.model.variable.DateVariable;
 
 import static org.gusdb.fgputil.FormatUtil.NL;
 import static org.veupathdb.service.eda.ss.model.db.DB.Tables.AttributeValue.Columns.DATE_VALUE_COL_NAME;
 
-public class DateRangeFilter extends SingleValueFilter<DateVariable, LocalDateTime> {
+public class DateRangeFilter extends SingleValueFilter<LocalDateTime, DateVariable> {
 
-  private LocalDateTime _min;
-  private LocalDateTime _max;
+  private final LocalDateTime _min;
+  private final LocalDateTime _max;
   
   public DateRangeFilter(String appDbSchema, Entity entity, DateVariable variable, LocalDateTime min, LocalDateTime max) {
     super(appDbSchema, entity, variable);

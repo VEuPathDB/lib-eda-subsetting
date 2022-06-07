@@ -14,30 +14,30 @@ public class StreamIntersectMergerTest {
 
   @Nested
   public class WhenInputIsSorted {
-    private List<Integer> oneToOneHundred = IntStream.rangeClosed(1, 100)
-        .mapToObj(Integer::valueOf)
+    private final List<Integer> oneToOneHundred = IntStream.rangeClosed(1, 100)
+        .boxed()
         .collect(Collectors.toList());
-    private List<Integer> evenNumbers = IntStream.rangeClosed(1, 100)
+    private final List<Integer> evenNumbers = IntStream.rangeClosed(1, 100)
         .filter(i -> i % 2 == 0)
-        .mapToObj(Integer::valueOf)
+        .boxed()
         .collect(Collectors.toList());
-    private List<Integer> oddNumbers = IntStream.rangeClosed(1, 100)
+    private final List<Integer> oddNumbers = IntStream.rangeClosed(1, 100)
         .filter(i -> i % 2 != 0)
-        .mapToObj(Integer::valueOf)
+        .boxed()
         .collect(Collectors.toList());
-    private List<Integer> threeFactors = IntStream.rangeClosed(1, 100)
+    private final List<Integer> threeFactors = IntStream.rangeClosed(1, 100)
         .filter(i -> i % 3 == 0)
-        .mapToObj(Integer::valueOf)
+        .boxed()
         .collect(Collectors.toList());
-    private List<Integer> fiveFactors = IntStream.rangeClosed(1, 100)
+    private final List<Integer> fiveFactors = IntStream.rangeClosed(1, 100)
         .filter(i -> i % 5 == 0)
-        .mapToObj(Integer::valueOf)
+        .boxed()
         .collect(Collectors.toList());
 
     @Test
     public void testTwoEqualStreams() {
-      final Iterator<Integer> stream1 = new ArrayList(oneToOneHundred).iterator();
-      final Iterator<Integer> stream2 = new ArrayList(oneToOneHundred).iterator();
+      final Iterator<Integer> stream1 = new ArrayList<>(oneToOneHundred).iterator();
+      final Iterator<Integer> stream2 = new ArrayList<>(oneToOneHundred).iterator();
       StreamIntersectMerger<Integer> merger = new StreamIntersectMerger<>(List.of(stream1, stream2), Comparator.naturalOrder());
       Iterable<Integer> iterable = () -> merger;
       MatcherAssert.assertThat(iterable, Matchers.iterableWithSize(100));
@@ -45,8 +45,8 @@ public class StreamIntersectMergerTest {
 
     @Test
     public void testTwoDistinctStreams() {
-      final Iterator<Integer> stream1 = new ArrayList(evenNumbers).iterator();
-      final Iterator<Integer> stream2 = new ArrayList(oddNumbers).iterator();
+      final Iterator<Integer> stream1 = new ArrayList<>(evenNumbers).iterator();
+      final Iterator<Integer> stream2 = new ArrayList<>(oddNumbers).iterator();
       StreamIntersectMerger<Integer> merger = new StreamIntersectMerger<>(List.of(stream1, stream2), Comparator.naturalOrder());
       Iterable<Integer> result = () -> merger;
       MatcherAssert.assertThat(result, Matchers.emptyIterable());
@@ -54,9 +54,9 @@ public class StreamIntersectMergerTest {
 
     @Test
     public void testStreamsSomeOverlap() {
-      final Iterator<Integer> stream1 = new ArrayList(evenNumbers).iterator();
-      final Iterator<Integer> stream2 = new ArrayList(threeFactors).iterator();
-      final Iterator<Integer> stream3 = new ArrayList(fiveFactors).iterator();
+      final Iterator<Integer> stream1 = new ArrayList<>(evenNumbers).iterator();
+      final Iterator<Integer> stream2 = new ArrayList<>(threeFactors).iterator();
+      final Iterator<Integer> stream3 = new ArrayList<>(fiveFactors).iterator();
       StreamIntersectMerger<Integer> merger = new StreamIntersectMerger<>(List.of(stream1, stream2, stream3),
           Comparator.naturalOrder());
       Iterable<Integer> result = () -> merger;

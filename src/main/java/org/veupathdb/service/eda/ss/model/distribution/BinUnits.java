@@ -15,7 +15,7 @@ public enum BinUnits {
   @JsonProperty("year")
   YEAR("year");
 
-  private String name;
+  private final String name;
 
   BinUnits(String name) {
     this.name = name;

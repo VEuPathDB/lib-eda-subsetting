@@ -14,7 +14,7 @@ import org.veupathdb.service.eda.ss.model.variable.VariableWithValues;
 
 import static org.veupathdb.service.eda.ss.model.db.DB.Tables.Collection.Columns.NUM_MEMBERS;
 
-public abstract class VarCollection {
+public abstract class VarCollection<T, S extends VariableWithValues<T>> {
 
   private static final Logger LOG = LogManager.getLogger(VarCollection.class);
 
@@ -39,7 +39,7 @@ public abstract class VarCollection {
     }
   }
 
-  protected abstract void assignDistributionDefaults(List<VariableWithValues> memberVars);
+  protected abstract void assignDistributionDefaults(List<S> memberVars);
 
   private final Properties _properties;
   private final List<String> _memberVariableIds = new ArrayList<>();
@@ -73,7 +73,7 @@ public abstract class VarCollection {
     }
 
     // loop through vars for checks and to collect information
-    List<VariableWithValues> valueVars = new ArrayList<>();
+    List<S> valueVars = new ArrayList<>();
     boolean useVocabulary = true;
     Set<String> derivedVocabulary = new HashSet<>();
     for (String varId : _memberVariableIds) {
@@ -87,14 +87,14 @@ public abstract class VarCollection {
 
       // make sure var is a value var and has the same type/shape as the collection
       if (!(var.get().hasValues() &&
-            ((VariableWithValues)var.get()).getType().isSameTypeAs(_properties.type) &&
-            ((VariableWithValues)var.get()).getDataShape() == _properties.dataShape)) {
+            ((VariableWithValues<?>)var.get()).getType().isSameTypeAs(_properties.type) &&
+            ((VariableWithValues<?>)var.get()).getDataShape() == _properties.dataShape)) {
         throw new RuntimeException("Variable " + varId + " must have values and be the same " +
             "data type and shape as its parent collection " + _properties.id);
       }
 
       // add to list for bin values assignment
-      VariableWithValues valueVar = (VariableWithValues)var.get();
+      S valueVar = (S)var.get(); // need unchecked cast since we are looking up var by name, then checking compatibility
       valueVars.add(valueVar);
 
       // collect the union of the vocabularies for the collection vocabulary

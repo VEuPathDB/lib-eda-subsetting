@@ -22,7 +22,6 @@ import org.veupathdb.service.eda.ss.model.variable.VariableWithValues;
 import org.veupathdb.service.eda.ss.model.variable.VariablesCategory;
 
 import static org.gusdb.fgputil.FormatUtil.NL;
-import static org.gusdb.fgputil.functional.Functions.doThrow;
 import static org.veupathdb.service.eda.ss.model.db.DB.Tables.AttributeGraph.Columns.*;
 import static org.veupathdb.service.eda.ss.model.db.ResultSetUtils.getDoubleFromString;
 import static org.veupathdb.service.eda.ss.model.db.ResultSetUtils.getIntegerFromString;

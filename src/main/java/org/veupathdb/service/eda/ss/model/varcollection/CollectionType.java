@@ -12,7 +12,7 @@ public enum CollectionType {
   @JsonProperty("integer")
   INTEGER("integer");
 
-  private String name;
+  private final String name;
 
   CollectionType(String name) {
     this.name = name;

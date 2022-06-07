@@ -13,7 +13,7 @@ public abstract class Filter {
   protected final String _appDbSchema;
 
   public Filter(String appDbSchema, Entity entity) {
-    Objects.nonNull(entity);
+    Objects.requireNonNull(entity);
     _entity = entity;
     _appDbSchema = appDbSchema;
   }

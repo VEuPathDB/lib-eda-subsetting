@@ -20,9 +20,9 @@ import java.util.function.Predicate;
  * @param <V> type of the value
  */
 public class FilteredValueStream<V> implements AutoCloseable, Iterator<String> {
-  private Predicate<V> filterPredicate;
-  private DualBufferBinaryRecordReader reader;
-  private ValueWithIdSerializer<V> serializer;
+  private final Predicate<V> filterPredicate;
+  private final DualBufferBinaryRecordReader reader;
+  private final ValueWithIdSerializer<V> serializer;
   private Optional<String> next;
   private boolean hasStarted;
 

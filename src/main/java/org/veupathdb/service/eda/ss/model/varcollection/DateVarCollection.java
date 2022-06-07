@@ -1,13 +1,13 @@
 package org.veupathdb.service.eda.ss.model.varcollection;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 import org.veupathdb.service.eda.ss.model.distribution.BinUnits;
 import org.veupathdb.service.eda.ss.model.distribution.DateDistributionConfig;
 import org.veupathdb.service.eda.ss.model.variable.DateVariable;
-import org.veupathdb.service.eda.ss.model.variable.VariableWithValues;
 
-public class DateVarCollection extends VarCollection {
+public class DateVarCollection extends VarCollection<LocalDateTime, DateVariable> {
 
   private final DateDistributionConfig _distributionConfig;
 
@@ -21,12 +21,12 @@ public class DateVarCollection extends VarCollection {
   }
 
   @Override
-  protected void assignDistributionDefaults(List<VariableWithValues> memberVars) {
+  protected void assignDistributionDefaults(List<DateVariable> memberVars) {
     int maxBinSize = 1; // find the biggest size
     int maxBinUnitsOrdinal = 0; // find the biggest units
-    for (VariableWithValues var : memberVars) {
+    for (DateVariable var : memberVars) {
       // superclass promises to only pass the correct type here
-      DateDistributionConfig varConfig = ((DateVariable)var).getDistributionConfig();
+      DateDistributionConfig varConfig = var.getDistributionConfig();
       if (varConfig.binSize > maxBinSize) {
         maxBinSize = varConfig.binSize;
       }

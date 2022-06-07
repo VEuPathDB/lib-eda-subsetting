@@ -16,7 +16,7 @@ import org.veupathdb.service.eda.ss.model.filter.NumberRangeFilter;
 import org.veupathdb.service.eda.ss.model.filter.NumberSetFilter;
 import org.veupathdb.service.eda.ss.model.filter.StringSetFilter;
 import org.veupathdb.service.eda.ss.model.variable.DateVariable;
-import org.veupathdb.service.eda.ss.model.variable.NumberVariable;
+import org.veupathdb.service.eda.ss.model.variable.FloatingPointVariable;
 import org.veupathdb.service.eda.ss.model.variable.StringVariable;
 
 import static org.veupathdb.service.eda.ss.test.StubDb.APP_DB_SCHEMA;
@@ -24,16 +24,16 @@ import static org.veupathdb.service.eda.ss.test.StubDb.APP_DB_SCHEMA;
 public class MockFilters {
 
   // filters using data from the test db
-  public Filter houseCityFilter;
-  public Filter houseRoofFilter;
+  public final Filter houseCityFilter;
+  public final Filter houseRoofFilter;
   public Filter obsWeightFilter;
-  public Filter partHairFilter;
-  public Filter obsFavNumberFilter; // categorical numeric
-  public Filter obsBirthDateFilter;  // continuous date
-  public Filter obsVisitDateFilter;  // categorical numeric
-  public Filter obsFavNewYearsFilter;
-  public Filter obsMoodFilter; // string
-  public Filter houseObsWaterSupplyFilter; // string
+  public final Filter partHairFilter;
+  public final Filter obsFavNumberFilter; // categorical numeric
+  public final Filter obsBirthDateFilter;  // continuous date
+  public final Filter obsVisitDateFilter;  // categorical numeric
+  public final Filter obsFavNewYearsFilter;
+  public final Filter obsMoodFilter; // string
+  public final Filter houseObsWaterSupplyFilter; // string
 
   public MockFilters(Study study) {
 
@@ -47,18 +47,18 @@ public class MockFilters {
     StringVariable watersupply = StringVariable.assertType(householdObs.getVariable("var_ho1").orElseThrow());
     StringVariable haircolor = StringVariable.assertType(participant.getVariable("var_p4").orElseThrow());
     StringVariable mood = StringVariable.assertType(observation.getVariable("var_o5").orElseThrow());
-    NumberVariable weight = NumberVariable.assertType(observation.getVariable("var_o1").orElseThrow());
-    NumberVariable favNumber = NumberVariable.assertType(observation.getVariable("var_o2").orElseThrow());
+    FloatingPointVariable weight = FloatingPointVariable.assertType(observation.getVariable("var_o1").orElseThrow()).orElseThrow();
+    FloatingPointVariable favNumber = FloatingPointVariable.assertType(observation.getVariable("var_o2").orElseThrow()).orElseThrow();
     DateVariable startDate = DateVariable.assertType(observation.getVariable("var_o3").orElseThrow());
     DateVariable visitDate = DateVariable.assertType(observation.getVariable("var_o4").orElseThrow());
 
-    List<String> haircolors = Arrays.asList("blond");
+    List<String> haircolors = List.of("blond");
     partHairFilter = new StringSetFilter(APP_DB_SCHEMA, participant, haircolor, haircolors);
 
-    obsWeightFilter = new NumberRangeFilter(APP_DB_SCHEMA, observation, weight, 10, 20);
+    obsWeightFilter = new NumberRangeFilter<>(APP_DB_SCHEMA, observation, weight, 10, 20);
 
     List<Number> favNums = Arrays.asList(new Number[]{5,7,9});
-    obsFavNumberFilter = new NumberSetFilter(APP_DB_SCHEMA, observation, favNumber, favNums);
+    obsFavNumberFilter = new NumberSetFilter<Double>(APP_DB_SCHEMA, observation, favNumber, favNums);
 
     obsBirthDateFilter = new DateRangeFilter(APP_DB_SCHEMA, observation, startDate,
         LocalDateTime.of(2019, Month.MARCH, 21, 0, 0),
@@ -74,7 +74,7 @@ public class MockFilters {
     List<String> moods = Arrays.asList("happy", "jolly", "giddy");
     obsMoodFilter = new StringSetFilter(APP_DB_SCHEMA, observation, mood, moods);
 
-    obsWeightFilter = new NumberRangeFilter(APP_DB_SCHEMA, observation, weight, 10, 20);
+    obsWeightFilter = new NumberRangeFilter<>(APP_DB_SCHEMA, observation, weight, 10, 20);
 
     List<String> cities = Collections.singletonList("Boston");
     houseCityFilter = new StringSetFilter(APP_DB_SCHEMA, household, city, cities);

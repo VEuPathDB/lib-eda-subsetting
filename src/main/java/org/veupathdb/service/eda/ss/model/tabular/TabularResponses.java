@@ -22,7 +22,7 @@ public class TabularResponses {
     private final FormatterFactory _formatter;
     private final String _mediaType;
 
-    private Type(FormatterFactory formatter, String mediaType) {
+    Type(FormatterFactory formatter, String mediaType) {
       _formatter = formatter;
       _mediaType = mediaType;
     }

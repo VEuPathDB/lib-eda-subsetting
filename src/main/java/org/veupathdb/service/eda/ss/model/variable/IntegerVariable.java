@@ -2,6 +2,10 @@ package org.veupathdb.service.eda.ss.model.variable;
 
 import jakarta.ws.rs.BadRequestException;
 import org.veupathdb.service.eda.ss.model.distribution.NumberDistributionConfig;
+import org.veupathdb.service.eda.ss.model.variable.converter.LongValueConverter;
+import org.veupathdb.service.eda.ss.model.variable.converter.ValueConverter;
+
+import java.util.Optional;
 
 public class IntegerVariable extends NumberVariable<Long> {
 
@@ -33,17 +37,30 @@ public class IntegerVariable extends NumberVariable<Long> {
   }
 
   @Override
+  public ValueConverter<Long> getValueConverter() {
+    return new LongValueConverter();
+  }
+
+  @Override
   public String getUnits() {
     return _properties.units;
   }
 
   @Override
-  public Long validateBinWidth(Number binWidth) {
-    long intValue = binWidth.longValue();
-    if (intValue <= 0) {
-      throw new BadRequestException("binWidth must be a positive integer for integer variable distributions");
-    }
-    return intValue;
+  public Long toNumberSubtype(Number number) {
+    return number.longValue();
   }
 
+  @Override
+  public Long validateBinWidth(Number binWidth) {
+    long longValue = toNumberSubtype(binWidth);
+    if (longValue <= 0) {
+      throw new BadRequestException("binWidth must be a positive integer for integer variable distributions");
+    }
+    return longValue;
+  }
+
+  public static Optional<IntegerVariable> assertType(Variable variable) {
+    return Optional.ofNullable(variable instanceof IntegerVariable ? (IntegerVariable)variable : null);
+  }
 }

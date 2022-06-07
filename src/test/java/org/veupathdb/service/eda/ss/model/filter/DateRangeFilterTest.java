@@ -27,7 +27,7 @@ public class DateRangeFilterTest {
   public void testStartDateInclusive() {
     final LocalDateTime dateTime = LocalDateTime.now();
     final LocalDateTime min = dateTime;
-    final LocalDateTime max = dateTime.plus(1, ChronoUnit.HOURS);;
+    final LocalDateTime max = dateTime.plus(1, ChronoUnit.HOURS);
     final Entity entity = TestDataProvider.constructEntity();
     final DateVariable dateVar = TestDataProvider.constructDateVariable(entity);
     entity.addVariable(dateVar);

@@ -2,6 +2,10 @@ package org.veupathdb.service.eda.ss.model.variable;
 
 import jakarta.ws.rs.BadRequestException;
 import org.veupathdb.service.eda.ss.model.distribution.NumberDistributionConfig;
+import org.veupathdb.service.eda.ss.model.variable.converter.DoubleValueConverter;
+import org.veupathdb.service.eda.ss.model.variable.converter.ValueConverter;
+
+import java.util.Optional;
 
 public class FloatingPointVariable extends NumberVariable<Double> {
 
@@ -37,6 +41,11 @@ public class FloatingPointVariable extends NumberVariable<Double> {
   }
 
   @Override
+  public ValueConverter<Double> getValueConverter() {
+    return new DoubleValueConverter();
+  }
+
+  @Override
   public String getUnits() {
     return _properties.units;
   }
@@ -46,11 +55,20 @@ public class FloatingPointVariable extends NumberVariable<Double> {
   }
 
   @Override
+  public Double toNumberSubtype(Number number) {
+    return number.doubleValue();
+  }
+
+  @Override
   public Double validateBinWidth(Number binWidth) {
-    Double doubleValue = binWidth.doubleValue();
+    double doubleValue = toNumberSubtype(binWidth);
     if (doubleValue <= 0) {
       throw new BadRequestException("binWidth must be a positive number for number variable distributions");
     }
     return doubleValue;
+  }
+
+  public static Optional<FloatingPointVariable> assertType(Variable variable) {
+    return Optional.ofNullable(variable instanceof FloatingPointVariable ? (FloatingPointVariable)variable : null);
   }
 }

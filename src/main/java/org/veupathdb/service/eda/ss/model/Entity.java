@@ -124,7 +124,7 @@ public class Entity {
   }
 
   /**
-   * @return primary key column names of this entities ancestors,
+   * @return primary key column names of this entity's ancestors,
    * ordered by parent first, then grandparent, etc. until the root entity
    */
   public List<String> getAncestorPkColNames() {

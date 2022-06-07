@@ -17,7 +17,7 @@ import java.util.*;
 public class MockModel {
 
   // reusable study objects
-  public Study study;
+  public final Study study;
   
   public Entity household;
   public Entity householdObs;
@@ -41,7 +41,7 @@ public class MockModel {
   
   public MockModel() {
     createTestEntities();
-    StudyOverview overview = new StudyOverview("GEMS", "ds2324");
+    StudyOverview overview = new StudyOverview("GEMS", "ds2324", false);
     study = new Study(overview, constructEntityTree(), createIdMap());
     constructVariables();
   }

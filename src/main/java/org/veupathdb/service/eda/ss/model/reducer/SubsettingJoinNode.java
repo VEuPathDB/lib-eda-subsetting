@@ -8,8 +8,9 @@ import java.util.Iterator;
 import java.util.List;
 
 public class SubsettingJoinNode {
+
   private List<SubsettingJoinNode> children; // Ignore for now
-  private List<FilteredValueStream> filters;
+  private final List<FilteredValueStream> filters;
   private Entity entity;
 
   public SubsettingJoinNode(List<FilteredValueStream> filters) {

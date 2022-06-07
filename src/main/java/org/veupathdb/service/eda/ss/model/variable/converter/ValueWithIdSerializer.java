@@ -6,7 +6,7 @@ import org.veupathdb.service.eda.ss.model.variable.VariableValueIdPair;
 import java.nio.ByteBuffer;
 
 public class ValueWithIdSerializer<T> {
-  private static int ID_BYTE_COUNT = 20;
+  private static final int ID_BYTE_COUNT = 20;
 
   private final ValueConverter<T> _valueConverter;
 

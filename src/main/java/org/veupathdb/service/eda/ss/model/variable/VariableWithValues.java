@@ -1,8 +1,10 @@
 package org.veupathdb.service.eda.ss.model.variable;
 
+import org.veupathdb.service.eda.ss.model.variable.converter.ValueConverter;
+
 import java.util.List;
 
-public abstract class VariableWithValues extends Variable {
+public abstract class VariableWithValues<T> extends Variable {
 
   public static class Properties {
 
@@ -32,6 +34,8 @@ public abstract class VariableWithValues extends Variable {
       this.imputeZero = imputeZero;
     }
   }
+
+  public abstract ValueConverter<T> getValueConverter();
 
   private final Properties _properties;
 

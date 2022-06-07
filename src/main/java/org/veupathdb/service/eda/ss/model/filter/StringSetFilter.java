@@ -9,7 +9,7 @@ import org.veupathdb.service.eda.ss.model.variable.StringVariable;
 import static org.gusdb.fgputil.FormatUtil.NL;
 import static org.veupathdb.service.eda.ss.model.db.DB.Tables.AttributeValue.Columns.STRING_VALUE_COL_NAME;
 
-public class StringSetFilter extends SingleValueFilter<StringVariable, String> {
+public class StringSetFilter extends SingleValueFilter<String, StringVariable> {
 
   private final List<String> _stringSet;
   

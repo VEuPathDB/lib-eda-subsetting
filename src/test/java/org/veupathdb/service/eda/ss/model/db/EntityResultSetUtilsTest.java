@@ -1,15 +1,13 @@
 package org.veupathdb.service.eda.ss.model.db;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.veupathdb.service.eda.ss.test.StubDb.*;
+
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import javax.sql.DataSource;
-
-import static org.veupathdb.service.eda.ss.test.StubDb.APP_DB_SCHEMA;
-import static org.veupathdb.service.eda.ss.test.StubDb.ASSAY_CONVERSION_FLAG;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -22,13 +20,11 @@ import org.veupathdb.service.eda.ss.test.StubDb;
 public class EntityResultSetUtilsTest {
 
   private static MockModel _model;
-  private static DataSource _dataSource;
 
   @BeforeAll
   public static void setUp() {
     _model = new MockModel();
-    _dataSource = StubDb.getDataSource();
-    Study study = new StudyFactory(_dataSource, APP_DB_SCHEMA, ASSAY_CONVERSION_FLAG).loadStudy(LoadStudyTest.STUDY_ID);
+    Study study = new StudyFactory(StubDb.getDataSource(), APP_DB_SCHEMA, USER_STUDIES_FLAG, ASSAY_CONVERSION_FLAG).getStudyById(LoadStudyTest.STUDY_ID);
     new MockFilters(study);
   }
   
@@ -50,7 +46,6 @@ public class EntityResultSetUtilsTest {
     
     Map<String, String> wideRow = new HashMap<String, String>();
     wideRow.put(_model.mood.getId(), "happy");
-    _model.participant.getId();
     
     Map<String, VariableWithValues> variablesMap = new HashMap<String, VariableWithValues>();
     variablesMap.put(_model.mood.getId(), _model.mood);

@@ -5,10 +5,12 @@ public class StudyOverview {
 
   private final String id;
   private final String internalAbbrev;
+  private final boolean isUserStudy;
 
-  public StudyOverview(String id, String internalAbbrev) {
+  public StudyOverview(String id, String internalAbbrev, boolean isUserStudy) {
     this.id = id;
     this.internalAbbrev = internalAbbrev;
+    this.isUserStudy = isUserStudy;
   }
 
   public String getStudyId() {
@@ -17,5 +19,9 @@ public class StudyOverview {
 
   public String getInternalAbbrev() {
     return internalAbbrev;
+  }
+
+  public boolean isUserStudy() {
+    return isUserStudy;
   }
 }

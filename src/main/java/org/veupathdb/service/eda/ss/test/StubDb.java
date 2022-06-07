@@ -20,6 +20,9 @@ public class StubDb {
   // no tests use collections
   public static final boolean ASSAY_CONVERSION_FLAG = false;
 
+  // tests run against non-user studies
+  public static final boolean USER_STUDIES_FLAG = false;
+
   private static DataSource _ds;
 
   public static DataSource getDataSource() {

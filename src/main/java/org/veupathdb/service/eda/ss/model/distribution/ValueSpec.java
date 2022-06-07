@@ -9,7 +9,7 @@ public enum ValueSpec {
   @JsonProperty("proportion")
   PROPORTION("proportion");
 
-  private String name;
+  private final String name;
 
   ValueSpec(String name) {
     this.name = name;

@@ -50,9 +50,9 @@ public class JoinNodePerformanceTest {
   }
 
   @Test
-  public void run() throws Exception{
+  public void run() throws Exception {
     List<FilteredValueFile<?>> filteredValueFiles = new ArrayList<>();
-    for (Path path: files) {
+    for (Path path : files) {
       filteredValueFiles.add(
           new FilteredValueFile<Long>(path, i -> true, new ValueWithIdSerializer(new LongValueConverter())));
     }

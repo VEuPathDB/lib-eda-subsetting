@@ -26,35 +26,6 @@ val test by tasks.getting(Test::class) {
   useJUnitPlatform {
     excludeTags = setOf("Performance")
   }
-  testLogging {
-    // set options for log level LIFECYCLE
-    events = setOf(
-      org.gradle.api.tasks.testing.logging.TestLogEvent.FAILED,
-      org.gradle.api.tasks.testing.logging.TestLogEvent.PASSED,
-      org.gradle.api.tasks.testing.logging.TestLogEvent.SKIPPED,
-      org.gradle.api.tasks.testing.logging.TestLogEvent.STANDARD_OUT
-    )
-    exceptionFormat = org.gradle.api.tasks.testing.logging.TestExceptionFormat.FULL
-    showExceptions = true
-    showCauses =  true
-    showStackTraces = true
-
-    // set options for log level DEBUG and INFO
-    debug {
-      events = setOf(
-        org.gradle.api.tasks.testing.logging.TestLogEvent.STARTED,
-        org.gradle.api.tasks.testing.logging.TestLogEvent.FAILED,
-        org.gradle.api.tasks.testing.logging.TestLogEvent.PASSED,
-        org.gradle.api.tasks.testing.logging.TestLogEvent.SKIPPED,
-        org.gradle.api.tasks.testing.logging.TestLogEvent.STANDARD_ERROR,
-        org.gradle.api.tasks.testing.logging.TestLogEvent.STANDARD_OUT
-      )
-      exceptionFormat = org.gradle.api.tasks.testing.logging.TestExceptionFormat.FULL
-    }
-    info.events = debug.events
-    info.exceptionFormat = debug.exceptionFormat
-
-  }
 }
 
 val perfTest = task<Test>("perfTest") {
@@ -63,35 +34,6 @@ val perfTest = task<Test>("perfTest") {
   }
 
   outputs.upToDateWhen { false } // Never cache results, we always want to actually run the perf test.
-
-  testLogging {
-    // set options for log level LIFECYCLE
-    events = setOf(
-      org.gradle.api.tasks.testing.logging.TestLogEvent.FAILED,
-      org.gradle.api.tasks.testing.logging.TestLogEvent.PASSED,
-      org.gradle.api.tasks.testing.logging.TestLogEvent.SKIPPED,
-      org.gradle.api.tasks.testing.logging.TestLogEvent.STANDARD_OUT
-    )
-    exceptionFormat = org.gradle.api.tasks.testing.logging.TestExceptionFormat.FULL
-    showExceptions = true
-    showCauses =  true
-    showStackTraces = true
-
-    // set options for log level DEBUG and INFO
-    debug {
-      events = setOf(
-        org.gradle.api.tasks.testing.logging.TestLogEvent.STARTED,
-        org.gradle.api.tasks.testing.logging.TestLogEvent.FAILED,
-        org.gradle.api.tasks.testing.logging.TestLogEvent.PASSED,
-        org.gradle.api.tasks.testing.logging.TestLogEvent.SKIPPED,
-        org.gradle.api.tasks.testing.logging.TestLogEvent.STANDARD_ERROR,
-        org.gradle.api.tasks.testing.logging.TestLogEvent.STANDARD_OUT
-      )
-      exceptionFormat = org.gradle.api.tasks.testing.logging.TestExceptionFormat.FULL
-    }
-    info.events = debug.events
-    info.exceptionFormat = debug.exceptionFormat
-  }
 
   description = "Runs integration tests."
   group = "verification"

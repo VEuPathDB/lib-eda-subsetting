@@ -7,6 +7,7 @@ import org.gusdb.fgputil.functional.TreeNode;
 import org.veupathdb.service.eda.ss.model.Entity;
 import org.veupathdb.service.eda.ss.model.Study;
 import org.veupathdb.service.eda.ss.model.StudyOverview;
+import org.veupathdb.service.eda.ss.model.StudyOverview.StudySourceType;
 
 import javax.sql.DataSource;
 import java.util.ArrayList;
@@ -23,13 +24,13 @@ public class StudyFactory implements StudyProvider {
 
   private final DataSource _dataSource;
   private final String _dataSchema;
-  private final boolean _isUserStudies;
+  private final StudySourceType _sourceType;
   private final boolean _convertAssaysFlag;
 
-  public StudyFactory(DataSource dataSource, String dataSchema, boolean isUserStudies, boolean convertAssaysFlag) {
+  public StudyFactory(DataSource dataSource, String dataSchema, StudySourceType sourceType, boolean convertAssaysFlag) {
     _dataSource = dataSource;
     _dataSchema = dataSchema;
-    _isUserStudies = isUserStudies;
+    _sourceType = sourceType;
     _convertAssaysFlag = convertAssaysFlag;
   }
 
@@ -46,7 +47,7 @@ public class StudyFactory implements StudyProvider {
       while (rs.next()) {
         String id = rs.getString(1);
         String abbrev = rs.getString(2);
-        StudyOverview study = new StudyOverview(id, abbrev, _isUserStudies);
+        StudyOverview study = new StudyOverview(id, abbrev, _sourceType);
         studyOverviews.add(study);
       }
       return studyOverviews;

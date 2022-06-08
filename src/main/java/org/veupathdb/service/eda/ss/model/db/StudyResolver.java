@@ -1,6 +1,7 @@
 package org.veupathdb.service.eda.ss.model.db;
 
 import org.gusdb.fgputil.ListBuilder;
+import org.gusdb.fgputil.functional.Functions;
 import org.veupathdb.service.eda.ss.model.Study;
 import org.veupathdb.service.eda.ss.model.StudyOverview;
 
@@ -36,9 +37,13 @@ public class StudyResolver implements StudyProvider {
     return getStudyOverviews().stream()
         .filter(overview -> overview.getStudyId().equals(studyId))
         .findFirst()
-        .map(overview -> overview.isUserStudy()
-            ? _userStudyProvider.getStudyById(overview.getStudyId())
-            : _curatedStudyProvider.getStudyById(overview.getStudyId()))
+        .map(overview -> {
+          switch(overview.getStudySourceType()) {
+            case USER_SUBMITTED: return _userStudyProvider.getStudyById(overview.getStudyId());
+            case CURATED: return _curatedStudyProvider.getStudyById(overview.getStudyId());
+            default: return Functions.doThrow(() -> new IllegalArgumentException("Unknown source type"));
+          }
+        })
         .orElseThrow(notFound(studyId));
   }
 }

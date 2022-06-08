@@ -2,6 +2,7 @@ package org.veupathdb.service.eda.ss.test;
 
 import org.gusdb.fgputil.db.SqlScriptRunner;
 import org.hsqldb.jdbc.JDBCDataSource;
+import org.veupathdb.service.eda.ss.model.StudyOverview.StudySourceType;
 
 import javax.sql.DataSource;
 import java.io.IOException;
@@ -21,7 +22,7 @@ public class StubDb {
   public static final boolean ASSAY_CONVERSION_FLAG = false;
 
   // tests run against non-user studies
-  public static final boolean USER_STUDIES_FLAG = false;
+  public static final StudySourceType USER_STUDIES_FLAG = StudySourceType.CURATED;
 
   private static DataSource _ds;
 

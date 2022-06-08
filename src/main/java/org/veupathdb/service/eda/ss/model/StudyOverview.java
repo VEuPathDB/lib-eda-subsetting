@@ -3,14 +3,19 @@ package org.veupathdb.service.eda.ss.model;
 /* a brief version of the study */
 public class StudyOverview {
 
+  public enum StudySourceType {
+    CURATED,
+    USER_SUBMITTED
+  }
+
   private final String id;
   private final String internalAbbrev;
-  private final boolean isUserStudy;
+  private final StudySourceType studySourceType;
 
-  public StudyOverview(String id, String internalAbbrev, boolean isUserStudy) {
+  public StudyOverview(String id, String internalAbbrev, StudySourceType studySourceType) {
     this.id = id;
     this.internalAbbrev = internalAbbrev;
-    this.isUserStudy = isUserStudy;
+    this.studySourceType = studySourceType;
   }
 
   public String getStudyId() {
@@ -21,7 +26,7 @@ public class StudyOverview {
     return internalAbbrev;
   }
 
-  public boolean isUserStudy() {
-    return isUserStudy;
+  public StudySourceType getStudySourceType() {
+    return studySourceType;
   }
 }

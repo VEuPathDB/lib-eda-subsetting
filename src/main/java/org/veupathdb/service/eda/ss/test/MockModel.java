@@ -41,7 +41,7 @@ public class MockModel {
   
   public MockModel() {
     createTestEntities();
-    StudyOverview overview = new StudyOverview("GEMS", "ds2324", false);
+    StudyOverview overview = new StudyOverview("GEMS", "ds2324", StudyOverview.StudySourceType.CURATED);
     study = new Study(overview, constructEntityTree(), createIdMap());
     constructVariables();
   }

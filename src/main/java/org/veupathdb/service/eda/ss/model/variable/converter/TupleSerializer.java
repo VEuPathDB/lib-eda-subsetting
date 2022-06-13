@@ -13,6 +13,10 @@ public class TupleSerializer<T> implements BinarySerializer<List<T>> {
     this.length = length;
   }
 
+  public int getLength() {
+    return length;
+  }
+
   @Override
   public byte[] toBytes(List<T> items) {
     if (items.size() != length) {

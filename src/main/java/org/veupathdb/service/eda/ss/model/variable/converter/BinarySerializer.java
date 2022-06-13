@@ -1,10 +1,8 @@
 package org.veupathdb.service.eda.ss.model.variable.converter;
 
 
-public interface BinarySerializer<T> {
+public interface BinarySerializer<T> extends BinaryDeserializer<T> {
   byte[] toBytes(T varValue);
-
-  T fromBytes(byte[] bytes);
 
   int numBytes();
 }

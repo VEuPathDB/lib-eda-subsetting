@@ -23,7 +23,26 @@ java {
 
 val test by tasks.getting(Test::class) {
   // use junit platform for unit tests
-  useJUnitPlatform()
+  useJUnitPlatform {
+    excludeTags = setOf("Performance")
+  }
+}
+
+val perfTest = task<Test>("perfTest") {
+  useJUnitPlatform {
+    includeTags = setOf("Performance")
+  }
+
+  outputs.upToDateWhen { false } // Never cache results, we always want to actually run the perf test.
+
+  description = "Runs integration tests."
+  group = "verification"
+
+  systemProperties = mapOf(
+    "numFiles" to System.getProperty("numFiles"),
+    "recordCount" to System.getProperty("recordCount"),
+    "cached" to System.getProperty("cached")
+  )
 }
 
 publishing {

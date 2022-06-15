@@ -10,6 +10,11 @@ import java.nio.file.Path;
 import java.util.Iterator;
 import java.util.function.Function;
 
+/**
+ * Takes a sorted stream of entities and a stream of tuples mapping descendants of those entities to their corresponding
+ * ancestor. Produces a stream of the descendant entity identifiers corresponding to the stream of entities. This
+ * effectively takes the stream of entities and "expands" it, returning a stream with all descendants.
+ */
 public class AncestorExpander implements Iterator<Long> {
   private final Iterator<VariableValueIdPair<Long>> ancestorMappingStream;
   private final Iterator<Long> ancestorStream;
@@ -58,11 +63,14 @@ public class AncestorExpander implements Iterator<Long> {
   }
 
   private Long nextMatch() {
+    // Check if current entity equals ancestor. If so, we continue iterating through descendants until they don't match.
     if (currentAncestorMapping.getValue() != currentAncestor) {
+      // Current entity is not equal to ancestor, need to skip until they match to return their descendants.
       if (ancestorStream.hasNext()) {
         currentAncestor = ancestorStream.next();
         skipUntilMatchesAncestor(currentAncestor);
       } else {
+        // Used to indicate the stream is exhausted.
         currentAncestor = null;
       }
     }

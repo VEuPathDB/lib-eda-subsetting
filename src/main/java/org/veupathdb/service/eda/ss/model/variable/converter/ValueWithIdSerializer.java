@@ -4,11 +4,11 @@ import org.veupathdb.service.eda.ss.model.variable.VariableValueIdPair;
 
 import java.nio.ByteBuffer;
 
-public class ValueWithIdSerializer<T> implements BinarySerializer<VariableValueIdPair<T>> {
+public class ValueWithIdSerializer<T> implements BinaryConverter<VariableValueIdPair<T>> {
 
-  private final BinarySerializer<T> _valueConverter;
+  private final BinaryConverter<T> _valueConverter;
 
-  public ValueWithIdSerializer(BinarySerializer<T> valueConverter) {
+  public ValueWithIdSerializer(BinaryConverter<T> valueConverter) {
     _valueConverter = valueConverter;
   }
 

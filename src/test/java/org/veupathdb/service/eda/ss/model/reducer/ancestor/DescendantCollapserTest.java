@@ -5,6 +5,7 @@ import org.hamcrest.Matchers;
 import org.junit.jupiter.api.Test;
 import org.veupathdb.service.eda.ss.model.variable.VariableValueIdPair;
 
+import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 
@@ -70,6 +71,12 @@ public class DescendantCollapserTest {
     List<Long> entityStream = List.of(5L, 10L, 15L);
     MatcherAssert.assertThat(() -> constructCollapser(ancestorStream, entityStream),
         Matchers.contains(2L, 4L, 6L));
+  }
+
+  @Test
+  public void testEmptyList() {
+    Iterable<Long> expander = () -> constructCollapser(Collections.emptyList(), Collections.emptyList());
+    MatcherAssert.assertThat(expander, Matchers.emptyIterable());
   }
 
   private Iterator<Long> constructCollapser(List<VariableValueIdPair<Long>> ancestorStream,

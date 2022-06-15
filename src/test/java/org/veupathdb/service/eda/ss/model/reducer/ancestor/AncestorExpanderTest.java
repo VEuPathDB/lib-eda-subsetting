@@ -5,6 +5,7 @@ import org.hamcrest.Matchers;
 import org.junit.jupiter.api.Test;
 import org.veupathdb.service.eda.ss.model.variable.VariableValueIdPair;
 
+import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 
@@ -27,6 +28,12 @@ public class AncestorExpanderTest {
     List<Long> entityStream = List.of(1L, 4L);
     MatcherAssert.assertThat(() -> constructExpander(ancestorStream, entityStream),
         Matchers.contains(1L, 2L, 3L, 8L, 9L, 10L));
+  }
+
+  @Test
+  public void testEmptyList() {
+    Iterable<Long> expander = () -> constructExpander(Collections.emptyList(), Collections.emptyList());
+    MatcherAssert.assertThat(expander, Matchers.emptyIterable());
   }
 
   private Iterator<Long> constructExpander(List<VariableValueIdPair<Long>> ancestorStream,

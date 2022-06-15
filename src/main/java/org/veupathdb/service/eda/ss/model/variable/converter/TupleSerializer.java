@@ -4,7 +4,11 @@ import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.List;
 
-public class TupleSerializer<T> implements BinarySerializer<List<T>> {
+/**
+ * Serializer for a list of items.
+ * @param <T> Type stored in list to serialize.
+ */
+public class TupleSerializer<T> implements BinaryConverter<List<T>> {
   private ValueConverter<T> converter;
   private int length;
 

@@ -10,6 +10,10 @@ import java.nio.file.Path;
 import java.util.Iterator;
 import java.util.function.Function;
 
+/**
+ * Given a sorted stream of entities and a mapping of those entities to their ancestors, returns a stream of ancestors
+ * where each ancestor entity return has at least one descendant in the stream of descendant entities.
+ */
 public class DescendantCollapser implements Iterator<Long> {
   private final Iterator<VariableValueIdPair<Long>> ancestorMappingStream;
   private final Iterator<Long> descendantStream;
@@ -48,19 +52,18 @@ public class DescendantCollapser implements Iterator<Long> {
 
   private void setCurrentIfNotStarted() {
     if (!hasStarted) {
-      if (ancestorMappingStream.hasNext()) {
-        currentAncestorMapping = ancestorMappingStream.next();
-      }
-      if (descendantStream.hasNext()) {
-        currentDescendant = descendantStream.next();
-      }
+      currentAncestorMapping = ancestorMappingStream.hasNext() ? ancestorMappingStream.next() : null;
+      currentDescendant = descendantStream.hasNext() ?  descendantStream.next() : null;
       hasStarted = true;
     }
   }
 
   private Long nextMatch() {
+    // Continue until currentDescendant matches ancestor mapping's descendant, so we can return the parent.
+    // If the parent is the same as lastAncestor, we also want to continue since we've already returned the parent.
     while (currentAncestorMapping.getIndex() != currentDescendant || lastAncestor == currentAncestorMapping.getValue()) {
       if (currentAncestorMapping.getIndex() > currentDescendant) {
+        // Advance the input entity stream.
         this.currentDescendant = descendantStream.hasNext() ? descendantStream.next() : null;
       }
       this.currentAncestorMapping = ancestorMappingStream.hasNext() ? ancestorMappingStream.next() : null;
@@ -70,7 +73,6 @@ public class DescendantCollapser implements Iterator<Long> {
     }
     lastAncestor = currentAncestorMapping.getValue();
     currentDescendant = descendantStream.hasNext() ? descendantStream.next() : null;
-//    currentAncestorMapping = ancestorMappingStream.hasNext() ? ancestorMappingStream.next() : null;
     return lastAncestor;
   }
 }

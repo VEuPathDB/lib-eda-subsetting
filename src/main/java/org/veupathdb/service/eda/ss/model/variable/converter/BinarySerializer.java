@@ -1,7 +1,13 @@
 package org.veupathdb.service.eda.ss.model.variable.converter;
 
 
-public interface BinarySerializer<T> extends BinaryDeserializer<T> {
+/**
+ * Base interface for converting values of type {@param T} to binary.
+ *
+ * @param <T> Type of value to convert to binary.
+ */
+
+public interface BinarySerializer<T> {
   byte[] toBytes(T varValue);
 
   int numBytes();

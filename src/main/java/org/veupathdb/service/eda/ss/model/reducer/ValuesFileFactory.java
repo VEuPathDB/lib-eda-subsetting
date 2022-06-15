@@ -1,6 +1,5 @@
 package org.veupathdb.service.eda.ss.model.reducer;
 
-import org.veupathdb.service.eda.ss.model.Entity;
 import org.veupathdb.service.eda.ss.model.filter.SingleValueFilter;
 import org.veupathdb.service.eda.ss.model.variable.VariableValueIdPair;
 import org.veupathdb.service.eda.ss.model.variable.VariableWithValues;
@@ -37,16 +36,6 @@ public class ValuesFileFactory {
         new ValueWithIdSerializer<>(serializer),
         VariableValueIdPair::getIndex);
   }
-
-//  public FilteredValueFile<Long, Long> createAncestorFile(Entity ancestor, Entity descendant) {
-//    final int ancestorIdx = descendant.getAncestorEntities().indexOf(ancestor);
-//    final int ancestorCount = descendant.getAncestorEntities().size();
-//    new FilteredValueFile<>(
-//        constructPath(filter),
-//        l -> true,
-//        new AncestorFileDeserializer(new TupleSerializer<>(new LongValueConverter(), ancestorCount), ancestorIdx),
-//        VariableValueIdPair::getIndex);
-//  }
 
   private Path constructPath(SingleValueFilter<?,?> filter) {
     // TODO: Study ID instead of StudyAbbrev?

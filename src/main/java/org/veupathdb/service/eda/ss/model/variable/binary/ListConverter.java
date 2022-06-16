@@ -8,11 +8,11 @@ import java.util.List;
  * Serializer for a list of items.
  * @param <T> Type stored in list to serialize.
  */
-public class ListSerializer<T> implements BinaryConverter<List<T>> {
+public class ListConverter<T> implements BinaryConverter<List<T>> {
   private BinaryConverter<T> converter;
   private int size;
 
-  public ListSerializer(BinaryConverter<T> converter, int size) {
+  public ListConverter(BinaryConverter<T> converter, int size) {
     this.converter = converter;
     this.size = size;
   }

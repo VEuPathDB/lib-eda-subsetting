@@ -22,10 +22,10 @@ public class ValueWithIdDeserializer<T> implements BinaryDeserializer<VariableVa
   public VariableValueIdPair<T> fromBytes(byte[] bytes) {
     final ByteBuffer byteBuffer = ByteBuffer.wrap(bytes);
     final byte[] varValueBytes = new byte[_valueConverter.numBytes()];
-    final Long index = byteBuffer.getLong();
+    final Long idIndex = byteBuffer.getLong();
     byteBuffer.get(varValueBytes);
     final T varValue = _valueConverter.fromBytes(varValueBytes);
-    return new VariableValueIdPair<>(index, varValue);
+    return new VariableValueIdPair<>(idIndex, varValue);
   }
 
   @Override

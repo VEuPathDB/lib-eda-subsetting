@@ -22,7 +22,7 @@ public class ValueWithIdSerializer<T> implements BinarySerializer<VariableValueI
   public byte[] toBytes(VariableValueIdPair<T> variable) {
     final int bufferSize = numBytes();
     final ByteBuffer byteBuffer = ByteBuffer.allocate(bufferSize);
-    byteBuffer.putLong(variable.getIndex());
+    byteBuffer.putLong(variable.getIdIndex());
     byteBuffer.put(_valueConverter.toBytes(variable.getValue()));
     return byteBuffer.array();
   }

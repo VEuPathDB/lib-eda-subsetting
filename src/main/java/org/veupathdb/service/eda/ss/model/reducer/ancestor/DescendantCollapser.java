@@ -61,8 +61,8 @@ public class DescendantCollapser implements Iterator<Long> {
   private Long nextMatch() {
     // Continue until currentDescendant matches ancestor mapping's descendant, so we can return the parent.
     // If the parent is the same as lastAncestor, we also want to continue since we've already returned the parent.
-    while (currentAncestorMapping.getIndex() != currentEntity || lastAncestor == currentAncestorMapping.getValue()) {
-      if (currentAncestorMapping.getIndex() > currentEntity) {
+    while (currentAncestorMapping.getIdIndex() != currentEntity || lastAncestor == currentAncestorMapping.getValue()) {
+      if (currentAncestorMapping.getIdIndex() > currentEntity) {
         // Advance the input entity stream.
         this.currentEntity = currentEntityStream.hasNext() ? currentEntityStream.next() : null;
       }

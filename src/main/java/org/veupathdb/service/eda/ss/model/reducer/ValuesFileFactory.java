@@ -34,7 +34,7 @@ public class ValuesFileFactory {
         constructPath(filter),
         filter.getPredicate(),
         new ValueWithIdDeserializer<>(serializer),
-        VariableValueIdPair::getIndex);
+        VariableValueIdPair::getIdIndex);
   }
 
   private Path constructPath(SingleValueFilter<?,?> filter) {

@@ -74,7 +74,7 @@ public class AncestorExpander implements Iterator<Long> {
         currentEntity = null;
       }
     }
-    Long current = currentAncestorMapping.getIndex();
+    Long current = currentAncestorMapping.getIdIndex();
     this.currentAncestorMapping = ancestorMappingStream.hasNext() ? ancestorMappingStream.next() : null;
     return current;
   }

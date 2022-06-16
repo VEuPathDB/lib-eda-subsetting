@@ -56,7 +56,7 @@ public class JoinNodePerformanceTest {
     final ValueWithIdDeserializer<Long> serializer = new ValueWithIdDeserializer(new LongValueConverter());
     for (Path path : files) {
       filteredValueFiles.add(
-          new FilteredValueFile<>(path, i -> true, serializer, VariableValueIdPair::getIndex));
+          new FilteredValueFile<>(path, i -> true, serializer, VariableValueIdPair::getIdIndex));
     }
     SubsettingJoinNode node = new SubsettingJoinNode(filteredValueFiles);
     Iterator<Long> iterator = node.reduce();

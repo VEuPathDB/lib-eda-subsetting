@@ -3,16 +3,16 @@ package org.veupathdb.service.eda.ss.model.variable;
 import java.util.Objects;
 
 public class VariableValueIdPair<T> {
-  public final Long index;
+  public final Long idIndex;
   public final T value;
 
-  public VariableValueIdPair(Long index, T value) {
-    this.index = index;
+  public VariableValueIdPair(Long idIndex, T value) {
+    this.idIndex = idIndex;
     this.value = value;
   }
 
-  public Long getIndex() {
-    return index;
+  public Long getIdIndex() {
+    return idIndex;
   }
 
   public T getValue() {
@@ -24,18 +24,18 @@ public class VariableValueIdPair<T> {
     if (this == o) return true;
     if (o == null || getClass() != o.getClass()) return false;
     VariableValueIdPair<?> that = (VariableValueIdPair<?>) o;
-    return Objects.equals(index, that.index) && Objects.equals(value, that.value);
+    return Objects.equals(idIndex, that.idIndex) && Objects.equals(value, that.value);
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(index, value);
+    return Objects.hash(idIndex, value);
   }
 
   @Override
   public String toString() {
     return "VariableValueIdPair{" +
-        "index='" + index + '\'' +
+        "index='" + idIndex + '\'' +
         ", value=" + value +
         '}';
   }

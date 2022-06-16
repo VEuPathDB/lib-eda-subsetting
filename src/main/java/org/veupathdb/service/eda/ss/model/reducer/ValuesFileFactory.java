@@ -3,7 +3,7 @@ package org.veupathdb.service.eda.ss.model.reducer;
 import org.veupathdb.service.eda.ss.model.filter.SingleValueFilter;
 import org.veupathdb.service.eda.ss.model.variable.VariableValueIdPair;
 import org.veupathdb.service.eda.ss.model.variable.VariableWithValues;
-import org.veupathdb.service.eda.ss.model.variable.converter.*;
+import org.veupathdb.service.eda.ss.model.variable.binary.*;
 
 import java.io.IOException;
 import java.nio.file.Path;
@@ -29,11 +29,11 @@ public class ValuesFileFactory {
     /**
      * TODO Read metadata from files here for Long vs. Integer or String bytes length?
      */
-    ValueConverter<V> serializer = filter.getVariable().getValueConverter();
+    BinaryConverter<V> serializer = filter.getVariable().getBinaryConverter();
     return new FilteredValueFile<>(
         constructPath(filter),
         filter.getPredicate(),
-        new ValueWithIdSerializer<>(serializer),
+        new ValueWithIdDeserializer<>(serializer),
         VariableValueIdPair::getIndex);
   }
 

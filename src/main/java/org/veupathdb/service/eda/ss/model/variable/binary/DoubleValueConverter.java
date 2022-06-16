@@ -1,13 +1,8 @@
-package org.veupathdb.service.eda.ss.model.variable.converter;
+package org.veupathdb.service.eda.ss.model.variable.binary;
 
 import java.nio.ByteBuffer;
 
-public class DoubleValueConverter implements ValueConverter<Double> {
-
-  @Override
-  public Double fromString(String s) {
-    return Double.parseDouble(s);
-  }
+public class DoubleValueConverter implements BinaryConverter<Double> {
 
   @Override
   public byte[] toBytes(Double varValue) {

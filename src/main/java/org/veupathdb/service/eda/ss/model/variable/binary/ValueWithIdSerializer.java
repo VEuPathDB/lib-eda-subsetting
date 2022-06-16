@@ -1,10 +1,10 @@
-package org.veupathdb.service.eda.ss.model.variable.converter;
+package org.veupathdb.service.eda.ss.model.variable.binary;
 
 import org.veupathdb.service.eda.ss.model.variable.VariableValueIdPair;
 
 import java.nio.ByteBuffer;
 
-public class ValueWithIdSerializer<T> implements BinaryConverter<VariableValueIdPair<T>> {
+public class ValueWithIdSerializer<T> implements BinarySerializer<VariableValueIdPair<T>> {
 
   private final BinaryConverter<T> _valueConverter;
 
@@ -25,22 +25,6 @@ public class ValueWithIdSerializer<T> implements BinaryConverter<VariableValueId
     byteBuffer.putLong(variable.getIndex());
     byteBuffer.put(_valueConverter.toBytes(variable.getValue()));
     return byteBuffer.array();
-  }
-
-  /**
-   * Converts an array of bytes to a variable. The first 4 bytes are read as an integer and the next N are read as
-   * the variable value.
-   * @param bytes to convert to variable
-   * @return Deserialized variable object
-   */
-  @Override
-  public VariableValueIdPair<T> fromBytes(byte[] bytes) {
-    final ByteBuffer byteBuffer = ByteBuffer.wrap(bytes);
-    final byte[] varValueBytes = new byte[_valueConverter.numBytes()];
-    final Long index = byteBuffer.getLong();
-    byteBuffer.get(varValueBytes);
-    final T varValue = _valueConverter.fromBytes(varValueBytes);
-    return new VariableValueIdPair<>(index, varValue);
   }
 
   @Override

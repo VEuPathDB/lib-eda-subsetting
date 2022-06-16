@@ -1,4 +1,4 @@
-package org.veupathdb.service.eda.ss.model.variable.converter;
+package org.veupathdb.service.eda.ss.model.variable.binary;
 
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;

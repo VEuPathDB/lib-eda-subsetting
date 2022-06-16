@@ -1,4 +1,4 @@
-package org.veupathdb.service.eda.ss.model.variable.converter;
+package org.veupathdb.service.eda.ss.model.variable.binary;
 
 import org.veupathdb.service.eda.ss.model.variable.VariableValueIdPair;
 

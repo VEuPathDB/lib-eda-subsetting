@@ -2,8 +2,8 @@ package org.veupathdb.service.eda.ss.model.variable;
 
 import jakarta.ws.rs.BadRequestException;
 import org.veupathdb.service.eda.ss.model.distribution.NumberDistributionConfig;
-import org.veupathdb.service.eda.ss.model.variable.converter.DoubleValueConverter;
-import org.veupathdb.service.eda.ss.model.variable.converter.ValueConverter;
+import org.veupathdb.service.eda.ss.model.variable.binary.BinaryConverter;
+import org.veupathdb.service.eda.ss.model.variable.binary.DoubleValueConverter;
 
 import java.util.Optional;
 
@@ -41,8 +41,13 @@ public class FloatingPointVariable extends NumberVariable<Double> {
   }
 
   @Override
-  public ValueConverter<Double> getValueConverter() {
+  public BinaryConverter<Double> getBinaryConverter() {
     return new DoubleValueConverter();
+  }
+
+  @Override
+  public Double fromString(String s) {
+    return Double.valueOf(s);
   }
 
   @Override

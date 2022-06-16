@@ -1,8 +1,8 @@
 package org.veupathdb.service.eda.ss.testutil;
 
 import org.veupathdb.service.eda.ss.model.variable.VariableValueIdPair;
-import org.veupathdb.service.eda.ss.model.variable.converter.LongValueConverter;
-import org.veupathdb.service.eda.ss.model.variable.converter.ValueWithIdSerializer;
+import org.veupathdb.service.eda.ss.model.variable.binary.LongValueConverter;
+import org.veupathdb.service.eda.ss.model.variable.binary.ValueWithIdSerializer;
 
 import java.io.File;
 import java.io.FileOutputStream;

@@ -1,8 +1,10 @@
 package org.veupathdb.service.eda.ss.model.variable;
 
 import jakarta.ws.rs.BadRequestException;
+import org.gusdb.fgputil.FormatUtil;
 import org.veupathdb.service.eda.ss.model.distribution.DateDistributionConfig;
-import org.veupathdb.service.eda.ss.model.variable.converter.DateValueConverter;
+import org.veupathdb.service.eda.ss.model.variable.binary.BinaryConverter;
+import org.veupathdb.service.eda.ss.model.variable.binary.DateValueConverter;
 
 import java.time.LocalDateTime;
 
@@ -17,8 +19,13 @@ public class DateVariable extends VariableWithValues<LocalDateTime> {
   }
 
   @Override
-  public DateValueConverter getValueConverter() {
+  public BinaryConverter<LocalDateTime> getBinaryConverter() {
     return new DateValueConverter();
+  }
+
+  @Override
+  public LocalDateTime fromString(String s) {
+    return FormatUtil.parseDateTime(s);
   }
 
   public DateDistributionConfig getDistributionConfig() {

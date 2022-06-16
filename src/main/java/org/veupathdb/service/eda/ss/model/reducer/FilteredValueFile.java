@@ -2,14 +2,11 @@ package org.veupathdb.service.eda.ss.model.reducer;
 
 import org.gusdb.fgputil.DualBufferBinaryRecordReader;
 import org.veupathdb.service.eda.ss.model.variable.VariableValueIdPair;
-import org.veupathdb.service.eda.ss.model.variable.converter.BinaryDeserializer;
-import org.veupathdb.service.eda.ss.model.variable.converter.TupleSerializer;
-import org.veupathdb.service.eda.ss.model.variable.converter.ValueWithIdSerializer;
+import org.veupathdb.service.eda.ss.model.variable.binary.BinaryDeserializer;
 
 import java.io.IOException;
 import java.nio.file.Path;
 import java.util.Iterator;
-import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.Optional;
 import java.util.function.Function;
@@ -33,11 +30,11 @@ public class FilteredValueFile<V, T> implements AutoCloseable, Iterator<T> {
 
   public FilteredValueFile(Path path,
                            Predicate<V> filterPredicate,
-                           BinaryDeserializer<VariableValueIdPair<V>> serializer,
+                           BinaryDeserializer<VariableValueIdPair<V>> deserializer,
                            Function<VariableValueIdPair<V>, T> pairExtractor) throws IOException {
     this.filterPredicate = filterPredicate;
-    this.reader = new DualBufferBinaryRecordReader(path, serializer.numBytes(), 1024);
-    this.serializer = serializer;
+    this.reader = new DualBufferBinaryRecordReader(path, deserializer.numBytes(), 1024);
+    this.serializer = deserializer;
     this.pairExtractor = pairExtractor;
   }
 

@@ -1,4 +1,4 @@
-package org.veupathdb.service.eda.ss.model.variable.converter;
+package org.veupathdb.service.eda.ss.model.variable.binary;
 
 import org.gusdb.fgputil.FormatUtil;
 
@@ -7,12 +7,8 @@ import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 
-public class DateValueConverter implements ValueConverter<LocalDateTime> {
+public class DateValueConverter implements BinaryConverter<LocalDateTime> {
 
-  @Override
-  public LocalDateTime fromString(String s) {
-    return FormatUtil.parseDateTime(s);
-  }
 
   @Override
   public byte[] toBytes(LocalDateTime varValue) {

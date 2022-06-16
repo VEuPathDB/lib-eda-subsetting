@@ -1,4 +1,4 @@
-package org.veupathdb.service.eda.ss.model.variable.converter;
+package org.veupathdb.service.eda.ss.model.variable.binary;
 
 import org.junit.jupiter.api.Test;
 import org.veupathdb.service.eda.ss.model.variable.VariableValueIdPair;
@@ -11,8 +11,9 @@ public class VariableWithIdSerializerTest {
   public void testToAndFromBytes() {
     final VariableValueIdPair<Long> expected = new VariableValueIdPair<>(100L, 1000L);
     ValueWithIdSerializer<Long> ser = new ValueWithIdSerializer<>(new LongValueConverter());
+    ValueWithIdDeserializer<Long> deser = new ValueWithIdDeserializer<>(new LongValueConverter());
     byte[] serialized = ser.toBytes(expected);
-    VariableValueIdPair<Long> deserialized = ser.fromBytes(serialized);
+    VariableValueIdPair<Long> deserialized = deser.fromBytes(serialized);
     assertEquals(expected, deserialized);
   }
 

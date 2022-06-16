@@ -9,8 +9,8 @@ import org.veupathdb.service.eda.ss.model.Entity;
 import org.veupathdb.service.eda.ss.model.filter.NumberRangeFilter;
 import org.veupathdb.service.eda.ss.model.filter.NumberSetFilter;
 import org.veupathdb.service.eda.ss.model.variable.*;
-import org.veupathdb.service.eda.ss.model.variable.converter.LongValueConverter;
-import org.veupathdb.service.eda.ss.model.variable.converter.ValueWithIdSerializer;
+import org.veupathdb.service.eda.ss.model.variable.binary.LongValueConverter;
+import org.veupathdb.service.eda.ss.model.variable.binary.ValueWithIdSerializer;
 import org.veupathdb.service.eda.ss.testutil.TestDataProvider;
 import org.veupathdb.service.eda.ss.testutil.VariableWriter;
 

@@ -17,25 +17,25 @@ import java.util.function.Function;
  */
 public class AncestorExpander implements Iterator<Long> {
   private final Iterator<VariableValueIdPair<Long>> ancestorMappingStream;
-  private final Iterator<Long> ancestorStream;
+  private final Iterator<Long> entityIdStream;
   private VariableValueIdPair<Long> currentAncestorMapping;
-  private Long currentAncestor;
+  private Long currentEntity;
   private boolean hasStarted = false;
 
   public AncestorExpander(Path ancestorFilePath,
                           AncestorDeserializer deserializer,
-                          Iterator<Long> ancestorStream) throws IOException {
+                          Iterator<Long> entityIdStream) throws IOException {
     this.ancestorMappingStream = new FilteredValueFile(ancestorFilePath,
         x -> true,
         new ValueWithIdDeserializer<>(deserializer),
         Function.identity());
-    this.ancestorStream = ancestorStream;
+    this.entityIdStream = entityIdStream;
   }
 
   public AncestorExpander(Iterator<VariableValueIdPair<Long>> ancestorMappingStream,
-                          Iterator<Long> ancestorStream) {
+                          Iterator<Long> entityIdStream) {
     this.ancestorMappingStream = ancestorMappingStream;
-    this.ancestorStream = ancestorStream;
+    this.entityIdStream = entityIdStream;
   }
 
   @Override
@@ -55,8 +55,8 @@ public class AncestorExpander implements Iterator<Long> {
       if (ancestorMappingStream.hasNext()) {
         currentAncestorMapping = ancestorMappingStream.next();
       }
-      if (ancestorStream.hasNext()) {
-        currentAncestor = ancestorStream.next();
+      if (entityIdStream.hasNext()) {
+        currentEntity = entityIdStream.next();
       }
       hasStarted = true;
     }
@@ -64,14 +64,14 @@ public class AncestorExpander implements Iterator<Long> {
 
   private Long nextMatch() {
     // Check if current entity equals ancestor. If so, we continue iterating through descendants until they don't match.
-    if (currentAncestorMapping.getValue() != currentAncestor) {
+    if (currentAncestorMapping.getValue() != currentEntity) {
       // Current entity is not equal to ancestor, need to skip until they match to return their descendants.
-      if (ancestorStream.hasNext()) {
-        currentAncestor = ancestorStream.next();
-        skipUntilMatchesAncestor(currentAncestor);
+      if (entityIdStream.hasNext()) {
+        currentEntity = entityIdStream.next();
+        skipUntilMatchesAncestor(currentEntity);
       } else {
         // Used to indicate the stream is exhausted.
-        currentAncestor = null;
+        currentEntity = null;
       }
     }
     Long current = currentAncestorMapping.getIndex();

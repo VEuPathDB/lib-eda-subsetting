@@ -11,24 +11,24 @@ import java.util.List;
  */
 public class AncestorDeserializer implements BinaryDeserializer<VariableValueIdPair<Long>> {
   private ListConverter<Long> listConverter;
-  private int ancestorIndex;
+  private int ancestorColumn;
 
   /**
    * Creates a new instance to deserialize ancestor files, extracting only the entity ID and the ID of the ancestor
    * of interest specified by the {@param ancestorIndex}.
    *
    * @param listConverter Tuple serializer used to deserialize all ancestors.
-   * @param ancestorIndex Index of ancestor to be returned.
+   * @param ancestorColumn Index of ancestor to be returned.
    */
-  public AncestorDeserializer(ListConverter<Long> listConverter, int ancestorIndex) {
+  public AncestorDeserializer(ListConverter<Long> listConverter, int ancestorColumn) {
     this.listConverter = listConverter;
-    this.ancestorIndex = ancestorIndex;
+    this.ancestorColumn = ancestorColumn;
   }
 
   @Override
   public VariableValueIdPair<Long> fromBytes(byte[] bytes) {
     List<Long> ancestors = listConverter.fromBytes(bytes);
-    return new VariableValueIdPair<>(ancestors.get(0), ancestors.get(ancestorIndex));
+    return new VariableValueIdPair<>(ancestors.get(0), ancestors.get(ancestorColumn));
   }
 
   @Override

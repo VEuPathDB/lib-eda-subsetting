@@ -15,9 +15,9 @@ import java.util.function.Function;
  * where each ancestor entity return has at least one descendant in the stream of descendant entities.
  */
 public class DescendantCollapser implements Iterator<Long> {
-  private final Iterator<VariableValueIdPair<Long>> ancestorMappingStream;
+  private final Iterator<VariableValueIdPair<Long>> ancestorStream;
   private final Iterator<Long> currentEntityStream;
-  private VariableValueIdPair<Long> currentAncestorMapping;
+  private VariableValueIdPair<Long> currentAncestor;
   private Long currentEntity;
   private Long lastAncestor;
   private boolean hasStarted = false;
@@ -25,23 +25,23 @@ public class DescendantCollapser implements Iterator<Long> {
   public DescendantCollapser(Path ancestorFilePath,
                              AncestorDeserializer deserializer,
                              Iterator<Long> currentEntityStream) throws IOException {
-    this.ancestorMappingStream = new FilteredValueFile(ancestorFilePath,
+    this.ancestorStream = new FilteredValueFile(ancestorFilePath,
         x -> true,
         new ValueWithIdDeserializer<>(deserializer),
         Function.identity());
     this.currentEntityStream = currentEntityStream;
   }
 
-  public DescendantCollapser(Iterator<VariableValueIdPair<Long>> ancestorMappingStream,
+  public DescendantCollapser(Iterator<VariableValueIdPair<Long>> ancestorStream,
                              Iterator<Long> currentEntityStream) {
-    this.ancestorMappingStream = ancestorMappingStream;
+    this.ancestorStream = ancestorStream;
     this.currentEntityStream = currentEntityStream;
   }
 
   @Override
   public boolean hasNext() {
     setCurrentIfNotStarted();
-    return this.currentAncestorMapping != null && this.currentEntity != null;
+    return this.currentAncestor != null && this.currentEntity != null;
   }
 
   @Override
@@ -52,7 +52,7 @@ public class DescendantCollapser implements Iterator<Long> {
 
   private void setCurrentIfNotStarted() {
     if (!hasStarted) {
-      currentAncestorMapping = ancestorMappingStream.hasNext() ? ancestorMappingStream.next() : null;
+      currentAncestor = ancestorStream.hasNext() ? ancestorStream.next() : null;
       currentEntity = currentEntityStream.hasNext() ?  currentEntityStream.next() : null;
       hasStarted = true;
     }
@@ -61,17 +61,17 @@ public class DescendantCollapser implements Iterator<Long> {
   private Long nextMatch() {
     // Continue until currentDescendant matches ancestor mapping's descendant, so we can return the parent.
     // If the parent is the same as lastAncestor, we also want to continue since we've already returned the parent.
-    while (currentAncestorMapping.getIdIndex() != currentEntity || lastAncestor == currentAncestorMapping.getValue()) {
-      if (currentAncestorMapping.getIdIndex() > currentEntity) {
-        // Advance the input entity stream.
+    while (currentAncestor.getIdIndex() != currentEntity || lastAncestor == currentAncestor.getValue()) {
+      if (currentAncestor.getIdIndex() > currentEntity) {
+        // Advance the input entity stream if ancestor is greater to catch up.
         this.currentEntity = currentEntityStream.hasNext() ? currentEntityStream.next() : null;
       }
-      this.currentAncestorMapping = ancestorMappingStream.hasNext() ? ancestorMappingStream.next() : null;
-      if (this.currentEntity == null || this.currentAncestorMapping == null) {
+      this.currentAncestor = ancestorStream.hasNext() ? ancestorStream.next() : null;
+      if (this.currentEntity == null || this.currentAncestor == null) {
         break;
       }
     }
-    lastAncestor = currentAncestorMapping.getValue();
+    lastAncestor = currentAncestor.getValue();
     currentEntity = currentEntityStream.hasNext() ? currentEntityStream.next() : null;
     return lastAncestor;
   }

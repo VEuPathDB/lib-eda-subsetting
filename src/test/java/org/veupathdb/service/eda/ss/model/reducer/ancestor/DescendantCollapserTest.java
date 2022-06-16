@@ -74,6 +74,27 @@ public class DescendantCollapserTest {
   }
 
   @Test
+  public void testExcludeFirstEntity() {
+    List<VariableValueIdPair<Long>> ancestorStream = List.of(
+        new VariableValueIdPair<>(1L, 2L),
+        new VariableValueIdPair<>(2L, 2L),
+        new VariableValueIdPair<>(3L, 2L),
+        new VariableValueIdPair<>(4L, 2L),
+        new VariableValueIdPair<>(5L, 2L),
+        new VariableValueIdPair<>(6L, 2L),
+        new VariableValueIdPair<>(7L, 2L),
+        new VariableValueIdPair<>(8L, 4L),
+        new VariableValueIdPair<>(9L, 4L),
+        new VariableValueIdPair<>(10L, 4L),
+        new VariableValueIdPair<>(12L, 5L),
+        new VariableValueIdPair<>(15L, 6L)
+    );
+    List<Long> entityStream = List.of(8L, 10L, 15L);
+    MatcherAssert.assertThat(() -> constructCollapser(ancestorStream, entityStream),
+        Matchers.contains(4L, 6L));
+  }
+
+  @Test
   public void testEmptyList() {
     Iterable<Long> expander = () -> constructCollapser(Collections.emptyList(), Collections.emptyList());
     MatcherAssert.assertThat(expander, Matchers.emptyIterable());

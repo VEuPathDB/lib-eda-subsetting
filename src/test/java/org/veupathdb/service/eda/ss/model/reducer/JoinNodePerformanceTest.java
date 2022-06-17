@@ -4,8 +4,9 @@ import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
-import org.veupathdb.service.eda.ss.model.variable.converter.LongValueConverter;
-import org.veupathdb.service.eda.ss.model.variable.converter.ValueWithIdSerializer;
+import org.veupathdb.service.eda.ss.model.variable.VariableValueIdPair;
+import org.veupathdb.service.eda.ss.model.variable.binary.LongValueConverter;
+import org.veupathdb.service.eda.ss.model.variable.binary.ValueWithIdDeserializer;
 import org.veupathdb.service.eda.ss.testutil.BinaryFileGenerator;
 import org.veupathdb.service.eda.ss.testutil.TestDataProvider;
 
@@ -51,10 +52,11 @@ public class JoinNodePerformanceTest {
 
   @Test
   public void run() throws Exception {
-    List<FilteredValueFile<?>> filteredValueFiles = new ArrayList<>();
+    List<FilteredValueFile<?, Long>> filteredValueFiles = new ArrayList<>();
+    final ValueWithIdDeserializer<Long> serializer = new ValueWithIdDeserializer(new LongValueConverter());
     for (Path path : files) {
       filteredValueFiles.add(
-          new FilteredValueFile<Long>(path, i -> true, new ValueWithIdSerializer(new LongValueConverter())));
+          new FilteredValueFile<>(path, i -> true, serializer, VariableValueIdPair::getIdIndex));
     }
     SubsettingJoinNode node = new SubsettingJoinNode(filteredValueFiles);
     Iterator<Long> iterator = node.reduce();

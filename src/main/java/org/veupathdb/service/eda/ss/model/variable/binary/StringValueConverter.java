@@ -1,18 +1,13 @@
-package org.veupathdb.service.eda.ss.model.variable.converter;
+package org.veupathdb.service.eda.ss.model.variable.binary;
 
 import org.gusdb.fgputil.FormatUtil;
 
-public class StringValueConverter implements ValueConverter<String> {
+public class StringValueConverter implements BinaryConverter<String> {
 
   private final int _numBytes;
 
   public StringValueConverter(int numBytes) {
     _numBytes = numBytes;
-  }
-
-  @Override
-  public String fromString(String s) {
-    return s;
   }
 
   @Override

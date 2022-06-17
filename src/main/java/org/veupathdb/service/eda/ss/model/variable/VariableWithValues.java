@@ -1,6 +1,6 @@
 package org.veupathdb.service.eda.ss.model.variable;
 
-import org.veupathdb.service.eda.ss.model.variable.converter.ValueConverter;
+import org.veupathdb.service.eda.ss.model.variable.binary.BinaryConverter;
 
 import java.util.List;
 
@@ -35,7 +35,9 @@ public abstract class VariableWithValues<T> extends Variable {
     }
   }
 
-  public abstract ValueConverter<T> getValueConverter();
+  public abstract BinaryConverter<T> getBinaryConverter();
+
+  public abstract T fromString(String s);
 
   private final Properties _properties;
 

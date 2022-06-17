@@ -2,13 +2,14 @@ package org.veupathdb.service.eda.ss.model.reducer;
 
 import org.gusdb.fgputil.DualBufferBinaryRecordReader;
 import org.veupathdb.service.eda.ss.model.variable.VariableValueIdPair;
-import org.veupathdb.service.eda.ss.model.variable.converter.ValueWithIdSerializer;
+import org.veupathdb.service.eda.ss.model.variable.binary.BinaryDeserializer;
 
 import java.io.IOException;
 import java.nio.file.Path;
 import java.util.Iterator;
 import java.util.NoSuchElementException;
 import java.util.Optional;
+import java.util.function.Function;
 import java.util.function.Predicate;
 
 
@@ -19,19 +20,22 @@ import java.util.function.Predicate;
  * Filtered stream
  * @param <V> type of the value
  */
-public class FilteredValueFile<V> implements AutoCloseable, Iterator<Long> {
+public class FilteredValueFile<V, T> implements AutoCloseable, Iterator<T> {
   private final Predicate<V> filterPredicate;
   private final DualBufferBinaryRecordReader reader;
-  private final ValueWithIdSerializer<V> serializer;
-  private Optional<Long> next;
+  private final BinaryDeserializer<VariableValueIdPair<V>> serializer;
+  private final Function<VariableValueIdPair<V>, T> pairExtractor;
+  private Optional<T> next;
   private boolean hasStarted;
 
   public FilteredValueFile(Path path,
                            Predicate<V> filterPredicate,
-                           ValueWithIdSerializer<V> serializer) throws IOException {
+                           BinaryDeserializer<VariableValueIdPair<V>> deserializer,
+                           Function<VariableValueIdPair<V>, T> pairExtractor) throws IOException {
     this.filterPredicate = filterPredicate;
-    this.reader = new DualBufferBinaryRecordReader(path, serializer.numBytes(), 1024);
-    this.serializer = serializer;
+    this.reader = new DualBufferBinaryRecordReader(path, deserializer.numBytes(), 1024);
+    this.serializer = deserializer;
+    this.pairExtractor = pairExtractor;
   }
 
   @Override
@@ -43,11 +47,11 @@ public class FilteredValueFile<V> implements AutoCloseable, Iterator<Long> {
   }
 
   @Override
-  public Long next() {
+  public T next() {
     if (!hasStarted) {
       nextMatch();
     }
-    Long curr = next.orElseThrow(NoSuchElementException::new);
+    T curr = next.orElseThrow(NoSuchElementException::new);
     nextMatch();
     return curr;
   }
@@ -63,7 +67,7 @@ public class FilteredValueFile<V> implements AutoCloseable, Iterator<Long> {
       next = bytes
           .map(serializer::fromBytes)
           .filter(var -> filterPredicate.test(var.getValue()))
-          .map(VariableValueIdPair::getIndex);
+          .map(var -> pairExtractor.apply(var));
     } while (next.isEmpty());
   }
 

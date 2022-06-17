@@ -1,9 +1,9 @@
 package org.veupathdb.service.eda.ss.model.reducer;
 
 import org.veupathdb.service.eda.ss.model.filter.SingleValueFilter;
+import org.veupathdb.service.eda.ss.model.variable.VariableValueIdPair;
 import org.veupathdb.service.eda.ss.model.variable.VariableWithValues;
-import org.veupathdb.service.eda.ss.model.variable.converter.ValueConverter;
-import org.veupathdb.service.eda.ss.model.variable.converter.ValueWithIdSerializer;
+import org.veupathdb.service.eda.ss.model.variable.binary.*;
 
 import java.io.IOException;
 import java.nio.file.Path;
@@ -24,16 +24,17 @@ public class ValuesFileFactory {
    * @param <T> Type of value associated with {@link V}
    * @throws IOException
    */
-  public <V, T extends VariableWithValues<V>> FilteredValueFile<V> createFromFilter(
+  public <V, T extends VariableWithValues<V>> FilteredValueFile<V, Long> createFromFilter(
       SingleValueFilter<V, T> filter) throws IOException {
     /**
      * TODO Read metadata from files here for Long vs. Integer or String bytes length?
      */
-    ValueConverter<V> serializer = filter.getVariable().getValueConverter();
+    BinaryConverter<V> serializer = filter.getVariable().getBinaryConverter();
     return new FilteredValueFile<>(
         constructPath(filter),
         filter.getPredicate(),
-        new ValueWithIdSerializer<>(serializer));
+        new ValueWithIdDeserializer<>(serializer),
+        VariableValueIdPair::getIdIndex);
   }
 
   private Path constructPath(SingleValueFilter<?,?> filter) {

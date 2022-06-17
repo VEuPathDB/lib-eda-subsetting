@@ -2,8 +2,8 @@ package org.veupathdb.service.eda.ss.model.variable;
 
 import jakarta.ws.rs.BadRequestException;
 import org.veupathdb.service.eda.ss.model.distribution.NumberDistributionConfig;
-import org.veupathdb.service.eda.ss.model.variable.converter.LongValueConverter;
-import org.veupathdb.service.eda.ss.model.variable.converter.ValueConverter;
+import org.veupathdb.service.eda.ss.model.variable.binary.BinaryConverter;
+import org.veupathdb.service.eda.ss.model.variable.binary.LongValueConverter;
 
 import java.util.Optional;
 
@@ -37,8 +37,13 @@ public class IntegerVariable extends NumberVariable<Long> {
   }
 
   @Override
-  public ValueConverter<Long> getValueConverter() {
+  public BinaryConverter<Long> getBinaryConverter() {
     return new LongValueConverter();
+  }
+
+  @Override
+  public Long fromString(String s) {
+    return Long.valueOf(s);
   }
 
   @Override

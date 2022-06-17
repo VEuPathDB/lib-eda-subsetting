@@ -2,11 +2,13 @@ package org.veupathdb.service.eda.ss.model.reducer.ancestor;
 
 import org.veupathdb.service.eda.ss.model.Entity;
 
+import java.util.Iterator;
+
 public class AncestorMappers {
 
-  public static AncestorMapper fromEntity(Entity from, Entity to) {
+  public static Iterator<Long> fromEntity(Entity from, Entity to) {
     if (from.getAncestorEntities().contains(to)) {
-      // Return Collapser
+
       return null;
     } else if (to.getAncestorEntities().contains(from)) {
       // Return Expander

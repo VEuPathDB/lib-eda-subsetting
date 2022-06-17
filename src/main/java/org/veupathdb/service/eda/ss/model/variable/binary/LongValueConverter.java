@@ -1,13 +1,8 @@
-package org.veupathdb.service.eda.ss.model.variable.converter;
+package org.veupathdb.service.eda.ss.model.variable.binary;
 
 import java.nio.ByteBuffer;
 
-public class LongValueConverter implements ValueConverter<Long> {
-
-  @Override
-  public Long fromString(String s) {
-    return Long.parseLong(s);
-  }
+public class LongValueConverter implements BinaryConverter<Long> {
 
   @Override
   public byte[] toBytes(Long varValue) {

@@ -7,16 +7,16 @@ import java.util.List;
 
 public class SubsettingJoinNode {
 
-  private final List<FilteredValueFile<?>> filters;
+  private final List<FilteredValueFile<?, Long>> filters;
 
-  public SubsettingJoinNode(List<FilteredValueFile<?>> filters) {
+  public SubsettingJoinNode(List<FilteredValueFile<?, Long>> filters) {
     this.filters = filters;
   }
 
   public Iterator<Long> reduce() {
     // TODO include children.
     final List<Iterator<Long>> idStreams = new ArrayList<>();
-    for (FilteredValueFile<?> file: filters) {
+    for (FilteredValueFile<?, Long> file: filters) {
       idStreams.add(file);
     }
     final Comparator<Long> comparator = Comparator.naturalOrder();

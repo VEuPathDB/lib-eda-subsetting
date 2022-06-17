@@ -5,6 +5,7 @@ import org.veupathdb.service.eda.ss.model.variable.VariableValueIdPair;
 import org.veupathdb.service.eda.ss.model.variable.binary.BinaryDeserializer;
 
 import java.io.IOException;
+import java.nio.ByteBuffer;
 import java.nio.file.Path;
 import java.util.Iterator;
 import java.util.NoSuchElementException;
@@ -22,8 +23,8 @@ import java.util.function.Predicate;
  */
 public class FilteredValueFile<V, T> implements AutoCloseable, Iterator<T> {
   private final Predicate<V> filterPredicate;
-  private final DualBufferBinaryRecordReader reader;
-  private final BinaryDeserializer<VariableValueIdPair<V>> serializer;
+  private final DualBufferBinaryRecordReader<VariableValueIdPair<V>> reader;
+  private final BinaryDeserializer<VariableValueIdPair<V>> deserializer;
   private final Function<VariableValueIdPair<V>, T> pairExtractor;
   private Optional<T> next;
   private boolean hasStarted;
@@ -33,8 +34,12 @@ public class FilteredValueFile<V, T> implements AutoCloseable, Iterator<T> {
                            BinaryDeserializer<VariableValueIdPair<V>> deserializer,
                            Function<VariableValueIdPair<V>, T> pairExtractor) throws IOException {
     this.filterPredicate = filterPredicate;
-    this.reader = new DualBufferBinaryRecordReader(path, deserializer.numBytes(), 1024);
-    this.serializer = deserializer;
+    this.reader = new DualBufferBinaryRecordReader<>(path,
+        deserializer.numBytes(),
+        1024,
+        deserializer::fromBytes,
+        ByteBuffer.allocate(deserializer.numBytes()));
+    this.deserializer = deserializer;
     this.pairExtractor = pairExtractor;
   }
 
@@ -57,17 +62,18 @@ public class FilteredValueFile<V, T> implements AutoCloseable, Iterator<T> {
   }
 
   private void nextMatch() {
+    hasStarted = true;
     do {
-      hasStarted = true;
-      Optional<byte[]> bytes = reader.next();
-      if (bytes.isEmpty()) {
+      Optional<VariableValueIdPair<V>> value = reader.next();
+      if (value.isEmpty()) {
         next = Optional.empty();
         return;
       }
-      next = bytes
-          .map(serializer::fromBytes)
-          .filter(var -> filterPredicate.test(var.getValue()))
-          .map(var -> pairExtractor.apply(var));
+      if (filterPredicate.test(value.get().getValue())) {
+        next = Optional.of(pairExtractor.apply(value.get()));
+      } else {
+        next = Optional.empty();
+      }
     } while (next.isEmpty());
   }
 

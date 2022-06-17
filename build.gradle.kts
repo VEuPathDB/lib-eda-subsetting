@@ -97,7 +97,7 @@ repositories {
   }
 }
 
-val fgputil = "2.5-jakarta" // FgpUtil version
+val fgputil = "1.0.0" // FgpUtil version
 val log4j   = "2.17.2"      // Log4J version
 val junit   = "5.8.2"       // JUnit version
 
@@ -108,6 +108,8 @@ dependencies {
   implementation("org.gusdb:fgputil-db:${fgputil}")
   implementation("org.gusdb:fgputil-json:${fgputil}")
   implementation("org.gusdb:fgputil-web:${fgputil}")
+
+  implementation("org.glassfish.jersey.core:jersey-client:3.0.4");
 
   // Log4J
   implementation("org.apache.logging.log4j:log4j-api:${log4j}")

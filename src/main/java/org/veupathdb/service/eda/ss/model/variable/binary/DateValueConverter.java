@@ -26,6 +26,12 @@ public class DateValueConverter implements BinaryConverter<LocalDateTime> {
   }
 
   @Override
+  public LocalDateTime fromBytes(ByteBuffer buffer) {
+    long value = buffer.getLong();
+    return LocalDateTime.ofInstant(Instant.ofEpochMilli(value), ZoneOffset.UTC);
+  }
+
+  @Override
   public int numBytes() {
     return Long.BYTES;
   }

@@ -7,6 +7,7 @@ import java.nio.ByteBuffer;
 public class ValueWithIdDeserializer<T> implements BinaryDeserializer<VariableValueIdPair<T>> {
 
   private final BinaryDeserializer<T> _valueConverter;
+  private final VariableValueIdPair<T> holder = new VariableValueIdPair<>(null, null);
 
   public ValueWithIdDeserializer(BinaryDeserializer<T> valueConverter) {
     _valueConverter = valueConverter;
@@ -21,11 +22,16 @@ public class ValueWithIdDeserializer<T> implements BinaryDeserializer<VariableVa
   @Override
   public VariableValueIdPair<T> fromBytes(byte[] bytes) {
     final ByteBuffer byteBuffer = ByteBuffer.wrap(bytes);
-    final byte[] varValueBytes = new byte[_valueConverter.numBytes()];
-    final Long idIndex = byteBuffer.getLong();
-    byteBuffer.get(varValueBytes);
-    final T varValue = _valueConverter.fromBytes(varValueBytes);
-    return new VariableValueIdPair<>(idIndex, varValue);
+    return fromBytes(byteBuffer);
+  }
+
+  @Override
+  public VariableValueIdPair<T> fromBytes(ByteBuffer buffer) {
+    final Long idIndex = buffer.getLong();
+    final T varValue = _valueConverter.fromBytes(buffer);
+    holder.setValue(varValue);
+    holder.setIdIndex(idIndex);
+    return holder;
   }
 
   @Override

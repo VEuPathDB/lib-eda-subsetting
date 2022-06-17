@@ -15,6 +15,11 @@ public class DoubleValueConverter implements BinaryConverter<Double> {
   }
 
   @Override
+  public Double fromBytes(ByteBuffer buffer) {
+    return buffer.getDouble();
+  }
+
+  @Override
   public int numBytes() {
     return Double.BYTES;
   }

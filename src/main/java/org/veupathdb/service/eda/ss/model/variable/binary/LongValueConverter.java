@@ -15,6 +15,11 @@ public class LongValueConverter implements BinaryConverter<Long> {
   }
 
   @Override
+  public Long fromBytes(ByteBuffer buffer) {
+    return buffer.getLong();
+  }
+
+  @Override
   public int numBytes() {
     return Long.BYTES;
   }

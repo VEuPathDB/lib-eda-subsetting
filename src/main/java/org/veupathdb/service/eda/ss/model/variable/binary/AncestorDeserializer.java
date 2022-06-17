@@ -2,6 +2,7 @@ package org.veupathdb.service.eda.ss.model.variable.binary;
 
 import org.veupathdb.service.eda.ss.model.variable.VariableValueIdPair;
 
+import java.nio.ByteBuffer;
 import java.util.List;
 
 /**
@@ -27,6 +28,12 @@ public class AncestorDeserializer implements BinaryDeserializer<VariableValueIdP
   @Override
   public VariableValueIdPair<Long> fromBytes(byte[] bytes) {
     List<Long> ancestors = listConverter.fromBytes(bytes);
+    return new VariableValueIdPair<>(ancestors.get(0), ancestors.get(ancestorColumn));
+  }
+
+  @Override
+  public VariableValueIdPair<Long> fromBytes(ByteBuffer buffer) {
+    List<Long> ancestors = listConverter.fromBytes(buffer);
     return new VariableValueIdPair<>(ancestors.get(0), ancestors.get(ancestorColumn));
   }
 

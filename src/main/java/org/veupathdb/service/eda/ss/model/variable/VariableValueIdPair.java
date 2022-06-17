@@ -3,8 +3,8 @@ package org.veupathdb.service.eda.ss.model.variable;
 import java.util.Objects;
 
 public class VariableValueIdPair<T> {
-  public final Long idIndex;
-  public final T value;
+  public Long idIndex;
+  public T value;
 
   public VariableValueIdPair(Long idIndex, T value) {
     this.idIndex = idIndex;
@@ -17,6 +17,14 @@ public class VariableValueIdPair<T> {
 
   public T getValue() {
     return value;
+  }
+
+  public void setIdIndex(Long idIndex) {
+    this.idIndex = idIndex;
+  }
+
+  public void setValue(T value) {
+    this.value = value;
   }
 
   @Override

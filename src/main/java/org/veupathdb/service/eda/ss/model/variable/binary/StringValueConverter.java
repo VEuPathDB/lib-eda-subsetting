@@ -2,6 +2,8 @@ package org.veupathdb.service.eda.ss.model.variable.binary;
 
 import org.gusdb.fgputil.FormatUtil;
 
+import java.nio.ByteBuffer;
+
 public class StringValueConverter implements BinaryConverter<String> {
 
   private final int _numBytes;
@@ -18,6 +20,11 @@ public class StringValueConverter implements BinaryConverter<String> {
   @Override
   public String fromBytes(byte[] bytes) {
     return FormatUtil.paddedBinaryToString(bytes);
+  }
+
+  @Override
+  public String fromBytes(ByteBuffer buffer) {
+    return fromBytes(buffer.array());
   }
 
   @Override

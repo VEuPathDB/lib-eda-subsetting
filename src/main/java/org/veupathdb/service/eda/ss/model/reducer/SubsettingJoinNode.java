@@ -20,7 +20,7 @@ public class SubsettingJoinNode {
       idStreams.add(file);
     }
     final Comparator<Long> comparator = Comparator.naturalOrder();
-    final StreamIntersectMerger<Long> intersectMerger = new StreamIntersectMerger<>(idStreams, comparator);
+    final StreamIntersectMerger intersectMerger = new StreamIntersectMerger(idStreams);
     return intersectMerger;
   }
 }

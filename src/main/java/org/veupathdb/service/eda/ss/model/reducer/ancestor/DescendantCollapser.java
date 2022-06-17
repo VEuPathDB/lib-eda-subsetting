@@ -65,10 +65,12 @@ public class DescendantCollapser implements Iterator<Long> {
       if (currentAncestor.getIdIndex() > currentEntity) {
         // Advance the input entity stream if ancestor is greater to catch up.
         this.currentEntity = currentEntityStream.hasNext() ? currentEntityStream.next() : null;
+      } else {
+        // If ancestor is less than or equal to currentEntity, we advance it.
+        this.currentAncestor = ancestorStream.hasNext() ? ancestorStream.next() : null;
       }
-      this.currentAncestor = ancestorStream.hasNext() ? ancestorStream.next() : null;
       if (this.currentEntity == null || this.currentAncestor == null) {
-        break;
+        return null;
       }
     }
     lastAncestor = currentAncestor.getValue();

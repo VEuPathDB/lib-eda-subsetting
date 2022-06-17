@@ -6,8 +6,7 @@ import java.util.List;
 
 /**
  * Binary deserializer that knows how to deserialize records with an entity identifier and all of that entity's
- * ancestors. Rather than returning all ancestors, it only returns a single ancestor specified by the index
- * in the constructor.
+ * ancestors. Rather than returning all ancestors, it only returns a single ancestor indicated by {@link AncestorDeserializer#ancestorColumn}
  */
 public class AncestorDeserializer implements BinaryDeserializer<VariableValueIdPair<Long>> {
   private ListConverter<Long> listConverter;
@@ -18,7 +17,7 @@ public class AncestorDeserializer implements BinaryDeserializer<VariableValueIdP
    * of interest specified by the {@param ancestorIndex}.
    *
    * @param listConverter Tuple serializer used to deserialize all ancestors.
-   * @param ancestorColumn Index of ancestor to be returned.
+   * @param ancestorColumn Column number (0-indexed) of ancestor to be returned.
    */
   public AncestorDeserializer(ListConverter<Long> listConverter, int ancestorColumn) {
     this.listConverter = listConverter;

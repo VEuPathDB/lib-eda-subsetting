@@ -11,9 +11,10 @@ import java.util.Iterator;
 import java.util.function.Function;
 
 /**
- * Takes a sorted stream of entities and a stream of tuples mapping descendants of those entities to their corresponding
- * ancestor. Produces a stream of the descendant entity identifiers corresponding to the stream of entities. This
- * effectively takes the stream of entities and "expands" it, returning a stream with all descendants.
+ * Takes a sorted stream of ancestor entities and a stream of tuples mapping descendants of those entities to their
+ * corresponding ancestor. Produces a single column stream of a single descendant entity's identifiers corresponding
+ * to the stream of ancestor entities. This effectively takes the stream of entities and "expands" it,
+ * returning a stream with all IDs for at one level of descendence.
  */
 public class AncestorExpander implements Iterator<Long> {
   private final Iterator<VariableValueIdPair<Long>> descendantStream;
@@ -22,10 +23,10 @@ public class AncestorExpander implements Iterator<Long> {
   private Long currentEntity;
   private boolean hasStarted = false;
 
-  public AncestorExpander(Path ancestorFilePath,
+  public AncestorExpander(Path descendantsFilePath,
                           AncestorDeserializer deserializer,
                           Iterator<Long> entityIdIndexStream) throws IOException {
-    this.descendantStream = new FilteredValueFile(ancestorFilePath,
+    this.descendantStream = new FilteredValueFile(descendantsFilePath,
         x -> true,
         new ValueWithIdDeserializer<>(deserializer),
         Function.identity());
@@ -44,6 +45,9 @@ public class AncestorExpander implements Iterator<Long> {
     return this.currentDescendant != null;
   }
 
+  /**
+   * @return The next descendant idIndex.
+   */
   @Override
   public Long next() {
     setCurrentIfNotStarted();
@@ -62,6 +66,9 @@ public class AncestorExpander implements Iterator<Long> {
     }
   }
 
+  /**
+   * @return The next matching descendant idIndex.
+   */
   private Long nextMatch() {
     // Check if current entity equals ancestor.
     if (currentDescendant.getValue() != currentEntity) {
@@ -75,7 +82,7 @@ public class AncestorExpander implements Iterator<Long> {
   }
 
   private void advanceStreamsUntilIntersect() {
-    while (currentEntity != currentDescendant.getValue() && currentEntity != null) {
+    while (currentDescendant.getValue() != currentEntity && currentEntity != null) {
       if (currentDescendant.getValue() < currentEntity) {
         // If descendants are "lower" than current entity, advance descendant stream to catch up.
         this.currentDescendant = descendantStream.hasNext() ? descendantStream.next() : null;

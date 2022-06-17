@@ -101,7 +101,7 @@ public class StreamIntersectMerger implements Iterator<Long> {
       if (next == null) {
         return null;
       }
-      while (next > key) {
+      while (next < key) {
         if (stream.hasNext()) {
           this.next = stream.next();
         } else {

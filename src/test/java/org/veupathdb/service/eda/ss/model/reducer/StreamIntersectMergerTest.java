@@ -55,12 +55,14 @@ public class StreamIntersectMergerTest {
 
     @Test
     public void testStreamsSomeOverlap() {
-      final Iterator<Long> stream1 = new ArrayList<>(evenNumbers).iterator();
-      final Iterator<Long> stream2 = new ArrayList<>(threeFactors).iterator();
-      final Iterator<Long> stream3 = new ArrayList<>(fiveFactors).iterator();
-      StreamIntersectMerger merger = new StreamIntersectMerger(List.of(stream1, stream2, stream3));
-      Iterable<Long> result = () -> merger;
-      MatcherAssert.assertThat(result, Matchers.contains(30, 60, 90));
+      final List<Long> stream1 = new ArrayList<>(evenNumbers);
+      final List<Long> stream2 = new ArrayList<>(threeFactors);
+      final List<Long> stream3 = new ArrayList<>(fiveFactors);
+      Iterable<Long> result = () -> new StreamIntersectMerger(List.of(
+          stream1.iterator(),
+          stream2.iterator(),
+          stream3.iterator()));
+      MatcherAssert.assertThat(result, Matchers.contains(30L, 60L, 90L));
     }
   }
 

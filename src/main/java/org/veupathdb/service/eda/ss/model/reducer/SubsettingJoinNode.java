@@ -5,9 +5,10 @@ import java.util.Comparator;
 import java.util.Iterator;
 import java.util.List;
 
-public class SubsettingJoinNode {
+public class SubsettingJoinNode { // root or not
 
   private final List<FilteredValueFile<?, Long>> filters;
+  // children
 
   public SubsettingJoinNode(List<FilteredValueFile<?, Long>> filters) {
     this.filters = filters;
@@ -19,7 +20,6 @@ public class SubsettingJoinNode {
     for (FilteredValueFile<?, Long> file: filters) {
       idStreams.add(file);
     }
-    final Comparator<Long> comparator = Comparator.naturalOrder();
     final StreamIntersectMerger intersectMerger = new StreamIntersectMerger(idStreams);
     return intersectMerger;
   }

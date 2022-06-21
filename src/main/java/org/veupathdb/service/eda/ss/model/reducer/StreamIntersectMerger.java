@@ -10,6 +10,7 @@ import java.util.stream.IntStream;
  */
 public class StreamIntersectMerger implements Iterator<Long> {
   private final PeekableIterator[] streams;
+  private final PeekableIterator[] nextStream;
 //  private final Comparator<Long> comparator;
   private Long currentElement;
   private int currentStreamIdx;
@@ -24,6 +25,8 @@ public class StreamIntersectMerger implements Iterator<Long> {
     this.streams = sortedStreams.stream()
         .map(PeekableIterator::new)
         .toArray(PeekableIterator[]::new);
+    this.nextStream = IntStream.range(0, streams.length)
+        .
     this.currentStream = Arrays.stream(streams)
         .max(Comparator.comparing(iter -> iter.peek()))
         .get();
@@ -31,6 +34,7 @@ public class StreamIntersectMerger implements Iterator<Long> {
         .filter(i -> streams[i] == currentStream)
         .findFirst()
         .getAsInt();
+
     hasStarted = false;
   }
 
@@ -76,6 +80,7 @@ public class StreamIntersectMerger implements Iterator<Long> {
   }
 
   private int advanceStreamPointer() {
+    // Candidate for optimization
     currentStreamIdx = (currentStreamIdx + 1) % streams.length;
     currentStream = streams[currentStreamIdx];
     return currentStreamIdx;

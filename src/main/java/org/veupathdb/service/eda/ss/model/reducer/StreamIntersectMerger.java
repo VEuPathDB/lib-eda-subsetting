@@ -23,10 +23,6 @@ public class StreamIntersectMerger implements Iterator<Long> {
     this.streams = sortedStreams.stream()
         .map(PeekableIterator::new)
         .toArray(PeekableIterator[]::new);
-    // Cache a pointer to the nextStream to avoid excessive modulo operations.
-    this.nextStream = IntStream.range(0, streams.length)
-        .map(i -> (i + 1) % streams.length)
-        .toArray();
     this.currentStream = Arrays.stream(streams)
         .max(Comparator.comparing(iter -> iter.peek()))
         .get();
@@ -34,6 +30,10 @@ public class StreamIntersectMerger implements Iterator<Long> {
         .filter(i -> streams[i] == currentStream)
         .findFirst()
         .getAsInt();
+    // Cache a pointer to the nextStream to avoid excessive modulo operations.
+    this.nextStream = IntStream.range(0, streams.length)
+        .map(i -> (i + 1) % streams.length)
+        .toArray();
     hasStarted = false;
   }
 

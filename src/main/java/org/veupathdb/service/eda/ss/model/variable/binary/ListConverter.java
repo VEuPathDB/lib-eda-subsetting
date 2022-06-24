@@ -38,6 +38,13 @@ public class ListConverter<T> implements BinaryConverter<List<T>> {
   }
 
   @Override
+  public List<T> fromBytes(byte[] bytes, int offset) {
+    final ByteBuffer buffer = ByteBuffer.wrap(bytes);
+    buffer.position(offset);
+    return fromBytes(buffer);
+  }
+
+  @Override
   public List<T> fromBytes(ByteBuffer buffer) {
     final List<T> tuple = new ArrayList<>();
     for (int i = 0; i < size; i++) {

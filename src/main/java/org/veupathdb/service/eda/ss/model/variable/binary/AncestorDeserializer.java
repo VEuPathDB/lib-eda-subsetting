@@ -32,6 +32,13 @@ public class AncestorDeserializer implements BinaryDeserializer<VariableValueIdP
   }
 
   @Override
+  public VariableValueIdPair<Long> fromBytes(byte[] bytes, int offset) {
+    ByteBuffer buf = ByteBuffer.wrap(bytes).position(offset);
+    List<Long> ancestors = listConverter.fromBytes(buf);
+    return new VariableValueIdPair<>(ancestors.get(0), ancestors.get(ancestorColumn));
+  }
+
+  @Override
   public VariableValueIdPair<Long> fromBytes(ByteBuffer buffer) {
     List<Long> ancestors = listConverter.fromBytes(buffer);
     return new VariableValueIdPair<>(ancestors.get(0), ancestors.get(ancestorColumn));

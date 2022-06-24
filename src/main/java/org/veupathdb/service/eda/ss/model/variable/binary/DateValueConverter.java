@@ -9,7 +9,6 @@ import java.time.ZoneOffset;
 
 public class DateValueConverter implements BinaryConverter<LocalDateTime> {
 
-
   @Override
   public byte[] toBytes(LocalDateTime varValue) {
     long value = varValue.toInstant(ZoneOffset.UTC).toEpochMilli();
@@ -21,6 +20,14 @@ public class DateValueConverter implements BinaryConverter<LocalDateTime> {
   @Override
   public LocalDateTime fromBytes(byte[] bytes) {
     ByteBuffer buffer = ByteBuffer.wrap(bytes);
+    long value = buffer.getLong();
+    return LocalDateTime.ofInstant(Instant.ofEpochMilli(value), ZoneOffset.UTC);
+  }
+
+  @Override
+  public LocalDateTime fromBytes(byte[] bytes, int offset) {
+    ByteBuffer buffer = ByteBuffer.wrap(bytes)
+        .position(offset);
     long value = buffer.getLong();
     return LocalDateTime.ofInstant(Instant.ofEpochMilli(value), ZoneOffset.UTC);
   }

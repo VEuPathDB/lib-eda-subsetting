@@ -30,8 +30,7 @@ public class EntityJoinerRoot<T> {
    * @return
    */
   public Iterator<T> reduce() {
-    final Comparator<Long> comparator = Comparator.naturalOrder();
-    final StreamIntersectMerger<Long> intersectMerger = new StreamIntersectMerger<>(filteredStreams, comparator);
+    final StreamIntersectMerger intersectMerger = new StreamIntersectMerger(filteredStreams);
     return new ValueExtractor<>(intersectMerger, values);
   }
 

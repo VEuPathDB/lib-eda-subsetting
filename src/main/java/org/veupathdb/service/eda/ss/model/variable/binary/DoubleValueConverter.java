@@ -6,7 +6,7 @@ public class DoubleValueConverter implements BinaryConverter<Double> {
 
   @Override
   public byte[] toBytes(Double varValue) {
-    return ByteBuffer.allocate(Float.BYTES).putDouble(varValue).array();
+    return ByteBuffer.allocate(numBytes()).putDouble(varValue).array();
   }
 
   @Override

@@ -1,7 +1,5 @@
 package org.veupathdb.service.eda.ss.model.variable.binary;
 
-import org.gusdb.fgputil.FormatUtil;
-
 import java.nio.ByteBuffer;
 import java.time.Instant;
 import java.time.LocalDateTime;

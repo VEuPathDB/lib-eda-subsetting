@@ -52,26 +52,24 @@ public class JoinNodePerformanceTest {
 
   @Test
   public void run() throws Exception {
-    for (int att = 0; att < 10; att++) {
-      List<FilteredValueFile<?, Long>> filteredValueFiles = new ArrayList<>();
-      final ValueWithIdDeserializer<Long> serializer = new ValueWithIdDeserializer(new LongValueConverter());
-      for (Path path : files) {
-        filteredValueFiles.add(
-            new FilteredValueFile<>(path, i -> true, serializer, VariableValueIdPair::getIdIndex));
-      }
-      SubsettingJoinNode node = new SubsettingJoinNode(filteredValueFiles);
-      Iterator<Long> iterator = node.reduce();
-      Instant start = Instant.now();
-      while (iterator.hasNext()) {
-        iterator.next();
-      }
-      Duration duration = Duration.between(start, Instant.now());
-      long totalSize = files.stream()
-          .map(file -> file.toFile().length())
-          .collect(Collectors.summingLong(l -> l));
-
-      System.out.println("TOTAL DURATION: " + duration.toMillis());
-      System.out.println("TOTAL SIZE OF FILES (MB): " + (totalSize / 1024 / 1024));
+    List<FilteredValueFile<?, Long>> filteredValueFiles = new ArrayList<>();
+    final ValueWithIdDeserializer<Long> serializer = new ValueWithIdDeserializer(new LongValueConverter());
+    for (Path path : files) {
+      filteredValueFiles.add(
+          new FilteredValueFile<>(path, i -> true, serializer, VariableValueIdPair::getIdIndex));
     }
+    SubsettingJoinNode node = new SubsettingJoinNode(filteredValueFiles);
+    Iterator<Long> iterator = node.reduce();
+    Instant start = Instant.now();
+    while (iterator.hasNext()) {
+      iterator.next();
+    }
+    Duration duration = Duration.between(start, Instant.now());
+    long totalSize = files.stream()
+        .map(file -> file.toFile().length())
+        .collect(Collectors.summingLong(l -> l));
+
+    System.out.println("TOTAL DURATION: " + duration.toMillis());
+    System.out.println("TOTAL SIZE OF FILES (MB): " + (totalSize / 1024 / 1024));
   }
 }

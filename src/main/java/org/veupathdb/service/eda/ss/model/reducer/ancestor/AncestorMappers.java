@@ -6,7 +6,7 @@ import java.util.Iterator;
 
 public class AncestorMappers {
 
-  public static Iterator<Long> fromEntity(Entity from, Entity to) {
+  public static Iterator<Long> fromEntity(Iterator<Long> idStream, Entity from, Entity to) {
     if (from.getAncestorEntities().contains(to)) {
 
       return null;

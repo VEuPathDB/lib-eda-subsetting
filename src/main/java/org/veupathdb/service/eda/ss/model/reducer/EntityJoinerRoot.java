@@ -1,11 +1,15 @@
 package org.veupathdb.service.eda.ss.model.reducer;
 
+import org.veupathdb.service.eda.ss.model.Entity;
+import org.veupathdb.service.eda.ss.model.reducer.ancestor.AncestorMapper;
+import org.veupathdb.service.eda.ss.model.reducer.ancestor.AncestorMappers;
 import org.veupathdb.service.eda.ss.model.variable.VariableValueIdPair;
 
 import java.util.Comparator;
 import java.util.Iterator;
 import java.util.List;
 import java.util.NoSuchElementException;
+import java.util.stream.Collectors;
 
 /**
  * Root of the reducer entity tree. The root of the tree represents the entity for which values are to be output.
@@ -18,10 +22,17 @@ import java.util.NoSuchElementException;
 public class EntityJoinerRoot<T> {
   private final List<Iterator<Long>> filteredStreams;
   private final Iterator<VariableValueIdPair<T>> values;
+  private final List<SubsettingJoinNode> children;
+  private final Entity entity;
 
-  public EntityJoinerRoot(List<Iterator<Long>> filteredStreams, Iterator<VariableValueIdPair<T>> values) {
+  public EntityJoinerRoot(List<Iterator<Long>> filteredStreams,
+                          Iterator<VariableValueIdPair<T>> values,
+                          List<SubsettingJoinNode> children,
+                          Entity entity) {
     this.filteredStreams = filteredStreams;
     this.values = values;
+    this.children = children;
+    this.entity = entity;
   }
 
   /**
@@ -31,8 +42,16 @@ public class EntityJoinerRoot<T> {
    */
   public Iterator<T> reduce() {
     final Comparator<Long> comparator = Comparator.naturalOrder();
+    List<Iterator<Long>> childStreams = children.stream()
+        .map(child -> child.reduce())
+        .map(childStream -> AncestorMappers.fromEntity(, ))
+        .collect(Collectors.toList());
     final StreamIntersectMerger<Long> intersectMerger = new StreamIntersectMerger<>(filteredStreams, comparator);
     return new ValueExtractor<>(intersectMerger, values);
+  }
+
+  private Iterator<Long> convertChildStream(SubsettingJoinNode node) {
+    return AncestorMappers.fromEntity(node.reduce(), node.getEntity(), entity);
   }
 
   private static class ValueExtractor<T> implements Iterator<T> {

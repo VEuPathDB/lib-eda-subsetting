@@ -18,8 +18,8 @@ public class LongValueConverter implements BinaryConverter<Long> {
   @Override
   public Long fromBytes(byte[] bytes, int offset) {
     long result = 0;
-    for (int i = offset; i < offset + 8; i++) {
-      result <<= 8;
+    for (int i = offset; i < offset + Long.BYTES; i++) {
+      result <<= 8; // Shift one byte, 8 bits.
       result |= (bytes[i] & BIT_MASK);
     }
     return result;

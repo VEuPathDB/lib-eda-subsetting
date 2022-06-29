@@ -1,14 +1,12 @@
 package org.veupathdb.service.eda.ss.model.reducer;
 
 import java.util.ArrayList;
-import java.util.Comparator;
 import java.util.Iterator;
 import java.util.List;
 
-public class SubsettingJoinNode { // root or not
+public class SubsettingJoinNode {
 
   private final List<FilteredValueFile<?, Long>> filters;
-  // children
 
   public SubsettingJoinNode(List<FilteredValueFile<?, Long>> filters) {
     this.filters = filters;

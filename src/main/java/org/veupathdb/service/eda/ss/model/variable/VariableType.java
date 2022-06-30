@@ -18,7 +18,7 @@ public enum VariableType {
       VariableType::StringListToJsonStringArray, StringVariable::getGenericBinaryConverter),
 
   NUMBER("number_value", "number", rs -> doubleValueOrNull(rs, rs.getDouble("number_value")),
-      VariableType::StringListToJsonFloatArray, IntegerVariable::getGenericBinaryConverter),
+      VariableType::StringListToJsonFloatArray, FloatingPointVariable::getGenericBinaryConverter),
   
   INTEGER("number_value", "integer", rs -> integerValueOrNull(rs, rs.getLong("number_value")),
       VariableType::StringListToJsonIntegerArray, IntegerVariable::getGenericBinaryConverter),

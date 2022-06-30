@@ -41,12 +41,10 @@ public class EntityJoinerRoot<T> {
    * @return
    */
   public Iterator<T> reduce() {
-    final Comparator<Long> comparator = Comparator.naturalOrder();
     List<Iterator<Long>> childStreams = children.stream()
-        .map(child -> child.reduce())
-        .map(childStream -> AncestorMappers.fromEntity(, ))
+        .map(child -> AncestorMappers.fromEntity(child.reduce(), child.getEntity(), this.entity))
         .collect(Collectors.toList());
-    final StreamIntersectMerger<Long> intersectMerger = new StreamIntersectMerger<>(filteredStreams, comparator);
+    final StreamIntersectMerger intersectMerger = new StreamIntersectMerger(filteredStreams);
     return new ValueExtractor<>(intersectMerger, values);
   }
 

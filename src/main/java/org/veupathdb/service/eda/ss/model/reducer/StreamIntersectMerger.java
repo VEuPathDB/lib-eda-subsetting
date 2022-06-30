@@ -1,37 +1,39 @@
 package org.veupathdb.service.eda.ss.model.reducer;
 
-import java.util.Comparator;
-import java.util.Iterator;
-import java.util.List;
-import java.util.NoSuchElementException;
+import java.util.*;
 import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 
 /**
  * This class is used to take the intersection of two or more streams of sequenced subsets.
  */
-public class StreamIntersectMerger<T> implements Iterator<T> {
-  private final List<PeekableIterator<T>> streams;
-  private final Comparator<T> comparator;
-  private T currentElement;
-  private int currentStream;
+public class StreamIntersectMerger implements Iterator<Long> {
+  private final PeekableIterator[] streams;
+  private final int[] nextStream;
+  private Long currentElement;
+  private int currentStreamIdx;
+  private PeekableIterator currentStream;
   private boolean hasStarted;
 
   /**
-   *
    * @param sortedStreams Collection of sorted streams to merge by intersection.
-   * @param comparator Comparator for testing equality of elements and checking if whether we've advanced a stream
-   *                   past the current element.
    */
-  public StreamIntersectMerger(List<Iterator<T>> sortedStreams, Comparator<T> comparator) {
+  public StreamIntersectMerger(List<Iterator<Long>> sortedStreams) {
     this.streams = sortedStreams.stream()
         .map(PeekableIterator::new)
-        .collect(Collectors.toList());
-    this.comparator = comparator;
-    this.currentStream = this.streams.indexOf(this.streams.stream()
-        .filter(s -> s.hasNext())
-        .max(Comparator.comparing(s -> s.next, comparator))
-        .get());
+        .toArray(PeekableIterator[]::new);
+    this.currentStream = Arrays.stream(streams)
+        .max(Comparator.comparing(iter -> iter.peek()))
+        .get();
+    this.currentStreamIdx = IntStream.range(0, streams.length)
+        .filter(i -> streams[i] == currentStream)
+        .findFirst()
+        .getAsInt();
+    // Cache a pointer to the nextStream to avoid excessive modulo operations.
+    this.nextStream = IntStream.range(0, streams.length)
+        .map(i -> (i + 1) % streams.length)
+        .toArray();
     hasStarted = false;
   }
 
@@ -49,13 +51,13 @@ public class StreamIntersectMerger<T> implements Iterator<T> {
   }
 
   @Override
-  public T next() {
+  public Long next() {
     if (!hasStarted) {
       setCurrentElement();
       hasStarted = true;
     }
-    T next = currentElement;
-    streams.get(currentStream).next();
+    Long next = currentElement;
+    currentStream.next();
     setCurrentElement();
     return next;
   }
@@ -64,35 +66,33 @@ public class StreamIntersectMerger<T> implements Iterator<T> {
    * Consumes all streams until they all point an element that is equal according to the {@link Comparator}.
    */
   private void setCurrentElement() {
-    T curr = streams.get(currentStream).peek();
-    if (curr == null) {
-      currentElement = null;
-      return;
-    }
+    Long curr = currentStream.peek();
     do {
-      curr = streams.get(currentStream).fastForward(curr, comparator);
+      curr = currentStream.fastForward(curr);
       if (curr == null) {
         currentElement = null;
         return;
       }
       advanceStreamPointer();
-    } while (comparator.compare(curr, streams.get(currentStream).peek()) > 0); // We've overshot, continue looping
+    } while (curr > currentStream.peek()); // We've overshot, continue looping
     currentElement = curr;
   }
 
   private int advanceStreamPointer() {
-    currentStream = (currentStream + 1) % streams.size();
-    return currentStream;
+    // Candidate for optimization
+    currentStreamIdx = nextStream[currentStreamIdx];
+    currentStream = streams[currentStreamIdx];
+    return currentStreamIdx;
   }
 
   /**
    * TODO: Pull this into FgpUtil? If so, fastForward should be pulled up a level.
    */
-  private static class PeekableIterator<T> implements Iterator<T> {
-    private T next;
-    private final Iterator<T> stream;
+  private static class PeekableIterator implements Iterator<Long> {
+    private Long next;
+    private final Iterator<Long> stream;
 
-    public PeekableIterator(Iterator<T> stream) {
+    public PeekableIterator(Iterator<Long> stream) {
       this.stream = stream;
       if (stream.hasNext()) {
         this.next = stream.next();
@@ -101,11 +101,11 @@ public class StreamIntersectMerger<T> implements Iterator<T> {
       }
     }
 
-    public T fastForward(T key, Comparator<T> comparator) {
+    public Long fastForward(Long key) {
       if (next == null) {
         return null;
       }
-      while (comparator.compare(next, key) < 0) {
+      while (next < key) {
         if (stream.hasNext()) {
           this.next = stream.next();
         } else {
@@ -121,16 +121,16 @@ public class StreamIntersectMerger<T> implements Iterator<T> {
       return next != null;
     }
 
-    public T peek() {
+    public Long peek() {
       return next;
     }
 
     @Override
-    public T next() {
+    public Long next() {
       if (next == null) {
         throw new NoSuchElementException();
       } else {
-        T curr = next;
+        Long curr = next;
         if (stream.hasNext()) {
           next = stream.next();
         } else {

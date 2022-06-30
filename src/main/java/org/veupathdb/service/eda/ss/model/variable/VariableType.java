@@ -4,42 +4,47 @@ import java.sql.Date;
 import java.sql.ResultSet;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.function.Supplier;
 
 import org.gusdb.fgputil.FormatUtil;
 import org.gusdb.fgputil.functional.FunctionalInterfaces.FunctionWithException;
 import org.gusdb.fgputil.functional.Functions;
 import org.json.JSONArray;
 import org.veupathdb.service.eda.ss.model.varcollection.CollectionType;
+import org.veupathdb.service.eda.ss.model.variable.binary.BinaryConverter;
 
 public enum VariableType {
   STRING("string_value", "string", rs -> rs.getString("string_value"),
-      VariableType::StringListToJsonStringArray),
+      VariableType::StringListToJsonStringArray, StringVariable::getGenericBinaryConverter),
 
   NUMBER("number_value", "number", rs -> doubleValueOrNull(rs, rs.getDouble("number_value")),
-      VariableType::StringListToJsonFloatArray),
+      VariableType::StringListToJsonFloatArray, IntegerVariable::getGenericBinaryConverter),
   
   INTEGER("number_value", "integer", rs -> integerValueOrNull(rs, rs.getLong("number_value")),
-      VariableType::StringListToJsonIntegerArray),
+      VariableType::StringListToJsonIntegerArray, IntegerVariable::getGenericBinaryConverter),
   
   DATE("date_value", "date", rs -> dateValueOrNull(rs.getDate("date_value")),
-      VariableType::StringListToJsonStringArray),
+      VariableType::StringListToJsonStringArray, DateVariable::getGenericBinaryConverter),
   
   LONGITUDE("number_value", "longitude", rs -> doubleValueOrNull(rs, rs.getDouble("number_value")),
-      VariableType::StringListToJsonFloatArray);
+      VariableType::StringListToJsonFloatArray, LongitudeVariable::getGenericBinaryConverter);
 
   private final String tallTableColumnName;
   private final String typeString;
   private final FunctionWithException<ResultSet, String> resultSetToStringValue;
   private final FunctionWithException<List<String>, JSONArray> multiValStringListToJsonArray;
+  private final Supplier<BinaryConverter<?>> converterSupplier;
 
   VariableType(String tallTableColumnName,
                String typeString,
                FunctionWithException<ResultSet, String> resultSetToStringValue,
-               FunctionWithException<List<String>, JSONArray> multiValStringListToJsonArray) {
+               FunctionWithException<List<String>, JSONArray> multiValStringListToJsonArray,
+               Supplier<BinaryConverter<?>> converterSupplier) {
     this.tallTableColumnName = tallTableColumnName;
     this.resultSetToStringValue = resultSetToStringValue;
     this.multiValStringListToJsonArray = multiValStringListToJsonArray;
     this.typeString = typeString;
+    this.converterSupplier = converterSupplier;
   }
 
   public String getTallTableColumnName() {
@@ -121,5 +126,9 @@ public enum VariableType {
 
   public String getTypeString() {
     return typeString;
+  }
+  
+  public Supplier<BinaryConverter<?>> getConverterSupplier() {
+    return converterSupplier;
   }
 }

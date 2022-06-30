@@ -18,9 +18,13 @@ public class DateVariable extends VariableWithValues<LocalDateTime> {
     validateType(VariableType.DATE);
   }
 
+  public static BinaryConverter<LocalDateTime> getGenericBinaryConverter() {
+    return new DateValueConverter();
+  }
+
   @Override
   public BinaryConverter<LocalDateTime> getBinaryConverter() {
-    return new DateValueConverter();
+    return getGenericBinaryConverter();
   }
 
   @Override

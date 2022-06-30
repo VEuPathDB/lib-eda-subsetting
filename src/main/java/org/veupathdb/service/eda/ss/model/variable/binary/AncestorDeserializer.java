@@ -14,7 +14,7 @@ public class AncestorDeserializer implements BinaryDeserializer<VariableValueIdP
 
   /**
    * Creates a new instance to deserialize ancestor files, extracting only the entity ID and the ID of the ancestor
-   * of interest specified by the {@param ancestorIndex}.
+   * of interest specified by ancestorColumn.
    *
    * @param listConverter Tuple serializer used to deserialize all ancestors.
    * @param ancestorColumn Column number (0-indexed) of ancestor to be returned.

@@ -4,7 +4,6 @@ import jakarta.ws.rs.BadRequestException;
 import org.veupathdb.service.eda.ss.model.distribution.NumberDistributionConfig;
 import org.veupathdb.service.eda.ss.model.variable.binary.BinaryConverter;
 import org.veupathdb.service.eda.ss.model.variable.binary.LongValueConverter;
-
 import java.util.Optional;
 
 public class IntegerVariable extends NumberVariable<Long> {
@@ -35,10 +34,15 @@ public class IntegerVariable extends NumberVariable<Long> {
       throw new RuntimeException(errPrefix + "units");
 
   }
-
+  
+  // static version for use when we don't have an instance
+  public static BinaryConverter<Long> getGenericBinaryConverter() {
+    return new LongValueConverter();
+  }
+  
   @Override
   public BinaryConverter<Long> getBinaryConverter() {
-    return new LongValueConverter();
+    return getGenericBinaryConverter();
   }
 
   @Override

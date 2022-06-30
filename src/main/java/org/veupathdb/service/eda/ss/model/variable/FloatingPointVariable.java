@@ -40,9 +40,13 @@ public class FloatingPointVariable extends NumberVariable<Double> {
 
   }
 
+  public static BinaryConverter<Double> getGenericBinaryConverter() {
+    return new DoubleValueConverter();
+  }
+
   @Override
   public BinaryConverter<Double> getBinaryConverter() {
-    return new DoubleValueConverter();
+    return getGenericBinaryConverter();
   }
 
   @Override

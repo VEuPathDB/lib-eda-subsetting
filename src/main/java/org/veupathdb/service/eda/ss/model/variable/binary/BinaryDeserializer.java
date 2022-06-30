@@ -1,7 +1,7 @@
 package org.veupathdb.service.eda.ss.model.variable.binary;
 
 /**
- * Base interface for converting binary to a value of type {@param T}.
+ * Base interface for converting binary to a value of type T.
  *
  * @param <T> Type of value to convert to from binary
  */

@@ -23,9 +23,15 @@ public class LongitudeVariable extends VariableWithValues<Double> {
     _properties = properties;
   }
 
+  // static version for use when we don't have an instance
+  public static BinaryConverter<Double> getGenericBinaryConverter() {
+    return new DoubleValueConverter();
+  }
+  
+  // instance method that provides typed return value
   @Override
   public BinaryConverter<Double> getBinaryConverter() {
-    return new DoubleValueConverter();
+    return getGenericBinaryConverter();
   }
 
   @Override

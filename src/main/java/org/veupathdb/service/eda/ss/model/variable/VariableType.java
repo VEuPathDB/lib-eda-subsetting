@@ -118,4 +118,8 @@ public enum VariableType {
   public boolean isSameTypeAs(CollectionType type) {
     return type.name().equals(name());
   }
+
+  public String getTypeString() {
+    return typeString;
+  }
 }

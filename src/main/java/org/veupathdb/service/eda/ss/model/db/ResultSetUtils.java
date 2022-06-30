@@ -1,6 +1,8 @@
 package org.veupathdb.service.eda.ss.model.db;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
+
+import java.io.IOException;
 import java.math.BigDecimal;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -91,7 +93,7 @@ public class ResultSetUtils {
       return jsonArrayOfString == null ? null
           : Arrays.asList(JsonUtil.Jackson.readValue(jsonArrayOfString, String[].class));
     }
-    catch (JsonProcessingException e) {
+    catch (IOException e) {
       throw new RuntimeException("Value in column " + columnName + " cannot be parsed into json array of strings: " + jsonArrayOfString);
     }
   }

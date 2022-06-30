@@ -1,7 +1,6 @@
 package org.veupathdb.service.eda.ss.model.reducer;
 
 import java.util.ArrayList;
-import java.util.Comparator;
 import java.util.Iterator;
 import java.util.List;
 
@@ -19,8 +18,7 @@ public class SubsettingJoinNode {
     for (FilteredValueFile<?, Long> file: filters) {
       idStreams.add(file);
     }
-    final Comparator<Long> comparator = Comparator.naturalOrder();
-    final StreamIntersectMerger<Long> intersectMerger = new StreamIntersectMerger<>(idStreams, comparator);
+    final StreamIntersectMerger intersectMerger = new StreamIntersectMerger(idStreams);
     return intersectMerger;
   }
 }

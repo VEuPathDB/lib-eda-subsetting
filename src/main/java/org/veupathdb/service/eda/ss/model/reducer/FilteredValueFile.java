@@ -71,6 +71,7 @@ public class FilteredValueFile<V, T> implements AutoCloseable, Iterator<T> {
         return;
       }
       VariableValueIdPair<V> valuePair = deserializer.fromBytes(bytes.get());
+//      System.out.println("INDEX: " + valuePair.getIdIndex() + " VALUE: " + valuePair.getValue());
       if (filterPredicate.test(valuePair.getValue())) {
         next = pairExtractor.apply(valuePair);
       } else {

@@ -11,4 +11,12 @@ public class DoubleValueConverterTest {
     byte[] arr = new DoubleValueConverter().toBytes(-6.0);
     Assertions.assertEquals(-6.0, converter.fromBytes(arr));
   }
+
+  @Test
+  public void testRandomValues() {
+    DoubleValueConverter converter = new DoubleValueConverter();
+    byte[] arr = new DoubleValueConverter().toBytes(3.6);
+    Assertions.assertEquals(3.6, converter.fromBytes(arr));
+  }
+
 }

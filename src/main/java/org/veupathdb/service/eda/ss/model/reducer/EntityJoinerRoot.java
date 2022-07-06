@@ -1,15 +1,12 @@
 package org.veupathdb.service.eda.ss.model.reducer;
 
 import org.veupathdb.service.eda.ss.model.Entity;
-import org.veupathdb.service.eda.ss.model.reducer.ancestor.AncestorMapper;
-import org.veupathdb.service.eda.ss.model.reducer.ancestor.AncestorMappers;
+import org.veupathdb.service.eda.ss.model.Study;
+import org.veupathdb.service.eda.ss.model.reducer.ancestor.AncestorMapperFactory;
 import org.veupathdb.service.eda.ss.model.variable.VariableValueIdPair;
 
-import java.util.Comparator;
 import java.util.Iterator;
 import java.util.List;
-import java.util.NoSuchElementException;
-import java.util.stream.Collectors;
 
 /**
  * Root of the reducer entity tree. The root of the tree represents the entity for which values are to be output.
@@ -17,87 +14,27 @@ import java.util.stream.Collectors;
  * 1. Map streams of idIndexes output by their children to idIndexes of the ancestor entity corresponding to this node.
  * 2. Apply filters on variable values belonging to the node's entity, outputting idIndexes
  * 3. Merge idIndexes mapped from children with idIndexes output by variable filters on this node and output a single stream of ids.
- * @param <T>
  */
-public class EntityJoinerRoot<T> {
-  private final List<Iterator<Long>> filteredStreams;
-  private final Iterator<VariableValueIdPair<T>> values;
-  private final List<SubsettingJoinNode> children;
-  private final Entity entity;
+public class EntityJoinerRoot {
+  private final List<Iterator<VariableValueIdPair<?>>> valueStreams;
+  private final SubsettingJoinNode node;
 
   public EntityJoinerRoot(List<Iterator<Long>> filteredStreams,
-                          Iterator<VariableValueIdPair<T>> values,
+                          List<Iterator<VariableValueIdPair<?>>> valueStreams,
                           List<SubsettingJoinNode> children,
-                          Entity entity) {
-    this.filteredStreams = filteredStreams;
-    this.values = values;
-    this.children = children;
-    this.entity = entity;
+                          Entity entity,
+                          Study study,
+                          AncestorMapperFactory ancestorMapperFactory) {
+    this.valueStreams = valueStreams;
+    this.node = new SubsettingJoinNode(filteredStreams, children, entity, study, ancestorMapperFactory);
   }
 
   /**
-   * Merge the filtered idIndex streams and map them to the values provided in the {@link EntityJoinerRoot#values} stream.
+   * Merge the filtered idIndex streams and map them to the values provided in the {@link EntityJoinerRoot#valueStreams}.
    * TODO: Merge in idIndex streams of recursively reduced child nodes.
    * @return
    */
-  public Iterator<T> reduce() {
-    List<Iterator<Long>> childStreams = children.stream()
-        .map(child -> AncestorMappers.fromEntity(child.reduce(), child.getEntity(), this.entity))
-        .collect(Collectors.toList());
-    final StreamIntersectMerger intersectMerger = new StreamIntersectMerger(filteredStreams);
-    return new ValueExtractor<>(intersectMerger, values);
-  }
-
-  private Iterator<Long> convertChildStream(SubsettingJoinNode node) {
-    return AncestorMappers.fromEntity(node.reduce(), node.getEntity(), entity);
-  }
-
-  private static class ValueExtractor<T> implements Iterator<T> {
-    private Iterator<Long> idIndexStream;
-    private Iterator<VariableValueIdPair<T>> valuesStream;
-    private long currentIdIndex;
-    private VariableValueIdPair<T> currentValue;
-
-    public ValueExtractor(Iterator<Long> idIndexStream, Iterator<VariableValueIdPair<T>> valuesStream) {
-      this.idIndexStream = idIndexStream;
-      this.valuesStream = valuesStream;
-      this.currentIdIndex = idIndexStream.hasNext() ? idIndexStream.next() : -1L;
-      this.currentValue = valuesStream.hasNext() ? valuesStream.next() : null;
-    }
-
-    @Override
-    public boolean hasNext() {
-      return currentIdIndex != -1L && currentValue != null;
-    }
-
-    @Override
-    public T next() {
-      if (!hasNext()) {
-        throw new NoSuchElementException();
-      }
-      while (currentIdIndex != currentValue.getIdIndex() && hasNext()) {
-        // Advance whichever stream is trailing behind.
-        if (currentIdIndex < currentValue.getIdIndex()) {
-          advanceIdStream(currentValue.getIdIndex());
-        } else {
-          advanceValuesStream(currentIdIndex);
-        }
-      }
-      T value = currentValue.getValue();
-      currentIdIndex = idIndexStream.hasNext() ? idIndexStream.next() : -1L;
-      return value;
-    }
-
-    private void advanceIdStream(long key) {
-      while (currentIdIndex < key && currentIdIndex != -1L) {
-        currentIdIndex = idIndexStream.hasNext() ? idIndexStream.next() : -1L;
-      }
-    }
-
-    private void advanceValuesStream(long key) {
-      while (currentValue.getIdIndex() < key) {
-        currentValue = valuesStream.hasNext() ? valuesStream.next() : null;
-      }
-    }
+  public Iterator<List<String>> reduce() {
+    return new ValueExtractor(valueStreams, node.reduce());
   }
 }

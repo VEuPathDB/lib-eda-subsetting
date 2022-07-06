@@ -28,7 +28,7 @@ public class AncestorExpander implements Iterator<Long> {
                           Iterator<Long> entityIdIndexStream) throws IOException {
     this.descendantStream = new FilteredValueFile(descendantsFilePath,
         x -> true,
-        new ValueWithIdDeserializer<>(deserializer),
+        deserializer,
         Function.identity());
     this.entityIdIndexStream = entityIdIndexStream;
   }

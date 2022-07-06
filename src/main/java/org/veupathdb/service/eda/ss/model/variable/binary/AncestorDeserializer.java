@@ -21,6 +21,9 @@ public class AncestorDeserializer implements BinaryDeserializer<VariableValueIdP
    * @param ancestorColumn Column number (0-indexed) of ancestor to be returned.
    */
   public AncestorDeserializer(ListConverter<Long> listConverter, int ancestorColumn) {
+    if (ancestorColumn < 0 || ancestorColumn > listConverter.getSize()) {
+      throw new IndexOutOfBoundsException("Ancestor column number " + ancestorColumn + " is out of bounds");
+    }
     this.listConverter = listConverter;
     this.ancestorColumn = ancestorColumn;
   }
@@ -46,6 +49,6 @@ public class AncestorDeserializer implements BinaryDeserializer<VariableValueIdP
 
   @Override
   public int numBytes() {
-    return listConverter.numBytes() * listConverter.getSize();
+    return listConverter.numBytes();
   }
 }

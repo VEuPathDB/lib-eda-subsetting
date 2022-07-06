@@ -20,6 +20,15 @@ public class StreamIntersectMerger implements Iterator<Long> {
    * @param sortedStreams Collection of sorted streams to merge by intersection.
    */
   public StreamIntersectMerger(List<Iterator<Long>> sortedStreams) {
+    if (sortedStreams.isEmpty() || !sortedStreams.stream().allMatch(Iterator::hasNext)) {
+      // If no input streams are provided, it should act as an "empty" Iterator.
+      // If any input stream is "empty", should act as an "empty" Iterator since we are intersecting Iterators.
+      hasStarted = true;
+      streams = null;
+      currentElement = null;
+      nextStream = null;
+      return;
+    }
     this.streams = sortedStreams.stream()
         .map(PeekableIterator::new)
         .toArray(PeekableIterator[]::new);

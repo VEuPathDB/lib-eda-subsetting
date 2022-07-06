@@ -25,9 +25,9 @@ public class DescendantCollapser implements Iterator<Long> {
   public DescendantCollapser(Path ancestorFilePath,
                              AncestorDeserializer deserializer,
                              Iterator<Long> currentEntityStream) throws IOException {
-    this.ancestorStream = new FilteredValueFile(ancestorFilePath,
+    this.ancestorStream = new FilteredValueFile<>(ancestorFilePath,
         x -> true,
-        new ValueWithIdDeserializer<>(deserializer),
+        deserializer,
         Function.identity());
     this.currentEntityStream = currentEntityStream;
   }

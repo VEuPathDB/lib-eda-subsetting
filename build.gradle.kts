@@ -26,7 +26,6 @@ val test by tasks.getting(Test::class) {
   useJUnitPlatform {
     excludeTags = setOf("Performance")
   }
-//  workingDir = File(project.projectDir, "test/resources")
 }
 
 val perfTest = task<Test>("perfTest") {
@@ -119,6 +118,4 @@ dependencies {
   // Unit Testing
   testImplementation("org.junit.jupiter:junit-jupiter:${junit}")
   testImplementation("org.hamcrest:hamcrest:2.2")
-  testImplementation("org.mockito:mockito-core:4.6.1")
-  testImplementation("org.mockito:mockito-junit-jupiter:4.6.1")
 }

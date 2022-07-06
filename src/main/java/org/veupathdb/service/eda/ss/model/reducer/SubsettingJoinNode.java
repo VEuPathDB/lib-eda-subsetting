@@ -10,6 +10,12 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.stream.Collectors;
 
+/**
+ * Node representing an entity in the map-reduce entity tree. The structure of the tree is a function of the study's
+ * entity hierarchy and the output variable. Opens value streams for all variables on which we are filtering for this
+ * entity and intersects all of the ID indexes that are not filtered. Recursively reduce each child node in this manner
+ * and map the child ID Indexes to this element's ID indexes.
+ */
 public class SubsettingJoinNode {
   private final List<Iterator<Long>> filters;
   private final List<SubsettingJoinNode> children;
@@ -30,7 +36,6 @@ public class SubsettingJoinNode {
   }
 
   public Iterator<Long> reduce() {
-    // TODO include children.
     List<Iterator<Long>> childStreams = children.stream()
         .map(child -> ancestorMapperFactory.fromEntity(child.reduce(), study, child.getEntity(), entity))
         .collect(Collectors.toList());

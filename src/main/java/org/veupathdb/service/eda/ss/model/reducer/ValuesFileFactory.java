@@ -57,24 +57,6 @@ public class ValuesFileFactory {
         VariableValueIdPair::getIdIndex);
   }
 
-
-  public FilteredValueFile<Long, Long> createAncestorsDataStream(
-      Study study,
-      Entity ancestor,
-      Entity descendant
-  ) throws IOException {
-    int index = descendant.getAncestorEntities().indexOf(ancestor);
-    final LongValueConverter longValueConverter = new LongValueConverter();
-    final ListConverter<Long> ancestorTupleConverter = new ListConverter<>(longValueConverter, descendant.getAncestorEntities().size());
-    final AncestorDeserializer deserializer = new AncestorDeserializer(ancestorTupleConverter, index);
-    return new FilteredValueFile<>(
-        binaryFilesManager.getAncestorFile(study, descendant, BinaryFilesManager.Operation.READ),
-        x -> true,
-        deserializer,
-        VariableValueIdPair::getIdIndex
-    );
-  }
-
   public <V> FilteredValueFile<V, VariableValueIdPair<?>> createValuesFile(
       Study study,
       VariableWithValues<V> variable) throws IOException {

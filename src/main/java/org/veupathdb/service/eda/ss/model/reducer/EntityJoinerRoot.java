@@ -17,7 +17,7 @@ import java.util.List;
  */
 public class EntityJoinerRoot {
   private final List<Iterator<VariableValueIdPair<?>>> valueStreams;
-  private final SubsettingJoinNode node;
+  private final SubsettingJoinNode rootNode;
 
   public EntityJoinerRoot(List<Iterator<Long>> filteredStreams,
                           List<Iterator<VariableValueIdPair<?>>> valueStreams,
@@ -26,7 +26,7 @@ public class EntityJoinerRoot {
                           Study study,
                           AncestorMapperFactory ancestorMapperFactory) {
     this.valueStreams = valueStreams;
-    this.node = new SubsettingJoinNode(filteredStreams, children, entity, study, ancestorMapperFactory);
+    this.rootNode = new SubsettingJoinNode(filteredStreams, children, entity, study, ancestorMapperFactory);
   }
 
   /**
@@ -35,6 +35,6 @@ public class EntityJoinerRoot {
    * @return
    */
   public Iterator<List<String>> reduce() {
-    return new ValueExtractor(valueStreams, node.reduce());
+    return new ValueExtractor(valueStreams, rootNode.reduce());
   }
 }

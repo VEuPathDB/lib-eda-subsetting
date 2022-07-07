@@ -7,6 +7,10 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.stream.Collectors;
 
+/**
+ * Provides a stream of variable value records extracted from a stream of ID indexes and a collection of
+ * ID index, variable value tuples. The resulting stream provides a tuple for each ID index provided.
+ */
 public class ValueExtractor implements Iterator<List<String>> {
   private List<ValueStream> streams;
   private Iterator<Long> idIndexStream;
@@ -39,6 +43,7 @@ public class ValueExtractor implements Iterator<List<String>> {
         stream.next();
       }
       if (stream.peek().getIdIndex() == currentIndex) {
+        // TODO We might need to a VariableType-Specific implementation of this toString.
         record.add(stream.next().getValue().toString());
       } else {
         record.add("");

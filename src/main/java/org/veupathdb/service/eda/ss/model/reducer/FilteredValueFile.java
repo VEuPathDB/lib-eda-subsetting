@@ -27,6 +27,17 @@ public class FilteredValueFile<V, T> implements AutoCloseable, Iterator<T> {
   private T next;
   private boolean hasStarted;
 
+  /**
+   * Constructs an instance of a FilteredValueFile.
+   *
+   * @param path Path to file containing binary-encoded variable ID index, variable value tuples.
+   * @param filterPredicate Predicate applied to variable values to filter tuples.
+   * @param deserializer Deserializer used to deserialize binary-encoded data.
+   * @param pairExtractor Function applied to determine data to extract from tuples and output in the stream. In some
+   *                      instances, we may only need the ID indexes while in others, we might want to extract the
+   *                      values or the entire tuple.
+   * @throws IOException If an I/O error occurs while opening binary file.
+   */
   public FilteredValueFile(Path path,
                            Predicate<V> filterPredicate,
                            BinaryDeserializer<VariableValueIdPair<V>> deserializer,

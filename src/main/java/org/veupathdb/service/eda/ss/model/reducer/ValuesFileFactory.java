@@ -1,6 +1,5 @@
 package org.veupathdb.service.eda.ss.model.reducer;
 
-import org.veupathdb.service.eda.ss.model.Entity;
 import org.veupathdb.service.eda.ss.model.Study;
 import org.veupathdb.service.eda.ss.model.filter.SingleValueFilter;
 import org.veupathdb.service.eda.ss.model.variable.VariableValueIdPair;
@@ -12,11 +11,9 @@ import java.nio.file.Path;
 import java.util.function.Function;
 
 public class ValuesFileFactory {
-  private final Path entityRepositoryDir;
   private final BinaryFilesManager binaryFilesManager;
 
   public ValuesFileFactory(Path entityRepositoryDir) {
-    this.entityRepositoryDir = entityRepositoryDir;
     this.binaryFilesManager = new BinaryFilesManager(entityRepositoryDir);
   }
 
@@ -29,23 +26,7 @@ public class ValuesFileFactory {
    * @throws IOException
    */
   public <V, T extends VariableWithValues<V>> FilteredValueFile<V, Long> createFromFilter(
-      SingleValueFilter<V, T> filter) throws IOException {
-    /**
-     * TODO Read metadata from files here for Long vs. Integer or String bytes length?
-     */
-    BinaryConverter<V> serializer = filter.getVariable().getBinaryConverter();
-    return new FilteredValueFile<>(
-        constructPath(filter),
-        filter.getPredicate(),
-        new ValueWithIdDeserializer<>(serializer),
-        VariableValueIdPair::getIdIndex);
-  }
-
-  public <V, T extends VariableWithValues<V>> FilteredValueFile<V, Long> createFromFilter(
       SingleValueFilter<V, T> filter, Study study) throws IOException {
-    /**
-     * TODO Read metadata from files here for Long vs. Integer or String bytes length?
-     */
     BinaryConverter<V> serializer = filter.getVariable().getBinaryConverter();
     return new FilteredValueFile<>(
         binaryFilesManager.getVariableFile(study,
@@ -60,25 +41,14 @@ public class ValuesFileFactory {
   public <V> FilteredValueFile<V, VariableValueIdPair<?>> createValuesFile(
       Study study,
       VariableWithValues<V> variable) throws IOException {
-    /**
-     * TODO Read metadata from files here for Long vs. Integer or String bytes length?
-     */
     BinaryConverter<V> serializer = variable.getBinaryConverter();
     return new FilteredValueFile(
         binaryFilesManager.getVariableFile(study,
             variable.getEntity(),
             variable,
             BinaryFilesManager.Operation.READ),
-        x -> true,
+        x -> true, // Always return true, extract all ID index pairs and variable values.
         new ValueWithIdDeserializer<>(serializer),
-        Function.identity());
-  }
-
-  private Path constructPath(SingleValueFilter<?,?> filter) {
-    // TODO: Study ID instead of StudyAbbrev?
-    return Path.of(entityRepositoryDir.toString(),
-        filter.getEntity().getStudyAbbrev(),
-        filter.getEntity().getId(),
-        filter.getVariable().getId());
+        Function.identity()); // Provide a stream of entire VariableValueIdPair objects.
   }
 }

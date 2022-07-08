@@ -3,8 +3,6 @@ package org.veupathdb.service.eda.ss.model.reducer;
 import org.hamcrest.MatcherAssert;
 import org.hamcrest.Matchers;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.junit.jupiter.MockitoExtension;
 import org.veupathdb.service.eda.ss.model.filter.NumberRangeFilter;
 import org.veupathdb.service.eda.ss.model.reducer.ancestor.AncestorMapperFactory;
 import org.veupathdb.service.eda.ss.model.variable.VariableValueIdPair;
@@ -18,7 +16,6 @@ import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 
-@ExtendWith(MockitoExtension.class)
 public class EntityJoinerRootTest {
   private Path binaryDirectory = Path.of(System.getProperty("user.dir"), "src/test/resources");
   private BinaryFilesManager binaryFilesManager = new BinaryFilesManager(binaryDirectory);

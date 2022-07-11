@@ -9,9 +9,9 @@ import java.util.*;
  * all input streams are sorted.
  */
 public class StreamIntersectMerger implements Iterator<Long> {
-  private final PeekableIterator[] peekableStreams;
+  private final PeekableIterator[] peekableIdIndexStreams;
   private Long nextOutputIndex;
-  private PeekableIterator currentStream;
+  private PeekableIterator currentIdIndexStream;
   private boolean hasStarted;
   private RingLinkedList streamRing;
 
@@ -23,16 +23,16 @@ public class StreamIntersectMerger implements Iterator<Long> {
     // If any input stream is "empty", should act as an "empty" Iterator since we are intersecting Iterators.
     if (sortedStreams.isEmpty() || !sortedStreams.stream().allMatch(Iterator::hasNext)) {
       hasStarted = true;
-      peekableStreams = null;
+      peekableIdIndexStreams = null;
       nextOutputIndex = null;
       return;
     }
     // Convert iterators into peekable iterators.
-    this.peekableStreams = sortedStreams.stream()
+    this.peekableIdIndexStreams = sortedStreams.stream()
         .map(PeekableIterator::new)
         .toArray(PeekableIterator[]::new);
-    this.streamRing = new RingLinkedList(peekableStreams);
-    this.currentStream = streamRing.cursor.iterator;
+    this.streamRing = new RingLinkedList(peekableIdIndexStreams);
+    this.currentIdIndexStream = streamRing.cursor.iterator;
     hasStarted = false;
   }
 
@@ -52,32 +52,32 @@ public class StreamIntersectMerger implements Iterator<Long> {
       hasStarted = true;
     }
     Long next = nextOutputIndex;
-    currentStream.next();
+    currentIdIndexStream.next();
     findNextMatchingIdIndex();
     return next;
   }
 
   private void findNextMatchingIdIndex() {
     boolean matchFound = false;
-    while (!matchFound && currentStream.hasNext()) {
-      Long candidateIdIndex = currentStream.peek();
+    while (!matchFound && currentIdIndexStream.hasNext()) {
+      Long candidateIdIndex = currentIdIndexStream.peek();
       // Iterate through each stream in the stream ring.
-      for (int i = 0; i < peekableStreams.length; i++) {
-        currentStream = streamRing.advanceCursor().iterator;
+      for (int i = 0; i < peekableIdIndexStreams.length; i++) {
+        currentIdIndexStream = streamRing.advanceCursor().iterator;
         // Advance the stream until it matches the candidate. If we overshoot, break and start our loop over
         // with the ID index we found as our new candidate.
-        Long idIndex = currentStream.skipUntilMatchesOrExceeds(candidateIdIndex);
+        Long idIndex = currentIdIndexStream.skipUntilMatchesOrExceeds(candidateIdIndex);
         if (!Objects.equals(idIndex, candidateIdIndex)) {
           break;
         }
         // If we've iterated through all the streams without breaking, indicate a match was found.
-        if (i == peekableStreams.length - 1) {
+        if (i == peekableIdIndexStreams.length - 1) {
           nextOutputIndex = candidateIdIndex;
           matchFound = true;
         }
       }
     }
-    if (!currentStream.hasNext()) {
+    if (!currentIdIndexStream.hasNext()) {
       // Indicate end of iterator if we hit the end of any stream.
       nextOutputIndex = null;
     }

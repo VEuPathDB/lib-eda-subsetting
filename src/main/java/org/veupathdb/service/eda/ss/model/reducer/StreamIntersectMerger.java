@@ -83,6 +83,10 @@ public class StreamIntersectMerger implements Iterator<Long> {
     }
   }
 
+  /**
+   * Utility class which stores a linked list of PeekableIterators. The elements are linked in a ring-like structure
+   * such that the last element points to the first to allow for natural traversal of streams.
+   */
   private static class RingLinkedList {
     private Node cursor;
 
@@ -130,6 +134,11 @@ public class StreamIntersectMerger implements Iterator<Long> {
       }
     }
 
+    /**
+     * Advance the stream until the next element either matches or exceeds the key.
+     * @param key Value to advance the stream to or past if the key is not present in the stream.
+     * @return Value the stream is advanced to, either key or the next highest value of the stream.
+     */
     public Long skipUntilMatchesOrExceeds(Long key) {
       if (next == null) {
         return null;

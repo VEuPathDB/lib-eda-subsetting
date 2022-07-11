@@ -32,7 +32,7 @@ public class StreamIntersectMerger implements Iterator<Long> {
         .map(PeekableIterator::new)
         .toArray(PeekableIterator[]::new);
     this.streamRing = new RingLinkedList(peekableIdIndexStreams);
-    this.currentIdIndexStream = streamRing.cursor.iterator;
+    this.currentIdIndexStream = streamRing.cursor.currentStream;
     hasStarted = false;
   }
 
@@ -62,8 +62,8 @@ public class StreamIntersectMerger implements Iterator<Long> {
     while (!matchFound && currentIdIndexStream.hasNext()) {
       Long candidateIdIndex = currentIdIndexStream.peek();
       // Iterate through each stream in the stream ring.
-      for (int i = 0; i < peekableIdIndexStreams.length; i++) {
-        currentIdIndexStream = streamRing.advanceCursor().iterator;
+      for (int i = 0; i < streamRing.size(); i++) {
+        currentIdIndexStream = streamRing.advanceCursor().currentStream;
         // Advance the stream until it matches the candidate. If we overshoot, break and start our loop over
         // with the ID index we found as our new candidate.
         Long idIndex = currentIdIndexStream.skipUntilMatchesOrExceeds(candidateIdIndex);
@@ -71,7 +71,7 @@ public class StreamIntersectMerger implements Iterator<Long> {
           break;
         }
         // If we've iterated through all the streams without breaking, indicate a match was found.
-        if (i == peekableIdIndexStreams.length - 1) {
+        if (i == streamRing.size() - 1) {
           nextOutputIndex = candidateIdIndex;
           matchFound = true;
         }
@@ -89,8 +89,10 @@ public class StreamIntersectMerger implements Iterator<Long> {
    */
   private static class RingLinkedList {
     private Node cursor;
+    private int size;
 
     public RingLinkedList(PeekableIterator[] iterators) {
+      this.size = iterators.length;
       Node first = new Node(iterators[0]);
       cursor = first;
       for (int i = 0; i < iterators.length; i++) {
@@ -103,17 +105,21 @@ public class StreamIntersectMerger implements Iterator<Long> {
       }
     }
 
+    public int size() {
+      return size;
+    }
+
     public Node advanceCursor() {
       this.cursor = cursor.next;
       return this.cursor;
     }
 
     private static class Node {
-      private final PeekableIterator iterator;
+      private final PeekableIterator currentStream;
       private Node next;
 
       public Node(PeekableIterator peekableIterator) {
-        this.iterator = peekableIterator;
+        this.currentStream = peekableIterator;
       }
     }
   }

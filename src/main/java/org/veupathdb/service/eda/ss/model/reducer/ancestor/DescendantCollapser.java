@@ -1,9 +1,8 @@
 package org.veupathdb.service.eda.ss.model.reducer.ancestor;
 
-import org.veupathdb.service.eda.ss.model.reducer.FilteredValueFile;
+import org.veupathdb.service.eda.ss.model.reducer.FilteredValueIterator;
 import org.veupathdb.service.eda.ss.model.variable.VariableValueIdPair;
 import org.veupathdb.service.eda.ss.model.variable.binary.AncestorDeserializer;
-import org.veupathdb.service.eda.ss.model.variable.binary.ValueWithIdDeserializer;
 
 import java.io.IOException;
 import java.nio.file.Path;
@@ -26,7 +25,7 @@ public class DescendantCollapser implements Iterator<Long> {
   public DescendantCollapser(Path ancestorFilePath,
                              AncestorDeserializer deserializer,
                              Iterator<Long> currentEntityStream) throws IOException {
-    this.ancestorStream = new FilteredValueFile<>(ancestorFilePath,
+    this.ancestorStream = new FilteredValueIterator<>(ancestorFilePath,
         x -> true,
         deserializer,
         Function.identity());

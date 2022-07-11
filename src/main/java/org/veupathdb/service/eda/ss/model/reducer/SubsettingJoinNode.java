@@ -2,10 +2,8 @@ package org.veupathdb.service.eda.ss.model.reducer;
 
 import org.veupathdb.service.eda.ss.model.Entity;
 import org.veupathdb.service.eda.ss.model.Study;
-import org.veupathdb.service.eda.ss.model.reducer.ancestor.AncestorMapperFactory;
-import org.veupathdb.service.eda.ss.model.variable.VariableValueIdPair;
+import org.veupathdb.service.eda.ss.model.reducer.ancestor.EntityIdIndexIteratorConverter;
 
-import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -21,27 +19,30 @@ public class SubsettingJoinNode {
   private final List<SubsettingJoinNode> children;
   private final Entity entity;
   private final Study study;
-  private final AncestorMapperFactory ancestorMapperFactory;
+  private final EntityIdIndexIteratorConverter entityIdIndexIteratorConverter;
 
   public SubsettingJoinNode(List<Iterator<Long>> filteredStreams,
                             List<SubsettingJoinNode> children,
                             Entity entity,
                             Study study,
-                            AncestorMapperFactory ancestorMapperFactory) {
+                            EntityIdIndexIteratorConverter entityIdIndexIteratorConverter) {
     this.filters = filteredStreams;
     this.children = children;
     this.entity = entity;
     this.study = study;
-    this.ancestorMapperFactory = ancestorMapperFactory;
+    this.entityIdIndexIteratorConverter = entityIdIndexIteratorConverter;
   }
 
   public Iterator<Long> reduce() {
+    // Recursively call reduce() on children, converting the child's entity ID indexes to this entity's.
     List<Iterator<Long>> childStreams = children.stream()
-        .map(child -> ancestorMapperFactory.fromEntity(child.reduce(), study, child.getEntity(), entity))
+        .map(child -> entityIdIndexIteratorConverter.fromEntity(child.reduce(), study, child.getEntity(), entity))
         .collect(Collectors.toList());
+    // Merge the filtered data streams if there are more than one.
     final Iterator<Long> joinedFilterStream = filters.size() == 1
         ? filters.get(0)
         : new StreamIntersectMerger(filters);
+    // Merge the child data streams if there are more than one.
     final Iterator<Long> joinedChildStream = childStreams.size() == 1
         ? childStreams.get(0)
         : new StreamIntersectMerger(childStreams);

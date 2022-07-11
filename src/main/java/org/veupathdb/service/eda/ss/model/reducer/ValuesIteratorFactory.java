@@ -10,25 +10,25 @@ import java.io.IOException;
 import java.nio.file.Path;
 import java.util.function.Function;
 
-public class ValuesFileFactory {
+public class ValuesIteratorFactory {
   private final BinaryFilesManager binaryFilesManager;
 
-  public ValuesFileFactory(Path entityRepositoryDir) {
+  public ValuesIteratorFactory(Path entityRepositoryDir) {
     this.binaryFilesManager = new BinaryFilesManager(entityRepositoryDir);
   }
 
   /**
    * Open a binary file based on the filter passed in. Passes the predicate associated with the filter to the
-   * {@link FilteredValueFile} which produces a stream of IDs based on the filter.
-   * @param filter Filter for which to create a {@link FilteredValueFile}.
+   * {@link FilteredValueIterator} which produces a stream of IDs based on the filter.
+   * @param filter Filter for which to create a {@link FilteredValueIterator}.
    * @param <V> Type of variable {@link VariableWithValues}
    * @param <T> Type of value associated with {@link V}
    * @throws IOException
    */
-  public <V, T extends VariableWithValues<V>> FilteredValueFile<V, Long> createFromFilter(
+  public <V, T extends VariableWithValues<V>> FilteredValueIterator<V, Long> createFromFilter(
       SingleValueFilter<V, T> filter, Study study) throws IOException {
     BinaryConverter<V> serializer = filter.getVariable().getBinaryConverter();
-    return new FilteredValueFile<>(
+    return new FilteredValueIterator<>(
         binaryFilesManager.getVariableFile(study,
             filter.getEntity(),
             filter.getVariable(),
@@ -38,11 +38,11 @@ public class ValuesFileFactory {
         VariableValueIdPair::getIdIndex);
   }
 
-  public <V> FilteredValueFile<V, VariableValueIdPair<?>> createValuesFile(
+  public <V> FilteredValueIterator<V, VariableValueIdPair<?>> createFromVariable(
       Study study,
       VariableWithValues<V> variable) throws IOException {
     BinaryConverter<V> serializer = variable.getBinaryConverter();
-    return new FilteredValueFile(
+    return new FilteredValueIterator(
         binaryFilesManager.getVariableFile(study,
             variable.getEntity(),
             variable,

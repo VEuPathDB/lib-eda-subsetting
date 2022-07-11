@@ -29,7 +29,7 @@ public class FileBasedTabularSubsetter {
                                           TabularResponses.ResultConsumer resultConsumer) {
     /**
      * TODO:
-     * STEP 1: Construct {@link FilteredValueFile}s from filters.
+     * STEP 1: Construct {@link FilteredValueIterator}s from filters.
      * STEP 2: Construct OutputValueStreams from output variables.
      * STEP 3: Generate Tree based on output entity's position in the study's entity diagram.
      * STEP 4: Run a tree-traversal, kicking off file filter processing and merging streams as we go up the tree.

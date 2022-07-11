@@ -56,7 +56,7 @@ public class JoinNodePerformanceTest {
     final ValueWithIdDeserializer<Long> serializer = new ValueWithIdDeserializer(new LongValueConverter());
     for (Path path : files) {
       filteredValueFiles.add(
-          new FilteredValueFile<>(path, i -> true, serializer, VariableValueIdPair::getIdIndex));
+          new FilteredValueIterator<>(path, i -> true, serializer, VariableValueIdPair::getIdIndex));
     }
     Iterator<Long> merger = new StreamIntersectMerger(filteredValueFiles);
     Instant start = Instant.now();

@@ -2,7 +2,7 @@ package org.veupathdb.service.eda.ss.model.reducer;
 
 import org.veupathdb.service.eda.ss.model.Entity;
 import org.veupathdb.service.eda.ss.model.Study;
-import org.veupathdb.service.eda.ss.model.reducer.ancestor.AncestorMapperFactory;
+import org.veupathdb.service.eda.ss.model.reducer.ancestor.EntityIdIndexIteratorConverter;
 import org.veupathdb.service.eda.ss.model.variable.VariableValueIdPair;
 
 import java.util.Iterator;
@@ -24,9 +24,9 @@ public class EntityJoinerRoot {
                           List<SubsettingJoinNode> children,
                           Entity entity,
                           Study study,
-                          AncestorMapperFactory ancestorMapperFactory) {
+                          EntityIdIndexIteratorConverter entityIdIndexIteratorConverter) {
     this.valueStreams = valueStreams;
-    this.rootNode = new SubsettingJoinNode(filteredStreams, children, entity, study, ancestorMapperFactory);
+    this.rootNode = new SubsettingJoinNode(filteredStreams, children, entity, study, entityIdIndexIteratorConverter);
   }
 
   /**

@@ -8,6 +8,7 @@ import org.veupathdb.service.eda.ss.model.variable.binary.ValueWithIdDeserialize
 import java.io.IOException;
 import java.nio.file.Path;
 import java.util.Iterator;
+import java.util.Objects;
 import java.util.function.Function;
 
 /**
@@ -61,7 +62,7 @@ public class DescendantCollapser implements Iterator<Long> {
   private Long nextMatch() {
     // Continue until currentDescendant matches ancestor mapping's descendant, so we can return the parent.
     // If the parent is the same as lastAncestor, we also want to continue since we've already returned the parent.
-    while (currentAncestor.getIdIndex() != currentEntity || lastAncestor == currentAncestor.getValue()) {
+    while (currentAncestor.getIdIndex() != currentEntity || Objects.equals(lastAncestor, currentAncestor.getValue())) {
       if (currentAncestor.getIdIndex() > currentEntity) {
         // Advance the input entity stream if ancestor is greater to catch up.
         this.currentEntity = currentEntityStream.hasNext() ? currentEntityStream.next() : null;

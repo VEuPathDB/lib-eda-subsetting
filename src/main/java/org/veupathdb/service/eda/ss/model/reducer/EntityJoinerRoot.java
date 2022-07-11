@@ -31,7 +31,6 @@ public class EntityJoinerRoot {
 
   /**
    * Merge the filtered idIndex streams and map them to the values provided in the {@link EntityJoinerRoot#valueStreams}.
-   * TODO: Merge in idIndex streams of recursively reduced child nodes.
    * @return
    */
   public Iterator<List<String>> reduce() {

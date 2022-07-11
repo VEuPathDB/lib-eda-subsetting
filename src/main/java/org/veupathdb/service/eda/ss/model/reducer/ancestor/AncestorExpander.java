@@ -8,6 +8,7 @@ import org.veupathdb.service.eda.ss.model.variable.binary.ValueWithIdDeserialize
 import java.io.IOException;
 import java.nio.file.Path;
 import java.util.Iterator;
+import java.util.Objects;
 import java.util.function.Function;
 
 /**
@@ -26,15 +27,15 @@ public class AncestorExpander implements Iterator<Long> {
   public AncestorExpander(Path descendantsFilePath,
                           AncestorDeserializer deserializer,
                           Iterator<Long> entityIdIndexStream) throws IOException {
-    this.descendantStream = new FilteredValueFile(descendantsFilePath,
+    this(new FilteredValueFile(descendantsFilePath,
         x -> true,
         deserializer,
-        Function.identity());
-    this.entityIdIndexStream = entityIdIndexStream;
+        Function.identity()), entityIdIndexStream);
   }
 
-  public AncestorExpander(Iterator<VariableValueIdPair<Long>> descendantStream,
-                          Iterator<Long> entityIdIndexStream) {
+  // Visible for testing
+  AncestorExpander(Iterator<VariableValueIdPair<Long>> descendantStream,
+                   Iterator<Long> entityIdIndexStream) {
     this.descendantStream = descendantStream;
     this.entityIdIndexStream = entityIdIndexStream;
   }
@@ -71,7 +72,7 @@ public class AncestorExpander implements Iterator<Long> {
    */
   private Long nextMatch() {
     // Check if current entity equals ancestor.
-    if (currentDescendant.getValue() != currentEntity) {
+    if (!Objects.equals(currentDescendant.getValue(), currentEntity)) {
       // Current entity is not equal to ancestor, need to skip until they match to return their descendants.
       advanceStreamsUntilIntersect();
     }
@@ -82,7 +83,7 @@ public class AncestorExpander implements Iterator<Long> {
   }
 
   private void advanceStreamsUntilIntersect() {
-    while (currentDescendant.getValue() != currentEntity && currentEntity != null) {
+    while (!Objects.equals(currentDescendant.getValue(), currentEntity) && currentEntity != null) {
       if (currentDescendant.getValue() < currentEntity) {
         // If descendants are "lower" than current entity, advance descendant stream to catch up.
         this.currentDescendant = descendantStream.hasNext() ? descendantStream.next() : null;

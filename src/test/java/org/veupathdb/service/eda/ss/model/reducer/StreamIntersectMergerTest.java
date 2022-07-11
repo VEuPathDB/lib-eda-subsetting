@@ -69,9 +69,26 @@ public class StreamIntersectMergerTest {
           stream1.iterator(),
           stream2.iterator(),
           stream3.iterator()));
+      // Common multiples of 2, 3, and 5 between 1 and 100 are 30, 60 and 90.
       MatcherAssert.assertThat(result, Matchers.contains(30L, 60L, 90L));
     }
+
+    @Test
+    public void testInputStreamsNotSortedByStartingElement() {
+      final List<Long> stream1 = new ArrayList<>(fiveFactors);
+      final List<Long> stream2 = new ArrayList<>(fiveFactors);
+      final List<Long> stream3 = new ArrayList<>(threeFactors);
+      Iterable<Long> result = () -> new StreamIntersectMerger(List.of(
+          stream1.iterator(),
+          stream2.iterator(),
+          stream3.iterator()));
+      result.forEach(s -> System.out.println(s));
+      // Common multiples of 2, 3, and 5 between 1 and 100 are 30, 60 and 90.
+      MatcherAssert.assertThat(result, Matchers.contains(15L, 30L, 45L, 60L, 75L, 90L));
+    }
   }
+
+
 
   @Nested
   public class WhenSomeStreamsAreEmpty {
@@ -93,11 +110,5 @@ public class StreamIntersectMergerTest {
           emptyStream.iterator()));
       MatcherAssert.assertThat(result, Matchers.emptyIterable());
     }
-  }
-
-  // TODO: This should probably throw an exception
-  @Nested
-  public class WhenInputIsNotSorted {
-
   }
 }

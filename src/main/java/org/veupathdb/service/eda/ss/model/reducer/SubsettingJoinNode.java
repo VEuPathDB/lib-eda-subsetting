@@ -17,7 +17,7 @@ import java.util.stream.Collectors;
  * and map the child ID Indexes to this element's ID indexes.
  */
 public class SubsettingJoinNode {
-  private final List<Iterator<Long>> filters;
+  private final List<Iterator<Long>> filters; // ID indexes of this Entity's "type" for filtered data streams.
   private final List<SubsettingJoinNode> children;
   private final Entity entity;
   private final Study study;

@@ -52,6 +52,9 @@ public class StreamIntersectMerger implements Iterator<Long> {
       hasStarted = true;
     }
     Long next = nextOutputIndex;
+    if (next == null) {
+      throw new NoSuchElementException("No more elements in the iterator");
+    }
     currentIdIndexStream.next();
     findNextMatchingIdIndex();
     return next;

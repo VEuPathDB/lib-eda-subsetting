@@ -58,29 +58,43 @@ public class StreamIntersectMerger implements Iterator<Long> {
   }
 
   private void findNextMatchingIdIndex() {
-    boolean matchFound = false;
-    while (!matchFound && currentIdIndexStream.hasNext()) {
-      Long candidateIdIndex = currentIdIndexStream.peek();
-      // Iterate through each stream in the stream ring.
-      for (int i = 0; i < streamRing.size(); i++) {
-        currentIdIndexStream = streamRing.advanceCursor().currentStream;
-        // Advance the stream until it matches the candidate. If we overshoot, break and start our loop over
-        // with the ID index we found as our new candidate.
-        Long idIndex = currentIdIndexStream.skipUntilMatchesOrExceeds(candidateIdIndex);
-        if (!Objects.equals(idIndex, candidateIdIndex)) {
-          break;
-        }
-        // If we've iterated through all the streams without breaking, indicate a match was found.
-        if (i == streamRing.size() - 1) {
-          nextOutputIndex = candidateIdIndex;
-          matchFound = true;
-        }
+    // set candidate to current stream's value
+    Long candidateIdIndex = currentIdIndexStream.peek();
+    if (candidateIdIndex == null) {
+      nextOutputIndex = null;
+      return;
+    }
+    // value not null; counts as first concurring stream
+    int numConcurringStreams = 1;
+
+    // continual loop, trying to match all iterators to the same value
+    while (numConcurringStreams < streamRing.size()) {
+
+      // move to the next stream
+      currentIdIndexStream = streamRing.advanceCursor().currentStream;
+
+      // find a value >= our candidate
+      Long idIndex = currentIdIndexStream.skipUntilMatchesOrExceeds(candidateIdIndex);
+
+      // operations based on retrieved value
+      if (idIndex == null) {
+        // reached the end of the stream; no more matches ever
+        nextOutputIndex = null;
+        return;
+      }
+      else if (idIndex > candidateIdIndex) {
+        // current candidate is no good; use the higher value and reset count
+        candidateIdIndex = idIndex;
+        numConcurringStreams = 1;
+      }
+      else { // idIndex == candidateIdIndex
+        // current stream matches candidate; increment count and continue with this value
+        numConcurringStreams++;
       }
     }
-    if (!currentIdIndexStream.hasNext()) {
-      // Indicate end of iterator if we hit the end of any stream.
-      nextOutputIndex = null;
-    }
+
+    // able to exit loop without returning null first; must have found a match
+    nextOutputIndex = candidateIdIndex;
   }
 
   /**

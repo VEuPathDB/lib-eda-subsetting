@@ -52,17 +52,16 @@ public class JoinNodePerformanceTest {
 
   @Test
   public void run() throws Exception {
-    List<FilteredValueFile<?, Long>> filteredValueFiles = new ArrayList<>();
+    List<Iterator<Long>> filteredValueFiles = new ArrayList<>();
     final ValueWithIdDeserializer<Long> serializer = new ValueWithIdDeserializer(new LongValueConverter());
     for (Path path : files) {
       filteredValueFiles.add(
-          new FilteredValueFile<>(path, i -> true, serializer, VariableValueIdPair::getIdIndex));
+          new FilteredValueIterator<>(path, i -> true, serializer, VariableValueIdPair::getIdIndex));
     }
-    SubsettingJoinNode node = new SubsettingJoinNode(filteredValueFiles);
-    Iterator<Long> iterator = node.reduce();
+    Iterator<Long> merger = new StreamIntersectMerger(filteredValueFiles);
     Instant start = Instant.now();
-    while (iterator.hasNext()) {
-      iterator.next();
+    while (merger.hasNext()) {
+      merger.next();
     }
     Duration duration = Duration.between(start, Instant.now());
     long totalSize = files.stream()

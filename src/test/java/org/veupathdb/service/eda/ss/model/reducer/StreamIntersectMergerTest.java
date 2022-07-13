@@ -7,7 +7,6 @@ import org.junit.jupiter.api.Test;
 
 import java.util.*;
 import java.util.stream.Collectors;
-import java.util.stream.IntStream;
 import java.util.stream.LongStream;
 
 @Nested
@@ -36,6 +35,14 @@ public class StreamIntersectMergerTest {
         .collect(Collectors.toList());
 
     @Test
+    public void testOneStream() {
+      final Iterator<Long> stream1 = new ArrayList<>(oneToOneHundred).iterator();
+      StreamIntersectMerger merger = new StreamIntersectMerger(List.of(stream1));
+      Iterable<Long> iterable = () -> merger;
+      MatcherAssert.assertThat(iterable, Matchers.iterableWithSize(100));
+    }
+
+    @Test
     public void testTwoEqualStreams() {
       final Iterator<Long> stream1 = new ArrayList<>(oneToOneHundred).iterator();
       final Iterator<Long> stream2 = new ArrayList<>(oneToOneHundred).iterator();
@@ -62,19 +69,46 @@ public class StreamIntersectMergerTest {
           stream1.iterator(),
           stream2.iterator(),
           stream3.iterator()));
+      // Common multiples of 2, 3, and 5 between 1 and 100 are 30, 60 and 90.
       MatcherAssert.assertThat(result, Matchers.contains(30L, 60L, 90L));
+    }
+
+    @Test
+    public void testInputStreamsNotSortedByStartingElement() {
+      final List<Long> stream1 = new ArrayList<>(fiveFactors);
+      final List<Long> stream2 = new ArrayList<>(fiveFactors);
+      final List<Long> stream3 = new ArrayList<>(threeFactors);
+      Iterable<Long> result = () -> new StreamIntersectMerger(List.of(
+          stream1.iterator(),
+          stream2.iterator(),
+          stream3.iterator()));
+      result.forEach(s -> System.out.println(s));
+      // Common multiples of 2, 3, and 5 between 1 and 100 are 30, 60 and 90.
+      MatcherAssert.assertThat(result, Matchers.contains(15L, 30L, 45L, 60L, 75L, 90L));
     }
   }
 
-  // TODO: Tests that randomly generate sets, sort and stream them through our merger and then validate that intersected
-  // sets are equal to our output stream.
-  public class WhenInputIsSortedAndRandom {
 
-  }
 
-  // TODO: This should probably throw an exception
   @Nested
-  public class WhenInputIsNotSorted {
+  public class WhenSomeStreamsAreEmpty {
+    private final List<Long> oneToOneHundred = LongStream.rangeClosed(1, 100)
+        .boxed()
+        .collect(Collectors.toList());
+    private final List<Long> emptyStream = Collections.emptyList();
 
+    @Test
+    public void testOnlyEmptyStream() {
+      Iterable<Long> result = () -> new StreamIntersectMerger(List.of(emptyStream.iterator()));
+      MatcherAssert.assertThat(result, Matchers.emptyIterable());
+    }
+
+    @Test
+    public void testOneEmptyStream() {
+      Iterable<Long> result = () -> new StreamIntersectMerger(List.of(
+          oneToOneHundred.iterator(),
+          emptyStream.iterator()));
+      MatcherAssert.assertThat(result, Matchers.emptyIterable());
+    }
   }
 }

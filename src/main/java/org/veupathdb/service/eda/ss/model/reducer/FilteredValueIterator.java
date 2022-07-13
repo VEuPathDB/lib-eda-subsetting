@@ -5,7 +5,6 @@ import org.veupathdb.service.eda.ss.model.variable.VariableValueIdPair;
 import org.veupathdb.service.eda.ss.model.variable.binary.BinaryDeserializer;
 
 import java.io.IOException;
-import java.nio.ByteBuffer;
 import java.nio.file.Path;
 import java.util.Iterator;
 import java.util.NoSuchElementException;
@@ -19,7 +18,7 @@ import java.util.function.Predicate;
  * Outputs the ID indexes while applying a filter to the variable values.
  * @param <V> type of the value
  */
-public class FilteredValueFile<V, T> implements AutoCloseable, Iterator<T> {
+public class FilteredValueIterator<V, T> implements AutoCloseable, Iterator<T> {
   private final Predicate<V> filterPredicate;
   private final DualBufferBinaryRecordReader reader;
   private final BinaryDeserializer<VariableValueIdPair<V>> deserializer;
@@ -27,10 +26,21 @@ public class FilteredValueFile<V, T> implements AutoCloseable, Iterator<T> {
   private T next;
   private boolean hasStarted;
 
-  public FilteredValueFile(Path path,
-                           Predicate<V> filterPredicate,
-                           BinaryDeserializer<VariableValueIdPair<V>> deserializer,
-                           Function<VariableValueIdPair<V>, T> pairExtractor) throws IOException {
+  /**
+   * Constructs an instance of a FilteredValueFile.
+   *
+   * @param path Path to file containing binary-encoded variable ID index, variable value tuples.
+   * @param filterPredicate Predicate applied to variable values to filter tuples.
+   * @param deserializer Deserializer used to deserialize binary-encoded data.
+   * @param pairExtractor Function applied to determine data to extract from tuples and output in the stream. In some
+   *                      instances, we may only need the ID indexes while in others, we might want to extract the
+   *                      values or the entire tuple.
+   * @throws IOException If an I/O error occurs while opening binary file.
+   */
+  public FilteredValueIterator(Path path,
+                               Predicate<V> filterPredicate,
+                               BinaryDeserializer<VariableValueIdPair<V>> deserializer,
+                               Function<VariableValueIdPair<V>, T> pairExtractor) throws IOException {
     final byte[] byteBuffer = new byte[deserializer.numBytes()];
     this.filterPredicate = filterPredicate;
     this.reader = new DualBufferBinaryRecordReader(path,

@@ -3,56 +3,115 @@ package org.veupathdb.service.eda.ss.model.reducer;
 import org.hamcrest.MatcherAssert;
 import org.hamcrest.Matchers;
 import org.junit.jupiter.api.Test;
+import org.veupathdb.service.eda.ss.model.filter.NumberRangeFilter;
+import org.veupathdb.service.eda.ss.model.reducer.ancestor.EntityIdIndexIteratorConverter;
 import org.veupathdb.service.eda.ss.model.variable.VariableValueIdPair;
+import org.veupathdb.service.eda.ss.model.variable.binary.BinaryFilesManager;
+import org.veupathdb.service.eda.ss.testutil.IndiaICEMRStudy;
 
+import java.io.IOException;
+import java.nio.file.Path;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Iterator;
 import java.util.List;
 
 public class EntityJoinerRootTest {
+  private Path binaryDirectory = Path.of(System.getProperty("user.dir"), "src/test/resources");
+  private BinaryFilesManager binaryFilesManager = new BinaryFilesManager(binaryDirectory);
+  private EntityIdIndexIteratorConverter entityIdIndexIteratorConverter = new EntityIdIndexIteratorConverter(binaryFilesManager);
+  private ValuesIteratorFactory valuesIteratorFactory = new ValuesIteratorFactory(binaryDirectory);
+  private final IndiaICEMRStudy indiaICEMRStudy = new IndiaICEMRStudy();
 
   @Test
-  public void testSingleFilteredStreamOutputAllValues() {
-    final List<Long> idIndexes = List.of(1L, 2L, 3L, 4L, 5L);
-    final List<VariableValueIdPair<String>> varValues = List.of(
-        constructPair(1L, "1"),
-        constructPair(2L, "2"),
-        constructPair(3L, "3"),
-        constructPair(4L, "4"),
-        constructPair(5L, "5")
+  public void testThreeEntityFilter() throws IOException {
+    NumberRangeFilter<Long> sampleRangeFilter = new NumberRangeFilter<>(
+        "test",
+        indiaICEMRStudy.getSampleEntity(),
+        indiaICEMRStudy.getPlasmoFalcGametocytes(),
+        0L,
+        5L
     );
-    Iterable<String> joinerRoot = () -> new EntityJoinerRoot<>(List.of(idIndexes.iterator()), varValues.iterator()).reduce();
-    MatcherAssert.assertThat(joinerRoot, Matchers.contains("1", "2", "3", "4", "5"));
+    NumberRangeFilter<Long> timeSinceLastMalariaFilter = new NumberRangeFilter<>(
+        "test",
+        indiaICEMRStudy.getParticipantEntity(),
+        indiaICEMRStudy.getTimeSinceLastMalaria(),
+        60L,
+        180L
+    );
+    NumberRangeFilter<Long> personsInHouseholdFilter = new NumberRangeFilter<>(
+        "test",
+        indiaICEMRStudy.getHouseholdEntity(),
+        indiaICEMRStudy.getPersonsInHousehold(),
+        0L,
+        10L
+    );
+    SubsettingJoinNode sampleNode = new SubsettingJoinNode(
+        List.of(valuesIteratorFactory.createFromFilter(sampleRangeFilter, indiaICEMRStudy.getStudy())),
+        Collections.emptyList(),
+        indiaICEMRStudy.getSampleEntity(),
+        indiaICEMRStudy.getStudy(),
+        entityIdIndexIteratorConverter
+    );
+    SubsettingJoinNode participantNode = new SubsettingJoinNode(
+        List.of(valuesIteratorFactory.createFromFilter(timeSinceLastMalariaFilter, indiaICEMRStudy.getStudy())),
+        List.of(sampleNode),
+        indiaICEMRStudy.getParticipantEntity(),
+        indiaICEMRStudy.getStudy(),
+        entityIdIndexIteratorConverter
+    );
+    Iterator<VariableValueIdPair<?>> values = valuesIteratorFactory.createFromVariable(indiaICEMRStudy.getStudy(), indiaICEMRStudy.getPersonsInHousehold());
+    EntityJoinerRoot householdRootNode = new EntityJoinerRoot(
+        List.of(valuesIteratorFactory.createFromFilter(personsInHouseholdFilter, indiaICEMRStudy.getStudy())),
+        List.of(values),
+        List.of(participantNode),
+        indiaICEMRStudy.getHouseholdEntity(),
+        indiaICEMRStudy.getStudy(),
+        entityIdIndexIteratorConverter
+    );
+    final List<List<String>> outputRecords = new ArrayList<>();
+    householdRootNode.reduce().forEachRemaining(rec -> outputRecords.add(rec));
+    MatcherAssert.assertThat(outputRecords, Matchers.empty());
   }
 
   @Test
-  public void testSingleFilteredStreamOutputSubset() {
-    final List<Long> idIndexes = List.of(2L, 4L);
-    final List<VariableValueIdPair<String>> varValues = List.of(
-        constructPair(1L, "1"),
-        constructPair(2L, "2"),
-        constructPair(3L, "3"),
-        constructPair(4L, "4"),
-        constructPair(5L, "5")
+  public void testTwoEntityFilter() throws IOException {
+    NumberRangeFilter<Long> rangeFilter = new NumberRangeFilter<>(
+        "test",
+        indiaICEMRStudy.getParticipantEntity(),
+        indiaICEMRStudy.getTimeSinceLastMalaria(),
+        60L,
+        180L
     );
-    Iterable<String> joinerRoot = () -> new EntityJoinerRoot<>(List.of(idIndexes.iterator()), varValues.iterator()).reduce();
-    MatcherAssert.assertThat(joinerRoot, Matchers.contains("2", "4"));
-  }
-
-  @Test
-  public void testMultipleFilteredStreamOutputSubset() {
-    final List<Long> stream1 = List.of(1L, 2L, 3L, 4L);
-    final List<Long> stream2 = List.of(3L, 4L, 5L);
-    final List<VariableValueIdPair<String>> varValues = List.of(
-        constructPair(1L, "1"),
-        constructPair(2L, "2"),
-        constructPair(3L, "3"),
-        constructPair(4L, "4"),
-        constructPair(5L, "5")
+    NumberRangeFilter<Long> rootRangeFilter = new NumberRangeFilter<>(
+        "test",
+        indiaICEMRStudy.getHouseholdEntity(),
+        indiaICEMRStudy.getPersonsInHousehold(),
+        0L,
+        10L
     );
-    Iterable<String> joinerRoot = () -> new EntityJoinerRoot<>(List.of(stream1.iterator(), stream2.iterator()),
-        varValues.iterator()).reduce();
-    MatcherAssert.assertThat(joinerRoot, Matchers.contains("3", "4"));
-  }
+    SubsettingJoinNode participantNode = new SubsettingJoinNode(
+        List.of(valuesIteratorFactory.createFromFilter(rangeFilter, indiaICEMRStudy.getStudy())),
+        Collections.emptyList(),
+        indiaICEMRStudy.getParticipantEntity(),
+        indiaICEMRStudy.getStudy(),
+        entityIdIndexIteratorConverter
+    );
+    Iterator<VariableValueIdPair<?>> values = valuesIteratorFactory.createFromVariable(indiaICEMRStudy.getStudy(), indiaICEMRStudy.getPersonsInHousehold());
+    Iterator<VariableValueIdPair<?>> secondColumn = valuesIteratorFactory.createFromVariable(indiaICEMRStudy.getStudy(), indiaICEMRStudy.getHealthFacilityDist());
 
+    EntityJoinerRoot joiner = new EntityJoinerRoot(
+        List.of(valuesIteratorFactory.createFromFilter(rootRangeFilter, indiaICEMRStudy.getStudy())),
+        List.of(values, secondColumn),
+        List.of(participantNode),
+        indiaICEMRStudy.getHouseholdEntity(),
+        indiaICEMRStudy.getStudy(),
+        entityIdIndexIteratorConverter
+    );
+    final List<List<String>> outputRecords = new ArrayList<>();
+    joiner.reduce().forEachRemaining(rec -> outputRecords.add(rec));
+    MatcherAssert.assertThat(outputRecords, Matchers.hasSize(38));
+  }
 
   private VariableValueIdPair<String> constructPair(long idIndex, String value) {
     return new VariableValueIdPair<>(idIndex, value);

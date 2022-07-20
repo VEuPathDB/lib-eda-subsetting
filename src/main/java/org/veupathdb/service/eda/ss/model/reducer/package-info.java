@@ -1,11 +1,10 @@
 /**
- * This package enables a reduction of a hierarchical entity tree into a tabular subsetting result. The entry point
- * into this class is the {@link org.veupathdb.service.eda.ss.model.reducer.FileBasedTabularSubsetter} which is
- * responsible for constructing the tree, and initiating its traversal. See (TODO TO BE IMPLEMENTED)
- * for details on the construction of the tree and {@link org.veupathdb.service.eda.ss.model.reducer.EntityJoinerRoot}
- * for details on its traversal.
+ * This package enables a reduction of a hierarchical entity tree into a tabular subsetting result. The
+ * {@link org.veupathdb.service.eda.ss.model.reducer.DataFlowTreeFactory} is responsible for constructing the
+ * entity tree and the {@link org.veupathdb.service.eda.ss.model.reducer.DataFlowMapReduceTree} contains the
+ * implementation for the tree traversal.
  *
- * The tree is comprised of a root {@link org.veupathdb.service.eda.ss.model.reducer.SubsettingJoinNode} which has
+ * The tree is composed of a root {@link org.veupathdb.service.eda.ss.model.reducer.SubsettingJoinNode} which has
  * N child nodes. Each node corresponds to an entity for which our subsetting query requires us to either filter
  * data points or output data points in our tabular result. The nodes open binary-encoded files, each file
  * corresponding to a particular variable, in order to filter and output data. These datastreams are joined by

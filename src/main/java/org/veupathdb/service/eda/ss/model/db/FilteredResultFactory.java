@@ -4,6 +4,7 @@ import java.io.BufferedWriter;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
+import java.nio.file.Path;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.*;
@@ -27,6 +28,10 @@ import org.gusdb.fgputil.functional.TreeNode;
 import org.gusdb.fgputil.iterator.GroupingIterator;
 import org.veupathdb.service.eda.ss.model.Entity;
 import org.veupathdb.service.eda.ss.model.Study;
+import org.veupathdb.service.eda.ss.model.reducer.DataFlowMapReduceTree;
+import org.veupathdb.service.eda.ss.model.reducer.DataFlowTreeFactory;
+import org.veupathdb.service.eda.ss.model.reducer.BinaryValuesStreamer;
+import org.veupathdb.service.eda.ss.model.reducer.ancestor.EntityIdIndexIteratorConverter;
 import org.veupathdb.service.eda.ss.model.tabular.SortSpecEntry;
 import org.veupathdb.service.eda.ss.model.tabular.TabularHeaderFormat;
 import org.veupathdb.service.eda.ss.model.tabular.TabularReportConfig;
@@ -37,6 +42,7 @@ import org.veupathdb.service.eda.ss.model.tabular.TabularResponses.ResultConsume
 import org.veupathdb.service.eda.ss.model.variable.Variable;
 import org.veupathdb.service.eda.ss.model.variable.VariableType;
 import org.veupathdb.service.eda.ss.model.variable.VariableWithValues;
+import org.veupathdb.service.eda.ss.model.variable.binary.BinaryFilesManager;
 
 import static org.gusdb.fgputil.iterator.IteratorUtil.toIterable;
 import static org.veupathdb.service.eda.ss.model.db.DB.Tables.AttributeValue.Columns.DATE_VALUE_COL_NAME;
@@ -126,6 +132,38 @@ public class FilteredResultFactory {
       }
     }, FETCH_SIZE_FOR_TABULAR_QUERIES);
   }
+
+  /**
+   * Writes to the passed output stream a "tabular" result.  Exact format depends on the passed
+   * responseType (JSON string[][] vs true tabular). Each row is a record containing
+   * the primary key columns and requested variables of the specified entity.
+   *
+   * @param study           study context
+   * @param outputEntity    entity type to return
+   * @param outputVariables variables requested
+   * @param filters         filters to apply to create a subset of records
+   */
+  public static void produceTabularSubsetFromFile(Study study, Entity outputEntity,
+                                           List<Variable> outputVariables, List<Filter> filters,
+                                           FormatterFactory formatter,
+                                           OutputStream outputStream,
+                                           Path binaryFilesDir) {
+    BinaryValuesStreamer binaryValuesStreamer = new BinaryValuesStreamer(binaryFilesDir);
+    EntityIdIndexIteratorConverter idIndexEntityConverter = new EntityIdIndexIteratorConverter(new BinaryFilesManager(binaryFilesDir));
+    DataFlowTreeFactory treeFactory = new DataFlowTreeFactory(binaryValuesStreamer, idIndexEntityConverter);
+    TreeNode<Entity> prunedEntityTree = pruneTree(study.getEntityTree(), filters, outputEntity);
+    DataFlowMapReduceTree tree = treeFactory.create(prunedEntityTree, outputEntity, filters, outputVariables, study);
+    try (BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(outputStream))) {
+      ResultConsumer resultConsumer = formatter.getFormatter(writer);
+      Iterator<List<String>> recordIterator = tree.reduce();
+      while (recordIterator.hasNext()) {
+        resultConsumer.consumeRow(recordIterator.next());
+      }
+    } catch (IOException e) {
+      throw new RuntimeException("Failed to write result", e);
+    }
+  }
+
 
   static List<String> getTabularPrettyHeaders(Entity outputEntity, List<Variable> outputVariables) {
     return getColumns(outputEntity, outputVariables, Entity::getDownloadPkColHeader, Variable::getDownloadColHeader);

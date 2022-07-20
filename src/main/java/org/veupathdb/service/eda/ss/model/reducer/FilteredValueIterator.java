@@ -16,7 +16,7 @@ import java.util.function.Predicate;
 /***
  * Stream of data produced by reading a binary-encoded file with entity ID indexes and variable values.
  * Outputs the ID indexes while applying a filter to the variable values.
- * @param <V> type of the value
+ * @param <V> type of the value returned by the iterator
  */
 public class FilteredValueIterator<V, T> implements AutoCloseable, Iterator<T> {
   private final Predicate<V> filterPredicate;
@@ -27,7 +27,7 @@ public class FilteredValueIterator<V, T> implements AutoCloseable, Iterator<T> {
   private boolean hasStarted;
 
   /**
-   * Constructs an instance of a FilteredValueFile.
+   * Constructs an instance of a FilteredValueIterator.
    *
    * @param path Path to file containing binary-encoded variable ID index, variable value tuples.
    * @param filterPredicate Predicate applied to variable values to filter tuples.
@@ -93,4 +93,5 @@ public class FilteredValueIterator<V, T> implements AutoCloseable, Iterator<T> {
   public void close() {
     reader.close();
   }
+
 }

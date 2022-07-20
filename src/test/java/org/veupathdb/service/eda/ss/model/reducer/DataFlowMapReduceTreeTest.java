@@ -9,18 +9,15 @@ import org.veupathdb.service.eda.ss.model.variable.VariableValueIdPair;
 import org.veupathdb.service.eda.ss.model.variable.binary.BinaryFilesManager;
 import org.veupathdb.service.eda.ss.testutil.IndiaICEMRStudy;
 
-import java.io.IOException;
+import java.io.*;
 import java.nio.file.Path;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Iterator;
-import java.util.List;
+import java.util.*;
 
-public class EntityJoinerRootTest {
+public class DataFlowMapReduceTreeTest {
   private Path binaryDirectory = Path.of(System.getProperty("user.dir"), "src/test/resources");
   private BinaryFilesManager binaryFilesManager = new BinaryFilesManager(binaryDirectory);
   private EntityIdIndexIteratorConverter entityIdIndexIteratorConverter = new EntityIdIndexIteratorConverter(binaryFilesManager);
-  private ValuesIteratorFactory valuesIteratorFactory = new ValuesIteratorFactory(binaryDirectory);
+  private BinaryValuesStreamer binaryValuesStreamer = new BinaryValuesStreamer(binaryDirectory);
   private final IndiaICEMRStudy indiaICEMRStudy = new IndiaICEMRStudy();
 
   @Test
@@ -47,27 +44,31 @@ public class EntityJoinerRootTest {
         10L
     );
     SubsettingJoinNode sampleNode = new SubsettingJoinNode(
-        List.of(valuesIteratorFactory.createFromFilter(sampleRangeFilter, indiaICEMRStudy.getStudy())),
+        List.of(binaryValuesStreamer.streamFilteredValues(sampleRangeFilter, indiaICEMRStudy.getStudy())),
         Collections.emptyList(),
         indiaICEMRStudy.getSampleEntity(),
         indiaICEMRStudy.getStudy(),
         entityIdIndexIteratorConverter
     );
     SubsettingJoinNode participantNode = new SubsettingJoinNode(
-        List.of(valuesIteratorFactory.createFromFilter(timeSinceLastMalariaFilter, indiaICEMRStudy.getStudy())),
+        List.of(binaryValuesStreamer.streamFilteredValues(timeSinceLastMalariaFilter, indiaICEMRStudy.getStudy())),
         List.of(sampleNode),
         indiaICEMRStudy.getParticipantEntity(),
         indiaICEMRStudy.getStudy(),
         entityIdIndexIteratorConverter
     );
-    Iterator<VariableValueIdPair<?>> values = valuesIteratorFactory.createFromVariable(indiaICEMRStudy.getStudy(), indiaICEMRStudy.getPersonsInHousehold());
-    EntityJoinerRoot householdRootNode = new EntityJoinerRoot(
-        List.of(valuesIteratorFactory.createFromFilter(personsInHouseholdFilter, indiaICEMRStudy.getStudy())),
-        List.of(values),
+    Iterator<VariableValueIdPair<?>> values = binaryValuesStreamer.streamIdValuePairs(indiaICEMRStudy.getStudy(), indiaICEMRStudy.getPersonsInHousehold());
+    List<VariableValueIdPair<List<Long>>> ancestorStream = List.of();
+    SubsettingJoinNode root = new SubsettingJoinNode(
+        List.of(binaryValuesStreamer.streamFilteredValues(personsInHouseholdFilter, indiaICEMRStudy.getStudy())),
         List.of(participantNode),
         indiaICEMRStudy.getHouseholdEntity(),
         indiaICEMRStudy.getStudy(),
-        entityIdIndexIteratorConverter
+        entityIdIndexIteratorConverter);
+    DataFlowMapReduceTree householdRootNode = new DataFlowMapReduceTree(
+        List.of(values),
+        root,
+        ancestorStream.iterator()
     );
     final List<List<String>> outputRecords = new ArrayList<>();
     householdRootNode.reduce().forEachRemaining(rec -> outputRecords.add(rec));
@@ -91,29 +92,30 @@ public class EntityJoinerRootTest {
         10L
     );
     SubsettingJoinNode participantNode = new SubsettingJoinNode(
-        List.of(valuesIteratorFactory.createFromFilter(rangeFilter, indiaICEMRStudy.getStudy())),
+        List.of(binaryValuesStreamer.streamFilteredValues(rangeFilter, indiaICEMRStudy.getStudy())),
         Collections.emptyList(),
         indiaICEMRStudy.getParticipantEntity(),
         indiaICEMRStudy.getStudy(),
         entityIdIndexIteratorConverter
     );
-    Iterator<VariableValueIdPair<?>> values = valuesIteratorFactory.createFromVariable(indiaICEMRStudy.getStudy(), indiaICEMRStudy.getPersonsInHousehold());
-    Iterator<VariableValueIdPair<?>> secondColumn = valuesIteratorFactory.createFromVariable(indiaICEMRStudy.getStudy(), indiaICEMRStudy.getHealthFacilityDist());
+    Iterator<VariableValueIdPair<?>> values = binaryValuesStreamer.streamIdValuePairs(indiaICEMRStudy.getStudy(), indiaICEMRStudy.getPersonsInHousehold());
+    Iterator<VariableValueIdPair<?>> secondColumn = binaryValuesStreamer.streamIdValuePairs(indiaICEMRStudy.getStudy(), indiaICEMRStudy.getHealthFacilityDist());
+    List<VariableValueIdPair<List<Long>>> ancestors = Collections.emptyList();
 
-    EntityJoinerRoot joiner = new EntityJoinerRoot(
-        List.of(valuesIteratorFactory.createFromFilter(rootRangeFilter, indiaICEMRStudy.getStudy())),
-        List.of(values, secondColumn),
+    SubsettingJoinNode root = new SubsettingJoinNode(
+        List.of(binaryValuesStreamer.streamFilteredValues(rootRangeFilter, indiaICEMRStudy.getStudy())),
         List.of(participantNode),
         indiaICEMRStudy.getHouseholdEntity(),
         indiaICEMRStudy.getStudy(),
-        entityIdIndexIteratorConverter
+        entityIdIndexIteratorConverter);
+
+    DataFlowMapReduceTree joiner = new DataFlowMapReduceTree(
+        List.of(values, secondColumn),
+        root,
+        ancestors.iterator()
     );
     final List<List<String>> outputRecords = new ArrayList<>();
     joiner.reduce().forEachRemaining(rec -> outputRecords.add(rec));
     MatcherAssert.assertThat(outputRecords, Matchers.hasSize(38));
-  }
-
-  private VariableValueIdPair<String> constructPair(long idIndex, String value) {
-    return new VariableValueIdPair<>(idIndex, value);
   }
 }

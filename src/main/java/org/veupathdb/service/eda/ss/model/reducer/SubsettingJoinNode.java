@@ -1,5 +1,7 @@
 package org.veupathdb.service.eda.ss.model.reducer;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.veupathdb.service.eda.ss.model.Entity;
 import org.veupathdb.service.eda.ss.model.Study;
 import org.veupathdb.service.eda.ss.model.reducer.ancestor.EntityIdIndexIteratorConverter;
@@ -15,6 +17,8 @@ import java.util.stream.Collectors;
  * and map the child ID Indexes to this element's ID indexes.
  */
 public class SubsettingJoinNode {
+  private static final Logger LOG = LogManager.getLogger(SubsettingJoinNode.class);
+
   private final List<Iterator<Long>> filters; // ID indexes of this Entity's "type" for filtered data streams.
   private final List<SubsettingJoinNode> children;
   private final Entity entity;
@@ -47,10 +51,13 @@ public class SubsettingJoinNode {
         ? childStreams.get(0)
         : new StreamIntersectMerger(childStreams);
     if (childStreams.isEmpty()) {
+      LOG.debug("No child data streams found for {}, returning the output of the joined filter streams.", entity.getId());
       return joinedFilterStream;
     } else if (filters.isEmpty()) {
+      LOG.debug("No filter data streams found for {}, returning the output of the child data streams.", entity.getId());
       return joinedChildStream;
     } else {
+      LOG.debug("This node has data streams from filter requests and children, joining these streams to intersect them.");
       return new StreamIntersectMerger(List.of(joinedFilterStream, joinedChildStream));
     }
   }

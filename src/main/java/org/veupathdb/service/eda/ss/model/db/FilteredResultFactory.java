@@ -24,13 +24,12 @@ import org.gusdb.fgputil.db.runner.SQLRunner;
 import org.gusdb.fgputil.db.runner.SingleLongResultSetHandler;
 import org.gusdb.fgputil.db.stream.ResultSetIterator;
 import org.gusdb.fgputil.db.stream.ResultSets;
+import org.gusdb.fgputil.functional.Functions;
 import org.gusdb.fgputil.functional.TreeNode;
 import org.gusdb.fgputil.iterator.GroupingIterator;
 import org.veupathdb.service.eda.ss.model.Entity;
 import org.veupathdb.service.eda.ss.model.Study;
-import org.veupathdb.service.eda.ss.model.reducer.DataFlowMapReduceTree;
-import org.veupathdb.service.eda.ss.model.reducer.DataFlowTreeFactory;
-import org.veupathdb.service.eda.ss.model.reducer.BinaryValuesStreamer;
+import org.veupathdb.service.eda.ss.model.reducer.*;
 import org.veupathdb.service.eda.ss.model.reducer.ancestor.EntityIdIndexIteratorConverter;
 import org.veupathdb.service.eda.ss.model.tabular.SortSpecEntry;
 import org.veupathdb.service.eda.ss.model.tabular.TabularHeaderFormat;
@@ -41,6 +40,7 @@ import org.veupathdb.service.eda.ss.model.tabular.TabularResponses.FormatterFact
 import org.veupathdb.service.eda.ss.model.tabular.TabularResponses.ResultConsumer;
 import org.veupathdb.service.eda.ss.model.variable.Variable;
 import org.veupathdb.service.eda.ss.model.variable.VariableType;
+import org.veupathdb.service.eda.ss.model.variable.VariableValueIdPair;
 import org.veupathdb.service.eda.ss.model.variable.VariableWithValues;
 import org.veupathdb.service.eda.ss.model.variable.binary.BinaryFilesManager;
 
@@ -58,6 +58,7 @@ import static org.veupathdb.service.eda.ss.model.db.DB.Tables.AttributeValue.Col
 public class FilteredResultFactory {
 
   private static final Logger LOG = LogManager.getLogger(FilteredResultFactory.class);
+  private static final DataFlowTreeFactory DATA_FLOW_TREE_FACTORY = new DataFlowTreeFactory();
 
   private static final int FETCH_SIZE_FOR_TABULAR_QUERIES = 2000;
 
@@ -148,16 +149,33 @@ public class FilteredResultFactory {
                                            FormatterFactory formatter,
                                            OutputStream outputStream,
                                            Path binaryFilesDir) {
-    BinaryValuesStreamer binaryValuesStreamer = new BinaryValuesStreamer(binaryFilesDir);
-    EntityIdIndexIteratorConverter idIndexEntityConverter = new EntityIdIndexIteratorConverter(new BinaryFilesManager(binaryFilesDir));
-    DataFlowTreeFactory treeFactory = new DataFlowTreeFactory(binaryValuesStreamer, idIndexEntityConverter);
-    TreeNode<Entity> prunedEntityTree = pruneTree(study.getEntityTree(), filters, outputEntity);
-    DataFlowMapReduceTree tree = treeFactory.create(prunedEntityTree, outputEntity, filters, outputVariables, study);
+    final BinaryValuesStreamer binaryValuesStreamer = new BinaryValuesStreamer(binaryFilesDir);
+    final EntityIdIndexIteratorConverter idIndexEntityConverter = new EntityIdIndexIteratorConverter(
+        new BinaryFilesManager(binaryFilesDir));
+    final TreeNode<Entity> prunedEntityTree = pruneTree(study.getEntityTree(), filters, outputEntity);
+    final TreeNode<DataFlowNodeContents> dataFlowTree = DATA_FLOW_TREE_FACTORY.create(
+        prunedEntityTree, outputEntity, filters, study);
+    final DataFlowTreeReducer driver = new DataFlowTreeReducer(idIndexEntityConverter, binaryValuesStreamer);
     try (BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(outputStream))) {
-      ResultConsumer resultConsumer = formatter.getFormatter(writer);
-      Iterator<List<String>> recordIterator = tree.reduce();
-      while (recordIterator.hasNext()) {
-        resultConsumer.consumeRow(recordIterator.next());
+      final ResultConsumer resultConsumer = formatter.getFormatter(writer);
+      // Retrieve stream of ID Indexes with all filters applied by traversing the map reduce data flow tree.
+      final Iterator<Long> idIndexStream = driver.reduce(dataFlowTree);
+      // Open streams of output variables and ancestors identifiers used to decorate ID index stream to produce tabular records.
+      final List<Iterator<VariableValueIdPair<?>>> outputVarStreams = outputVariables.stream()
+          .map(Functions.fSwallow(
+              outputVariable -> binaryValuesStreamer.streamIdValuePairs(study, (VariableWithValues<?>) outputVariable)))
+          .collect(Collectors.toList());
+      final Iterator<VariableValueIdPair<List<Long>>> ancestorStream = outputEntity.getAncestorEntities().isEmpty()
+          ? null
+          : binaryValuesStreamer.streamAncestorIds(outputEntity, study);
+      final FormattedTabularRecordStreamer resultStreamer = new FormattedTabularRecordStreamer(
+          outputVarStreams,
+          idIndexStream,
+          ancestorStream,
+          outputEntity
+      );
+      while (resultStreamer.hasNext()) {
+        resultConsumer.consumeRow(resultStreamer.next());
       }
     } catch (IOException e) {
       throw new RuntimeException("Failed to write result", e);

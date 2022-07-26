@@ -17,6 +17,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 /**
@@ -26,89 +27,55 @@ import java.util.stream.Collectors;
 public class DataFlowTreeFactory {
   private static final Logger LOG = LogManager.getLogger(DataFlowTreeFactory.class);
 
-  private final BinaryValuesStreamer binaryValuesStreamer;
-  private final EntityIdIndexIteratorConverter idIndexIteratorConverter;
-
-  public DataFlowTreeFactory(BinaryValuesStreamer binaryValuesStreamer,
-                             EntityIdIndexIteratorConverter idIndexIteratorConverter) {
-    this.binaryValuesStreamer = binaryValuesStreamer;
-    this.idIndexIteratorConverter = idIndexIteratorConverter;
+  public TreeNode<DataFlowNodeContents> create(TreeNode<Entity> prunedEntityTree,
+                                               Entity outputEntity,
+                                               List<Filter> filters,
+                                               Study study) {
+    final TreeNode<Entity> outputNode = prunedEntityTree.findFirst(entity -> entity.equals(outputEntity));
+    // In lieu of a pointer up the tree, we use this function to traverse from the original root to a node's parent.
+    final Function<TreeNode<Entity>, TreeNode<Entity>> parentMapper = child ->
+        prunedEntityTree.findFirst(candidate -> candidate.getChildNodes().contains(child), null);
+    final TreeNode<DataFlowNodeContents> newRoot = rerootTree(parentMapper, outputNode, null, filters, study);
+    return newRoot;
   }
 
   /**
-   * Creates a data-flow tree from the pruned entity tree. The constructed tree will be rooted with the outputEntity
-   * passed in.
-   * @param prunedEntityTree Entity tree pruned to only active nodes based on output and filters.
-   * @param outputEntity Entity for which variables are output.
-   * @param filters Filters to apply to entity stream.
-   * @param outputVariables Variables to return for each output entity.
-   * @param study Study for which
-   * @return
-   */
-  public DataFlowMapReduceTree create(TreeNode<Entity> prunedEntityTree,
-                                      Entity outputEntity,
-                                      List<Filter> filters,
-                                      List<Variable> outputVariables,
-                                      Study study) {
-    if (!outputVariables.stream().allMatch(var -> var.getEntity().equals(outputEntity))) {
-      throw new IllegalArgumentException("All output variables must be associated with output entity.");
-    }
-    try {
-      LOG.info("Creating map-reduce data-flow tree rooted with output entity: " + outputEntity.getId());
-      final TreeNode<Entity> parent = prunedEntityTree.findFirst(entity -> entity.equals(outputEntity));
-      final SubsettingJoinNode root = rerootTree(prunedEntityTree, parent, null, filters, study);
-      final List<Iterator<VariableValueIdPair<?>>> outputStreams = outputVariables.stream()
-          .map(Functions.fSwallow(varWithValues ->
-              // Any variables without values (i.e. categories) should fail validation upstream.
-              binaryValuesStreamer.streamIdValuePairs(study, (VariableWithValues<?>) varWithValues)))
-          .collect(Collectors.toList());
-      final Iterator<VariableValueIdPair<List<Long>>> ancestorStreams = outputEntity.getAncestorEntities().isEmpty()
-          ? null
-          : binaryValuesStreamer.streamAncestorIds(outputEntity, study);
-      return new DataFlowMapReduceTree(outputStreams, root, ancestorStreams);
-    } catch (IOException e) {
-      throw new RuntimeException("Failed to open files to stream binary data", e);
-    }
-  }
-
-  /**
-   * Recursively depth-first traverse each child and then the parent.
+   * Takes a study's entity tree and re-roots it starting at the output node. This is done by doing a graph traversal
+   * from the output node going both up to the parent node and down to the children.
    *
-   * @param originalRoot The original entity tree's root. This is needed to find the parent of our current node.
-   * @param currentTraversalNode Node that is currently being traversed.
-   * @param previousNode Node that was previously traversed. We keep track of this to avoid traversing from whence we came.
-   * @param filters List of all filters in request, used in construction of the {@link SubsettingJoinNode} corresponding to this node.
-   * @param study Study that subsetting data is requested for.
+   * @param parentRetriever Function mapping from a node to its parent in the original tree.
+   * @param currentTraversalNode The current node in the traverasal.
+   * @param previousNode The previously traversed node, used to ensure we don't bounce back and forth between nodes.
+   * @param filters All filters in the original subsetting request.
+   * @param study Study associated with entity diagram.
    * @return
    */
-  private SubsettingJoinNode rerootTree(TreeNode<Entity> originalRoot,
-                                        TreeNode<Entity> currentTraversalNode,
-                                        TreeNode<Entity> previousNode,
-                                        List<Filter> filters,
-                                        Study study) {
-    List<SubsettingJoinNode> children = new ArrayList<>();
-    if (!currentTraversalNode.isLeaf()) {
-      for (TreeNode<Entity> child : currentTraversalNode.getChildNodes()) {
-        // Since we traverse the parent node, ensure we don't traverse backwards.
-        if (previousNode != child) {
-          children.add(rerootTree(originalRoot, child, currentTraversalNode, filters, study));
-        }
+  private TreeNode<DataFlowNodeContents> rerootTree(Function<TreeNode<Entity>, TreeNode<Entity>> parentRetriever,
+                                                    TreeNode<Entity> currentTraversalNode,
+                                                    TreeNode<Entity> previousNode,
+                                                    List<Filter> filters,
+                                                    Study study) {
+    // Collect filters applicable to the current entity.
+    final List<Filter> applicableFilters = filters.stream()
+        .filter(candidate -> candidate.getEntity().equals(currentTraversalNode.getContents()))
+        .collect(Collectors.toList());
+    // Convert the entity node to a data flow node.
+    final DataFlowNodeContents contents = new DataFlowNodeContents(
+        applicableFilters,
+        currentTraversalNode.getContents(),
+        study
+    );
+    TreeNode<DataFlowNodeContents> newRoot = new TreeNode<>(contents);
+    TreeNode<Entity> parent = parentRetriever.apply(currentTraversalNode);
+    if (parent != null && previousNode != parent) {
+      newRoot.addChildNode(rerootTree(parentRetriever, parent, currentTraversalNode, filters, study));
+    }
+    for (TreeNode<Entity> child : currentTraversalNode.getChildNodes()) {
+      // Since we traverse the parent node, ensure we don't traverse backwards.
+      if (previousNode != child) {
+        newRoot.addChildNode(rerootTree(parentRetriever, child, currentTraversalNode, filters, study));
       }
     }
-    // After traversing children, traverse the parent, adding the output of the traversal as one of our children.
-    // Note that we don't capture the "orientation" of this edge at this point, but these edges are special in that
-    // traversal requires expansion of the entity IDs to convert from the descendant to the ascendant.
-    TreeNode<Entity> parent = originalRoot.findFirst(candidate -> candidate.getChildNodes().contains(currentTraversalNode), null);
-    if (parent != null && previousNode != parent) {
-      children.add(rerootTree(originalRoot, parent, currentTraversalNode, filters, study));
-    }
-
-    final List<Iterator<Long>> filteredValueStreams = filters.stream()
-        .filter(filter -> filter instanceof SingleValueFilter) // TODO Handle MultiValueFilters, not sure how to do that yet.
-        .filter(filter -> filter.getEntity() == currentTraversalNode.getContents()) // Filter to filters relevant to this node's entity
-        .map(Functions.fSwallow(
-            singleValueFilter -> binaryValuesStreamer.streamFilteredValues((SingleValueFilter<?, ?>) singleValueFilter, study)))
-        .collect(Collectors.toList());
-    return new SubsettingJoinNode(filteredValueStreams, children, currentTraversalNode.getContents(), study, idIndexIteratorConverter);
+    return newRoot;
   }
 }

@@ -44,7 +44,8 @@ public class DataFlowMapReduceTreeTest {
     FilteredResultFactory.produceTabularSubsetFromFile(indiaICEMRStudy.getStudy(), indiaICEMRStudy.getHouseholdEntity(),
         List.of(indiaICEMRStudy.getPersonsInHousehold()), List.of(sampleRangeFilter, timeSinceLastMalariaFilter, personsInHouseholdFilter),
         TabularResponses.Type.TABULAR.getFormatter(), outputStream, binaryDirectory);
-    MatcherAssert.assertThat(Arrays.stream(outputStream.toString().split("\n")).collect(Collectors.toList()), Matchers.hasSize(1));
+    MatcherAssert.assertThat(Arrays.stream(outputStream.toString().split("\n"))
+        .collect(Collectors.toList()), Matchers.hasSize(1));
   }
 
   @Test
@@ -67,6 +68,7 @@ public class DataFlowMapReduceTreeTest {
     FilteredResultFactory.produceTabularSubsetFromFile(indiaICEMRStudy.getStudy(), indiaICEMRStudy.getParticipantEntity(),
         List.of(indiaICEMRStudy.getTimeSinceLastMalaria()), List.of(rangeFilter, rootRangeFilter),
         TabularResponses.Type.TABULAR.getFormatter(), outputStream, binaryDirectory);
-    MatcherAssert.assertThat(Arrays.stream(outputStream.toString().split("\n")).collect(Collectors.toList()), Matchers.hasSize(62));
+    MatcherAssert.assertThat(Arrays.stream(outputStream.toString().split("\n"))
+        .collect(Collectors.toList()), Matchers.hasSize(62));
   }
 }

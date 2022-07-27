@@ -7,6 +7,7 @@ import org.veupathdb.service.eda.ss.model.variable.binary.BinaryConverter;
 import org.veupathdb.service.eda.ss.model.variable.binary.DateValueConverter;
 
 import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 
 public class DateVariable extends VariableWithValues<LocalDateTime> {
 

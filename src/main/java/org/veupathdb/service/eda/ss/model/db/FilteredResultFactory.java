@@ -4,6 +4,7 @@ import java.io.BufferedWriter;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
+import java.nio.file.Path;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.*;
@@ -23,10 +24,13 @@ import org.gusdb.fgputil.db.runner.SQLRunner;
 import org.gusdb.fgputil.db.runner.SingleLongResultSetHandler;
 import org.gusdb.fgputil.db.stream.ResultSetIterator;
 import org.gusdb.fgputil.db.stream.ResultSets;
+import org.gusdb.fgputil.functional.Functions;
 import org.gusdb.fgputil.functional.TreeNode;
 import org.gusdb.fgputil.iterator.GroupingIterator;
 import org.veupathdb.service.eda.ss.model.Entity;
 import org.veupathdb.service.eda.ss.model.Study;
+import org.veupathdb.service.eda.ss.model.reducer.*;
+import org.veupathdb.service.eda.ss.model.reducer.ancestor.EntityIdIndexIteratorConverter;
 import org.veupathdb.service.eda.ss.model.tabular.SortSpecEntry;
 import org.veupathdb.service.eda.ss.model.tabular.TabularHeaderFormat;
 import org.veupathdb.service.eda.ss.model.tabular.TabularReportConfig;
@@ -36,7 +40,9 @@ import org.veupathdb.service.eda.ss.model.tabular.TabularResponses.FormatterFact
 import org.veupathdb.service.eda.ss.model.tabular.TabularResponses.ResultConsumer;
 import org.veupathdb.service.eda.ss.model.variable.Variable;
 import org.veupathdb.service.eda.ss.model.variable.VariableType;
+import org.veupathdb.service.eda.ss.model.variable.VariableValueIdPair;
 import org.veupathdb.service.eda.ss.model.variable.VariableWithValues;
+import org.veupathdb.service.eda.ss.model.variable.binary.BinaryFilesManager;
 
 import static org.gusdb.fgputil.iterator.IteratorUtil.toIterable;
 import static org.veupathdb.service.eda.ss.model.db.DB.Tables.AttributeValue.Columns.DATE_VALUE_COL_NAME;
@@ -52,6 +58,7 @@ import static org.veupathdb.service.eda.ss.model.db.DB.Tables.AttributeValue.Col
 public class FilteredResultFactory {
 
   private static final Logger LOG = LogManager.getLogger(FilteredResultFactory.class);
+  private static final DataFlowTreeFactory DATA_FLOW_TREE_FACTORY = new DataFlowTreeFactory();
 
   private static final int FETCH_SIZE_FOR_TABULAR_QUERIES = 2000;
 
@@ -126,6 +133,55 @@ public class FilteredResultFactory {
       }
     }, FETCH_SIZE_FOR_TABULAR_QUERIES);
   }
+
+  /**
+   * Writes to the passed output stream a "tabular" result.  Exact format depends on the passed
+   * responseType (JSON string[][] vs true tabular). Each row is a record containing
+   * the primary key columns and requested variables of the specified entity.
+   *
+   * @param study           study context
+   * @param outputEntity    entity type to return
+   * @param outputVariables variables requested
+   * @param filters         filters to apply to create a subset of records
+   */
+  public static void produceTabularSubsetFromFile(Study study, Entity outputEntity,
+                                           List<Variable> outputVariables, List<Filter> filters,
+                                           FormatterFactory formatter,
+                                           OutputStream outputStream,
+                                           Path binaryFilesDir) {
+    final BinaryValuesStreamer binaryValuesStreamer = new BinaryValuesStreamer(binaryFilesDir);
+    final EntityIdIndexIteratorConverter idIndexEntityConverter = new EntityIdIndexIteratorConverter(
+        new BinaryFilesManager(binaryFilesDir));
+    final TreeNode<Entity> prunedEntityTree = pruneTree(study.getEntityTree(), filters, outputEntity);
+    final TreeNode<DataFlowNodeContents> dataFlowTree = DATA_FLOW_TREE_FACTORY.create(
+        prunedEntityTree, outputEntity, filters, study);
+    final DataFlowTreeReducer driver = new DataFlowTreeReducer(idIndexEntityConverter, binaryValuesStreamer);
+    try (BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(outputStream))) {
+      final ResultConsumer resultConsumer = formatter.getFormatter(writer);
+      // Retrieve stream of ID Indexes with all filters applied by traversing the map reduce data flow tree.
+      final Iterator<Long> idIndexStream = driver.reduce(dataFlowTree);
+      // Open streams of output variables and ancestors identifiers used to decorate ID index stream to produce tabular records.
+      final List<Iterator<VariableValueIdPair<?>>> outputVarStreams = outputVariables.stream()
+          .map(Functions.fSwallow(
+              outputVariable -> binaryValuesStreamer.streamIdValuePairs(study, (VariableWithValues<?>) outputVariable)))
+          .collect(Collectors.toList());
+      final Iterator<VariableValueIdPair<List<Long>>> ancestorStream = outputEntity.getAncestorEntities().isEmpty()
+          ? null
+          : binaryValuesStreamer.streamAncestorIds(outputEntity, study);
+      final FormattedTabularRecordStreamer resultStreamer = new FormattedTabularRecordStreamer(
+          outputVarStreams,
+          idIndexStream,
+          ancestorStream,
+          outputEntity
+      );
+      while (resultStreamer.hasNext()) {
+        resultConsumer.consumeRow(resultStreamer.next());
+      }
+    } catch (IOException e) {
+      throw new RuntimeException("Failed to write result", e);
+    }
+  }
+
 
   static List<String> getTabularPrettyHeaders(Entity outputEntity, List<Variable> outputVariables) {
     return getColumns(outputEntity, outputVariables, Entity::getDownloadPkColHeader, Variable::getDownloadColHeader);

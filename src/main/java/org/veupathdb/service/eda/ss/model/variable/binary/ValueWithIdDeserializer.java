@@ -8,7 +8,6 @@ public class ValueWithIdDeserializer<T> implements BinaryDeserializer<VariableVa
   private static final long BIT_MASK = 0xFF;
 
   private final BinaryDeserializer<T> _valueConverter;
-  private final VariableValueIdPair<T> _holder = new VariableValueIdPair<>(-1L, null);
 
   public ValueWithIdDeserializer(BinaryDeserializer<T> valueConverter) {
     _valueConverter = valueConverter;
@@ -33,18 +32,14 @@ public class ValueWithIdDeserializer<T> implements BinaryDeserializer<VariableVa
       idIndex |= (bytes[i] & BIT_MASK);
     }
     T value = _valueConverter.fromBytes(bytes, offset + 8);
-    _holder.setIdIndex(idIndex);
-    _holder.setValue(value);
-    return _holder;
+    return new VariableValueIdPair<>(idIndex, value);
   }
 
   @Override
   public VariableValueIdPair<T> fromBytes(ByteBuffer buffer) {
     final long idIndex = buffer.getLong();
     final T varValue = _valueConverter.fromBytes(buffer);
-    _holder.setValue(varValue);
-    _holder.setIdIndex(idIndex);
-    return _holder;
+    return new VariableValueIdPair<>(idIndex, varValue);
   }
 
   @Override

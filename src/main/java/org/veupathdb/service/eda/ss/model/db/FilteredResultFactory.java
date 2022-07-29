@@ -58,7 +58,6 @@ import static org.veupathdb.service.eda.ss.model.db.DB.Tables.AttributeValue.Col
 public class FilteredResultFactory {
 
   private static final Logger LOG = LogManager.getLogger(FilteredResultFactory.class);
-  private static final DataFlowTreeFactory DATA_FLOW_TREE_FACTORY = new DataFlowTreeFactory();
 
   private static final int FETCH_SIZE_FOR_TABULAR_QUERIES = 2000;
 
@@ -146,28 +145,42 @@ public class FilteredResultFactory {
    */
   public static void produceTabularSubsetFromFile(Study study, Entity outputEntity,
                                            List<Variable> outputVariables, List<Filter> filters,
-                                           FormatterFactory formatter,
+                                           FormatterFactory formatter, TabularReportConfig reportConfig,
                                            OutputStream outputStream,
                                            Path binaryFilesDir) {
+    final DataFlowTreeFactory dataFlowTreeFactory = new DataFlowTreeFactory();
     final BinaryValuesStreamer binaryValuesStreamer = new BinaryValuesStreamer(binaryFilesDir);
     final EntityIdIndexIteratorConverter idIndexEntityConverter = new EntityIdIndexIteratorConverter(
         new BinaryFilesManager(binaryFilesDir));
     final TreeNode<Entity> prunedEntityTree = pruneTree(study.getEntityTree(), filters, outputEntity);
-    final TreeNode<DataFlowNodeContents> dataFlowTree = DATA_FLOW_TREE_FACTORY.create(
+    final TreeNode<DataFlowNodeContents> dataFlowTree = dataFlowTreeFactory.create(
         prunedEntityTree, outputEntity, filters, study);
+
+    // check if header should contain pretty display values
+    boolean usePrettyHeader = reportConfig.getHeaderFormat() == TabularHeaderFormat.DISPLAY;
+
+    // gather the output columns; these will be used for the standard header and to look up DB column values
+    List<String> outputColumns = getTabularOutputColumns(outputEntity, outputVariables);
+
     final DataFlowTreeReducer driver = new DataFlowTreeReducer(idIndexEntityConverter, binaryValuesStreamer);
     try (BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(outputStream))) {
       final ResultConsumer resultConsumer = formatter.getFormatter(writer);
+
+      resultConsumer.consumeRow(usePrettyHeader ? getTabularPrettyHeaders(outputEntity, outputVariables) : outputColumns);
+
       // Retrieve stream of ID Indexes with all filters applied by traversing the map reduce data flow tree.
       final Iterator<Long> idIndexStream = driver.reduce(dataFlowTree);
+
       // Open streams of output variables and ancestors identifiers used to decorate ID index stream to produce tabular records.
-      final List<Iterator<VariableValueIdPair<?>>> outputVarStreams = outputVariables.stream()
+      final List<Iterator<VariableValueIdPair<String>>> outputVarStreams = outputVariables.stream()
           .map(Functions.fSwallow(
               outputVariable -> binaryValuesStreamer.streamIdValuePairs(study, (VariableWithValues<?>) outputVariable)))
           .collect(Collectors.toList());
+
       final Iterator<VariableValueIdPair<List<Long>>> ancestorStream = outputEntity.getAncestorEntities().isEmpty()
           ? null
           : binaryValuesStreamer.streamAncestorIds(outputEntity, study);
+
       final FormattedTabularRecordStreamer resultStreamer = new FormattedTabularRecordStreamer(
           outputVarStreams,
           idIndexStream,

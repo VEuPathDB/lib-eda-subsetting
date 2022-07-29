@@ -55,6 +55,11 @@ public class FloatingPointVariable extends NumberVariable<Double> {
   }
 
   @Override
+  public String valueToString(Double val) {
+    return Double.toString(val);
+  }
+
+  @Override
   public String getUnits() {
     return _properties.units;
   }

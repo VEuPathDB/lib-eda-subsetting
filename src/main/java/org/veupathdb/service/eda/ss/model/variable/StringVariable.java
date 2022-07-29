@@ -27,6 +27,11 @@ public class StringVariable extends VariableWithValues<String> {
     return s;
   }
 
+  @Override
+  public String valueToString(String val) {
+    return val;
+  }
+
   public static StringVariable assertType(Variable variable) {
     if (variable instanceof StringVariable) return (StringVariable)variable;
     throw new BadRequestException("Variable " + variable.getId() +

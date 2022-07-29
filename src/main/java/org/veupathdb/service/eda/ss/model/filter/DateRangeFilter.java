@@ -1,6 +1,7 @@
 package org.veupathdb.service.eda.ss.model.filter;
 
 import java.time.LocalDateTime;
+import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
 import java.util.function.Predicate;
 
@@ -10,7 +11,7 @@ import org.veupathdb.service.eda.ss.model.variable.DateVariable;
 import static org.gusdb.fgputil.FormatUtil.NL;
 import static org.veupathdb.service.eda.ss.model.db.DB.Tables.AttributeValue.Columns.DATE_VALUE_COL_NAME;
 
-public class DateRangeFilter extends SingleValueFilter<LocalDateTime, DateVariable> {
+public class DateRangeFilter extends SingleValueFilter<Long, DateVariable> {
 
   private final LocalDateTime _min;
   private final LocalDateTime _max;
@@ -28,8 +29,9 @@ public class DateRangeFilter extends SingleValueFilter<LocalDateTime, DateVariab
   }
 
   @Override
-  public Predicate<LocalDateTime> getPredicate() {
-    return date -> !date.isBefore(_min) && !date.isAfter(_max);
+  public Predicate<Long> getPredicate() {
+    return date -> date >= _min.toInstant(ZoneOffset.UTC).toEpochMilli()
+        && date <= _max.toInstant(ZoneOffset.UTC).toEpochMilli();
   }
 
   static String dbDateTimeIsoValue(LocalDateTime dateTime) {

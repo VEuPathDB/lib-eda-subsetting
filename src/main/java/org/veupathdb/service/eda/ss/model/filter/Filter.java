@@ -2,10 +2,13 @@ package org.veupathdb.service.eda.ss.model.filter;
 
 import static org.gusdb.fgputil.FormatUtil.NL;
 
+import java.util.Iterator;
 import java.util.Objects;
 
 import org.veupathdb.service.eda.ss.model.Entity;
+import org.veupathdb.service.eda.ss.model.Study;
 import org.veupathdb.service.eda.ss.model.db.DB;
+import org.veupathdb.service.eda.ss.model.reducer.BinaryValuesStreamer;
 
 public abstract class Filter {
 
@@ -19,6 +22,8 @@ public abstract class Filter {
   }
 
   public abstract String getSql();
+
+  public abstract Iterator<Long> streamFilteredIds(BinaryValuesStreamer binaryValuesStreamer, Study study);
 
   /*
    * Get SQL to perform the filter. Include ancestor IDs.

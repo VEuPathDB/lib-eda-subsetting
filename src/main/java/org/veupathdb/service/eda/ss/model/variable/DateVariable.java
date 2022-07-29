@@ -5,11 +5,14 @@ import org.gusdb.fgputil.FormatUtil;
 import org.veupathdb.service.eda.ss.model.distribution.DateDistributionConfig;
 import org.veupathdb.service.eda.ss.model.variable.binary.BinaryConverter;
 import org.veupathdb.service.eda.ss.model.variable.binary.DateValueConverter;
+import org.veupathdb.service.eda.ss.model.variable.binary.LongValueConverter;
 
+import java.time.Instant;
 import java.time.LocalDateTime;
+import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
 
-public class DateVariable extends VariableWithValues<LocalDateTime> {
+public class DateVariable extends VariableWithValues<Long> {
 
   private final DateDistributionConfig _distributionConfig;
 
@@ -19,18 +22,23 @@ public class DateVariable extends VariableWithValues<LocalDateTime> {
     validateType(VariableType.DATE);
   }
 
-  public static BinaryConverter<LocalDateTime> getGenericBinaryConverter() {
-    return new DateValueConverter();
+  public static BinaryConverter<Long> getGenericBinaryConverter() {
+    return new LongValueConverter();
   }
 
   @Override
-  public BinaryConverter<LocalDateTime> getBinaryConverter() {
+  public BinaryConverter<Long> getBinaryConverter() {
     return getGenericBinaryConverter();
   }
 
   @Override
-  public LocalDateTime fromString(String s) {
-    return FormatUtil.parseDateTime(s);
+  public Long fromString(String s) {
+    return FormatUtil.parseDateTime(s).toInstant(ZoneOffset.UTC).toEpochMilli();
+  }
+
+  @Override
+  public String valueToString(Long val) {
+    return Instant.ofEpochMilli(val).toString();
   }
 
   public DateDistributionConfig getDistributionConfig() {

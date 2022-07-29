@@ -1,6 +1,8 @@
 package org.veupathdb.service.eda.ss.model.filter;
 
+import java.time.Instant;
 import java.time.LocalDateTime;
+import java.time.ZoneOffset;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Predicate;
@@ -11,7 +13,7 @@ import org.veupathdb.service.eda.ss.model.variable.DateVariable;
 import static org.gusdb.fgputil.FormatUtil.NL;
 import static org.veupathdb.service.eda.ss.model.db.DB.Tables.AttributeValue.Columns.DATE_VALUE_COL_NAME;
 
-public class DateSetFilter extends SingleValueFilter<LocalDateTime, DateVariable> {
+public class DateSetFilter extends SingleValueFilter<Long, DateVariable> {
 
   private final List<LocalDateTime> _dateSet;
 
@@ -29,8 +31,8 @@ public class DateSetFilter extends SingleValueFilter<LocalDateTime, DateVariable
   }
 
   @Override
-  public Predicate<LocalDateTime> getPredicate() {
-    return date -> _dateSet.contains(date);
+  public Predicate<Long> getPredicate() {
+    return date -> _dateSet.contains(Instant.ofEpochMilli(date).atOffset(ZoneOffset.UTC));
   }
 
 }

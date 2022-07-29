@@ -39,6 +39,8 @@ public abstract class VariableWithValues<T> extends Variable {
 
   public abstract T fromString(String s);
 
+  public abstract String valueToString(T val);
+
   private final Properties _properties;
 
   public VariableWithValues(Variable.Properties varProperties, Properties properties) {

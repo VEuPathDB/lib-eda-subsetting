@@ -14,6 +14,7 @@ public class TabularReportConfig {
   private Long _offset = 0L;
   private TabularHeaderFormat _headerFormat = TabularHeaderFormat.STANDARD;
   private boolean _trimTimeFromDateVars = false;
+  private boolean _useBinaryFiles = false;
 
   /**
    * Whether this configuration contains paging or sorting (paging always requires sorting)
@@ -44,6 +45,10 @@ public class TabularReportConfig {
     return _trimTimeFromDateVars;
   }
 
+  public boolean getUseBinaryFiles() {
+    return _useBinaryFiles;
+  }
+
   public void setNumRows(Optional<Long> numRows) {
     _numRows = numRows;
   }
@@ -62,5 +67,9 @@ public class TabularReportConfig {
 
   public void setTrimTimeFromDateVars(boolean trimTimeFromDateVars) {
     _trimTimeFromDateVars = trimTimeFromDateVars;
+  }
+
+  public void setUseBinaryFiles(boolean useBinaryFiles) {
+    _useBinaryFiles = useBinaryFiles;
   }
 }

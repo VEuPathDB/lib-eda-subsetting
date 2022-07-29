@@ -39,6 +39,11 @@ public class LongitudeVariable extends VariableWithValues<Double> {
     return Double.valueOf(s);
   }
 
+  @Override
+  public String valueToString(Double val) {
+    return Double.toString(val);
+  }
+
   public Long getPrecision() {
     return _properties.precision;
   }

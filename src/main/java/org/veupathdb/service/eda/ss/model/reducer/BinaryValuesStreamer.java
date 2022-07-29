@@ -1,7 +1,10 @@
 package org.veupathdb.service.eda.ss.model.reducer;
 
+import org.gusdb.fgputil.functional.Functions;
 import org.veupathdb.service.eda.ss.model.Entity;
 import org.veupathdb.service.eda.ss.model.Study;
+import org.veupathdb.service.eda.ss.model.filter.MultiFilter;
+import org.veupathdb.service.eda.ss.model.filter.MultiFilterSubFilter;
 import org.veupathdb.service.eda.ss.model.filter.SingleValueFilter;
 import org.veupathdb.service.eda.ss.model.variable.VariableValueIdPair;
 import org.veupathdb.service.eda.ss.model.variable.VariableWithValues;
@@ -12,6 +15,7 @@ import java.nio.file.Path;
 import java.util.Iterator;
 import java.util.List;
 import java.util.function.Function;
+import java.util.stream.Collectors;
 
 public class BinaryValuesStreamer {
   private static final LongValueConverter LONG_VALUE_CONVERTER = new LongValueConverter();
@@ -44,6 +48,24 @@ public class BinaryValuesStreamer {
         VariableValueIdPair::getIdIndex);
   }
 
+  public FilteredValueIterator<String, Long> streamMultiSubFilterValues(MultiFilterSubFilter subFilter,
+                                                                       Study study,
+                                                                       MultiFilter filter) throws IOException {
+    return streamFilteredValues(filter.getFilter(subFilter), study);
+  }
+
+  public Iterator<Long> streamMultiFilteredValues(
+      MultiFilter filter, Study study) throws IOException {
+    List<Iterator<Long>> idStreams = filter.getSubFilters().stream()
+        .map(Functions.fSwallow(subFilter -> streamMultiSubFilterValues(subFilter, study, filter)))
+        .collect(Collectors.toList());
+    if (filter.getOperation() == MultiFilter.MultiFilterOperation.UNION) {
+      return new StreamUnionMerger(idStreams); // Intersect depending on operation.
+    } else { // operation == MultiFilter.MultiFilterOperation.UNION.INTERSECT
+      return new StreamIntersectMerger(idStreams);
+    }
+  }
+
   /**
    * Streams tuples of all entity ID indexes and the variable values associate with the variable passed in.
    * @param study The study that the variable belongs to. Used to locate the binary file.
@@ -52,9 +74,11 @@ public class BinaryValuesStreamer {
    * @return An iterator  all {@link VariableValueIdPair}s containing all ID indexes and associated variable values.
    * @throws IOException if there is a failure to open the binary file.
    */
-  public <V> FilteredValueIterator<V, VariableValueIdPair<?>> streamIdValuePairs(
+  public <V> FilteredValueIterator<V, VariableValueIdPair<String>> streamIdValuePairs(
       Study study,
       VariableWithValues<V> variable) throws IOException {
+    Function<VariableValueIdPair<V>, VariableValueIdPair<String>> extractor = pair -> new VariableValueIdPair<>(
+        pair.getIdIndex(), variable.valueToString(pair.getValue()));
     BinaryConverter<V> serializer = variable.getBinaryConverter();
     return new FilteredValueIterator(
         binaryFilesManager.getVariableFile(study,
@@ -63,7 +87,7 @@ public class BinaryValuesStreamer {
             BinaryFilesManager.Operation.READ),
         x -> true, // Always return true, extract all ID index pairs and variable values.
         new ValueWithIdDeserializer<>(serializer),
-        Function.identity()); // Provide a stream of entire VariableValueIdPair objects.
+        extractor); // Provide a stream of entire VariableValueIdPair objects.
   }
 
   /**

@@ -51,6 +51,11 @@ public class IntegerVariable extends NumberVariable<Long> {
   }
 
   @Override
+  public String valueToString(Long val) {
+    return Long.toString(val);
+  }
+
+  @Override
   public String getUnits() {
     return _properties.units;
   }

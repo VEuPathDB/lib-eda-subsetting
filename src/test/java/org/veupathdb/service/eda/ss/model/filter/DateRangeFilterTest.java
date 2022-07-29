@@ -7,6 +7,7 @@ import org.veupathdb.service.eda.ss.model.variable.DateVariable;
 import org.veupathdb.service.eda.ss.testutil.TestDataProvider;
 
 import java.time.LocalDateTime;
+import java.time.ZoneOffset;
 import java.time.temporal.ChronoUnit;
 
 public class DateRangeFilterTest {
@@ -20,7 +21,7 @@ public class DateRangeFilterTest {
     final DateVariable dateVar = TestDataProvider.constructDateVariable(entity);
     entity.addVariable(dateVar);
     final DateRangeFilter filter = new DateRangeFilter("test", entity, dateVar, min, max);
-    Assertions.assertTrue(filter.getPredicate().test(dateTime));
+    Assertions.assertTrue(filter.getPredicate().test(dateTime.toInstant(ZoneOffset.UTC).toEpochMilli()));
   }
 
   @Test
@@ -32,6 +33,6 @@ public class DateRangeFilterTest {
     final DateVariable dateVar = TestDataProvider.constructDateVariable(entity);
     entity.addVariable(dateVar);
     final DateRangeFilter filter = new DateRangeFilter("test", entity, dateVar, min, max);
-    Assertions.assertTrue(filter.getPredicate().test(dateTime));
+    Assertions.assertTrue(filter.getPredicate().test(dateTime.toInstant(ZoneOffset.UTC).toEpochMilli()));
   }
 }

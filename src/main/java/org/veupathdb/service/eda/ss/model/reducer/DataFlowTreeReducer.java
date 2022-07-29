@@ -40,7 +40,7 @@ public class DataFlowTreeReducer {
     // Retrieve streams for this entity based on subsetting request spec.
     root.getContents().getFilters().stream()
         .map(Functions.fSwallow(
-            filter -> binaryValuesStreamer.streamFilteredValues((SingleValueFilter<?, ?>) filter, root.getContents().getStudy())))
+            filter -> filter.streamFilteredIds(binaryValuesStreamer, root.getContents().getStudy())))
         .forEach(allStreams::add);
 
     // Merge all entity ID index data streams if there are more than one.

@@ -17,6 +17,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Optional;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -33,8 +34,8 @@ public class DataFlowTreeFactory {
                                                Study study) {
     final TreeNode<Entity> outputNode = prunedEntityTree.findFirst(entity -> entity.equals(outputEntity));
     // In lieu of a pointer up the tree, we use this function to traverse from the original root to a node's parent.
-    final Function<TreeNode<Entity>, TreeNode<Entity>> parentMapper = child ->
-        prunedEntityTree.findFirst(candidate -> candidate.getChildNodes().contains(child), null);
+    final Function<TreeNode<Entity>, Optional<TreeNode<Entity>>> parentMapper = child ->
+        Optional.ofNullable(prunedEntityTree.findFirst(candidate -> candidate.getChildNodes().contains(child), null));
     final TreeNode<DataFlowNodeContents> newRoot = rerootTree(parentMapper, outputNode, null, filters, study);
     return newRoot;
   }
@@ -50,7 +51,7 @@ public class DataFlowTreeFactory {
    * @param study Study associated with entity diagram.
    * @return
    */
-  private TreeNode<DataFlowNodeContents> rerootTree(Function<TreeNode<Entity>, TreeNode<Entity>> parentRetriever,
+  private TreeNode<DataFlowNodeContents> rerootTree(Function<TreeNode<Entity>, Optional<TreeNode<Entity>>> parentRetriever,
                                                     TreeNode<Entity> currentTraversalNode,
                                                     TreeNode<Entity> previousNode,
                                                     List<Filter> filters,
@@ -66,10 +67,10 @@ public class DataFlowTreeFactory {
         study
     );
     TreeNode<DataFlowNodeContents> newRoot = new TreeNode<>(contents);
-    TreeNode<Entity> parent = parentRetriever.apply(currentTraversalNode);
-    if (parent != null && previousNode != parent) {
-      newRoot.addChildNode(rerootTree(parentRetriever, parent, currentTraversalNode, filters, study));
-    }
+    Optional<TreeNode<Entity>> parentOpt = parentRetriever.apply(currentTraversalNode);
+    // Only add child node if parent exists or parent is not the previous node.
+    parentOpt.filter(parent -> parent != previousNode)
+        .ifPresent(parent -> newRoot.addChildNode(rerootTree(parentRetriever, parent, currentTraversalNode, filters, study)));
     for (TreeNode<Entity> child : currentTraversalNode.getChildNodes()) {
       // Since we traverse the parent node, ensure we don't traverse backwards.
       if (previousNode != child) {

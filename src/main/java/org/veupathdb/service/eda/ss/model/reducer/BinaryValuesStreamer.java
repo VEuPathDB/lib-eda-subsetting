@@ -4,7 +4,6 @@ import org.gusdb.fgputil.functional.Functions;
 import org.veupathdb.service.eda.ss.model.Entity;
 import org.veupathdb.service.eda.ss.model.Study;
 import org.veupathdb.service.eda.ss.model.filter.MultiFilter;
-import org.veupathdb.service.eda.ss.model.filter.MultiFilterSubFilter;
 import org.veupathdb.service.eda.ss.model.filter.SingleValueFilter;
 import org.veupathdb.service.eda.ss.model.variable.VariableValueIdPair;
 import org.veupathdb.service.eda.ss.model.variable.VariableWithValues;
@@ -48,16 +47,18 @@ public class BinaryValuesStreamer {
         VariableValueIdPair::getIdIndex);
   }
 
-  public FilteredValueIterator<String, Long> streamMultiSubFilterValues(MultiFilterSubFilter subFilter,
-                                                                       Study study,
-                                                                       MultiFilter filter) throws IOException {
-    return streamFilteredValues(filter.getFilter(subFilter), study);
-  }
-
+  /**
+   * Stream entity IDs pulled based on the union or intersection of multiple streams of ID indexes from different
+   * string set filters.
+   * @param filter Filter to apply to variable values.
+   * @param study Study that the request is applicable to.
+   * @return
+   * @throws IOException
+   */
   public Iterator<Long> streamMultiFilteredValues(
       MultiFilter filter, Study study) throws IOException {
     List<Iterator<Long>> idStreams = filter.getSubFilters().stream()
-        .map(Functions.fSwallow(subFilter -> streamMultiSubFilterValues(subFilter, study, filter)))
+        .map(Functions.fSwallow(subFilter -> streamFilteredValues(filter.getFilter(subFilter), study)))
         .collect(Collectors.toList());
     if (filter.getOperation() == MultiFilter.MultiFilterOperation.UNION) {
       return new StreamUnionMerger(idStreams); // Intersect depending on operation.

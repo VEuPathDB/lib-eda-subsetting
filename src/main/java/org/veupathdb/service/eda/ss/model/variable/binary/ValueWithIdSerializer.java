@@ -4,12 +4,12 @@ import org.veupathdb.service.eda.ss.model.variable.VariableValueIdPair;
 
 import java.nio.ByteBuffer;
 
-public class ValueWithIdSerializer<T> implements BinarySerializer<VariableValueIdPair<T>> {
+public class ValueWithIdSerializer<V> implements BinarySerializer<VariableValueIdPair<V>> {
 
-  private final BinaryConverter<T> _valueConverter;
+  private final BinarySerializer<V> _valueSerializer;
 
-  public ValueWithIdSerializer(BinaryConverter<T> valueConverter) {
-    _valueConverter = valueConverter;
+  public ValueWithIdSerializer(BinarySerializer<V> valueSerializer) {
+    _valueSerializer = valueSerializer;
   }
 
   /**
@@ -19,17 +19,17 @@ public class ValueWithIdSerializer<T> implements BinarySerializer<VariableValueI
    * @return Deserialized variable object
    */
   @Override
-  public byte[] toBytes(VariableValueIdPair<T> variable) {
+  public byte[] toBytes(VariableValueIdPair<V> variable) {
     final int bufferSize = numBytes();
     final ByteBuffer byteBuffer = ByteBuffer.allocate(bufferSize);
     byteBuffer.putLong(variable.getIdIndex());
-    byteBuffer.put(_valueConverter.toBytes(variable.getValue()));
+    byteBuffer.put(_valueSerializer.toBytes(variable.getValue()));
     return byteBuffer.array();
   }
 
   @Override
   public int numBytes() {
-    return Long.BYTES + _valueConverter.numBytes();
+    return Long.BYTES + _valueSerializer.numBytes();
   }
 }
 

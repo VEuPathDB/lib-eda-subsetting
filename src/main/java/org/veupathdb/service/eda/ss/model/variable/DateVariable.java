@@ -14,9 +14,6 @@ import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
 
 public class DateVariable extends VariableWithValues<Long> {
-  private static final DateTimeFormatter DATE_FORMATTER = DateTimeFormatter.ISO_DATE;
-  private static final DateTimeFormatter DATE_TIME_FORMATTER = DateTimeFormatter.ISO_DATE_TIME;
-
   private final DateDistributionConfig _distributionConfig;
 
   public DateVariable(Variable.Properties varProperties, VariableWithValues.Properties valueProperties, DateDistributionConfig distributionConfig) {
@@ -42,9 +39,9 @@ public class DateVariable extends VariableWithValues<Long> {
   @Override
   public String valueToString(Long val, TabularReportConfig reportConfig) {
     if (reportConfig.getTrimTimeFromDateVars()) {
-      return DATE_FORMATTER.format(Instant.ofEpochMilli(val));
+      return DateTimeFormatter.ISO_DATE.format(Instant.ofEpochMilli(val));
     }
-    return DATE_TIME_FORMATTER.format(Instant.ofEpochMilli(val));
+    return DateTimeFormatter.ISO_DATE_TIME.format(Instant.ofEpochMilli(val));
   }
 
   public DateDistributionConfig getDistributionConfig() {

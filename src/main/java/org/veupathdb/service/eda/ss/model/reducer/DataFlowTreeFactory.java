@@ -44,7 +44,8 @@ public class DataFlowTreeFactory {
    * Takes a study's entity tree and re-roots it starting at the output node. This is done by doing a graph traversal
    * from the output node going both up to the parent node and down to the children.
    *
-   * @param parentRetriever Function mapping from a node to its parent in the original tree.
+   * @param parentRetriever Function mapping from a node to its parent in the original tree. Returns an empty optional
+   *                        if the node is the root of the tree and does not have a parent.
    * @param currentTraversalNode The current node in the traverasal.
    * @param previousNode The previously traversed node, used to ensure we don't bounce back and forth between nodes.
    * @param filters All filters in the original subsetting request.

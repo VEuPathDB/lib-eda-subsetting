@@ -15,11 +15,16 @@ public class DateRangeFilter extends SingleValueFilter<Long, DateVariable> {
 
   private final LocalDateTime _min;
   private final LocalDateTime _max;
-  
+  private final Long _minEpochMillis;
+  private final Long _maxEpochMillis;
+
   public DateRangeFilter(String appDbSchema, Entity entity, DateVariable variable, LocalDateTime min, LocalDateTime max) {
     super(appDbSchema, entity, variable);
     _min = min;
     _max = max;
+    // Store off as millis since epoch for filtering with respect to binary-encoded values.
+    _minEpochMillis = _min.toInstant(ZoneOffset.UTC).toEpochMilli();
+    _maxEpochMillis = _max.toInstant(ZoneOffset.UTC).toEpochMilli();
   }
 
   // safe from SQL injection since input classes are LocalDateTime
@@ -30,8 +35,7 @@ public class DateRangeFilter extends SingleValueFilter<Long, DateVariable> {
 
   @Override
   public Predicate<Long> getPredicate() {
-    return date -> date >= _min.toInstant(ZoneOffset.UTC).toEpochMilli()
-        && date <= _max.toInstant(ZoneOffset.UTC).toEpochMilli();
+    return date -> date >= _minEpochMillis && date <= _maxEpochMillis;
   }
 
   static String dbDateTimeIsoValue(LocalDateTime dateTime) {

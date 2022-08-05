@@ -83,8 +83,6 @@ public class FormattedTabularRecordStreamer implements Iterator<List<String>> {
         continue;
       }
       if (valueStream.peek().getIdIndex() == currentIdIndex) {
-        // TODO We need to a VariableType-Specific implementation of this toString.
-        // This is probably the place where longs will ultimately be converted to dates
         record.add(valueStream.next().getValue());
       } else {
         record.add("");

@@ -1,9 +1,6 @@
 package org.veupathdb.service.eda.ss.model.reducer;
 
-import java.util.Comparator;
-import java.util.Iterator;
-import java.util.List;
-import java.util.PriorityQueue;
+import java.util.*;
 
 /**
  * Merges two or more sorted streams of ID indexes, outputting a sorted stream of sorted ID indexes which represents
@@ -34,6 +31,9 @@ public class StreamUnionMerger implements Iterator<Long> {
 
   @Override
   public Long next() {
+    if (!hasNext()) {
+      throw new NoSuchElementException("No elements left to union in input streams.");
+    }
     HeapElement next;
     do {
       // Grab the smallest element seen thus far (i.e. the root of the min heap)

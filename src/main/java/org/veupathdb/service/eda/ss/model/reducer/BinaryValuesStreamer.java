@@ -5,6 +5,7 @@ import org.veupathdb.service.eda.ss.model.Entity;
 import org.veupathdb.service.eda.ss.model.Study;
 import org.veupathdb.service.eda.ss.model.filter.MultiFilter;
 import org.veupathdb.service.eda.ss.model.filter.SingleValueFilter;
+import org.veupathdb.service.eda.ss.model.tabular.TabularReportConfig;
 import org.veupathdb.service.eda.ss.model.variable.VariableValueIdPair;
 import org.veupathdb.service.eda.ss.model.variable.VariableWithValues;
 import org.veupathdb.service.eda.ss.model.variable.binary.*;
@@ -68,7 +69,8 @@ public class BinaryValuesStreamer {
   }
 
   /**
-   * Streams tuples of all entity ID indexes and the variable values associate with the variable passed in.
+   * Streams tuples of all entity ID indexes and the string version of variable values associate with the variable
+   * passed in.
    * @param study The study that the variable belongs to. Used to locate the binary file.
    * @param variable The variable whose values are requested.
    * @param <V> The type of the variable values.
@@ -77,9 +79,10 @@ public class BinaryValuesStreamer {
    */
   public <V> FilteredValueIterator<V, VariableValueIdPair<String>> streamIdValuePairs(
       Study study,
-      VariableWithValues<V> variable) throws IOException {
+      VariableWithValues<V> variable,
+      TabularReportConfig reportConfig) throws IOException {
     Function<VariableValueIdPair<V>, VariableValueIdPair<String>> extractor = pair -> new VariableValueIdPair<>(
-        pair.getIdIndex(), variable.valueToString(pair.getValue()));
+        pair.getIdIndex(), variable.valueToString(pair.getValue(), reportConfig));
     BinaryConverter<V> serializer = variable.getBinaryConverter();
     return new FilteredValueIterator(
         binaryFilesManager.getVariableFile(study,
@@ -92,7 +95,6 @@ public class BinaryValuesStreamer {
   }
 
   /**
-   *
    * @param descendant Entity for which to retrieve ancestors stream.
    * @param study Study the entity belongs to.
    * @return Stream of ancestor IDs.

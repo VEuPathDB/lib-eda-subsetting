@@ -1,6 +1,7 @@
 package org.veupathdb.service.eda.ss.model.variable;
 
 import jakarta.ws.rs.BadRequestException;
+import org.veupathdb.service.eda.ss.model.tabular.TabularReportConfig;
 import org.veupathdb.service.eda.ss.model.variable.binary.BinaryConverter;
 import org.veupathdb.service.eda.ss.model.variable.binary.StringValueConverter;
 
@@ -28,7 +29,7 @@ public class StringVariable extends VariableWithValues<String> {
   }
 
   @Override
-  public String valueToString(String val) {
+  public String valueToString(String val, TabularReportConfig reportConfig) {
     return val;
   }
 

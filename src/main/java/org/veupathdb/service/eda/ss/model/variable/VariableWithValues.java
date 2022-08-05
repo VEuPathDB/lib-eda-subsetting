@@ -1,5 +1,6 @@
 package org.veupathdb.service.eda.ss.model.variable;
 
+import org.veupathdb.service.eda.ss.model.tabular.TabularReportConfig;
 import org.veupathdb.service.eda.ss.model.variable.binary.BinaryConverter;
 
 import java.util.List;
@@ -39,7 +40,7 @@ public abstract class VariableWithValues<T> extends Variable {
 
   public abstract T fromString(String s);
 
-  public abstract String valueToString(T val);
+  public abstract String valueToString(T val, TabularReportConfig config);
 
   private final Properties _properties;
 

@@ -174,7 +174,7 @@ public class FilteredResultFactory {
       // Open streams of output variables and ancestors identifiers used to decorate ID index stream to produce tabular records.
       final List<Iterator<VariableValueIdPair<String>>> outputVarStreams = outputVariables.stream()
           .map(Functions.fSwallow(
-              outputVariable -> binaryValuesStreamer.streamIdValuePairs(study, (VariableWithValues<?>) outputVariable)))
+              outputVariable -> binaryValuesStreamer.streamIdValuePairs(study, (VariableWithValues<?>) outputVariable, reportConfig)))
           .collect(Collectors.toList());
 
       final Iterator<VariableValueIdPair<List<Long>>> ancestorStream = outputEntity.getAncestorEntities().isEmpty()

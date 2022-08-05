@@ -39,9 +39,9 @@ public class DateVariable extends VariableWithValues<Long> {
   @Override
   public String valueToString(Long val, TabularReportConfig reportConfig) {
     if (reportConfig.getTrimTimeFromDateVars()) {
-      return DateTimeFormatter.ISO_DATE.format(Instant.ofEpochMilli(val));
+      return DateTimeFormatter.ISO_DATE.format(Instant.ofEpochMilli(val).atOffset(ZoneOffset.UTC));
     }
-    return DateTimeFormatter.ISO_DATE_TIME.format(Instant.ofEpochMilli(val));
+    return DateTimeFormatter.ISO_DATE_TIME.format(Instant.ofEpochMilli(val).atOffset(ZoneOffset.UTC));
   }
 
   public DateDistributionConfig getDistributionConfig() {

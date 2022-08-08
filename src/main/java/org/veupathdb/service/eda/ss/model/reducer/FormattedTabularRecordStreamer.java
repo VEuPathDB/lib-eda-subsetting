@@ -15,7 +15,7 @@ import java.util.stream.Collectors;
  */
 public class FormattedTabularRecordStreamer implements Iterator<List<String>> {
   // These value streams need to have associated with them the variable
-  private List<ValueStream> valuePairStreams;
+  private List<ValueStream<String>> valuePairStreams;
   private ValueStream<List<Long>> ancestorStream;
   private Iterator<Long> idIndexStream;
   private Long currentIdIndex;
@@ -32,12 +32,12 @@ public class FormattedTabularRecordStreamer implements Iterator<List<String>> {
    * @param ancestorStream   Stream of ancestors, used to merge in ancestors of target output entities in output records.
    * @param outputEntity     Entity type of records which will be output.
    */
-  public FormattedTabularRecordStreamer(List<Iterator<VariableValueIdPair<?>>> valuePairStreams,
+  public FormattedTabularRecordStreamer(List<Iterator<VariableValueIdPair<String>>> valuePairStreams,
                                         Iterator<Long> idIndexStream,
                                         Iterator<VariableValueIdPair<List<Long>>> ancestorStream,
                                         Entity outputEntity) {
     this.valuePairStreams = valuePairStreams.stream()
-        .map(s -> new ValueStream(s))
+        .map(s -> new ValueStream<>(s))
         .collect(Collectors.toList());
     this.idIndexStream = idIndexStream;
     if (idIndexStream.hasNext()) {
@@ -73,7 +73,7 @@ public class FormattedTabularRecordStreamer implements Iterator<List<String>> {
           .map(Objects::toString)
           .forEach(record::add);
     }
-    for (ValueStream valueStream: valuePairStreams) {
+    for (ValueStream<String> valueStream: valuePairStreams) {
       // Advance stream until it equals or exceeds the currentIdIndex
       while (valueStream.hasNext() && valueStream.peek().getIdIndex() < currentIdIndex) {
         valueStream.next();
@@ -83,9 +83,7 @@ public class FormattedTabularRecordStreamer implements Iterator<List<String>> {
         continue;
       }
       if (valueStream.peek().getIdIndex() == currentIdIndex) {
-        // TODO We need to a VariableType-Specific implementation of this toString.
-        // This is probably the place where longs will ultimately be converted to dates
-        record.add(valueStream.next().getValue().toString());
+        record.add(valueStream.next().getValue());
       } else {
         record.add("");
       }

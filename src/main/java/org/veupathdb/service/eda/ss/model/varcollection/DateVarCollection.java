@@ -1,13 +1,12 @@
 package org.veupathdb.service.eda.ss.model.varcollection;
 
-import java.time.LocalDateTime;
 import java.util.List;
 
 import org.veupathdb.service.eda.ss.model.distribution.BinUnits;
 import org.veupathdb.service.eda.ss.model.distribution.DateDistributionConfig;
 import org.veupathdb.service.eda.ss.model.variable.DateVariable;
 
-public class DateVarCollection extends VarCollection<LocalDateTime, DateVariable> {
+public class DateVarCollection extends VarCollection<Long, DateVariable> {
 
   private final DateDistributionConfig _distributionConfig;
 

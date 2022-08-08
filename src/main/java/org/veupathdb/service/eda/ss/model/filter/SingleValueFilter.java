@@ -1,8 +1,12 @@
 package org.veupathdb.service.eda.ss.model.filter;
 
 import org.veupathdb.service.eda.ss.model.Entity;
+import org.veupathdb.service.eda.ss.model.Study;
+import org.veupathdb.service.eda.ss.model.reducer.BinaryValuesStreamer;
 import org.veupathdb.service.eda.ss.model.variable.VariableWithValues;
 
+import java.io.IOException;
+import java.util.Iterator;
 import java.util.function.Predicate;
 
 import static org.gusdb.fgputil.FormatUtil.NL;
@@ -31,6 +35,15 @@ public abstract class SingleValueFilter<U, T extends VariableWithValues<U>> exte
   @Override
   public String getSql() {
     return _entity.getAncestorPkColNames().isEmpty() ? getSqlNoAncestors() : getSqlWithAncestors();
+  }
+
+  @Override
+  public Iterator<Long> streamFilteredIds(BinaryValuesStreamer binaryValuesStreamer, Study study) {
+    try {
+      return binaryValuesStreamer.streamFilteredValues(this, study);
+    } catch (IOException e) {
+      throw new RuntimeException("IO operation failed while trying to stream filtered IDs.", e);
+    }
   }
 
   /**

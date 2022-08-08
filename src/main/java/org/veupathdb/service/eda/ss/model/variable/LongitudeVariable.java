@@ -1,6 +1,7 @@
 package org.veupathdb.service.eda.ss.model.variable;
 
 import jakarta.ws.rs.BadRequestException;
+import org.veupathdb.service.eda.ss.model.tabular.TabularReportConfig;
 import org.veupathdb.service.eda.ss.model.variable.binary.BinaryConverter;
 import org.veupathdb.service.eda.ss.model.variable.binary.DoubleValueConverter;
 
@@ -37,6 +38,11 @@ public class LongitudeVariable extends VariableWithValues<Double> {
   @Override
   public Double fromString(String s) {
     return Double.valueOf(s);
+  }
+
+  @Override
+  public String valueToString(Double val, TabularReportConfig reportConfig) {
+    return Double.toString(val);
   }
 
   public Long getPrecision() {

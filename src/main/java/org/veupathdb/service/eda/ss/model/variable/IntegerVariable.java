@@ -2,6 +2,7 @@ package org.veupathdb.service.eda.ss.model.variable;
 
 import jakarta.ws.rs.BadRequestException;
 import org.veupathdb.service.eda.ss.model.distribution.NumberDistributionConfig;
+import org.veupathdb.service.eda.ss.model.tabular.TabularReportConfig;
 import org.veupathdb.service.eda.ss.model.variable.binary.BinaryConverter;
 import org.veupathdb.service.eda.ss.model.variable.binary.LongValueConverter;
 import java.util.Optional;
@@ -48,6 +49,11 @@ public class IntegerVariable extends NumberVariable<Long> {
   @Override
   public Long fromString(String s) {
     return Long.valueOf(s);
+  }
+
+  @Override
+  public String valueToString(Long val, TabularReportConfig reportConfig) {
+    return Long.toString(val);
   }
 
   @Override

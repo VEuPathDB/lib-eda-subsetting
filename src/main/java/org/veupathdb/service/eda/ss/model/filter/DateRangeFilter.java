@@ -1,6 +1,7 @@
 package org.veupathdb.service.eda.ss.model.filter;
 
 import java.time.LocalDateTime;
+import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
 import java.util.function.Predicate;
 
@@ -10,15 +11,20 @@ import org.veupathdb.service.eda.ss.model.variable.DateVariable;
 import static org.gusdb.fgputil.FormatUtil.NL;
 import static org.veupathdb.service.eda.ss.model.db.DB.Tables.AttributeValue.Columns.DATE_VALUE_COL_NAME;
 
-public class DateRangeFilter extends SingleValueFilter<LocalDateTime, DateVariable> {
+public class DateRangeFilter extends SingleValueFilter<Long, DateVariable> {
 
   private final LocalDateTime _min;
   private final LocalDateTime _max;
-  
+  private final Long _minEpochMillis;
+  private final Long _maxEpochMillis;
+
   public DateRangeFilter(String appDbSchema, Entity entity, DateVariable variable, LocalDateTime min, LocalDateTime max) {
     super(appDbSchema, entity, variable);
     _min = min;
     _max = max;
+    // Store off as millis since epoch for filtering with respect to binary-encoded values.
+    _minEpochMillis = _min.toInstant(ZoneOffset.UTC).toEpochMilli();
+    _maxEpochMillis = _max.toInstant(ZoneOffset.UTC).toEpochMilli();
   }
 
   // safe from SQL injection since input classes are LocalDateTime
@@ -28,8 +34,8 @@ public class DateRangeFilter extends SingleValueFilter<LocalDateTime, DateVariab
   }
 
   @Override
-  public Predicate<LocalDateTime> getPredicate() {
-    return date -> !date.isBefore(_min) && !date.isAfter(_max);
+  public Predicate<Long> getPredicate() {
+    return date -> date >= _minEpochMillis && date <= _maxEpochMillis;
   }
 
   static String dbDateTimeIsoValue(LocalDateTime dateTime) {

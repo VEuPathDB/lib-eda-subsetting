@@ -5,6 +5,7 @@ import org.hamcrest.Matchers;
 import org.junit.jupiter.api.Test;
 import org.veupathdb.service.eda.ss.model.db.FilteredResultFactory;
 import org.veupathdb.service.eda.ss.model.filter.NumberRangeFilter;
+import org.veupathdb.service.eda.ss.model.tabular.TabularReportConfig;
 import org.veupathdb.service.eda.ss.model.tabular.TabularResponses;
 import org.veupathdb.service.eda.ss.testutil.IndiaICEMRStudy;
 
@@ -43,7 +44,7 @@ public class DataFlowMapReduceTreeTest {
     final ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
     FilteredResultFactory.produceTabularSubsetFromFile(indiaICEMRStudy.getStudy(), indiaICEMRStudy.getHouseholdEntity(),
         List.of(indiaICEMRStudy.getPersonsInHousehold()), List.of(sampleRangeFilter, timeSinceLastMalariaFilter, personsInHouseholdFilter),
-        TabularResponses.Type.TABULAR.getFormatter(), outputStream, binaryDirectory);
+        TabularResponses.Type.TABULAR.getFormatter(), new TabularReportConfig(), outputStream, binaryDirectory);
     MatcherAssert.assertThat(Arrays.stream(outputStream.toString().split("\n"))
         .collect(Collectors.toList()), Matchers.hasSize(1));
   }
@@ -67,8 +68,8 @@ public class DataFlowMapReduceTreeTest {
     final ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
     FilteredResultFactory.produceTabularSubsetFromFile(indiaICEMRStudy.getStudy(), indiaICEMRStudy.getParticipantEntity(),
         List.of(indiaICEMRStudy.getTimeSinceLastMalaria()), List.of(rangeFilter, rootRangeFilter),
-        TabularResponses.Type.TABULAR.getFormatter(), outputStream, binaryDirectory);
+        TabularResponses.Type.TABULAR.getFormatter(), new TabularReportConfig(), outputStream, binaryDirectory);
     MatcherAssert.assertThat(Arrays.stream(outputStream.toString().split("\n"))
-        .collect(Collectors.toList()), Matchers.hasSize(62));
+        .collect(Collectors.toList()), Matchers.hasSize(63));
   }
 }

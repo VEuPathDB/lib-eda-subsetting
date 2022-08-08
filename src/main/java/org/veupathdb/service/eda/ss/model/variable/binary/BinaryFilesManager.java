@@ -47,6 +47,19 @@ public class BinaryFilesManager {
     _studiesDirectory = studiesDirectory;
   }
 
+  public boolean studyHasFiles(Study study) {
+    final Path studyDir = getStudyDir(study, Operation.READ);
+    if (!studyDir.toFile().exists()) {
+      LOG.debug("Study directory for study {} does not exist", study.getStudyId());
+      return false;
+    }
+    if (!getDoneFile(studyDir, Operation.READ).toFile().exists()) {
+      LOG.debug("Study directory for study {} exists but data is incomplete.", study.getStudyId());
+      return false;
+    }
+    return true;
+  }
+
   public Path getStudyDir(Study study, Operation op) {
     if (op == Operation.READ) return getStudyDir(study);
     else {

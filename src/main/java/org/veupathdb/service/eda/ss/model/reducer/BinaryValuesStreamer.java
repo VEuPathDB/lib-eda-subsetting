@@ -110,4 +110,14 @@ public class BinaryValuesStreamer {
         ancestorsWithId,
         Function.identity());
   }
+
+  public Iterator<VariableValueIdPair<List<String>>> streamIdMap(Entity entity, Study study) throws IOException {
+    Path path = binaryFilesManager.getIdMapFile(study, entity, BinaryFilesManager.Operation.READ);
+    final ListConverter<String> listConverter = new ListConverter<>(new StringValueConverter(30), entity.getAncestorEntities().size() + 1);
+    final ValueWithIdDeserializer<List<String>> ancestorsWithId = new ValueWithIdDeserializer<>(listConverter);
+    return new FilteredValueIterator<>(path,
+        x -> true,
+        ancestorsWithId,
+        Function.identity());
+  }
 }

@@ -181,10 +181,13 @@ public class FilteredResultFactory {
           ? null
           : binaryValuesStreamer.streamAncestorIds(outputEntity, study);
 
+      final Iterator<VariableValueIdPair<List<String>>> idsMapStream = binaryValuesStreamer.streamIdMap(outputEntity, study);
+
       final FormattedTabularRecordStreamer resultStreamer = new FormattedTabularRecordStreamer(
           outputVarStreams,
           idIndexStream,
           ancestorStream,
+          idsMapStream,
           outputEntity
       );
       while (resultStreamer.hasNext()) {

@@ -17,6 +17,7 @@ public class FormattedTabularRecordStreamer implements Iterator<List<String>> {
   // These value streams need to have associated with them the variable
   private List<ValueStream<String>> valuePairStreams;
   private ValueStream<List<Long>> ancestorStream;
+  private Iterator<VariableValueIdPair<List<String>>> idMapStream;
   private Iterator<Long> idIndexStream;
   private Long currentIdIndex;
   private Entity outputEntity;
@@ -35,6 +36,7 @@ public class FormattedTabularRecordStreamer implements Iterator<List<String>> {
   public FormattedTabularRecordStreamer(List<Iterator<VariableValueIdPair<String>>> valuePairStreams,
                                         Iterator<Long> idIndexStream,
                                         Iterator<VariableValueIdPair<List<Long>>> ancestorStream,
+                                        Iterator<VariableValueIdPair<List<String>>> idMapStream,
                                         Entity outputEntity) {
     this.valuePairStreams = valuePairStreams.stream()
         .map(s -> new ValueStream<>(s))
@@ -64,7 +66,6 @@ public class FormattedTabularRecordStreamer implements Iterator<List<String>> {
     // Only add ancestors if entity has ancestors associated with it.
     // TODO: Don't run this for every row if we don't have ancestors.
     if (!outputEntity.getAncestorEntities().isEmpty()) {
-      // <= and next()
       while (ancestorStream.peek().getIdIndex() < currentIdIndex) {
         ancestorStream.next();
       }
@@ -73,6 +74,7 @@ public class FormattedTabularRecordStreamer implements Iterator<List<String>> {
           .map(Objects::toString)
           .forEach(record::add);
     }
+//    while (cur)
     for (ValueStream<String> valueStream: valuePairStreams) {
       // Advance stream until it equals or exceeds the currentIdIndex
       while (valueStream.hasNext() && valueStream.peek().getIdIndex() < currentIdIndex) {

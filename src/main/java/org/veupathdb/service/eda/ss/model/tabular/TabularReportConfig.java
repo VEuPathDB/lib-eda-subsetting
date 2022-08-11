@@ -14,7 +14,7 @@ public class TabularReportConfig {
   private Long _offset = 0L;
   private TabularHeaderFormat _headerFormat = TabularHeaderFormat.STANDARD;
   private boolean _trimTimeFromDateVars = false;
-  private boolean _useBinaryFiles = false;
+  private DataSourceType _dataSourceType = DataSourceType.DATABASE;
 
   /**
    * Whether this configuration contains paging or sorting (paging always requires sorting)
@@ -45,8 +45,8 @@ public class TabularReportConfig {
     return _trimTimeFromDateVars;
   }
 
-  public boolean getUseBinaryFiles() {
-    return _useBinaryFiles;
+  public DataSourceType getDataSourceType() {
+    return _dataSourceType;
   }
 
   public void setNumRows(Optional<Long> numRows) {
@@ -69,7 +69,7 @@ public class TabularReportConfig {
     _trimTimeFromDateVars = trimTimeFromDateVars;
   }
 
-  public void setUseBinaryFiles(boolean useBinaryFiles) {
-    _useBinaryFiles = useBinaryFiles;
+  public void setDataSourceType(DataSourceType dataSourceType) {
+    _dataSourceType = dataSourceType;
   }
 }

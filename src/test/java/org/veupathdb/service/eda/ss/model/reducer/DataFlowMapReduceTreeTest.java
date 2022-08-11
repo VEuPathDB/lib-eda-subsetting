@@ -71,5 +71,6 @@ public class DataFlowMapReduceTreeTest {
         TabularResponses.Type.TABULAR.getFormatter(), new TabularReportConfig(), outputStream, binaryDirectory);
     MatcherAssert.assertThat(Arrays.stream(outputStream.toString().split("\n"))
         .collect(Collectors.toList()), Matchers.hasSize(63));
+    System.out.println(outputStream.toString());
   }
 }

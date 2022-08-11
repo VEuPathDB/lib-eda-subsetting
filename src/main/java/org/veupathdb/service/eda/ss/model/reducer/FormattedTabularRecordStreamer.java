@@ -45,6 +45,7 @@ public class FormattedTabularRecordStreamer implements Iterator<List<String>> {
     if (idIndexStream.hasNext()) {
       currentIdIndex = idIndexStream.next();
     }
+    this.idMapStream = idMapStream;
     if (ancestorStream != null) {
       this.ancestorStream = new ValueStream<>(ancestorStream);
     }
@@ -62,19 +63,17 @@ public class FormattedTabularRecordStreamer implements Iterator<List<String>> {
       throw new NoSuchElementException("No tabular records remain in stream.");
     }
     List<String> record = new ArrayList<>();
-    record.add(currentIdIndex.toString());
-    // Only add ancestors if entity has ancestors associated with it.
-    // TODO: Don't run this for every row if we don't have ancestors.
-    if (!outputEntity.getAncestorEntities().isEmpty()) {
-      while (ancestorStream.peek().getIdIndex() < currentIdIndex) {
-        ancestorStream.next();
+
+    VariableValueIdPair<List<String>> ids;
+    do {
+      if (!idMapStream.hasNext()) {
+        ids = null;
+        break;
       }
-      // Add all ancestor IDs
-      ancestorStream.next().getValue().stream()
-          .map(Objects::toString)
-          .forEach(record::add);
-    }
-//    while (cur)
+      ids = idMapStream.next();
+    } while (ids.getIdIndex() < currentIdIndex);
+    ids.getValue().forEach(record::add);
+
     for (ValueStream<String> valueStream: valuePairStreams) {
       // Advance stream until it equals or exceeds the currentIdIndex
       while (valueStream.hasNext() && valueStream.peek().getIdIndex() < currentIdIndex) {

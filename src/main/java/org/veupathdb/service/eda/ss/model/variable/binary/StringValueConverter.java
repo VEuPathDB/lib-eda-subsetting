@@ -28,15 +28,16 @@ public class StringValueConverter implements BinaryConverter<String> {
   public String fromBytes(byte[] bytes, int offset) {
     ByteBuffer buf = ByteBuffer.wrap(bytes);
     buf.position(offset);
-    int stringLength = buf.getInt();
-    byte[] stringBytes = new byte[stringLength];
-    buf.get(stringBytes, 0, stringLength);
-    return decodeUtf8EncodedBytes(stringBytes);
+    return fromBytes(buf);
   }
 
   @Override
   public String fromBytes(ByteBuffer buffer) {
-    return fromBytes(buffer.array());
+    int stringLength = buffer.getInt();
+    byte[] stringBytes = new byte[stringLength];
+    buffer.get(stringBytes, 0, stringLength);
+    buffer.position(buffer.position() + (_numBytes - stringLength - 4));
+    return decodeUtf8EncodedBytes(stringBytes);
   }
 
   @Override

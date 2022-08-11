@@ -65,7 +65,7 @@ public class BinaryValuesStreamer {
         .collect(Collectors.toList());
     if (filter.getOperation() == MultiFilter.MultiFilterOperation.UNION) {
       return new StreamUnionMerger(idStreams); // Intersect depending on operation.
-    } else { // operation == MultiFilter.MultiFilterOperation.UNION.INTERSECT
+    } else { // operation == MultiFilter.MultiFilterOperation.INTERSECT
       return new StreamIntersectMerger(idStreams);
     }
   }

@@ -177,15 +177,12 @@ public class FilteredResultFactory {
               outputVariable -> binaryValuesStreamer.streamIdValuePairs(study, (VariableWithValues<?>) outputVariable, reportConfig)))
           .collect(Collectors.toList());
 
-      final Iterator<VariableValueIdPair<List<Long>>> ancestorStream = outputEntity.getAncestorEntities().isEmpty()
-          ? null
-          : binaryValuesStreamer.streamAncestorIds(outputEntity, study);
+      final Iterator<VariableValueIdPair<List<String>>> idsMapStream = binaryValuesStreamer.streamIdMap(outputEntity, study);
 
       final FormattedTabularRecordStreamer resultStreamer = new FormattedTabularRecordStreamer(
           outputVarStreams,
           idIndexStream,
-          ancestorStream,
-          outputEntity
+          idsMapStream
       );
       while (resultStreamer.hasNext()) {
         resultConsumer.consumeRow(resultStreamer.next());

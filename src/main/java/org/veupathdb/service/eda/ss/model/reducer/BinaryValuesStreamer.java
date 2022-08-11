@@ -19,6 +19,8 @@ import java.util.stream.Collectors;
 
 public class BinaryValuesStreamer {
   private static final LongValueConverter LONG_VALUE_CONVERTER = new LongValueConverter();
+  // TODO: This should be shared with file dumper or possibly read from meta.json to support having it vary per study.
+  private static final int BYTES_RESERVED_FOR_ID = 30;
 
   private final BinaryFilesManager binaryFilesManager;
 
@@ -63,7 +65,7 @@ public class BinaryValuesStreamer {
         .collect(Collectors.toList());
     if (filter.getOperation() == MultiFilter.MultiFilterOperation.UNION) {
       return new StreamUnionMerger(idStreams); // Intersect depending on operation.
-    } else { // operation == MultiFilter.MultiFilterOperation.UNION.INTERSECT
+    } else { // operation == MultiFilter.MultiFilterOperation.INTERSECT
       return new StreamIntersectMerger(idStreams);
     }
   }
@@ -106,7 +108,29 @@ public class BinaryValuesStreamer {
     final ListConverter<Long> listConverter = new ListConverter<>(LONG_VALUE_CONVERTER, descendant.getAncestorEntities().size());
     final ValueWithIdDeserializer<List<Long>> ancestorsWithId = new ValueWithIdDeserializer<>(listConverter);
     return new FilteredValueIterator<>(path,
-        x -> true,
+        x -> true, // Do not apply any filters
+        ancestorsWithId,
+        Function.identity());
+  }
+
+  /**
+   * As an iterator, provide a stream of tuples containing:
+   * 1. The ID index of an entity
+   * 2. The string ID of the entity
+   * 3. The string IDs of all ancestors of the entity.
+   * @param entity Target entity for data stream.
+   * @param study The study the entity belongs to.
+   * @return A pair in which the left is the ID index and the right is a list of ordered string IDs.
+   * @throws IOException if there is a failure to open the underlying file.
+   */
+  public Iterator<VariableValueIdPair<List<String>>> streamIdMap(Entity entity, Study study) throws IOException {
+    Path path = binaryFilesManager.getIdMapFile(study, entity, BinaryFilesManager.Operation.READ);
+    final ListConverter<String> listConverter = new ListConverter<>(
+        new StringValueConverter(BYTES_RESERVED_FOR_ID),
+        entity.getAncestorEntities().size() + 1); // First entry of list is for entity ID, rest are ancestor IDs.
+    final ValueWithIdDeserializer<List<String>> ancestorsWithId = new ValueWithIdDeserializer<>(listConverter);
+    return new FilteredValueIterator<>(path,
+        x -> true, // Do not apply any filters.
         ancestorsWithId,
         Function.identity());
   }

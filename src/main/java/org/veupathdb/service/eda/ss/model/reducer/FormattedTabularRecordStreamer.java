@@ -16,11 +16,9 @@ import java.util.stream.Collectors;
 public class FormattedTabularRecordStreamer implements Iterator<List<String>> {
   // These value streams need to have associated with them the variable
   private List<ValueStream<String>> valuePairStreams;
-  private ValueStream<List<Long>> ancestorStream;
   private Iterator<VariableValueIdPair<List<String>>> idMapStream;
   private Iterator<Long> idIndexStream;
   private Long currentIdIndex;
-  private Entity outputEntity;
 
   /**
    * Constructs an instance, which provides a stream of string-formatted records. The stream is composed of all IDs
@@ -30,14 +28,11 @@ public class FormattedTabularRecordStreamer implements Iterator<List<String>> {
    * @param valuePairStreams Streams of pairs containing entity ID indexes and corresponding values for their respective
    *                         variables.
    * @param idIndexStream    Stream of ID indexes, indicating which entity records to output.
-   * @param ancestorStream   Stream of ancestors, used to merge in ancestors of target output entities in output records.
-   * @param outputEntity     Entity type of records which will be output.
+   * @param idMapStream
    */
   public FormattedTabularRecordStreamer(List<Iterator<VariableValueIdPair<String>>> valuePairStreams,
                                         Iterator<Long> idIndexStream,
-                                        Iterator<VariableValueIdPair<List<Long>>> ancestorStream,
-                                        Iterator<VariableValueIdPair<List<String>>> idMapStream,
-                                        Entity outputEntity) {
+                                        Iterator<VariableValueIdPair<List<String>>> idMapStream) {
     this.valuePairStreams = valuePairStreams.stream()
         .map(s -> new ValueStream<>(s))
         .collect(Collectors.toList());
@@ -46,10 +41,6 @@ public class FormattedTabularRecordStreamer implements Iterator<List<String>> {
       currentIdIndex = idIndexStream.next();
     }
     this.idMapStream = idMapStream;
-    if (ancestorStream != null) {
-      this.ancestorStream = new ValueStream<>(ancestorStream);
-    }
-    this.outputEntity = outputEntity;
   }
 
   @Override

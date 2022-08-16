@@ -147,8 +147,8 @@ public interface DB {
         String DESCRIP_COL_NAME = "description";
         String DISPLAY_NAME_COL_NAME = "display_name";
         String DISPLAY_NAME_PLURAL_COL_NAME = "display_name_plural";
-        //String ENTITY_HAS_ATTRIBUTE_COLLECTIONS = "has_attribute_collections";
-        //String ENTITY_IS_MANY_TO_ONE_WITH_PARENT = "is_many_to_one_with_parent";
+        String ENTITY_HAS_ATTRIBUTE_COLLECTIONS = "has_attribute_collections";
+        String ENTITY_IS_MANY_TO_ONE_WITH_PARENT = "is_many_to_one_with_parent";
         List<String> ALL = getAll(Columns.class);
       }
     }

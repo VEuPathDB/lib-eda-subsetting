@@ -18,9 +18,6 @@ public class StubDb {
   // empty schema for test DB
   public static final String APP_DB_SCHEMA = "";
 
-  // no tests use collections
-  public static final boolean ASSAY_CONVERSION_FLAG = false;
-
   // tests run against non-user studies
   public static final StudySourceType USER_STUDIES_FLAG = StudySourceType.CURATED;
 

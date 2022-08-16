@@ -16,9 +16,7 @@ import org.veupathdb.service.eda.ss.model.Entity;
 
 import static org.gusdb.fgputil.FormatUtil.NL;
 import static org.veupathdb.service.eda.ss.model.db.DB.Tables.EntityTypeGraph.Columns.*;
-import static org.veupathdb.service.eda.ss.model.db.ResultSetUtils.getIntegerFromString;
-import static org.veupathdb.service.eda.ss.model.db.ResultSetUtils.getRsOptionalString;
-import static org.veupathdb.service.eda.ss.model.db.ResultSetUtils.getRsRequiredString;
+import static org.veupathdb.service.eda.ss.model.db.ResultSetUtils.*;
 
 public class EntityFactory {
 
@@ -26,12 +24,10 @@ public class EntityFactory {
 
   private final DataSource _dataSource;
   private final String _appDbSchema;
-  private final boolean _convertAssaysFlag;
 
-  public EntityFactory(DataSource dataSource, String appDbSchema, boolean convertAssaysFlag) {
+  public EntityFactory(DataSource dataSource, String appDbSchema) {
     _dataSource = dataSource;
     _appDbSchema = appDbSchema;
-    _convertAssaysFlag = convertAssaysFlag;
   }
 
   public TreeNode<Entity> getStudyEntityTree(String studyId) {
@@ -44,7 +40,7 @@ public class EntityFactory {
     Entity rootEntity = new SQLRunner(_dataSource, sql, "Get entity tree").executeQuery(rs -> {
       Entity root = null;
       while (rs.next()) {
-        Entity entity = createEntityFromResultSet(rs, _convertAssaysFlag);
+        Entity entity = createEntityFromResultSet(rs);
         String parentId = rs.getString(DB.Tables.EntityTypeGraph.Columns.ENTITY_PARENT_ID_COL_NAME);
         if (parentId == null) {
           if (root != null) throw new RuntimeException("In Study " + studyId +
@@ -99,7 +95,7 @@ public class EntityFactory {
         "ORDER BY e." + DB.Tables.EntityTypeGraph.Columns.ENTITY_LOAD_ORDER_ID + " ASC";
   }
 
-  static Entity createEntityFromResultSet(ResultSet rs, boolean convertAssaysFlag) {
+  static Entity createEntityFromResultSet(ResultSet rs) {
     try {
       String name = getRsRequiredString(rs, DISPLAY_NAME_COL_NAME);
       // TODO remove this hack when db has plurals
@@ -109,7 +105,7 @@ public class EntityFactory {
       String descrip = getRsOptionalString(rs, DESCRIP_COL_NAME, "No Entity Description available");
       String abbrev = getRsRequiredString(rs, ENTITY_ABBREV_COL_NAME);
       long loadOrder = getIntegerFromString(rs, ENTITY_LOAD_ORDER_ID, true);
-      boolean hasCollections = determineHasCollections(convertAssaysFlag, getRsRequiredString(rs, DB.Tables.EntityType.Columns.ISA_TYPE)); // getRsRequiredBoolean(rs, ENTITY_HAS_ATTRIBUTE_COLLECTIONS);
+      boolean hasCollections = getRsRequiredBoolean(rs, ENTITY_HAS_ATTRIBUTE_COLLECTIONS);
       boolean isManyToOneWithParent = false; //getRsRequiredBoolean(rs, ENTITY_IS_MANY_TO_ONE_WITH_PARENT);
 
       return new Entity(id, studyAbbrev, name, namePlural, descrip, abbrev, loadOrder, hasCollections, isManyToOneWithParent);
@@ -117,9 +113,5 @@ public class EntityFactory {
     catch (SQLException e) {
       throw new RuntimeException(e);
     }
-  }
-
-  private static boolean determineHasCollections(boolean _convertAssaysFlag, String isaEntityType) {
-    return _convertAssaysFlag && isaEntityType.equals("Assay");
   }
 }

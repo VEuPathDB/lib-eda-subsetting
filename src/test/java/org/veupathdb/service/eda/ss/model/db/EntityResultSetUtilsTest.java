@@ -24,7 +24,7 @@ public class EntityResultSetUtilsTest {
   @BeforeAll
   public static void setUp() {
     _model = new MockModel();
-    Study study = new StudyFactory(StubDb.getDataSource(), APP_DB_SCHEMA, USER_STUDIES_FLAG, ASSAY_CONVERSION_FLAG).getStudyById(LoadStudyTest.STUDY_ID);
+    Study study = new StudyFactory(StubDb.getDataSource(), APP_DB_SCHEMA, USER_STUDIES_FLAG).getStudyById(LoadStudyTest.STUDY_ID);
     new MockFilters(study);
   }
   

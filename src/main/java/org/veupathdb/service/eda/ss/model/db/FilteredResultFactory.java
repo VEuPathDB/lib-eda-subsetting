@@ -31,6 +31,9 @@ import org.veupathdb.service.eda.ss.model.Entity;
 import org.veupathdb.service.eda.ss.model.Study;
 import org.veupathdb.service.eda.ss.model.reducer.*;
 import org.veupathdb.service.eda.ss.model.reducer.ancestor.EntityIdIndexIteratorConverter;
+import org.veupathdb.service.eda.ss.model.reducer.formatter.MultiValueFormatter;
+import org.veupathdb.service.eda.ss.model.reducer.formatter.SingleValueFormatter;
+import org.veupathdb.service.eda.ss.model.reducer.formatter.ValueFormatter;
 import org.veupathdb.service.eda.ss.model.tabular.SortSpecEntry;
 import org.veupathdb.service.eda.ss.model.tabular.TabularHeaderFormat;
 import org.veupathdb.service.eda.ss.model.tabular.TabularReportConfig;
@@ -172,10 +175,14 @@ public class FilteredResultFactory {
       final Iterator<Long> idIndexStream = driver.reduce(dataFlowTree);
 
       // Open streams of output variables and ancestors identifiers used to decorate ID index stream to produce tabular records.
-      final List<Iterator<VariableValueIdPair<String>>> outputVarStreams = outputVariables.stream()
-          .map(Functions.fSwallow(
-              outputVariable -> binaryValuesStreamer.streamIdValuePairs(study, (VariableWithValues<?>) outputVariable, reportConfig)))
-          .collect(Collectors.toList());
+      List<FormattedTabularRecordStreamer.ValueStream<String>> outputVarStreams = new ArrayList<>();
+      for (Variable outputVar: outputVariables) {
+        VariableWithValues<?> varWithVals = (VariableWithValues<?>) outputVar;
+        ValueFormatter valFormatter = varWithVals.getIsMultiValued() ? new MultiValueFormatter() : new SingleValueFormatter();
+        FormattedTabularRecordStreamer.ValueStream<String> valStream = new FormattedTabularRecordStreamer.ValueStream<>(
+            binaryValuesStreamer.streamIdValuePairs(study, varWithVals, reportConfig), valFormatter);
+        outputVarStreams.add(valStream);
+      }
 
       final Iterator<VariableValueIdPair<List<String>>> idsMapStream = binaryValuesStreamer.streamIdMap(outputEntity, study);
 

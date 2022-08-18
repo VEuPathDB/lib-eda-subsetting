@@ -13,7 +13,7 @@ import java.util.stream.LongStream;
 public class StreamIntersectMergerTest {
 
   @Nested
-  public class WhenInputIsSorted {
+  public class WhenThereAreNoDuplicates {
     private final List<Long> oneToOneHundred = LongStream.rangeClosed(1, 100)
         .boxed()
         .collect(Collectors.toList());
@@ -44,20 +44,18 @@ public class StreamIntersectMergerTest {
 
     @Test
     public void testTwoEqualStreams() {
-      final Iterator<Long> stream1 = new ArrayList<>(oneToOneHundred).iterator();
-      final Iterator<Long> stream2 = new ArrayList<>(oneToOneHundred).iterator();
-      StreamIntersectMerger merger = new StreamIntersectMerger(List.of(stream1, stream2));
-      Iterable<Long> iterable = () -> merger;
+      final List<Long> stream1 = new ArrayList<>(oneToOneHundred);
+      final List<Long> stream2 = new ArrayList<>(oneToOneHundred);
+      Iterable<Long> iterable = () -> new StreamIntersectMerger(List.of(stream1.iterator(), stream2.iterator()));
       MatcherAssert.assertThat(iterable, Matchers.iterableWithSize(100));
     }
 
     @Test
     public void testTwoDistinctStreams() {
-      final Iterator<Long> stream1 = new ArrayList<>(evenNumbers).iterator();
-      final Iterator<Long> stream2 = new ArrayList<>(oddNumbers).iterator();
-      StreamIntersectMerger merger = new StreamIntersectMerger(List.of(stream1, stream2));
-      Iterable<Long> result = () -> merger;
-      MatcherAssert.assertThat(result, Matchers.emptyIterable());
+      final List<Long> stream1 = new ArrayList<>(evenNumbers);
+      final List<Long> stream2 = new ArrayList<>(oddNumbers);
+      Iterable<Long> iterable = () -> new StreamIntersectMerger(List.of(stream1.iterator(), stream2.iterator()));
+      MatcherAssert.assertThat(iterable, Matchers.emptyIterable());
     }
 
     @Test
@@ -88,6 +86,19 @@ public class StreamIntersectMergerTest {
     }
   }
 
+  @Nested
+  public class WhenThereAreDuplicates {
+    private final List<Long> stream1 = List.of(1L, 1L, 1L, 2L, 2L, 4L, 4L, 8L);
+    private final List<Long> stream2 = List.of(1L, 1L, 2L, 4L, 5L, 5L, 8L);
+
+    @Test
+    public void test() {
+      Iterable<Long> result = () -> new StreamIntersectMerger(List.of(
+          stream1.iterator(),
+          stream2.iterator()));
+      MatcherAssert.assertThat(result, Matchers.contains(1L, 2L, 4L, 8L));
+    }
+  }
 
 
   @Nested

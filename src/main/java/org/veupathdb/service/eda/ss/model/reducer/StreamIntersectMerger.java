@@ -55,7 +55,7 @@ public class StreamIntersectMerger implements Iterator<Long> {
     if (next == null) {
       throw new NoSuchElementException("No more elements in the iterator");
     }
-    currentIdIndexStream.next();
+//    currentIdIndexStream.next();
     findNextMatchingIdIndex();
     return next;
   }
@@ -69,6 +69,11 @@ public class StreamIntersectMerger implements Iterator<Long> {
     }
     // value not null; counts as first concurring stream
     int numConcurringStreams = 1;
+
+    if (streamRing.size == 1) {
+      nextOutputIndex = currentIdIndexStream.hasNext() ? currentIdIndexStream.next() : null;
+      return;
+    }
 
     // continual loop, trying to match all iterators to the same value
     while (numConcurringStreams < streamRing.size()) {
@@ -166,15 +171,21 @@ public class StreamIntersectMerger implements Iterator<Long> {
       if (next == null) {
         return null;
       }
-      while (next < key) {
+      Long prev = null;
+      while (next <= key) {
+        prev = next;
         if (stream.hasNext()) {
           this.next = stream.next();
         } else {
           this.next = null;
-          return null;
+          return prev == key ? prev : null;
         }
       }
-      return next;
+      if (prev == null || prev < key) {
+        return next;
+      } else {
+        return prev;
+      }
     }
 
     @Override

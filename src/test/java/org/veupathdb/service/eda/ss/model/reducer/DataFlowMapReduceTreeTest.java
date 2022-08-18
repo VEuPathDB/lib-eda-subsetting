@@ -69,6 +69,7 @@ public class DataFlowMapReduceTreeTest {
     FilteredResultFactory.produceTabularSubsetFromFile(indiaICEMRStudy.getStudy(), indiaICEMRStudy.getParticipantEntity(),
         List.of(indiaICEMRStudy.getTimeSinceLastMalaria()), List.of(rangeFilter, rootRangeFilter),
         TabularResponses.Type.TABULAR.getFormatter(), new TabularReportConfig(), outputStream, binaryDirectory);
+    System.out.println(outputStream.toString());
     MatcherAssert.assertThat(Arrays.stream(outputStream.toString().split("\n"))
         .collect(Collectors.toList()), Matchers.hasSize(63));
   }

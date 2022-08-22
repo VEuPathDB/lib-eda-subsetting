@@ -37,7 +37,7 @@ public class BinaryValuesStreamer {
    * @param <T> Type of value associated with {@link V}
    * @throws IOException if there is a failure to open the binary file.
    */
-  public <V, T extends VariableWithValues<V>> FilteredValueIterator<V, Long> streamFilteredValues(
+  public <V, T extends VariableWithValues<V>> FilteredValueIterator<V, Long> streamFilteredEntities(
       SingleValueFilter<V, T> filter, Study study) throws IOException {
     BinaryConverter<V> serializer = filter.getVariable().getBinaryConverter();
     return new FilteredValueIterator<>(
@@ -58,10 +58,10 @@ public class BinaryValuesStreamer {
    * @return
    * @throws IOException
    */
-  public Iterator<Long> streamMultiFilteredValues(
+  public Iterator<Long> streamMultiFilteredEntities(
       MultiFilter filter, Study study) throws IOException {
     List<Iterator<Long>> idStreams = filter.getSubFilters().stream()
-        .map(Functions.fSwallow(subFilter -> streamFilteredValues(filter.getFilter(subFilter), study)))
+        .map(Functions.fSwallow(subFilter -> streamFilteredEntities(filter.getFilter(subFilter), study)))
         .collect(Collectors.toList());
     if (filter.getOperation() == MultiFilter.MultiFilterOperation.UNION) {
       return new StreamUnionMerger(idStreams); // Intersect depending on operation.
@@ -83,8 +83,14 @@ public class BinaryValuesStreamer {
       Study study,
       VariableWithValues<V> variable,
       TabularReportConfig reportConfig) throws IOException {
-    Function<VariableValueIdPair<V>, VariableValueIdPair<String>> extractor = pair -> new VariableValueIdPair<>(
-        pair.getIdIndex(), variable.valueToString(pair.getValue(), reportConfig));
+    Function<VariableValueIdPair<V>, VariableValueIdPair<String>> extractor;
+    if (variable.getIsMultiValued()) {
+      extractor = pair -> new VariableValueIdPair<>(
+          pair.getIdIndex(), variable.valueToJsonString(pair.getValue(), reportConfig));
+    } else {
+      extractor = pair -> new VariableValueIdPair<>(
+          pair.getIdIndex(), variable.valueToString(pair.getValue(), reportConfig));
+    }
     BinaryConverter<V> serializer = variable.getBinaryConverter();
     return new FilteredValueIterator(
         binaryFilesManager.getVariableFile(study,

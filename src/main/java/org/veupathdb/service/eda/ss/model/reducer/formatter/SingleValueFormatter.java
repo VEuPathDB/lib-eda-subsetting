@@ -1,18 +1,11 @@
 package org.veupathdb.service.eda.ss.model.reducer.formatter;
 
-import org.veupathdb.service.eda.ss.model.variable.VariableValueIdPair;
-
-import java.util.Iterator;
+import java.util.List;
 
 public class SingleValueFormatter implements ValueFormatter {
 
   @Override
-  public String format(long idIndex, Iterator<VariableValueIdPair<String>> valuesIterator) {
-    VariableValueIdPair<String> pair = valuesIterator.next();
-    if (pair.getIdIndex() == idIndex) {
-      return pair.getValue();
-    } else {
-      return "";
-    }
+  public String format(List<String> values) {
+    return values.get(0);
   }
 }

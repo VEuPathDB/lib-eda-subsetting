@@ -1,27 +1,14 @@
 package org.veupathdb.service.eda.ss.model.reducer.formatter;
 
-import org.veupathdb.service.eda.ss.model.variable.VariableValueIdPair;
-
-import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
+import java.util.stream.Collectors;
 
 public class MultiValueFormatter implements ValueFormatter {
 
   @Override
-  public String format(long idIndex, Iterator<VariableValueIdPair<String>> valuesIterator) {
-    VariableValueIdPair<String> pair = valuesIterator.next();
+  public String format(List<String> values) {
     StringBuilder valueRecord = new StringBuilder("[");
-    boolean firstRecord = true;
-    while (pair.getIdIndex() == idIndex) {
-      if (!firstRecord) {
-        valueRecord.append(",");
-      } else {
-        firstRecord = false;
-      }
-      valueRecord.append(valuesIterator.next().getValue());
-      pair = valuesIterator.next();
-    }
+    valueRecord.append(values.stream().collect(Collectors.joining(",")));
     valueRecord.append("]");
     return valueRecord.toString();
   }

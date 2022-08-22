@@ -98,6 +98,16 @@ public class StreamIntersectMergerTest {
           stream2.iterator()));
       MatcherAssert.assertThat(result, Matchers.contains(1L, 2L, 4L, 8L));
     }
+
+    @Test
+    public void testDupes() {
+      final List<Long> s1 = List.of(1L, 2L, 3L, 4L, 5L, 10L);
+      final List<Long> s2 = List.of(2L, 5L, 6L, 10L);
+      Iterable<Long> result = () -> new StreamIntersectMerger(List.of(
+          s1.iterator(),
+          s2.iterator()));
+      MatcherAssert.assertThat(result, Matchers.contains(2L, 5L, 10L));
+    }
   }
 
 

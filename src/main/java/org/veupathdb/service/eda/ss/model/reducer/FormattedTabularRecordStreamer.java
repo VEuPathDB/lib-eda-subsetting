@@ -54,23 +54,24 @@ public class FormattedTabularRecordStreamer implements Iterator<List<String>> {
 
     VariableValueIdPair<List<String>> ids;
     do {
-      if (!idMapStream.hasNext()) {
-        ids = null;
-        break;
-      }
       ids = idMapStream.next();
     } while (ids.getIdIndex() < currentIdIndex);
     record.addAll(ids.getValue());
 
     for (ValueStream<String> valueStream: valuePairStreams) {
-      // Advance stream until it equals or exceeds the currentIdIndex
+      // Advance stream until it equals or exceeds the currentIdIndex.
       while (valueStream.hasNext() && valueStream.peek().getIdIndex() < currentIdIndex) {
         valueStream.next();
       }
       if (!valueStream.hasNext()) {
         record.add("");
       } else {
-        record.add(valueStream.valueFormatter.format(currentIdIndex, valueStream));
+        // Accumulate values with the given ID index to pass to the formatter.
+        List<String> values = new ArrayList<>();
+        while (valueStream.hasNext() && valueStream.peek().getIdIndex() == currentIdIndex) {
+          values.add(valueStream.next().getValue());
+        }
+        record.add(valueStream.valueFormatter.format(values));
       }
     }
     if (idIndexStream.hasNext()) {
@@ -94,7 +95,7 @@ public class FormattedTabularRecordStreamer implements Iterator<List<String>> {
       }
     }
 
-    public VariableValueIdPair<?> peek() {
+    public VariableValueIdPair<T> peek() {
       return next;
     }
 

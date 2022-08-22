@@ -164,6 +164,7 @@ public class StreamIntersectMerger implements Iterator<Long> {
 
     /**
      * Advance the stream until the next element either matches or exceeds the key.
+     * If there are duplicates in the stream, advances the stream to the last duplicate.
      * @param key Value to advance the stream to or past if the key is not present in the stream.
      * @return Value the stream is advanced to, either key or the next highest value of the stream.
      */
@@ -172,6 +173,8 @@ public class StreamIntersectMerger implements Iterator<Long> {
         return null;
       }
       Long prev = null;
+      // Skip until our cursor moves past our target, so we can be sure prev points to the last instance of our
+      // target ID index.
       while (next <= key) {
         prev = next;
         if (stream.hasNext()) {
@@ -181,7 +184,7 @@ public class StreamIntersectMerger implements Iterator<Long> {
           return prev == key ? prev : null;
         }
       }
-      if (prev == null || prev < key) {
+      if (prev == null || prev < key) { // This indicates that we've already returned "prev". Return next instead.
         return next;
       } else {
         return prev;

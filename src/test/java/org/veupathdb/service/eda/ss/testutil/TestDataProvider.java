@@ -33,7 +33,7 @@ public class TestDataProvider {
   public static IntegerVariable constructIntVariable(Entity entity) {
     return new IntegerVariable(
         constructGenericVarProps(entity, VARIABLE_ID),
-        constructVarValuesProps(VariableType.INTEGER),
+        constructVarValuesProps(VariableType.INTEGER, false),
         new NumberDistributionConfig<>(0L, 10L, 0L, 10L, 2L, 2L),
         new IntegerVariable.Properties("bleep bloops")
     );
@@ -42,7 +42,7 @@ public class TestDataProvider {
   public static DateVariable constructDateVariable(Entity entity) {
     return new DateVariable(
         constructGenericVarProps(entity, VARIABLE_ID),
-        constructVarValuesProps(VariableType.DATE),
+        constructVarValuesProps(VariableType.DATE, false),
         new DateDistributionConfig(false, VariableDataShape.CONTINUOUS, null, null, "min", "max", 10, "days", null)
     );
   }
@@ -120,6 +120,7 @@ public class TestDataProvider {
     private VariableType variableType;
     private String variableId;
     private Entity entity;
+    private boolean multiValued = false;
 
     public IntegerVariableBuilder withVariableId(String variableId) {
       this.variableId = variableId;
@@ -136,10 +137,15 @@ public class TestDataProvider {
       return this;
     }
 
+    public IntegerVariableBuilder withMultiValued(boolean multiValued) {
+      this.multiValued = multiValued;
+      return this;
+    }
+
     public IntegerVariable build() {
       return new IntegerVariable(
           constructGenericVarProps(entity, variableId),
-          constructVarValuesProps(variableType),
+          constructVarValuesProps(variableType, multiValued),
           new NumberDistributionConfig<>(0L, 10L, 0L, 10L, 2L, 2L),
           new IntegerVariable.Properties("bleep bloops")
       );
@@ -160,7 +166,7 @@ public class TestDataProvider {
     );
   }
 
-  private static VariableWithValues.Properties constructVarValuesProps(VariableType variableType) {
+  private static VariableWithValues.Properties constructVarValuesProps(VariableType variableType, boolean multiValued) {
     return new VariableWithValues.Properties(
         variableType,
         null,
@@ -169,7 +175,7 @@ public class TestDataProvider {
         false,
         false,
         false,
-        false,
+        multiValued,
         false
     );
   }

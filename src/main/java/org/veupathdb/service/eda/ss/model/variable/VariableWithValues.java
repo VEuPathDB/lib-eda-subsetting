@@ -42,6 +42,10 @@ public abstract class VariableWithValues<T> extends Variable {
 
   public abstract String valueToString(T val, TabularReportConfig config);
 
+  public String valueToJsonString(T val, TabularReportConfig config) {
+    return "\"" + valueToString(val, config) + "\"";
+  }
+
   private final Properties _properties;
 
   public VariableWithValues(Variable.Properties varProperties, Properties properties) {

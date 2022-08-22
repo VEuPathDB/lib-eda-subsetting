@@ -40,7 +40,7 @@ public abstract class SingleValueFilter<U, T extends VariableWithValues<U>> exte
   @Override
   public Iterator<Long> streamFilteredIds(BinaryValuesStreamer binaryValuesStreamer, Study study) {
     try {
-      return binaryValuesStreamer.streamFilteredValues(this, study);
+      return binaryValuesStreamer.streamFilteredEntities(this, study);
     } catch (IOException e) {
       throw new RuntimeException("IO operation failed while trying to stream filtered IDs.", e);
     }

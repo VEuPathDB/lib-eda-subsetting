@@ -24,7 +24,6 @@ import org.gusdb.fgputil.db.runner.SQLRunner;
 import org.gusdb.fgputil.db.runner.SingleLongResultSetHandler;
 import org.gusdb.fgputil.db.stream.ResultSetIterator;
 import org.gusdb.fgputil.db.stream.ResultSets;
-import org.gusdb.fgputil.functional.Functions;
 import org.gusdb.fgputil.functional.TreeNode;
 import org.gusdb.fgputil.iterator.GroupingIterator;
 import org.veupathdb.service.eda.ss.model.Entity;
@@ -33,7 +32,7 @@ import org.veupathdb.service.eda.ss.model.reducer.*;
 import org.veupathdb.service.eda.ss.model.reducer.ancestor.EntityIdIndexIteratorConverter;
 import org.veupathdb.service.eda.ss.model.reducer.formatter.MultiValueFormatter;
 import org.veupathdb.service.eda.ss.model.reducer.formatter.SingleValueFormatter;
-import org.veupathdb.service.eda.ss.model.reducer.formatter.ValueFormatter;
+import org.veupathdb.service.eda.ss.model.reducer.formatter.TabularValueFormatter;
 import org.veupathdb.service.eda.ss.model.tabular.SortSpecEntry;
 import org.veupathdb.service.eda.ss.model.tabular.TabularHeaderFormat;
 import org.veupathdb.service.eda.ss.model.tabular.TabularReportConfig;
@@ -178,7 +177,7 @@ public class FilteredResultFactory {
       List<FormattedTabularRecordStreamer.ValueStream<String>> outputVarStreams = new ArrayList<>();
       for (Variable outputVar: outputVariables) {
         VariableWithValues<?> varWithVals = (VariableWithValues<?>) outputVar;
-        ValueFormatter valFormatter = varWithVals.getIsMultiValued() ? new MultiValueFormatter() : new SingleValueFormatter();
+        TabularValueFormatter valFormatter = varWithVals.getIsMultiValued() ? new MultiValueFormatter() : new SingleValueFormatter();
         FormattedTabularRecordStreamer.ValueStream<String> valStream = new FormattedTabularRecordStreamer.ValueStream<>(
             binaryValuesStreamer.streamIdValuePairs(study, varWithVals, reportConfig), valFormatter);
         outputVarStreams.add(valStream);

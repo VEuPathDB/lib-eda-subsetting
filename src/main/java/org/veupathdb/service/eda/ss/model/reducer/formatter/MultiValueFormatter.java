@@ -3,7 +3,7 @@ package org.veupathdb.service.eda.ss.model.reducer.formatter;
 import java.util.List;
 import java.util.stream.Collectors;
 
-public class MultiValueFormatter implements ValueFormatter {
+public class MultiValueFormatter implements TabularValueFormatter {
 
   @Override
   public String format(List<String> values) {

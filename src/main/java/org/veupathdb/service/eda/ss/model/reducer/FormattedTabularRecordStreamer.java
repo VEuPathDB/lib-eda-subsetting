@@ -1,6 +1,6 @@
 package org.veupathdb.service.eda.ss.model.reducer;
 
-import org.veupathdb.service.eda.ss.model.reducer.formatter.ValueFormatter;
+import org.veupathdb.service.eda.ss.model.reducer.formatter.TabularValueFormatter;
 import org.veupathdb.service.eda.ss.model.variable.VariableValueIdPair;
 
 import java.util.*;
@@ -85,9 +85,9 @@ public class FormattedTabularRecordStreamer implements Iterator<List<String>> {
   public static class ValueStream<T> implements Iterator<VariableValueIdPair<T>> {
     private VariableValueIdPair<T> next;
     private final Iterator<VariableValueIdPair<T>> stream;
-    private final ValueFormatter valueFormatter;
+    private final TabularValueFormatter valueFormatter;
 
-    public ValueStream(Iterator<VariableValueIdPair<T>> stream, ValueFormatter valueFormatter) {
+    public ValueStream(Iterator<VariableValueIdPair<T>> stream, TabularValueFormatter valueFormatter) {
       this.stream = stream;
       this.valueFormatter = valueFormatter;
       if (stream.hasNext()) {

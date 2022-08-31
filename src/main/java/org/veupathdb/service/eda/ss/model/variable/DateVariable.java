@@ -39,9 +39,14 @@ public class DateVariable extends VariableWithValues<Long> {
   @Override
   public String valueToString(Long val, TabularReportConfig reportConfig) {
     if (reportConfig.getTrimTimeFromDateVars()) {
-      return DateTimeFormatter.ISO_DATE.format(Instant.ofEpochMilli(val).atOffset(ZoneOffset.UTC));
+      return DateTimeFormatter.ISO_LOCAL_DATE.format(Instant.ofEpochMilli(val).atOffset(ZoneOffset.UTC));
     }
-    return DateTimeFormatter.ISO_DATE_TIME.format(Instant.ofEpochMilli(val).atOffset(ZoneOffset.UTC));
+    return DateTimeFormatter.ISO_LOCAL_DATE_TIME.format(Instant.ofEpochMilli(val).atOffset(ZoneOffset.UTC));
+  }
+
+  @Override
+  public String valueToJsonText(Long val, TabularReportConfig config) {
+    return quote(valueToString(val, config));
   }
 
   public DateDistributionConfig getDistributionConfig() {
@@ -53,5 +58,4 @@ public class DateVariable extends VariableWithValues<Long> {
     throw new BadRequestException("Variable " + variable.getId() +
         " of entity " + variable.getEntityId() + " is not a date variable.");
   }
-
 }

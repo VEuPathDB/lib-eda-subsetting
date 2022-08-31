@@ -2,20 +2,13 @@ package org.veupathdb.service.eda.ss.model.reducer;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.gusdb.fgputil.functional.Functions;
 import org.gusdb.fgputil.functional.TreeNode;
 import org.veupathdb.service.eda.ss.model.Entity;
 import org.veupathdb.service.eda.ss.model.Study;
 import org.veupathdb.service.eda.ss.model.filter.Filter;
-import org.veupathdb.service.eda.ss.model.filter.SingleValueFilter;
-import org.veupathdb.service.eda.ss.model.reducer.ancestor.EntityIdIndexIteratorConverter;
 import org.veupathdb.service.eda.ss.model.variable.Variable;
-import org.veupathdb.service.eda.ss.model.variable.VariableValueIdPair;
 import org.veupathdb.service.eda.ss.model.variable.VariableWithValues;
 
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Optional;
 import java.util.function.Function;
@@ -31,13 +24,13 @@ public class DataFlowTreeFactory {
   public TreeNode<DataFlowNodeContents> create(TreeNode<Entity> prunedEntityTree,
                                                Entity outputEntity,
                                                List<Filter> filters,
+                                               List<VariableWithValues> outputVariables,
                                                Study study) {
     final TreeNode<Entity> outputNode = prunedEntityTree.findFirst(entity -> entity.equals(outputEntity));
     // In lieu of a pointer up the tree, we use this function to traverse from the original root to a node's parent.
     final Function<TreeNode<Entity>, Optional<TreeNode<Entity>>> parentMapper = child ->
         Optional.ofNullable(prunedEntityTree.findFirst(candidate -> candidate.getChildNodes().contains(child), null));
-    final TreeNode<DataFlowNodeContents> newRoot = rerootTree(parentMapper, outputNode, null, filters, study);
-    return newRoot;
+    return rerootTree(parentMapper, outputNode, null, filters, outputVariables, study);
   }
 
   /**
@@ -56,26 +49,34 @@ public class DataFlowTreeFactory {
                                                     TreeNode<Entity> currentTraversalNode,
                                                     TreeNode<Entity> previousNode,
                                                     List<Filter> filters,
+                                                    List<VariableWithValues> outputVariables,
                                                     Study study) {
     // Collect filters applicable to the current entity.
     final List<Filter> applicableFilters = filters.stream()
         .filter(candidate -> candidate.getEntity().equals(currentTraversalNode.getContents()))
         .collect(Collectors.toList());
+
+    final List<Variable> unfilteredVars = outputVariables.stream()
+        .filter(var -> var.getEntity().equals(currentTraversalNode.getContents()) &&
+            applicableFilters.stream().noneMatch(filter -> filter.getEntity().equals(var.getEntity())))
+        .collect(Collectors.toList());
+
     // Convert the entity node to a data flow node.
     final DataFlowNodeContents contents = new DataFlowNodeContents(
         applicableFilters,
         currentTraversalNode.getContents(),
-        study
+        study,
+        unfilteredVars
     );
     TreeNode<DataFlowNodeContents> newRoot = new TreeNode<>(contents);
     Optional<TreeNode<Entity>> parentOpt = parentRetriever.apply(currentTraversalNode);
     // Only add child node if parent exists or parent is not the previous node.
     parentOpt.filter(parent -> parent != previousNode)
-        .ifPresent(parent -> newRoot.addChildNode(rerootTree(parentRetriever, parent, currentTraversalNode, filters, study)));
+        .ifPresent(parent -> newRoot.addChildNode(rerootTree(parentRetriever, parent, currentTraversalNode, filters, outputVariables, study)));
     for (TreeNode<Entity> child : currentTraversalNode.getChildNodes()) {
       // Since we traverse the parent node, ensure we don't traverse backwards.
       if (previousNode != child) {
-        newRoot.addChildNode(rerootTree(parentRetriever, child, currentTraversalNode, filters, study));
+        newRoot.addChildNode(rerootTree(parentRetriever, child, currentTraversalNode, filters, outputVariables, study));
       }
     }
     return newRoot;

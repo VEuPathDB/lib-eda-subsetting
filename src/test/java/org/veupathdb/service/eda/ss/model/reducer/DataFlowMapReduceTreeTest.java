@@ -70,6 +70,16 @@ public class DataFlowMapReduceTreeTest {
         List.of(indiaICEMRStudy.getTimeSinceLastMalaria()), List.of(rangeFilter, rootRangeFilter),
         TabularResponses.Type.TABULAR.getFormatter(), new TabularReportConfig(), outputStream, binaryDirectory);
     MatcherAssert.assertThat(Arrays.stream(outputStream.toString().split("\n"))
-        .collect(Collectors.toList()), Matchers.hasSize(62));
+        .collect(Collectors.toList()), Matchers.hasSize(63));
+  }
+
+  @Test
+  public void noFilters() {
+    final ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+    FilteredResultFactory.produceTabularSubsetFromFile(indiaICEMRStudy.getStudy(), indiaICEMRStudy.getParticipantEntity(),
+        List.of(indiaICEMRStudy.getTimeSinceLastMalaria()), List.of(),
+        TabularResponses.Type.TABULAR.getFormatter(), new TabularReportConfig(), outputStream, binaryDirectory);
+    MatcherAssert.assertThat(Arrays.stream(outputStream.toString().split("\n"))
+        .collect(Collectors.toList()), Matchers.hasSize(498));
   }
 }

@@ -42,9 +42,7 @@ public abstract class VariableWithValues<T> extends Variable {
 
   public abstract String valueToString(T val, TabularReportConfig config);
 
-  public String valueToJsonString(T val, TabularReportConfig config) {
-    return "\"" + valueToString(val, config) + "\"";
-  }
+  public abstract String valueToJsonText(T val, TabularReportConfig config);
 
   private final Properties _properties;
 
@@ -100,4 +98,7 @@ public abstract class VariableWithValues<T> extends Variable {
     return _properties.type;
   }
 
+  protected String quote(String s) {
+    return "\"" + s + "\"";
+  }
 }

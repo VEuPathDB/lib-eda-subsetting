@@ -1,5 +1,6 @@
 package org.veupathdb.service.eda.ss.model.reducer;
 
+import org.glassfish.jersey.internal.guava.Predicates;
 import org.gusdb.fgputil.functional.Functions;
 import org.veupathdb.service.eda.ss.model.Entity;
 import org.veupathdb.service.eda.ss.model.Study;
@@ -37,7 +38,7 @@ public class BinaryValuesStreamer {
    * @param <T> Type of value associated with {@link V}
    * @throws IOException if there is a failure to open the binary file.
    */
-  public <V, T extends VariableWithValues<V>> FilteredValueIterator<V, Long> streamFilteredEntities(
+  public <V, T extends VariableWithValues<V>> FilteredValueIterator<V, Long> streamFilteredEntityIdIndexes(
       SingleValueFilter<V, T> filter, Study study) throws IOException {
     BinaryConverter<V> serializer = filter.getVariable().getBinaryConverter();
     return new FilteredValueIterator<>(
@@ -58,10 +59,10 @@ public class BinaryValuesStreamer {
    * @return
    * @throws IOException
    */
-  public Iterator<Long> streamMultiFilteredEntities(
+  public Iterator<Long> streamMultiFilteredEntityIdIndexes(
       MultiFilter filter, Study study) throws IOException {
     List<Iterator<Long>> idStreams = filter.getSubFilters().stream()
-        .map(Functions.fSwallow(subFilter -> streamFilteredEntities(filter.getFilter(subFilter), study)))
+        .map(Functions.fSwallow(subFilter -> streamFilteredEntityIdIndexes(filter.getFilter(subFilter), study)))
         .collect(Collectors.toList());
     if (filter.getOperation() == MultiFilter.MultiFilterOperation.UNION) {
       return new StreamUnionMerger(idStreams); // Intersect depending on operation.
@@ -86,7 +87,7 @@ public class BinaryValuesStreamer {
     Function<VariableValueIdPair<V>, VariableValueIdPair<String>> extractor;
     if (variable.getIsMultiValued()) {
       extractor = pair -> new VariableValueIdPair<>(
-          pair.getIdIndex(), variable.valueToJsonString(pair.getValue(), reportConfig));
+          pair.getIdIndex(), variable.valueToJsonText(pair.getValue(), reportConfig));
     } else {
       extractor = pair -> new VariableValueIdPair<>(
           pair.getIdIndex(), variable.valueToString(pair.getValue(), reportConfig));
@@ -139,5 +140,16 @@ public class BinaryValuesStreamer {
         x -> true, // Do not apply any filters.
         ancestorsWithId,
         Function.identity());
+  }
+
+  public Iterator<Long> streamUnfilteredEntityIdIndexes(Study study, Entity entity) throws IOException {
+    ListConverter<String> converter = new ListConverter<>(new StringValueConverter(BYTES_RESERVED_FOR_ID), entity.getAncestorEntities().size() + 1);
+    return new FilteredValueIterator<>(
+        binaryFilesManager.getIdMapFile(study,
+            entity,
+            BinaryFilesManager.Operation.READ),
+        Predicates.alwaysTrue(),
+        new ValueWithIdDeserializer<>(converter),
+        VariableValueIdPair::getIdIndex);
   }
 }

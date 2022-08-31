@@ -80,7 +80,6 @@ public class StreamIntersectMergerTest {
           stream1.iterator(),
           stream2.iterator(),
           stream3.iterator()));
-      result.forEach(s -> System.out.println(s));
       // Common multiples of 2, 3, and 5 between 1 and 100 are 30, 60 and 90.
       MatcherAssert.assertThat(result, Matchers.contains(15L, 30L, 45L, 60L, 75L, 90L));
     }
@@ -92,7 +91,7 @@ public class StreamIntersectMergerTest {
     private final List<Long> stream2 = List.of(1L, 1L, 2L, 4L, 5L, 5L, 8L);
 
     @Test
-    public void test() {
+    public void testDupes1() {
       Iterable<Long> result = () -> new StreamIntersectMerger(List.of(
           stream1.iterator(),
           stream2.iterator()));
@@ -100,7 +99,7 @@ public class StreamIntersectMergerTest {
     }
 
     @Test
-    public void testDupes() {
+    public void testDupes2() {
       final List<Long> s1 = List.of(1L, 2L, 3L, 4L, 5L, 10L);
       final List<Long> s2 = List.of(2L, 5L, 6L, 10L);
       Iterable<Long> result = () -> new StreamIntersectMerger(List.of(
@@ -108,6 +107,17 @@ public class StreamIntersectMergerTest {
           s2.iterator()));
       MatcherAssert.assertThat(result, Matchers.contains(2L, 5L, 10L));
     }
+
+    @Test
+    public void testDupes3() {
+      final List<Long> s1 = List.of(1L, 2L, 3L, 4L, 5L, 9L, 10L);
+      final List<Long> s2 = List.of(2L, 5L, 6L, 9L, 10L);
+      Iterable<Long> result = () -> new StreamIntersectMerger(List.of(
+          s1.iterator(),
+          s2.iterator()));
+      MatcherAssert.assertThat(result, Matchers.contains(2L, 5L, 9L, 10L));
+    }
+
   }
 
 

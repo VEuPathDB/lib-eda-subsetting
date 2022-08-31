@@ -46,7 +46,7 @@ public class LongitudeVariable extends VariableWithValues<Double> {
   }
 
   @Override
-  public String valueToJsonString(Double val, TabularReportConfig reportConfig) {
+  public String valueToJsonText(Double val, TabularReportConfig reportConfig) {
     return valueToString(val, reportConfig);
   }
 

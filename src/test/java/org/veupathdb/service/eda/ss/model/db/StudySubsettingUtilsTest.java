@@ -285,7 +285,7 @@ public class StudySubsettingUtilsTest {
   @DisplayName("Test creating a where clause for tabular report")
   void testGenerateTabularWhereClause() {
     
-    List<Variable> vars = Arrays.asList(_model.visitDate, _model.favNumber);
+    List<VariableWithValues> vars = Arrays.asList(_model.visitDate, _model.favNumber);
     String where = FilteredResultFactory.generateTabularWhereClause(vars, _model.observation.getPKColName());
     String expected = " WHERE (" + NL +
         " " + TT_VARIABLE_ID_COL_NAME + " = '" + _model.visitDate.getId() + "' OR" + NL +
@@ -323,7 +323,7 @@ public class StudySubsettingUtilsTest {
     
     List<Filter> filters = getSomeFilters();
     
-    List<Variable> outputVariables = Arrays.asList(_model.networth, _model.shoesize);
+    List<VariableWithValues> outputVariables = Arrays.asList(_model.networth, _model.shoesize);
 
     TreeNode<Entity> prunedTree = FilteredResultFactory.pruneTree(_model.study.getEntityTree(), filters, _model.participant);
 
@@ -416,9 +416,9 @@ public class StudySubsettingUtilsTest {
     String entityId = "GEMS_Part";
     Entity entity = study.getEntity(entityId).orElseThrow();
 
-    List<Variable> variables = new ArrayList<>();
-    variables.add(entity.getVariable("var_p4").orElseThrow()); // hair color
-    variables.add(entity.getVariable("var_p3").orElseThrow()); // name
+    List<VariableWithValues> variables = new ArrayList<>();
+    variables.add((VariableWithValues) entity.getVariable("var_p4").orElseThrow()); // hair color
+    variables.add((VariableWithValues) entity.getVariable("var_p3").orElseThrow()); // name
 
     List<Filter> filters = Collections.emptyList();
     
@@ -445,9 +445,9 @@ public class StudySubsettingUtilsTest {
     String entityId = "GEMS_Part";
     Entity entity = study.getEntity(entityId).orElseThrow();
 
-    List<Variable> variables = new ArrayList<>();
-    variables.add(entity.getVariable("var_p4").orElseThrow()); // hair color
-    variables.add(entity.getVariable("var_p3").orElseThrow()); // name
+    List<VariableWithValues> variables = new ArrayList<>();
+    variables.add((VariableWithValues) entity.getVariable("var_p4").orElseThrow()); // hair color
+    variables.add((VariableWithValues) entity.getVariable("var_p3").orElseThrow()); // name
 
     List<Filter> filters = new ArrayList<>();
     filters.add(_filtersFromDbStudy.partHairFilter);
@@ -605,7 +605,7 @@ public class StudySubsettingUtilsTest {
   void testTabularResultsVarsWithPartialData() {
     testTabularResults(Arrays.asList(_model.earsize, _model.shoesize));
   }
-  private void testTabularResults(List<Variable> requestedVars) {
+  private void testTabularResults(List<VariableWithValues> requestedVars) {
     Entity entity = _model.participant;
     List<Map<String,String>> results = getTabularOutputRows(entity, requestedVars);
 
@@ -629,7 +629,7 @@ public class StudySubsettingUtilsTest {
     }
   }
 
-  private List<Map<String,String>> getTabularOutputRows(Entity entity, List<Variable> requestedVars) {
+  private List<Map<String,String>> getTabularOutputRows(Entity entity, List<VariableWithValues> requestedVars) {
     ByteArrayOutputStream buffer = new ByteArrayOutputStream();
     FilteredResultFactory.produceTabularSubset(_dataSource, APP_DB_SCHEMA, _model.study, entity, requestedVars,
         Collections.emptyList(), new TabularReportConfig(), TabularResponses.Type.TABULAR.getFormatter(), buffer);

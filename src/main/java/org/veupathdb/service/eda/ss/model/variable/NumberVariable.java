@@ -31,7 +31,7 @@ public abstract class NumberVariable<T extends Number & Comparable<T>> extends V
     return getDisplayName() + unitsStr + " [" + getId() + "]";
   }
 
-  public String valueToJsonString(T val, TabularReportConfig config) {
+  public String valueToJsonText(T val, TabularReportConfig config) {
     return valueToString(val, config);
   }
 }

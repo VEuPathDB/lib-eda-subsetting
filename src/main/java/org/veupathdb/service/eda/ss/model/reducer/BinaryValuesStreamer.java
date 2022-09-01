@@ -1,6 +1,5 @@
 package org.veupathdb.service.eda.ss.model.reducer;
 
-import org.glassfish.jersey.internal.guava.Predicates;
 import org.gusdb.fgputil.functional.Functions;
 import org.veupathdb.service.eda.ss.model.Entity;
 import org.veupathdb.service.eda.ss.model.Study;
@@ -148,7 +147,7 @@ public class BinaryValuesStreamer {
         binaryFilesManager.getIdMapFile(study,
             entity,
             BinaryFilesManager.Operation.READ),
-        Predicates.alwaysTrue(),
+        x -> true,
         new ValueWithIdDeserializer<>(converter),
         VariableValueIdPair::getIdIndex);
   }

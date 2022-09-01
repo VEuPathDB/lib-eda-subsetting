@@ -4,6 +4,8 @@ import org.hamcrest.MatcherAssert;
 import org.hamcrest.Matchers;
 import org.junit.jupiter.api.Test;
 import org.veupathdb.service.eda.ss.model.db.FilteredResultFactory;
+import org.veupathdb.service.eda.ss.model.filter.MultiFilter;
+import org.veupathdb.service.eda.ss.model.filter.MultiFilterSubFilter;
 import org.veupathdb.service.eda.ss.model.filter.NumberRangeFilter;
 import org.veupathdb.service.eda.ss.model.tabular.TabularReportConfig;
 import org.veupathdb.service.eda.ss.model.tabular.TabularResponses;
@@ -47,6 +49,19 @@ public class DataFlowMapReduceTreeTest {
         TabularResponses.Type.TABULAR.getFormatter(), new TabularReportConfig(), outputStream, binaryDirectory);
     MatcherAssert.assertThat(Arrays.stream(outputStream.toString().split("\n"))
         .collect(Collectors.toList()), Matchers.hasSize(1));
+  }
+
+  @Test
+  public void testMultiFilter() {
+    MultiFilterSubFilter f1 = new MultiFilterSubFilter(indiaICEMRStudy.getHouseholdMosquitoRepellentCoils(), List.of("No"));
+    MultiFilter multiFilter = new MultiFilter("test",
+        indiaICEMRStudy.getHouseholdEntity(),
+        List.of(f1),
+        MultiFilter.MultiFilterOperation.INTERSECT);
+    final ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+    FilteredResultFactory.produceTabularSubsetFromFile(indiaICEMRStudy.getStudy(), indiaICEMRStudy.getParticipantEntity(),
+        List.of(indiaICEMRStudy.getTimeSinceLastMalaria()), List.of(multiFilter),
+        TabularResponses.Type.TABULAR.getFormatter(), new TabularReportConfig(), outputStream, binaryDirectory);
   }
 
   @Test

@@ -16,6 +16,6 @@ public class SingleValueFormatter implements TabularValueFormatter {
 
   @Override
   public String format(FormattedTabularRecordStreamer.ValueStream<String> stream, long idIndex) {
-    return stream.hasNext() ? stream.next().getValue() : "";
+    return stream.next().getValue();
   }
 }

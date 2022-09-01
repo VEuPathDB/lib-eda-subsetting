@@ -65,7 +65,7 @@ public class BinaryValuesStreamer {
         .map(Functions.fSwallow(subFilter -> streamFilteredEntityIdIndexes(filter.getFilter(subFilter), study)))
         .collect(Collectors.toList());
     if (filter.getOperation() == MultiFilter.MultiFilterOperation.UNION) {
-      return new StreamUnionMerger(idStreams); // Intersect depending on operation.
+      return new StreamUnionMerger(idStreams);
     } else { // operation == MultiFilter.MultiFilterOperation.INTERSECT
       return new StreamIntersectMerger(idStreams);
     }

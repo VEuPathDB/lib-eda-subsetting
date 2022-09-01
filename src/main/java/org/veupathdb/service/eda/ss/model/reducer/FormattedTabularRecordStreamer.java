@@ -67,7 +67,7 @@ public class FormattedTabularRecordStreamer implements Iterator<List<String>> {
       while (valueStream.hasNext() && valueStream.peek().getIdIndex() < currentIdIndex) {
         valueStream.next();
       }
-      if (!valueStream.hasNext()) {
+      if (!valueStream.hasNext() || valueStream.peek().getIdIndex() != currentIdIndex) {
         record.add("");
       } else {
         record.add(valueStream.valueFormatter.format(valueStream, currentIdIndex));

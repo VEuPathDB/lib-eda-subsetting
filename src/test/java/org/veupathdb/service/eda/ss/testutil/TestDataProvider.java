@@ -152,6 +152,40 @@ public class TestDataProvider {
     }
   }
 
+  public static class StringVariableBuilder {
+    private VariableType variableType;
+    private String variableId;
+    private Entity entity;
+    private boolean multiValued = false;
+
+    public StringVariableBuilder withVariableId(String variableId) {
+      this.variableId = variableId;
+      return this;
+    }
+
+    public StringVariableBuilder withEntity(Entity entity) {
+      this.entity = entity;
+      return this;
+    }
+
+    public StringVariableBuilder withVariableType(VariableType variableType) {
+      this.variableType = variableType;
+      return this;
+    }
+
+    public StringVariableBuilder withMultiValued(boolean multiValued) {
+      this.multiValued = multiValued;
+      return this;
+    }
+
+    public StringVariable build() {
+      return new StringVariable(
+          constructGenericVarProps(entity, variableId),
+          constructVarValuesProps(variableType, multiValued)
+      );
+    }
+  }
+
   private static Variable.Properties constructGenericVarProps(Entity entity, String variableId) {
     return new Variable.Properties(
         "label",

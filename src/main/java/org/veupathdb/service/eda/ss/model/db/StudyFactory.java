@@ -25,13 +25,11 @@ public class StudyFactory implements StudyProvider {
   private final DataSource _dataSource;
   private final String _dataSchema;
   private final StudySourceType _sourceType;
-  private final boolean _convertAssaysFlag;
 
-  public StudyFactory(DataSource dataSource, String dataSchema, StudySourceType sourceType, boolean convertAssaysFlag) {
+  public StudyFactory(DataSource dataSource, String dataSchema, StudySourceType sourceType) {
     _dataSource = dataSource;
     _dataSchema = dataSchema;
     _sourceType = sourceType;
-    _convertAssaysFlag = convertAssaysFlag;
   }
 
   private static String getStudyOverviewSql(String appDbSchema) {
@@ -62,7 +60,7 @@ public class StudyFactory implements StudyProvider {
       .findFirst()
       .orElseThrow(notFound(studyId));
 
-    TreeNode<Entity> entityTree = new EntityFactory(_dataSource, _dataSchema, _convertAssaysFlag).getStudyEntityTree(studyId);
+    TreeNode<Entity> entityTree = new EntityFactory(_dataSource, _dataSchema).getStudyEntityTree(studyId);
 
     Map<String, Entity> entityIdMap = entityTree.flatten().stream().collect(Collectors.toMap(Entity::getId, e -> e));
 

@@ -45,7 +45,7 @@ public class LoadStudyTest {
     // get the alphabetically first entity
     Entity entity = new SQLRunner(datasource, sql).executeQuery(rs -> {
       rs.next();
-      return EntityFactory.createEntityFromResultSet(rs, ASSAY_CONVERSION_FLAG);
+      return EntityFactory.createEntityFromResultSet(rs);
     });
 
     assertEquals("GEMS_House", entity.getId());
@@ -58,7 +58,7 @@ public class LoadStudyTest {
   @Test
   @DisplayName("Test creating entity tree") 
   void testCreateEntityTree() {
-    TreeNode<Entity> entityTree = new EntityFactory(datasource, APP_DB_SCHEMA, ASSAY_CONVERSION_FLAG).getStudyEntityTree(STUDY_ID);
+    TreeNode<Entity> entityTree = new EntityFactory(datasource, APP_DB_SCHEMA).getStudyEntityTree(STUDY_ID);
     
     List<String> entityIds = entityTree.flatten().stream().map(Entity::getId).collect(Collectors.toList());
 
@@ -72,7 +72,7 @@ public class LoadStudyTest {
   @DisplayName("Test reading of variable table") 
   void testReadVariableTable() {
 
-    TreeNode<Entity> entityTree = new EntityFactory(datasource, APP_DB_SCHEMA, ASSAY_CONVERSION_FLAG).getStudyEntityTree(STUDY_ID);
+    TreeNode<Entity> entityTree = new EntityFactory(datasource, APP_DB_SCHEMA).getStudyEntityTree(STUDY_ID);
     
     Map<String, Entity> entityIdMap = entityTree.flatten().stream().collect(Collectors.toMap(Entity::getId, e -> e));
 
@@ -109,7 +109,7 @@ public class LoadStudyTest {
   @DisplayName("Test reading all participant variables")
   void testReadAllVariables() {
 
-    TreeNode<Entity> entityTree = new EntityFactory(datasource, APP_DB_SCHEMA, ASSAY_CONVERSION_FLAG).getStudyEntityTree(STUDY_ID);
+    TreeNode<Entity> entityTree = new EntityFactory(datasource, APP_DB_SCHEMA).getStudyEntityTree(STUDY_ID);
     
     Map<String, Entity> entityIdMap = entityTree.flatten().stream().collect(Collectors.toMap(Entity::getId, e -> e));
 
@@ -123,7 +123,7 @@ public class LoadStudyTest {
   @Test
   @DisplayName("Load study test") 
   void testLoadStudy() {
-    Study study = new StudyFactory(datasource, APP_DB_SCHEMA, USER_STUDIES_FLAG, ASSAY_CONVERSION_FLAG).getStudyById(STUDY_ID);
+    Study study = new StudyFactory(datasource, APP_DB_SCHEMA, USER_STUDIES_FLAG).getStudyById(STUDY_ID);
     assertNotNull(study);
   }
 }

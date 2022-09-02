@@ -29,7 +29,7 @@ public class StudiesTest {
   @BeforeAll
   public static void setUp() {
     _dataSource = StubDb.getDataSource();
-    Study study = new StudyFactory(_dataSource, APP_DB_SCHEMA, USER_STUDIES_FLAG, ASSAY_CONVERSION_FLAG).getStudyById("DS-2324");
+    Study study = new StudyFactory(_dataSource, APP_DB_SCHEMA, USER_STUDIES_FLAG).getStudyById("DS-2324");
     _filtersForTesting = new MockFilters(study);
   }
 
@@ -38,7 +38,7 @@ public class StudiesTest {
   @DisplayName("Test variable distribution - no filters")
   void testVariableDistributionNoFilters() {
 
-    Study study = new StudyFactory(_dataSource, APP_DB_SCHEMA, USER_STUDIES_FLAG, ASSAY_CONVERSION_FLAG).getStudyById("DS-2324");
+    Study study = new StudyFactory(_dataSource, APP_DB_SCHEMA, USER_STUDIES_FLAG).getStudyById("DS-2324");
 
     String entityId = "GEMS_Part";
     Entity entity = study.getEntity(entityId).orElseThrow();
@@ -63,7 +63,7 @@ public class StudiesTest {
   @DisplayName("Test variable distribution - with filters")
   void testVariableDistribution() {
 
-    Study study = new StudyFactory(_dataSource, APP_DB_SCHEMA, USER_STUDIES_FLAG, ASSAY_CONVERSION_FLAG).getStudyById("DS-2324");
+    Study study = new StudyFactory(_dataSource, APP_DB_SCHEMA, USER_STUDIES_FLAG).getStudyById("DS-2324");
 
     String entityId = "GEMS_Part";
     Entity entity = study.getEntity(entityId).orElseThrow();

@@ -3,6 +3,7 @@ package org.veupathdb.service.eda.ss.model.reducer;
 import org.veupathdb.service.eda.ss.model.Entity;
 import org.veupathdb.service.eda.ss.model.Study;
 import org.veupathdb.service.eda.ss.model.filter.Filter;
+import org.veupathdb.service.eda.ss.model.variable.Variable;
 
 import java.util.List;
 
@@ -14,17 +15,24 @@ public class DataFlowNodeContents {
   private final List<Filter> filters; // ID indexes of this Entity's "type" for filtered data streams.
   private final Entity entity;
   private final Study study;
+  private final List<Variable> unfilteredOutputVars;
 
   public DataFlowNodeContents(List<Filter> filters,
                               Entity entity,
-                              Study study) {
+                              Study study,
+                              List<Variable> unfilteredOutputVars) {
     this.filters = filters;
     this.entity = entity;
     this.study = study;
+    this.unfilteredOutputVars = unfilteredOutputVars;
   }
 
   public List<Filter> getFilters() {
     return filters;
+  }
+
+  public List<Variable> getUnfilteredOutputVars() {
+    return unfilteredOutputVars;
   }
 
   public Entity getEntity() {

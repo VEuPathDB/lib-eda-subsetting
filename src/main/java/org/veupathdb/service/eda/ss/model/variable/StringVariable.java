@@ -33,6 +33,11 @@ public class StringVariable extends VariableWithValues<String> {
     return val;
   }
 
+  @Override
+  public String valueToJsonText(String val, TabularReportConfig config) {
+    return quote(valueToString(val, config));
+  }
+
   public static StringVariable assertType(Variable variable) {
     if (variable instanceof StringVariable) return (StringVariable)variable;
     throw new BadRequestException("Variable " + variable.getId() +

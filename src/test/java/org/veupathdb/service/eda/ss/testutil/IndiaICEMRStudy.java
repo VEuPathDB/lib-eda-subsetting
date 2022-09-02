@@ -3,6 +3,7 @@ package org.veupathdb.service.eda.ss.testutil;
 import org.veupathdb.service.eda.ss.model.Entity;
 import org.veupathdb.service.eda.ss.model.Study;
 import org.veupathdb.service.eda.ss.model.variable.NumberVariable;
+import org.veupathdb.service.eda.ss.model.variable.StringVariable;
 import org.veupathdb.service.eda.ss.model.variable.VariableType;
 
 public class IndiaICEMRStudy {
@@ -15,6 +16,8 @@ public class IndiaICEMRStudy {
   private NumberVariable<Long> timeSinceLastMalaria;
   private NumberVariable<Long> plasmoFalcGametocytes;
   private NumberVariable<Long> healthFacilityDist;
+  private StringVariable householdMosquitoRepellent;
+  private StringVariable householdMosquitoRepellentCoils;
 
   public IndiaICEMRStudy() {
     final String householdEntityId = "PCO_0000024";
@@ -24,12 +27,24 @@ public class IndiaICEMRStudy {
         .withEntityId(householdEntityId)
         .withInternalStudyAbbrev(studyAbbrev)
         .build();
+    householdMosquitoRepellent = new TestDataProvider.StringVariableBuilder()
+        .withEntity(householdEntity)
+        .withVariableType(VariableType.STRING)
+        .withVariableId("EUPATH_0021242")
+        .build();
+    householdMosquitoRepellentCoils = new TestDataProvider.StringVariableBuilder()
+        .withEntity(householdEntity)
+        .withVariableType(VariableType.STRING)
+        .withVariableId("EUPATH_0021243")
+        .build();
     personsInHousehold =  new TestDataProvider.IntegerVariableBuilder()
         .withVariableId("EUPATH_0000019")
         .withEntity(householdEntity)
         .withVariableType(VariableType.INTEGER)
         .build();
     householdEntity.addVariable(personsInHousehold);
+    householdEntity.addVariable(householdMosquitoRepellent);
+    householdEntity.addVariable(householdMosquitoRepellentCoils);
     healthFacilityDist = new TestDataProvider.IntegerVariableBuilder()
         .withVariableId("EUPATH_0020213")
         .withEntity(householdEntity)
@@ -97,5 +112,13 @@ public class IndiaICEMRStudy {
 
   public NumberVariable<Long> getHealthFacilityDist() {
     return healthFacilityDist;
+  }
+
+  public StringVariable getHouseholdMosquitoRepellent() {
+    return householdMosquitoRepellent;
+  }
+
+  public StringVariable getHouseholdMosquitoRepellentCoils() {
+    return householdMosquitoRepellentCoils;
   }
 }

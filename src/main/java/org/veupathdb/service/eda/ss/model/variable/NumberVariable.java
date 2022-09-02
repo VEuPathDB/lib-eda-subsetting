@@ -1,6 +1,7 @@
 package org.veupathdb.service.eda.ss.model.variable;
 
 import org.veupathdb.service.eda.ss.model.distribution.NumberDistributionConfig;
+import org.veupathdb.service.eda.ss.model.tabular.TabularReportConfig;
 
 /**
  * This is a superclass supporting ONLY float and integer types, which can both
@@ -30,4 +31,7 @@ public abstract class NumberVariable<T extends Number & Comparable<T>> extends V
     return getDisplayName() + unitsStr + " [" + getId() + "]";
   }
 
+  public String valueToJsonText(T val, TabularReportConfig config) {
+    return valueToString(val, config);
+  }
 }

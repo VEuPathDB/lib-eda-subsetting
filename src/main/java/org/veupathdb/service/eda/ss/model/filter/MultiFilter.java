@@ -58,7 +58,7 @@ public class MultiFilter extends Filter {
   @Override
   public Iterator<Long> streamFilteredIds(BinaryValuesStreamer binaryValuesStreamer, Study study) {
     try {
-      return binaryValuesStreamer.streamMultiFilteredValues(this, study);
+      return binaryValuesStreamer.streamMultiFilteredEntityIdIndexes(this, study);
     } catch (IOException e) {
       throw new RuntimeException("IO operation failed while trying to stream filtered IDs.", e);
     }

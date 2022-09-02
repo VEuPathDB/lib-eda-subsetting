@@ -1,10 +1,9 @@
 package org.veupathdb.service.eda.ss.model.reducer;
 
-import org.veupathdb.service.eda.ss.model.Entity;
+import org.veupathdb.service.eda.ss.model.reducer.formatter.TabularValueFormatter;
 import org.veupathdb.service.eda.ss.model.variable.VariableValueIdPair;
 
 import java.util.*;
-import java.util.stream.Collectors;
 
 /**
  * Provides a stream of variable value records extracted from a stream of ID indexes and a collection of
@@ -30,12 +29,10 @@ public class FormattedTabularRecordStreamer implements Iterator<List<String>> {
    * @param idIndexStream    Stream of ID indexes, indicating which entity records to output.
    * @param idMapStream
    */
-  public FormattedTabularRecordStreamer(List<Iterator<VariableValueIdPair<String>>> valuePairStreams,
+  public FormattedTabularRecordStreamer(List<ValueStream<String>> valuePairStreams,
                                         Iterator<Long> idIndexStream,
                                         Iterator<VariableValueIdPair<List<String>>> idMapStream) {
-    this.valuePairStreams = valuePairStreams.stream()
-        .map(s -> new ValueStream<>(s))
-        .collect(Collectors.toList());
+    this.valuePairStreams = valuePairStreams;
     this.idIndexStream = idIndexStream;
     if (idIndexStream.hasNext()) {
       currentIdIndex = idIndexStream.next();
@@ -57,27 +54,23 @@ public class FormattedTabularRecordStreamer implements Iterator<List<String>> {
 
     VariableValueIdPair<List<String>> ids;
     do {
-      if (!idMapStream.hasNext()) {
-        ids = null;
-        break;
-      }
       ids = idMapStream.next();
     } while (ids.getIdIndex() < currentIdIndex);
-    ids.getValue().forEach(record::add);
+    record.addAll(ids.getValue());
 
     for (ValueStream<String> valueStream: valuePairStreams) {
-      // Advance stream until it equals or exceeds the currentIdIndex
-      while (valueStream.hasNext() && valueStream.peek().getIdIndex() < currentIdIndex) {
-        valueStream.next();
-      }
-      if (!valueStream.hasNext()) {
+      if (valueStream.hasNext() && valueStream.peek().getIdIndex() > currentIdIndex) {
         record.add("");
         continue;
       }
-      if (valueStream.peek().getIdIndex() == currentIdIndex) {
-        record.add(valueStream.next().getValue());
-      } else {
+      // Advance stream until it equals or exceeds the currentIdIndex.
+      while (valueStream.hasNext() && valueStream.peek().getIdIndex() < currentIdIndex) {
+        valueStream.next();
+      }
+      if (!valueStream.hasNext() || valueStream.peek().getIdIndex() != currentIdIndex) {
         record.add("");
+      } else {
+        record.add(valueStream.valueFormatter.format(valueStream, currentIdIndex));
       }
     }
     if (idIndexStream.hasNext()) {
@@ -88,18 +81,20 @@ public class FormattedTabularRecordStreamer implements Iterator<List<String>> {
     return record;
   }
 
-  private static class ValueStream<T> implements Iterator<VariableValueIdPair<T>> {
+  public static class ValueStream<T> implements Iterator<VariableValueIdPair<T>> {
     private VariableValueIdPair<T> next;
     private final Iterator<VariableValueIdPair<T>> stream;
+    private final TabularValueFormatter valueFormatter;
 
-    public ValueStream(Iterator<VariableValueIdPair<T>> stream) {
+    public ValueStream(Iterator<VariableValueIdPair<T>> stream, TabularValueFormatter valueFormatter) {
+      this.stream = stream;
+      this.valueFormatter = valueFormatter;
       if (stream.hasNext()) {
         next = stream.next();
       }
-      this.stream = stream;
     }
 
-    public VariableValueIdPair<?> peek() {
+    public VariableValueIdPair<T> peek() {
       return next;
     }
 

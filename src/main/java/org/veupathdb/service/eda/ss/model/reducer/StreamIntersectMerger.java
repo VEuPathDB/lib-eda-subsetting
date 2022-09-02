@@ -55,7 +55,6 @@ public class StreamIntersectMerger implements Iterator<Long> {
     if (next == null) {
       throw new NoSuchElementException("No more elements in the iterator");
     }
-    currentIdIndexStream.next();
     findNextMatchingIdIndex();
     return next;
   }
@@ -69,6 +68,12 @@ public class StreamIntersectMerger implements Iterator<Long> {
     }
     // value not null; counts as first concurring stream
     int numConcurringStreams = 1;
+
+    // If there's only a single stream, we can short-circuit the merging logic and just return the next value in stream.
+    if (streamRing.size == 1) {
+      nextOutputIndex = currentIdIndexStream.hasNext() ? currentIdIndexStream.next() : null;
+      return;
+    }
 
     // continual loop, trying to match all iterators to the same value
     while (numConcurringStreams < streamRing.size()) {
@@ -158,7 +163,11 @@ public class StreamIntersectMerger implements Iterator<Long> {
     }
 
     /**
-     * Advance the stream until the next element either matches or exceeds the key.
+     * Advance the stream until the next element either matches or exceeds the ID index key.
+     * If the same ID index appears multiple times in the stream, advances the stream to the last duplicate.
+     * Duplicate IDs can be present for multi-value variables, once for each value. When duplicate entities appear in the stream,
+     * we only want to return the entity ID index once to ensure that the resulting stream doesn't have duplicates.
+     *
      * @param key Value to advance the stream to or past if the key is not present in the stream.
      * @return Value the stream is advanced to, either key or the next highest value of the stream.
      */
@@ -166,15 +175,26 @@ public class StreamIntersectMerger implements Iterator<Long> {
       if (next == null) {
         return null;
       }
-      while (next < key) {
+      Long prev = null;
+      // Skip until our cursor moves past our target, so we can be sure prev points to the last instance of our
+      // target ID index.
+      while (next <= key) {
+        prev = next;
         if (stream.hasNext()) {
           this.next = stream.next();
         } else {
           this.next = null;
-          return null;
+          return prev.equals(key) ? prev : null;
         }
       }
-      return next;
+      if (prev == null || prev < key) {
+        // prev < key implies there are no duplicates of prev. This means it has already been returned, so we return next.
+        return next;
+      } else {
+        // prev == key implies that we had to skip some duplicates in the loop above. Return prev, to ensure we do not
+        // skip all values with ID index equal to key.
+        return prev;
+      }
     }
 
     @Override

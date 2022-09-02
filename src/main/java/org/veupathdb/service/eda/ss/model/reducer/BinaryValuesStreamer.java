@@ -37,7 +37,7 @@ public class BinaryValuesStreamer {
    * @param <T> Type of value associated with {@link V}
    * @throws IOException if there is a failure to open the binary file.
    */
-  public <V, T extends VariableWithValues<V>> FilteredValueIterator<V, Long> streamFilteredValues(
+  public <V, T extends VariableWithValues<V>> FilteredValueIterator<V, Long> streamFilteredEntityIdIndexes(
       SingleValueFilter<V, T> filter, Study study) throws IOException {
     BinaryConverter<V> serializer = filter.getVariable().getBinaryConverter();
     return new FilteredValueIterator<>(
@@ -58,13 +58,13 @@ public class BinaryValuesStreamer {
    * @return
    * @throws IOException
    */
-  public Iterator<Long> streamMultiFilteredValues(
+  public Iterator<Long> streamMultiFilteredEntityIdIndexes(
       MultiFilter filter, Study study) throws IOException {
     List<Iterator<Long>> idStreams = filter.getSubFilters().stream()
-        .map(Functions.fSwallow(subFilter -> streamFilteredValues(filter.getFilter(subFilter), study)))
+        .map(Functions.fSwallow(subFilter -> streamFilteredEntityIdIndexes(filter.getFilter(subFilter), study)))
         .collect(Collectors.toList());
     if (filter.getOperation() == MultiFilter.MultiFilterOperation.UNION) {
-      return new StreamUnionMerger(idStreams); // Intersect depending on operation.
+      return new StreamUnionMerger(idStreams);
     } else { // operation == MultiFilter.MultiFilterOperation.INTERSECT
       return new StreamIntersectMerger(idStreams);
     }
@@ -83,8 +83,14 @@ public class BinaryValuesStreamer {
       Study study,
       VariableWithValues<V> variable,
       TabularReportConfig reportConfig) throws IOException {
-    Function<VariableValueIdPair<V>, VariableValueIdPair<String>> extractor = pair -> new VariableValueIdPair<>(
-        pair.getIdIndex(), variable.valueToString(pair.getValue(), reportConfig));
+    Function<VariableValueIdPair<V>, VariableValueIdPair<String>> extractor;
+    if (variable.getIsMultiValued()) {
+      extractor = pair -> new VariableValueIdPair<>(
+          pair.getIdIndex(), variable.valueToJsonText(pair.getValue(), reportConfig));
+    } else {
+      extractor = pair -> new VariableValueIdPair<>(
+          pair.getIdIndex(), variable.valueToString(pair.getValue(), reportConfig));
+    }
     BinaryConverter<V> serializer = variable.getBinaryConverter();
     return new FilteredValueIterator(
         binaryFilesManager.getVariableFile(study,
@@ -133,5 +139,16 @@ public class BinaryValuesStreamer {
         x -> true, // Do not apply any filters.
         ancestorsWithId,
         Function.identity());
+  }
+
+  public Iterator<Long> streamUnfilteredEntityIdIndexes(Study study, Entity entity) throws IOException {
+    ListConverter<String> converter = new ListConverter<>(new StringValueConverter(BYTES_RESERVED_FOR_ID), entity.getAncestorEntities().size() + 1);
+    return new FilteredValueIterator<>(
+        binaryFilesManager.getIdMapFile(study,
+            entity,
+            BinaryFilesManager.Operation.READ),
+        x -> true,
+        new ValueWithIdDeserializer<>(converter),
+        VariableValueIdPair::getIdIndex);
   }
 }

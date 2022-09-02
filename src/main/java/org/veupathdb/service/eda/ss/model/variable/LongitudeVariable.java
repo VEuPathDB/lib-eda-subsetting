@@ -45,6 +45,11 @@ public class LongitudeVariable extends VariableWithValues<Double> {
     return Double.toString(val);
   }
 
+  @Override
+  public String valueToJsonText(Double val, TabularReportConfig reportConfig) {
+    return valueToString(val, reportConfig);
+  }
+
   public Long getPrecision() {
     return _properties.precision;
   }

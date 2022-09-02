@@ -24,13 +24,15 @@ import org.gusdb.fgputil.db.runner.SQLRunner;
 import org.gusdb.fgputil.db.runner.SingleLongResultSetHandler;
 import org.gusdb.fgputil.db.stream.ResultSetIterator;
 import org.gusdb.fgputil.db.stream.ResultSets;
-import org.gusdb.fgputil.functional.Functions;
 import org.gusdb.fgputil.functional.TreeNode;
 import org.gusdb.fgputil.iterator.GroupingIterator;
 import org.veupathdb.service.eda.ss.model.Entity;
 import org.veupathdb.service.eda.ss.model.Study;
 import org.veupathdb.service.eda.ss.model.reducer.*;
 import org.veupathdb.service.eda.ss.model.reducer.ancestor.EntityIdIndexIteratorConverter;
+import org.veupathdb.service.eda.ss.model.reducer.formatter.MultiValueFormatter;
+import org.veupathdb.service.eda.ss.model.reducer.formatter.SingleValueFormatter;
+import org.veupathdb.service.eda.ss.model.reducer.formatter.TabularValueFormatter;
 import org.veupathdb.service.eda.ss.model.tabular.SortSpecEntry;
 import org.veupathdb.service.eda.ss.model.tabular.TabularHeaderFormat;
 import org.veupathdb.service.eda.ss.model.tabular.TabularReportConfig;
@@ -78,7 +80,7 @@ public class FilteredResultFactory {
    * @param outputStream    stream to which report should be written
    */
   public static void produceTabularSubset(DataSource dataSource, String appDbSchema, Study study, Entity outputEntity,
-                                          List<Variable> outputVariables, List<Filter> filters,
+                                          List<VariableWithValues> outputVariables, List<Filter> filters,
                                           TabularReportConfig reportConfig, FormatterFactory formatter,
                                           OutputStream outputStream) {
     // produce output; result consumer will format result and write to passed output stream
@@ -92,7 +94,7 @@ public class FilteredResultFactory {
   }
 
   public static void produceTabularSubset(DataSource dataSource, String appDbSchema, Study study, Entity outputEntity,
-                                          List<Variable> outputVariables, List<Filter> filters,
+                                          List<VariableWithValues> outputVariables, List<Filter> filters,
                                           TabularReportConfig reportConfig, ResultConsumer resultConsumer) {
 
     TreeNode<Entity> prunedEntityTree = pruneTree(study.getEntityTree(), filters, outputEntity);
@@ -144,7 +146,7 @@ public class FilteredResultFactory {
    * @param filters         filters to apply to create a subset of records
    */
   public static void produceTabularSubsetFromFile(Study study, Entity outputEntity,
-                                           List<Variable> outputVariables, List<Filter> filters,
+                                           List<VariableWithValues> outputVariables, List<Filter> filters,
                                            FormatterFactory formatter, TabularReportConfig reportConfig,
                                            OutputStream outputStream,
                                            Path binaryFilesDir) {
@@ -154,7 +156,7 @@ public class FilteredResultFactory {
         new BinaryFilesManager(binaryFilesDir));
     final TreeNode<Entity> prunedEntityTree = pruneTree(study.getEntityTree(), filters, outputEntity);
     final TreeNode<DataFlowNodeContents> dataFlowTree = dataFlowTreeFactory.create(
-        prunedEntityTree, outputEntity, filters, study);
+        prunedEntityTree, outputEntity, filters, outputVariables, study);
 
     // check if header should contain pretty display values
     boolean usePrettyHeader = reportConfig.getHeaderFormat() == TabularHeaderFormat.DISPLAY;
@@ -172,10 +174,14 @@ public class FilteredResultFactory {
       final Iterator<Long> idIndexStream = driver.reduce(dataFlowTree);
 
       // Open streams of output variables and ancestors identifiers used to decorate ID index stream to produce tabular records.
-      final List<Iterator<VariableValueIdPair<String>>> outputVarStreams = outputVariables.stream()
-          .map(Functions.fSwallow(
-              outputVariable -> binaryValuesStreamer.streamIdValuePairs(study, (VariableWithValues<?>) outputVariable, reportConfig)))
-          .collect(Collectors.toList());
+      List<FormattedTabularRecordStreamer.ValueStream<String>> outputVarStreams = new ArrayList<>();
+      for (Variable outputVar: outputVariables) {
+        VariableWithValues<?> varWithVals = (VariableWithValues<?>) outputVar;
+        TabularValueFormatter valFormatter = varWithVals.getIsMultiValued() ? new MultiValueFormatter() : new SingleValueFormatter();
+        FormattedTabularRecordStreamer.ValueStream<String> valStream = new FormattedTabularRecordStreamer.ValueStream<>(
+            binaryValuesStreamer.streamIdValuePairs(study, varWithVals, reportConfig), valFormatter);
+        outputVarStreams.add(valStream);
+      }
 
       final Iterator<VariableValueIdPair<List<String>>> idsMapStream = binaryValuesStreamer.streamIdMap(outputEntity, study);
 
@@ -193,15 +199,15 @@ public class FilteredResultFactory {
   }
 
 
-  static List<String> getTabularPrettyHeaders(Entity outputEntity, List<Variable> outputVariables) {
+  static <T extends Variable> List<String> getTabularPrettyHeaders(Entity outputEntity, List<T> outputVariables) {
     return getColumns(outputEntity, outputVariables, Entity::getDownloadPkColHeader, Variable::getDownloadColHeader);
   }
 
-  static List<String> getTabularOutputColumns(Entity outputEntity, List<Variable> outputVariables) {
+  static <T extends Variable> List<String> getTabularOutputColumns(Entity outputEntity, List<T> outputVariables) {
     return getColumns(outputEntity, outputVariables, Entity::getPKColName, Variable::getId);
   }
 
-  private static List<String> getColumns(Entity outputEntity, List<Variable> outputVariables,
+  private static  <T extends Variable> List<String> getColumns(Entity outputEntity, List<T> outputVariables,
       Function<Entity, String> pkMapper, Function<Variable,String> varMapper) {
     List<String> outputColumns = new ArrayList<>();
     outputColumns.add(pkMapper.apply(outputEntity));
@@ -336,7 +342,7 @@ public class FilteredResultFactory {
   /**
    * Generate SQL to produce a tall stream of Entity ID, ancestry IDs, variable ID and values.
    */
-  static String generateTabularSqlForTallRows(String appDbSchema, List<Variable> outputVariables, Entity outputEntity, List<Filter> filters, TreeNode<Entity> prunedEntityTree) {
+  static String generateTabularSqlForTallRows(String appDbSchema, List<VariableWithValues> outputVariables, Entity outputEntity, List<Filter> filters, TreeNode<Entity> prunedEntityTree) {
 
     LOG.debug("--------------------- generateTabularSql ------------------");
 
@@ -385,7 +391,7 @@ public class FilteredResultFactory {
    * order by Sample_stable_id;
    * </pre>
    */
-  static String generateTabularSqlForWideRows(String appDbSchema, List<Variable> outputVariables, Entity outputEntity, List<Filter> filters,
+  static String generateTabularSqlForWideRows(String appDbSchema, List<VariableWithValues> outputVariables, Entity outputEntity, List<Filter> filters,
                                               TabularReportConfig reportConfig, TreeNode<Entity> prunedEntityTree) {
     LOG.debug("--------------------- generateTabularSql paging sorting ------------------");
 
@@ -448,7 +454,7 @@ public class FilteredResultFactory {
           select * from subset
         )
    */
-  static String generateRawWideTabularInnerStmt(String appDbSchema, Entity outputEntity, List<Variable> outputVariables,
+  static String generateRawWideTabularInnerStmt(String appDbSchema, Entity outputEntity, List<VariableWithValues> outputVariables,
                                                 String subsetWithClauseName, TabularReportConfig reportConfig) {
 
     List<String> columns = new ArrayList<String>();
@@ -477,7 +483,7 @@ public class FilteredResultFactory {
     return oracleQuery != null ? oracleQuery : postgresQuery;
   }
 
-  private static String generateLeftJoin(String appDbSchema, Entity outputEntity, List<Variable> outputVariables, String ancestorTblAbbrev, String tallTblAbbrev) {
+  private static String generateLeftJoin(String appDbSchema, Entity outputEntity, List<VariableWithValues> outputVariables, String ancestorTblAbbrev, String tallTblAbbrev) {
     if (outputVariables.isEmpty()) {
       return " LEFT JOIN ( SELECT " +
           "null as " + TT_VARIABLE_ID_COL_NAME + ", " +
@@ -619,7 +625,7 @@ order by number_value desc;
     return " FROM ( " + generateSubsetSelectClause(prunedEntityTree, outputEntity, true) + " ) " + ancestorTblAbbrev;
   }
 
-  static String generateTabularWhereClause(List<Variable> outputVariables, String entityPkCol) {
+  static String generateTabularWhereClause(List<VariableWithValues> outputVariables, String entityPkCol) {
 
     List<String> outputVariableExprs = outputVariables.stream()
         .map(Variable::getId)

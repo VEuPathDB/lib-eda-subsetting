@@ -26,7 +26,7 @@ public class DataFlowTreeFactoryTest {
         .build());
     root.addChildNode(middle);
     middle.addChildNode(leaf);
-    TreeNode<DataFlowNodeContents> newRoot = factory.create(root, leaf.getContents(), Collections.emptyList(), null);
+    TreeNode<DataFlowNodeContents> newRoot = factory.create(root, leaf.getContents(), Collections.emptyList(), Collections.emptyList(), null);
     MatcherAssert.assertThat(newRoot.getChildNodes(), Matchers.hasSize(1));
     TreeNode<DataFlowNodeContents> newMiddle = newRoot.getChildNodes().get(0);
     MatcherAssert.assertThat(newMiddle.getChildNodes(), Matchers.hasSize(1));

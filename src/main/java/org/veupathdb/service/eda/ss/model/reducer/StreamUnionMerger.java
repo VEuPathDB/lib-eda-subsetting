@@ -13,6 +13,8 @@ public class StreamUnionMerger implements Iterator<Long> {
   // A possible optimization is to use a slimmed-down min-heap as opposed to a PriorityQueue (implemented as a heap).
   private PriorityQueue<HeapElement> minHeap;
   private long lastIdIndex;
+  private boolean first;
+  private Long next;
 
   public StreamUnionMerger(List<Iterator<Long>> streams) {
     this.minHeap = new PriorityQueue<>(streams.size(), Comparator.comparing(element -> element.idIndex));
@@ -22,11 +24,13 @@ public class StreamUnionMerger implements Iterator<Long> {
         minHeap.add(new HeapElement(stream, stream.next()));
       }
     });
+    first = true;
+    setNext();
   }
 
   @Override
   public boolean hasNext() {
-    return !minHeap.isEmpty();
+    return next != null;
   }
 
   @Override
@@ -34,20 +38,40 @@ public class StreamUnionMerger implements Iterator<Long> {
     if (!hasNext()) {
       throw new NoSuchElementException("No elements left to union in input streams.");
     }
-    HeapElement next;
+    Long curr = next;
+    setNext();
+    return curr;
+  }
+
+  private void setNext() {
+    HeapElement nextElement;
+    if (minHeap.isEmpty()) {
+      next = null;
+      return;
+    }
     do {
       // Grab the smallest element seen thus far (i.e. the root of the min heap)
-      next = minHeap.poll();
-      if (next.stream.hasNext()) {
+      nextElement = minHeap.poll();
+      if (nextElement.stream.hasNext()) {
         // Re-hydrate the min-heap with the next element from the stream that contained the previous min.
-        minHeap.add(new HeapElement(next.stream, next.stream.next()));
+        minHeap.add(new HeapElement(nextElement.stream, nextElement.stream.next()));
+      } else {
+        if (minHeap.isEmpty()) {
+          if (nextElement.idIndex == lastIdIndex) {
+            this.next = null;
+          } else {
+            this.next = nextElement.idIndex;
+          }
+          return;
+        }
       }
       // Skip this element if it has already been returned for the sake of omitting duplicates.
-    } while (next.idIndex == lastIdIndex);
+    } while (nextElement.idIndex == lastIdIndex && !first);
 
+    first = false;
     // Set the lastIdIndex variable to allow us to omit duplicates on subsequent invocations of next().
-    lastIdIndex = next.idIndex;
-    return next.idIndex;
+    lastIdIndex = nextElement.idIndex;
+    next = nextElement.idIndex;
   }
 
   private static class HeapElement {

@@ -116,6 +116,63 @@ public class TestDataProvider {
     }
   }
 
+  public static class DateVariableBuilder {
+    private VariableType variableType;
+    private String variableId;
+    private Entity entity;
+
+    public DateVariableBuilder withVariableId(String variableId) {
+      this.variableId = variableId;
+      return this;
+    }
+
+    public DateVariableBuilder withEntity(Entity entity) {
+      this.entity = entity;
+      return this;
+    }
+
+    public DateVariableBuilder withVariableType(VariableType variableType) {
+      this.variableType = variableType;
+      return this;
+    }
+
+    public DateVariable build() {
+      return new DateVariable(
+          constructGenericVarProps(entity, variableId),
+          constructVarValuesProps(variableType, false),
+          new DateDistributionConfig(false, VariableDataShape.CONTINUOUS, "", "", "", "", 5, "day", "day")
+      );
+    }
+  }
+
+  public static class StringVariableBuilder {
+    private Entity entity;
+    private String variableId;
+    private VariableType variableType;
+
+    public StringVariableBuilder withEntity(Entity entity) {
+      this.entity = entity;
+      return this;
+    }
+
+    public StringVariableBuilder withVariableId(String variableId) {
+      this.variableId = variableId;
+      return this;
+    }
+
+    public StringVariableBuilder withVariableType(VariableType variableType) {
+      this.variableType = variableType;
+      return this;
+    }
+
+    public StringVariable build() {
+      return new StringVariable(
+          constructGenericVarProps(entity, variableId),
+          constructVarValuesProps(variableType, false)
+      );
+    }
+  }
+
   public static class IntegerVariableBuilder {
     private VariableType variableType;
     private String variableId;
@@ -148,40 +205,6 @@ public class TestDataProvider {
           constructVarValuesProps(variableType, multiValued),
           new NumberDistributionConfig<>(0L, 10L, 0L, 10L, 2L, 2L),
           new IntegerVariable.Properties("bleep bloops")
-      );
-    }
-  }
-
-  public static class StringVariableBuilder {
-    private VariableType variableType;
-    private String variableId;
-    private Entity entity;
-    private boolean multiValued = false;
-
-    public StringVariableBuilder withVariableId(String variableId) {
-      this.variableId = variableId;
-      return this;
-    }
-
-    public StringVariableBuilder withEntity(Entity entity) {
-      this.entity = entity;
-      return this;
-    }
-
-    public StringVariableBuilder withVariableType(VariableType variableType) {
-      this.variableType = variableType;
-      return this;
-    }
-
-    public StringVariableBuilder withMultiValued(boolean multiValued) {
-      this.multiValued = multiValued;
-      return this;
-    }
-
-    public StringVariable build() {
-      return new StringVariable(
-          constructGenericVarProps(entity, variableId),
-          constructVarValuesProps(variableType, multiValued)
       );
     }
   }

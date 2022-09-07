@@ -18,6 +18,8 @@ public class IndiaICEMRStudy {
   private NumberVariable<Long> healthFacilityDist;
   private StringVariable householdMosquitoRepellent;
   private StringVariable householdMosquitoRepellentCoils;
+  private StringVariable householdMosquitoRepellentMats;
+  private StringVariable symptoms;
 
   public IndiaICEMRStudy() {
     final String householdEntityId = "PCO_0000024";
@@ -37,6 +39,12 @@ public class IndiaICEMRStudy {
         .withVariableType(VariableType.STRING)
         .withVariableId("EUPATH_0021243")
         .build();
+    householdMosquitoRepellentMats = new TestDataProvider.StringVariableBuilder()
+        .withEntity(householdEntity)
+        .withVariableType(VariableType.STRING)
+        .withVariableId("EUPATH_0021246")
+        .build();
+
     personsInHousehold =  new TestDataProvider.IntegerVariableBuilder()
         .withVariableId("EUPATH_0000019")
         .withEntity(householdEntity)
@@ -45,6 +53,7 @@ public class IndiaICEMRStudy {
     householdEntity.addVariable(personsInHousehold);
     householdEntity.addVariable(householdMosquitoRepellent);
     householdEntity.addVariable(householdMosquitoRepellentCoils);
+    householdEntity.addVariable(householdMosquitoRepellentMats);
     healthFacilityDist = new TestDataProvider.IntegerVariableBuilder()
         .withVariableId("EUPATH_0020213")
         .withEntity(householdEntity)
@@ -71,6 +80,12 @@ public class IndiaICEMRStudy {
         .withVariableType(VariableType.INTEGER)
         .build();
     sampleEntity.addVariable(plasmoFalcGametocytes);
+    symptoms = new TestDataProvider.StringVariableBuilder()
+        .withEntity(participantEntity)
+        .withVariableId("EUPATH_0021002")
+        .withVariableType(VariableType.STRING)
+        .build();
+    participantEntity.addVariable(symptoms);
     this.study = new TestDataProvider.StudyBuilder(studyAbbrev, studyAbbrev)
         .withRoot(householdEntity)
         .addEntity(participantEntity, householdEntity.getId())
@@ -120,5 +135,13 @@ public class IndiaICEMRStudy {
 
   public StringVariable getHouseholdMosquitoRepellentCoils() {
     return householdMosquitoRepellentCoils;
+  }
+
+  public StringVariable getHouseholdMosquitoRepellentMats() {
+    return householdMosquitoRepellentMats;
+  }
+
+  public StringVariable getSymptoms() {
+    return symptoms;
   }
 }

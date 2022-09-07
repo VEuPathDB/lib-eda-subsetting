@@ -67,42 +67,6 @@ public class DataFlowMapReduceTreeTest {
 
   @Test
   public void testMultiFilterDifferentEntity() {
-    /**
-     * {
-     *   "reportConfig": {
-     *     "dataSource": "{{data_source}}"
-     *   },
-     *   "filters": [
-     *     {
-     *       "entityId": "PCO_0000024",
-     *       "variableId": "EUPATH_0021242",
-     *       "type": "multiFilter",
-     *       "operation": "intersect",
-     *       "subFilters": [
-     *         {
-     *           "entityId": "PCO_0000024",
-     *           "variableId": "EUPATH_0021243",
-     *           "type": "stringSet",
-     *           "stringSet": [
-     *             "No"
-     *           ]
-     *         },
-     *         {
-     *           "entityId": "PCO_0000024",
-     *           "variableId": "EUPATH_0021246",
-     *           "type": "stringSet",
-     *           "stringSet": [
-     *             "No"
-     *           ]
-     *         }
-     *       ]
-     *     }
-     *   ],
-     *   "outputVariableIds": [
-     *     "EUPATH_0000427"
-     *   ]
-     * }
-     */
     MultiFilterSubFilter f1 = new MultiFilterSubFilter(indiaICEMRStudy.getHouseholdMosquitoRepellentCoils(), List.of("No"));
     MultiFilterSubFilter f2 = new MultiFilterSubFilter(indiaICEMRStudy.getHouseholdMosquitoRepellentMats(), List.of("No"));
     MultiFilter multiFilter = new MultiFilter("test",
@@ -113,7 +77,6 @@ public class DataFlowMapReduceTreeTest {
     FilteredResultFactory.produceTabularSubsetFromFile(indiaICEMRStudy.getStudy(), indiaICEMRStudy.getParticipantEntity(),
         List.of(indiaICEMRStudy.getTimeSinceLastMalaria()), List.of(multiFilter),
         TabularResponses.Type.TABULAR.getFormatter(), new TabularReportConfig(), outputStream, binaryDirectory);
-    System.out.println(outputStream);
   }
 
   @Test
@@ -125,46 +88,6 @@ public class DataFlowMapReduceTreeTest {
     FilteredResultFactory.produceTabularSubsetFromFile(indiaICEMRStudy.getStudy(), indiaICEMRStudy.getParticipantEntity(),
         List.of(indiaICEMRStudy.getTimeSinceLastMalaria()), List.of(stringSetFilter),
         TabularResponses.Type.TABULAR.getFormatter(), new TabularReportConfig(), outputStream, binaryDirectory);
-    System.out.println(outputStream);
-  }
-
-  public void test500() {
-    /**
-     * {
-     *   "reportConfig": {
-     *     "dataSource": "{{data_source}}"
-     *   },
-     *   "filters": [
-     *     {
-     *       "entityId": "PCO_0000024",
-     *       "variableId": "EUPATH_0021242",
-     *       "type": "multiFilter",
-     *       "operation": "union",
-     *       "subFilters": [
-     *         {
-     *           "entityId": "PCO_0000024",
-     *           "variableId": "EUPATH_0021243",
-     *           "type": "stringSet",
-     *           "stringSet": [
-     *             "No"
-     *           ]
-     *         },
-     *         {
-     *           "entityId": "PCO_0000024",
-     *           "variableId": "EUPATH_0021246",
-     *           "type": "stringSet",
-     *           "stringSet": [
-     *             "No"
-     *           ]
-     *         }
-     *       ]
-     *     }
-     *   ],
-     *   "outputVariableIds": [
-     *     "EUPATH_0021246"
-     *   ]
-     * }
-     */
   }
 
   @Test

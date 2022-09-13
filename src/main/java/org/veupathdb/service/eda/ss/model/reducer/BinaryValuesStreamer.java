@@ -20,7 +20,7 @@ import java.util.stream.Collectors;
 public class BinaryValuesStreamer {
   private static final LongValueConverter LONG_VALUE_CONVERTER = new LongValueConverter();
   // TODO: This should be shared with file dumper or possibly read from meta.json to support having it vary per study.
-  private static final int BYTES_RESERVED_FOR_ID = 30;
+  private static final int BYTES_RESERVED_FOR_ID = 40;
 
   private final BinaryFilesManager binaryFilesManager;
 

@@ -51,17 +51,14 @@ public class AncestorExpander implements Iterator<Long> {
   @Override
   public Long next() {
     setCurrentIfNotStarted();
-    return nextMatch();
+    long toReturn = currentDescendant.getIdIndex();
+    nextMatch();
+    return toReturn;
   }
 
   private void setCurrentIfNotStarted() {
     if (!hasStarted) {
-      if (descendantStream.hasNext()) {
-        currentDescendant = descendantStream.next();
-      }
-      if (entityIdIndexStream.hasNext()) {
-        currentEntity = entityIdIndexStream.next();
-      }
+      nextMatch();
       hasStarted = true;
     }
   }
@@ -70,25 +67,37 @@ public class AncestorExpander implements Iterator<Long> {
    * @return The next matching descendant idIndex.
    */
   private Long nextMatch() {
+    if (!hasStarted) {
+      currentEntity = entityIdIndexStream.hasNext() ? entityIdIndexStream.next() : null;
+    }
+    this.currentDescendant = descendantStream.hasNext() ? descendantStream.next() : null;
     // Check if current entity equals ancestor.
-    if (!Objects.equals(currentDescendant.getValue(), currentEntity)) {
+    // If entity equals ancestor, we continue iterating through descendants until the ancestor no longer matches.
+    if (currentDescendant != null && !Objects.equals(currentDescendant.getValue(), currentEntity)) {
       // Current entity is not equal to ancestor, need to skip until they match to return their descendants.
       advanceStreamsUntilIntersect();
     }
-    // If entity equals ancestor, we continue iterating through descendants until the ancestor no longer matches.
-    Long current = currentDescendant.getIdIndex();
-    this.currentDescendant = descendantStream.hasNext() ? descendantStream.next() : null;
-    return current;
+    // If currentDescendant is null, stream is exhausted.
+    if (currentDescendant == null) {
+      return null;
+    }
+    return currentDescendant.getIdIndex();
   }
 
   private void advanceStreamsUntilIntersect() {
-    while (!Objects.equals(currentDescendant.getValue(), currentEntity) && currentEntity != null) {
+    while (currentDescendant != null && !Objects.equals(currentDescendant.getValue(), currentEntity) && currentEntity != null) {
       if (currentDescendant.getValue() < currentEntity) {
         // If descendants are "lower" than current entity, advance descendant stream to catch up.
         this.currentDescendant = descendantStream.hasNext() ? descendantStream.next() : null;
       } else {
         // If entities are "lower" than current descendant, advance entity stream to catch up.
-        this.currentEntity = entityIdIndexStream.hasNext() ? entityIdIndexStream.next() : null;
+        if (entityIdIndexStream.hasNext()) {
+          this.currentEntity = entityIdIndexStream.next();
+        } else {
+          // If we hit end of entity stream, signify that the stream is exhausted.
+          this.currentEntity = null;
+          this.currentDescendant = null;
+        }
       }
     }
   }

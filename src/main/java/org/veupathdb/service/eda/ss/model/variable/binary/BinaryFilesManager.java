@@ -25,6 +25,9 @@ public class BinaryFilesManager {
   public static final String META_KEY_NUM_ANCESTORS = "numAncestors";
   static final String DONE_FILE_NAME = "DONE";
 
+  // 50 for max length of ID + 4 reserved to store the size.
+  public static int BYTES_RESERVED_FOR_ID = 54;
+
   public enum Operation { READ, WRITE };
 
   private static final Logger LOG = LogManager.getLogger(BinaryFilesManager.class);

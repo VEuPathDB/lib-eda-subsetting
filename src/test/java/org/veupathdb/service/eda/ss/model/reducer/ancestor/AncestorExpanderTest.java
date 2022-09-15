@@ -12,7 +12,7 @@ import java.util.List;
 public class AncestorExpanderTest {
 
   @Test
-  public void test() {
+  public void testFirstAndLastAncestorIncluded() {
     List<VariableValueIdPair<Long>> descendantStream = List.of(
         new VariableValueIdPair<>(1L, 1L),
         new VariableValueIdPair<>(2L, 1L),
@@ -79,6 +79,29 @@ public class AncestorExpanderTest {
   public void testEmptyList() {
     Iterable<Long> expander = () -> constructExpander(Collections.emptyList(), Collections.emptyList());
     MatcherAssert.assertThat(expander, Matchers.emptyIterable());
+  }
+
+  @Test
+  public void testSecondToLastIncluded() {
+    List<VariableValueIdPair<Long>> descendantStream = List.of(
+        new VariableValueIdPair<>(1L, 1L),
+        new VariableValueIdPair<>(2L, 1L),
+        new VariableValueIdPair<>(3L, 2L),
+        new VariableValueIdPair<>(4L, 2L),
+        new VariableValueIdPair<>(5L, 3L),
+        new VariableValueIdPair<>(6L, 3L),
+        new VariableValueIdPair<>(7L, 3L),
+        new VariableValueIdPair<>(8L, 4L),
+        new VariableValueIdPair<>(9L, 4L),
+        new VariableValueIdPair<>(10L, 4L)
+    );
+    List<Long> entityStream = List.of(
+        2L, 3L
+    );
+    constructExpander(descendantStream, entityStream).forEachRemaining(System.out::println);
+    MatcherAssert.assertThat(() -> constructExpander(descendantStream, entityStream),
+        Matchers.contains(3L, 4L, 5L, 6L, 7L));
+
   }
 
   private Iterator<Long> constructExpander(List<VariableValueIdPair<Long>> ancestorStream,

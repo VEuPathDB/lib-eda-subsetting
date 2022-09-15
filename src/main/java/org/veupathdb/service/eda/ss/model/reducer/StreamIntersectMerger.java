@@ -11,6 +11,7 @@ import java.util.*;
 public class StreamIntersectMerger implements Iterator<Long> {
   private final PeekableIterator[] peekableIdIndexStreams;
   private Long nextOutputIndex;
+  private Long lastOutputIndex;
   private PeekableIterator currentIdIndexStream;
   private boolean hasStarted;
   private RingLinkedList streamRing;
@@ -33,6 +34,7 @@ public class StreamIntersectMerger implements Iterator<Long> {
         .toArray(PeekableIterator[]::new);
     this.streamRing = new RingLinkedList(peekableIdIndexStreams);
     this.currentIdIndexStream = streamRing.cursor.currentStream;
+    this.lastOutputIndex = null;
     hasStarted = false;
   }
 
@@ -72,6 +74,13 @@ public class StreamIntersectMerger implements Iterator<Long> {
     // If there's only a single stream, we can short-circuit the merging logic and just return the next value in stream.
     if (streamRing.size == 1) {
       nextOutputIndex = currentIdIndexStream.hasNext() ? currentIdIndexStream.next() : null;
+
+      // Keep track of the last output index to ensure we do not return the same index twice.
+      while (Objects.equals(nextOutputIndex, lastOutputIndex)) {
+        nextOutputIndex = currentIdIndexStream.hasNext() ? currentIdIndexStream.next() : null;
+      }
+
+      lastOutputIndex = nextOutputIndex;
       return;
     }
 

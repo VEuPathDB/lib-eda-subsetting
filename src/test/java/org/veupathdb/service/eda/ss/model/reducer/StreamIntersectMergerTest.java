@@ -118,6 +118,12 @@ public class StreamIntersectMergerTest {
       MatcherAssert.assertThat(result, Matchers.contains(2L, 5L, 9L, 10L));
     }
 
+    @Test
+    public void testDuplicatesSingleStream() {
+      final List<Long> s1 = List.of(1L, 1L, 2L, 3L, 3L, 9L, 10L);
+      Iterable<Long> result = () -> new StreamIntersectMerger(List.of(s1.iterator()));
+      MatcherAssert.assertThat(result, Matchers.contains(1L, 2L, 3L, 9L, 10L));
+    }
   }
 
 

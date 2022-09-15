@@ -17,10 +17,10 @@ import java.util.List;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
+import static org.veupathdb.service.eda.ss.model.variable.binary.BinaryFilesManager.BYTES_RESERVED_FOR_ID;
+
 public class BinaryValuesStreamer {
   private static final LongValueConverter LONG_VALUE_CONVERTER = new LongValueConverter();
-  // TODO: This should be shared with file dumper or possibly read from meta.json to support having it vary per study.
-  private static final int BYTES_RESERVED_FOR_ID = 40;
 
   private final BinaryFilesManager binaryFilesManager;
 

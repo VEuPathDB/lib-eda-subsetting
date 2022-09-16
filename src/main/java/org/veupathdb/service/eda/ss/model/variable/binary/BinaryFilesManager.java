@@ -26,7 +26,7 @@ public class BinaryFilesManager {
   static final String DONE_FILE_NAME = "DONE";
 
   // 50 for max length of ID + 4 reserved to store the size.
-  public static int BYTES_RESERVED_FOR_ID = 54;
+  public static int BYTES_RESERVED_FOR_ID = 40; // 54
 
   public enum Operation { READ, WRITE };
 

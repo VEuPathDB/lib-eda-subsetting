@@ -63,6 +63,9 @@ public class BinaryValuesStreamer {
     List<Iterator<Long>> idStreams = filter.getSubFilters().stream()
         .map(Functions.fSwallow(subFilter -> streamFilteredEntityIdIndexes(filter.getFilter(subFilter), study)))
         .collect(Collectors.toList());
+    if (idStreams.size() == 1) {
+      return new StreamDeduper(idStreams.get(0));
+    }
     if (filter.getOperation() == MultiFilter.MultiFilterOperation.UNION) {
       return new StreamUnionMerger(idStreams);
     } else { // operation == MultiFilter.MultiFilterOperation.INTERSECT

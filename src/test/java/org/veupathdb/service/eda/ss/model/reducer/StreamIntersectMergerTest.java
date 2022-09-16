@@ -2,6 +2,7 @@ package org.veupathdb.service.eda.ss.model.reducer;
 
 import org.hamcrest.MatcherAssert;
 import org.hamcrest.Matchers;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 
@@ -37,9 +38,7 @@ public class StreamIntersectMergerTest {
     @Test
     public void testOneStream() {
       final Iterator<Long> stream1 = new ArrayList<>(oneToOneHundred).iterator();
-      StreamIntersectMerger merger = new StreamIntersectMerger(List.of(stream1));
-      Iterable<Long> iterable = () -> merger;
-      MatcherAssert.assertThat(iterable, Matchers.iterableWithSize(100));
+      Assertions.assertThrows(IllegalArgumentException.class, () -> new StreamIntersectMerger(List.of(stream1)));
     }
 
     @Test
@@ -121,8 +120,7 @@ public class StreamIntersectMergerTest {
     @Test
     public void testDuplicatesSingleStream() {
       final List<Long> s1 = List.of(1L, 1L, 2L, 3L, 3L, 9L, 10L);
-      Iterable<Long> result = () -> new StreamIntersectMerger(List.of(s1.iterator()));
-      MatcherAssert.assertThat(result, Matchers.contains(1L, 2L, 3L, 9L, 10L));
+      Assertions.assertThrows(IllegalArgumentException.class, () -> new StreamIntersectMerger(List.of(s1.iterator())));
     }
   }
 

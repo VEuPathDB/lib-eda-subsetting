@@ -58,6 +58,7 @@ public class AncestorExpander implements Iterator<Long> {
 
   private void setCurrentIfNotStarted() {
     if (!hasStarted) {
+      currentEntity = entityIdIndexStream.hasNext() ? entityIdIndexStream.next() : null;
       nextMatch();
       hasStarted = true;
     }
@@ -67,17 +68,16 @@ public class AncestorExpander implements Iterator<Long> {
    * @return The next matching descendant idIndex.
    */
   private Long nextMatch() {
-    if (!hasStarted) {
-      currentEntity = entityIdIndexStream.hasNext() ? entityIdIndexStream.next() : null;
-    }
+    // At this point, the stream should either be at the very beginning, or aligned with the most recently returned value.
+    // Either way, we want to advance it one element.
     this.currentDescendant = descendantStream.hasNext() ? descendantStream.next() : null;
-    // Check if current entity equals ancestor.
-    // If entity equals ancestor, we continue iterating through descendants until the ancestor no longer matches.
+
+    // Check if current entity equals ancestor. If so, we can happily return it as the next element in the stream.
+    // If there is a mismatch, we advance the streams until they intersect.
     if (currentDescendant != null && !Objects.equals(currentDescendant.getValue(), currentEntity)) {
-      // Current entity is not equal to ancestor, need to skip until they match to return their descendants.
       advanceStreamsUntilIntersect();
     }
-    // If currentDescendant is null, stream is exhausted.
+    // If currentDescendant is null, stream is exhausted. Return null to indicate end of stream.
     if (currentDescendant == null) {
       return null;
     }
@@ -87,10 +87,10 @@ public class AncestorExpander implements Iterator<Long> {
   private void advanceStreamsUntilIntersect() {
     while (currentDescendant != null && !Objects.equals(currentDescendant.getValue(), currentEntity) && currentEntity != null) {
       if (currentDescendant.getValue() < currentEntity) {
-        // If descendants are "lower" than current entity, advance descendant stream to catch up.
+        // If descendants are "behind" the current entity, advance descendant stream to catch up.
         this.currentDescendant = descendantStream.hasNext() ? descendantStream.next() : null;
       } else {
-        // If entities are "lower" than current descendant, advance entity stream to catch up.
+        // If entities are "behind" the current descendant, advance entity stream to catch up.
         if (entityIdIndexStream.hasNext()) {
           this.currentEntity = entityIdIndexStream.next();
         } else {

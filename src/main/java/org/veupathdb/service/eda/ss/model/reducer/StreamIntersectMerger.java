@@ -11,7 +11,6 @@ import java.util.*;
 public class StreamIntersectMerger implements Iterator<Long> {
   private final PeekableIterator[] peekableIdIndexStreams;
   private Long nextOutputIndex;
-  private Long lastOutputIndex;
   private PeekableIterator currentIdIndexStream;
   private boolean hasStarted;
   private RingLinkedList streamRing;
@@ -28,13 +27,15 @@ public class StreamIntersectMerger implements Iterator<Long> {
       nextOutputIndex = null;
       return;
     }
+    if (sortedStreams.size() < 2) {
+      throw new IllegalArgumentException("Stream intersect merger must operate on two or more data streams");
+    }
     // Convert iterators into peekable iterators.
     this.peekableIdIndexStreams = sortedStreams.stream()
         .map(PeekableIterator::new)
         .toArray(PeekableIterator[]::new);
     this.streamRing = new RingLinkedList(peekableIdIndexStreams);
     this.currentIdIndexStream = streamRing.cursor.currentStream;
-    this.lastOutputIndex = null;
     hasStarted = false;
   }
 
@@ -71,19 +72,6 @@ public class StreamIntersectMerger implements Iterator<Long> {
     // value not null; counts as first concurring stream
     int numConcurringStreams = 1;
 
-    // If there's only a single stream, we can short-circuit the merging logic and just return the next value in stream.
-    if (streamRing.size == 1) {
-      nextOutputIndex = currentIdIndexStream.hasNext() ? currentIdIndexStream.next() : null;
-
-      // Keep track of the last output index to ensure we do not return the same index twice.
-      while (Objects.equals(nextOutputIndex, lastOutputIndex)) {
-        nextOutputIndex = currentIdIndexStream.hasNext() ? currentIdIndexStream.next() : null;
-      }
-
-      lastOutputIndex = nextOutputIndex;
-      return;
-    }
-
     // continual loop, trying to match all iterators to the same value
     while (numConcurringStreams < streamRing.size()) {
 
@@ -114,6 +102,7 @@ public class StreamIntersectMerger implements Iterator<Long> {
     nextOutputIndex = candidateIdIndex;
   }
 
+  /**
   /**
    * Utility class which stores a linked list of PeekableIterators. The elements are linked in a ring-like structure
    * such that the last element points to the first to allow for natural traversal of streams.
@@ -158,7 +147,7 @@ public class StreamIntersectMerger implements Iterator<Long> {
   /**
    * An iterator whose next element can be previewed without consuming it from the iterator.
    */
-  private static class PeekableIterator implements Iterator<Long> {
+  protected static class PeekableIterator implements Iterator<Long> {
     private Long next;
     private final Iterator<Long> stream;
 

@@ -21,7 +21,7 @@ public class AncestorExpander implements Iterator<Long> {
   private final Iterator<Long> entityIdIndexStream;
   private VariableValueIdPair<Long> currentDescendant;
   private Long currentEntity;
-  private boolean hasStarted = false;
+  private boolean isInitialized = false;
 
   public AncestorExpander(Path descendantsFilePath,
                           AncestorDeserializer deserializer,
@@ -41,7 +41,9 @@ public class AncestorExpander implements Iterator<Long> {
 
   @Override
   public boolean hasNext() {
-    setCurrentIfNotStarted();
+    if (!isInitialized) {
+      initialize();
+    }
     return this.currentDescendant != null;
   }
 
@@ -50,18 +52,22 @@ public class AncestorExpander implements Iterator<Long> {
    */
   @Override
   public Long next() {
-    setCurrentIfNotStarted();
+    if (!isInitialized) {
+      initialize();
+    }
     long toReturn = currentDescendant.getIdIndex();
     nextMatch();
     return toReturn;
   }
 
-  private void setCurrentIfNotStarted() {
-    if (!hasStarted) {
-      currentEntity = entityIdIndexStream.hasNext() ? entityIdIndexStream.next() : null;
-      nextMatch();
-      hasStarted = true;
-    }
+  /**
+   * Initialization method called by hasNext() and next() to ensure that stream is not eagerly consumed by the
+   * constructor. This is called on the first invocation of either of the aforementioned methods.
+   */
+  private void initialize() {
+    currentEntity = entityIdIndexStream.hasNext() ? entityIdIndexStream.next() : null;
+    nextMatch();
+    isInitialized = true;
   }
 
   /**

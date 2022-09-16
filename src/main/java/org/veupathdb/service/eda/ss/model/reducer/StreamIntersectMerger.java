@@ -12,8 +12,8 @@ public class StreamIntersectMerger implements Iterator<Long> {
   private final PeekableIterator[] peekableIdIndexStreams;
   private Long nextOutputIndex;
   private PeekableIterator currentIdIndexStream;
-  private boolean hasStarted;
   private RingLinkedList streamRing;
+  private boolean initialized;
 
   /**
    * @param sortedStreams Collection of sorted streams to merge by intersection.
@@ -22,7 +22,7 @@ public class StreamIntersectMerger implements Iterator<Long> {
     // If no input streams are provided, it should act as an "empty" Iterator.
     // If any input stream is "empty", should act as an "empty" Iterator since we are intersecting Iterators.
     if (sortedStreams.isEmpty() || !sortedStreams.stream().allMatch(Iterator::hasNext)) {
-      hasStarted = true;
+      initialized = true;
       peekableIdIndexStreams = null;
       nextOutputIndex = null;
       return;
@@ -36,23 +36,30 @@ public class StreamIntersectMerger implements Iterator<Long> {
         .toArray(PeekableIterator[]::new);
     this.streamRing = new RingLinkedList(peekableIdIndexStreams);
     this.currentIdIndexStream = streamRing.cursor.currentStream;
-    hasStarted = false;
+    this.initialized = false;
+  }
+
+  /**
+   * Initialization method called by hasNext() and next() to ensure that stream is not eagerly consumed by the
+   * constructor. This is called on the first invocation of either of the aforementioned methods.
+   */
+  public void initialize() {
+    findNextMatchingIdIndex();
+    initialized = true;
   }
 
   @Override
   public boolean hasNext() {
-    if (!hasStarted) {
-      findNextMatchingIdIndex();
-      hasStarted = true;
+    if (!initialized) {
+      initialize();
     }
     return nextOutputIndex != null;
   }
 
   @Override
   public Long next() {
-    if (!hasStarted) {
-      findNextMatchingIdIndex();
-      hasStarted = true;
+    if (!initialized) {
+      initialize();
     }
     Long next = nextOutputIndex;
     if (next == null) {

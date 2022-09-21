@@ -53,7 +53,9 @@ public class DataFlowTreeReducer {
 
     // Merge all entity ID index data streams if there are more than one.
     if (allStreams.size() == 1) {
-      return allStreams.get(0);
+      // If there is one stream, returned it but ensure that if an entity ID index appears multiple times, it is only
+      // returned once in the resulting stream to account for multi-value variables.
+      return new StreamDeduper(allStreams.get(0));
     }
     return new StreamIntersectMerger(allStreams);
   }

@@ -12,8 +12,8 @@ public class StreamIntersectMerger implements Iterator<Long> {
   private final PeekableIterator[] peekableIdIndexStreams;
   private Long nextOutputIndex;
   private PeekableIterator currentIdIndexStream;
-  private boolean hasStarted;
   private RingLinkedList streamRing;
+  private boolean initialized;
 
   /**
    * @param sortedStreams Collection of sorted streams to merge by intersection.
@@ -22,10 +22,13 @@ public class StreamIntersectMerger implements Iterator<Long> {
     // If no input streams are provided, it should act as an "empty" Iterator.
     // If any input stream is "empty", should act as an "empty" Iterator since we are intersecting Iterators.
     if (sortedStreams.isEmpty() || !sortedStreams.stream().allMatch(Iterator::hasNext)) {
-      hasStarted = true;
+      initialized = true;
       peekableIdIndexStreams = null;
       nextOutputIndex = null;
       return;
+    }
+    if (sortedStreams.size() < 2) {
+      throw new IllegalArgumentException("Stream intersect merger must operate on two or more data streams");
     }
     // Convert iterators into peekable iterators.
     this.peekableIdIndexStreams = sortedStreams.stream()
@@ -33,23 +36,30 @@ public class StreamIntersectMerger implements Iterator<Long> {
         .toArray(PeekableIterator[]::new);
     this.streamRing = new RingLinkedList(peekableIdIndexStreams);
     this.currentIdIndexStream = streamRing.cursor.currentStream;
-    hasStarted = false;
+    this.initialized = false;
+  }
+
+  /**
+   * Initialization method called by hasNext() and next() to ensure that stream is not eagerly consumed by the
+   * constructor. This is called on the first invocation of either of the aforementioned methods.
+   */
+  public void initialize() {
+    findNextMatchingIdIndex();
+    initialized = true;
   }
 
   @Override
   public boolean hasNext() {
-    if (!hasStarted) {
-      findNextMatchingIdIndex();
-      hasStarted = true;
+    if (!initialized) {
+      initialize();
     }
     return nextOutputIndex != null;
   }
 
   @Override
   public Long next() {
-    if (!hasStarted) {
-      findNextMatchingIdIndex();
-      hasStarted = true;
+    if (!initialized) {
+      initialize();
     }
     Long next = nextOutputIndex;
     if (next == null) {
@@ -68,12 +78,6 @@ public class StreamIntersectMerger implements Iterator<Long> {
     }
     // value not null; counts as first concurring stream
     int numConcurringStreams = 1;
-
-    // If there's only a single stream, we can short-circuit the merging logic and just return the next value in stream.
-    if (streamRing.size == 1) {
-      nextOutputIndex = currentIdIndexStream.hasNext() ? currentIdIndexStream.next() : null;
-      return;
-    }
 
     // continual loop, trying to match all iterators to the same value
     while (numConcurringStreams < streamRing.size()) {
@@ -105,6 +109,7 @@ public class StreamIntersectMerger implements Iterator<Long> {
     nextOutputIndex = candidateIdIndex;
   }
 
+  /**
   /**
    * Utility class which stores a linked list of PeekableIterators. The elements are linked in a ring-like structure
    * such that the last element points to the first to allow for natural traversal of streams.
@@ -149,7 +154,7 @@ public class StreamIntersectMerger implements Iterator<Long> {
   /**
    * An iterator whose next element can be previewed without consuming it from the iterator.
    */
-  private static class PeekableIterator implements Iterator<Long> {
+  protected static class PeekableIterator implements Iterator<Long> {
     private Long next;
     private final Iterator<Long> stream;
 

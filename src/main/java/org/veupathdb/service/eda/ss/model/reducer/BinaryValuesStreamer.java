@@ -1,6 +1,7 @@
 package org.veupathdb.service.eda.ss.model.reducer;
 
 import org.gusdb.fgputil.functional.Functions;
+import org.json.JSONArray;
 import org.veupathdb.service.eda.ss.model.Entity;
 import org.veupathdb.service.eda.ss.model.Study;
 import org.veupathdb.service.eda.ss.model.filter.MultiFilter;
@@ -12,6 +13,7 @@ import org.veupathdb.service.eda.ss.model.variable.binary.*;
 
 import java.io.IOException;
 import java.nio.file.Path;
+import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.function.Function;
@@ -134,24 +136,26 @@ public class BinaryValuesStreamer {
    */
   public Iterator<VariableValueIdPair<List<String>>> streamIdMap(Entity entity, Study study) throws IOException {
     Path path = binaryFilesManager.getIdMapFile(study, entity, BinaryFilesManager.Operation.READ);
-    final ListConverter<String> listConverter = new ListConverter<>(
-        new StringValueConverter(BYTES_RESERVED_FOR_ID),
-        entity.getAncestorEntities().size() + 1); // First entry of list is for entity ID, rest are ancestor IDs.
-    final ValueWithIdDeserializer<List<String>> ancestorsWithId = new ValueWithIdDeserializer<>(listConverter);
+    List<Integer> bytesReservedForAncestors = binaryFilesManager.getBytesReservedForAncestry(study, entity);
+    Integer bytesReservedForId = binaryFilesManager.getBytesReservedForEntity(study, entity);
+    IdsMapConverter converter = new IdsMapConverter(bytesReservedForAncestors, bytesReservedForId);
+
     return new FilteredValueIterator<>(path,
         x -> true, // Do not apply any filters.
-        ancestorsWithId,
+        converter,
         Function.identity());
   }
 
   public Iterator<Long> streamUnfilteredEntityIdIndexes(Study study, Entity entity) throws IOException {
-    ListConverter<String> converter = new ListConverter<>(new StringValueConverter(BYTES_RESERVED_FOR_ID), entity.getAncestorEntities().size() + 1);
+    List<Integer> bytesReservedForAncestors = binaryFilesManager.getBytesReservedForAncestry(study, entity);
+    Integer bytesReservedForId = binaryFilesManager.getBytesReservedForEntity(study, entity);
+    IdsMapConverter converter = new IdsMapConverter(bytesReservedForAncestors, bytesReservedForId);
     return new FilteredValueIterator<>(
         binaryFilesManager.getIdMapFile(study,
             entity,
             BinaryFilesManager.Operation.READ),
         x -> true,
-        new ValueWithIdDeserializer<>(converter),
+        converter,
         VariableValueIdPair::getIdIndex);
   }
 }

@@ -29,6 +29,7 @@
   "var_EUPATH_0021265": "string",
   "var_EUPATH_0041014": "string",
   "var_EUPATH_0021246": "string",
+  "bytesReservedForId": 12,
   "var_EUPATH_0021245": "string",
   "var_EUPATH_0021251": "string",
   "var_EUPATH_0000003": "string",
@@ -36,6 +37,6 @@
   "var_ENVO_01000581": "string",
   "var_EUPATH_0021253": "string",
   "var_EUPATH_0021252": "string",
-  "numAncestors": 0,
-  "var_EUPATH_0021093": "string"
+  "var_EUPATH_0021093": "string",
+  "bytesReservedPerAncestor": []
 }

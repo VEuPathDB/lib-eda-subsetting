@@ -1,13 +1,17 @@
 {
   "var_EUPATH_0021030": "string",
-  "numAncestors": 2,
   "var_EUPATH_0000546": "integer",
   "var_EUPATH_0021081": "string",
   "var_EUPATH_0021306": "string",
+  "bytesReservedPerAncestor": [
+    11,
+    12
+  ],
   "var_EUPATH_0021028": "string",
   "var_EUPATH_0021027": "string",
   "var_OBI_0001619": "date",
   "var_EUPATH_0021029": "string",
   "var_EUPATH_0027004": "string",
-  "var_EUPATH_0000550": "integer"
+  "var_EUPATH_0000550": "integer",
+  "bytesReservedForId": 13
 }

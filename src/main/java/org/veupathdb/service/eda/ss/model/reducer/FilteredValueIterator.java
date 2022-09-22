@@ -21,7 +21,7 @@ import java.util.function.Predicate;
 public class FilteredValueIterator<V, T> implements AutoCloseable, Iterator<T> {
   private final Predicate<V> filterPredicate;
   private final DualBufferBinaryRecordReader reader;
-  private final BinaryDeserializer<VariableValueIdPair<V>> deserializer;
+  private final BinaryDeserializer<? extends VariableValueIdPair<V>> deserializer;
   private final Function<VariableValueIdPair<V>, T> pairExtractor;
   private T next;
   private boolean hasStarted;
@@ -39,7 +39,7 @@ public class FilteredValueIterator<V, T> implements AutoCloseable, Iterator<T> {
    */
   public FilteredValueIterator(Path path,
                                Predicate<V> filterPredicate,
-                               BinaryDeserializer<VariableValueIdPair<V>> deserializer,
+                               BinaryDeserializer<? extends VariableValueIdPair<V>> deserializer,
                                Function<VariableValueIdPair<V>, T> pairExtractor) throws IOException {
     final byte[] byteBuffer = new byte[deserializer.numBytes()];
     this.filterPredicate = filterPredicate;

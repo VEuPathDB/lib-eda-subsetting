@@ -4,10 +4,15 @@ import java.io.IOException;
 import java.nio.file.FileAlreadyExistsException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.ArrayList;
+import java.util.List;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
 import org.veupathdb.service.eda.ss.model.Entity;
 import org.veupathdb.service.eda.ss.model.Study;
 import org.veupathdb.service.eda.ss.model.variable.Variable;
@@ -23,10 +28,10 @@ public class BinaryFilesManager {
   private static final String VOCAB_FILE_PREFIX = "vocab_";
 
   public static final String META_KEY_NUM_ANCESTORS = "numAncestors";
-  static final String DONE_FILE_NAME = "DONE";
+  public static final String META_KEY_BYTES_FOR_ID = "bytesReservedForId";
+  public static final String META_KEY_BYTES_PER_ANCESTOR = "bytesReservedPerAncestor";
 
-  // 50 for max length of ID + 4 reserved to store the size.
-  public static int BYTES_RESERVED_FOR_ID = 40; // 54
+  static final String DONE_FILE_NAME = "DONE";
 
   public enum Operation { READ, WRITE };
 
@@ -114,6 +119,32 @@ public class BinaryFilesManager {
     return filepath;
   }
 
+  /**
+   * For a given entity, parse the metadata JSON file to determine the number of bytes needed to store identifiers
+   * for all the entity's ancestors.
+   * @return a list of ancestors in order of closest to the farthest ascendant.
+   */
+  public List<Integer> getBytesReservedForAncestry(Study study, Entity entity) {
+    JSONObject metajson = readMetaJsonFile(getMetaJsonFile(study, entity, Operation.READ));
+    List<Integer> bytesReservedPerAncestors = new ArrayList<>();
+    JSONArray ancestorBytesReserved = metajson.getJSONArray(META_KEY_BYTES_PER_ANCESTOR);
+    for (int i = 0; i < ancestorBytesReserved.length(); i++) {
+      bytesReservedPerAncestors.add(ancestorBytesReserved.getInt(i));
+    }
+    return bytesReservedPerAncestors;
+  }
+
+  /**
+   * For a given entity, parse the metadata JSON file to determine the number of bytes needed to store identifiers
+   * for the entity.
+   * @return number of bytes reserved for entity.
+   */
+  public Integer getBytesReservedForEntity(Study study, Entity entity) {
+    JSONObject metajson = readMetaJsonFile(getMetaJsonFile(study, entity, Operation.READ));
+    return metajson.getInt(META_KEY_BYTES_FOR_ID);
+  }
+
+
   ////////////////////////////////////////////////////////
 
   private String getStudyDirName(Study study) {
@@ -130,6 +161,17 @@ public class BinaryFilesManager {
 
   private String getVocabFileName(Variable var) {
     return VOCAB_FILE_PREFIX + var.getId();
+  }
+
+  private static JSONObject readMetaJsonFile(Path metajsonFile) {
+    if (!metajsonFile.toFile().exists()) throw new RuntimeException("metajson file '" + metajsonFile + "' does not exist");
+    try {
+      String jsonString = Files.readString(metajsonFile);
+      JSONObject json = new JSONObject(jsonString);
+      return json;
+    } catch (IOException | JSONException e) {
+      throw new RuntimeException("Failed reading meta json file", e);
+    }
   }
 
   private Path createFile(Study study, Entity entity, String filename) {

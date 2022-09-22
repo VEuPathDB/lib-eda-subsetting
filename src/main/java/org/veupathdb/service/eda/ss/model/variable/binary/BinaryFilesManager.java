@@ -126,7 +126,6 @@ public class BinaryFilesManager {
    */
   public List<Integer> getBytesReservedForAncestry(Study study, Entity entity) {
     JSONObject metajson = readMetaJsonFile(getMetaJsonFile(study, entity, Operation.READ));
-    getMetaJsonFile(study, entity, Operation.READ);
     List<Integer> bytesReservedPerAncestors = new ArrayList<>();
     JSONArray ancestorBytesReserved = metajson.getJSONArray(META_KEY_BYTES_PER_ANCESTOR);
     for (int i = 0; i < ancestorBytesReserved.length(); i++) {

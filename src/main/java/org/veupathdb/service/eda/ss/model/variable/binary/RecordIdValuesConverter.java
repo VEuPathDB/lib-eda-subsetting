@@ -8,19 +8,19 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
-public class IdsMapConverter implements BinarySerializer<IdsMap>, BinaryDeserializer<IdsMap> {
+public class RecordIdValuesConverter implements BinarySerializer<RecordIdValues>, BinaryDeserializer<RecordIdValues> {
   private LongValueConverter idIndexConverter;
   private StringValueConverter idConverter;
   private List<StringValueConverter> ancestorConverters;
 
-  public IdsMapConverter(Entity entity, Map<String, Integer> bytesReservedByEntityId) {
+  public RecordIdValuesConverter(Entity entity, Map<String, Integer> bytesReservedByEntityId) {
     this(
         entity.getAncestorEntities().stream().map(e -> bytesReservedByEntityId.get(e.getId())).collect(Collectors.toList()),
         bytesReservedByEntityId.get(entity.getId())
     );
   }
 
-  public IdsMapConverter(List<Integer> bytesReservedPerAncestor, int bytesReservedForId) {
+  public RecordIdValuesConverter(List<Integer> bytesReservedPerAncestor, int bytesReservedForId) {
     this.idIndexConverter = new LongValueConverter();
     this.idConverter = new StringValueConverter(bytesReservedForId);
     this.ancestorConverters = bytesReservedPerAncestor.stream()
@@ -29,14 +29,14 @@ public class IdsMapConverter implements BinarySerializer<IdsMap>, BinaryDeserial
   }
 
   @Override
-  public byte[] toBytes(IdsMap idsMap) {
+  public byte[] toBytes(RecordIdValues recordIdValues) {
     final ByteBuffer byteBuffer = ByteBuffer.allocate(numBytes());
-    byteBuffer.putLong(idsMap.getIdIndex());
-    byteBuffer.put(idConverter.toBytes(idsMap.getEntityId()));
+    byteBuffer.putLong(recordIdValues.getIdIndex());
+    byteBuffer.put(idConverter.toBytes(recordIdValues.getEntityId()));
     for (int i = 0; i < ancestorConverters.size(); i++) {
       // Find string value converter that aligns with the ID that needs to be converted.
       // Each ancestor may be encoded with a different number of bytes.
-      final String ancestorId = idsMap.getAncestorIds().get(i);
+      final String ancestorId = recordIdValues.getAncestorIds().get(i);
       final StringValueConverter converter = ancestorConverters.get(i);
       byteBuffer.put(converter.toBytes(ancestorId));
     }
@@ -52,12 +52,12 @@ public class IdsMapConverter implements BinarySerializer<IdsMap>, BinaryDeserial
   }
 
   @Override
-  public IdsMap fromBytes(byte[] bytes) {
+  public RecordIdValues fromBytes(byte[] bytes) {
     return fromBytes(bytes, 0);
   }
 
   @Override
-  public IdsMap fromBytes(byte[] bytes, int offset) {
+  public RecordIdValues fromBytes(byte[] bytes, int offset) {
     Long idIndex = idIndexConverter.fromBytes(bytes, offset);
     offset += Long.BYTES;
     // Find the entityId converter corresponding with the primary entity.
@@ -68,11 +68,11 @@ public class IdsMapConverter implements BinarySerializer<IdsMap>, BinaryDeserial
       ancestors.add(ancestorConverter.fromBytes(bytes, offset));
       offset += ancestorConverter.numBytes();
     }
-    return new IdsMap(idIndex, entityId, ancestors);
+    return new RecordIdValues(idIndex, entityId, ancestors);
   }
 
   @Override
-  public IdsMap fromBytes(ByteBuffer bytes) {
+  public RecordIdValues fromBytes(ByteBuffer bytes) {
     return fromBytes(bytes.array());
   }
 

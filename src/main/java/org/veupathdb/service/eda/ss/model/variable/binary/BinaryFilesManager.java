@@ -33,9 +33,6 @@ public class BinaryFilesManager {
 
   static final String DONE_FILE_NAME = "DONE";
 
-  // 50 for max length of ID + 4 reserved to store the size.
-  public static int BYTES_RESERVED_FOR_ID = 40; // 54
-
   public enum Operation { READ, WRITE };
 
   private static final Logger LOG = LogManager.getLogger(BinaryFilesManager.class);
@@ -145,7 +142,6 @@ public class BinaryFilesManager {
    */
   public Integer getBytesReservedForEntity(Study study, Entity entity) {
     JSONObject metajson = readMetaJsonFile(getMetaJsonFile(study, entity, Operation.READ));
-    getMetaJsonFile(study, entity, Operation.READ);
     return metajson.getInt(META_KEY_BYTES_FOR_ID);
   }
 

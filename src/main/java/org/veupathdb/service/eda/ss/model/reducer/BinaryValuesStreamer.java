@@ -19,8 +19,6 @@ import java.util.List;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
-import static org.veupathdb.service.eda.ss.model.variable.binary.BinaryFilesManager.BYTES_RESERVED_FOR_ID;
-
 public class BinaryValuesStreamer {
   private static final LongValueConverter LONG_VALUE_CONVERTER = new LongValueConverter();
 
@@ -136,10 +134,7 @@ public class BinaryValuesStreamer {
    */
   public Iterator<VariableValueIdPair<List<String>>> streamIdMap(Entity entity, Study study) throws IOException {
     Path path = binaryFilesManager.getIdMapFile(study, entity, BinaryFilesManager.Operation.READ);
-    List<Integer> bytesReservedForAncestors = binaryFilesManager.getBytesReservedForAncestry(study, entity);
-    Integer bytesReservedForId = binaryFilesManager.getBytesReservedForEntity(study, entity);
-    IdsMapConverter converter = new IdsMapConverter(bytesReservedForAncestors, bytesReservedForId);
-
+    IdsMapConverter converter = constructIdsConverter(study, entity);
     return new FilteredValueIterator<>(path,
         x -> true, // Do not apply any filters.
         converter,
@@ -147,9 +142,7 @@ public class BinaryValuesStreamer {
   }
 
   public Iterator<Long> streamUnfilteredEntityIdIndexes(Study study, Entity entity) throws IOException {
-    List<Integer> bytesReservedForAncestors = binaryFilesManager.getBytesReservedForAncestry(study, entity);
-    Integer bytesReservedForId = binaryFilesManager.getBytesReservedForEntity(study, entity);
-    IdsMapConverter converter = new IdsMapConverter(bytesReservedForAncestors, bytesReservedForId);
+    IdsMapConverter converter = constructIdsConverter(study, entity);
     return new FilteredValueIterator<>(
         binaryFilesManager.getIdMapFile(study,
             entity,
@@ -157,5 +150,12 @@ public class BinaryValuesStreamer {
         x -> true,
         converter,
         VariableValueIdPair::getIdIndex);
+  }
+
+  private IdsMapConverter constructIdsConverter(Study study, Entity entity) {
+    List<Integer> bytesReservedForAncestors = binaryFilesManager.getBytesReservedForAncestry(study, entity);
+    Integer bytesReservedForId = binaryFilesManager.getBytesReservedForEntity(study, entity);
+    IdsMapConverter converter = new IdsMapConverter(bytesReservedForAncestors, bytesReservedForId);
+    return converter;
   }
 }

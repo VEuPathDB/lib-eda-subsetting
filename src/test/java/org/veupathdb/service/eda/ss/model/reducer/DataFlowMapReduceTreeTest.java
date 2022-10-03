@@ -10,6 +10,7 @@ import org.veupathdb.service.eda.ss.model.filter.NumberRangeFilter;
 import org.veupathdb.service.eda.ss.model.filter.StringSetFilter;
 import org.veupathdb.service.eda.ss.model.tabular.TabularReportConfig;
 import org.veupathdb.service.eda.ss.model.tabular.TabularResponses;
+import org.veupathdb.service.eda.ss.model.variable.binary.PathPattern;
 import org.veupathdb.service.eda.ss.testutil.IndiaICEMRStudy;
 
 import java.io.*;
@@ -47,7 +48,7 @@ public class DataFlowMapReduceTreeTest {
     final ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
     FilteredResultFactory.produceTabularSubsetFromFile(indiaICEMRStudy.getStudy(), indiaICEMRStudy.getHouseholdEntity(),
         List.of(indiaICEMRStudy.getPersonsInHousehold()), List.of(sampleRangeFilter, timeSinceLastMalariaFilter, personsInHouseholdFilter),
-        TabularResponses.Type.TABULAR.getFormatter(), new TabularReportConfig(), outputStream, binaryDirectory);
+        TabularResponses.Type.TABULAR.getFormatter(), new TabularReportConfig(), outputStream, binaryDirectory, List.of(new PathPattern("PATH:./")));
     MatcherAssert.assertThat(Arrays.stream(outputStream.toString().split("\n"))
         .collect(Collectors.toList()), Matchers.hasSize(1));
   }
@@ -62,7 +63,7 @@ public class DataFlowMapReduceTreeTest {
     final ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
     FilteredResultFactory.produceTabularSubsetFromFile(indiaICEMRStudy.getStudy(), indiaICEMRStudy.getParticipantEntity(),
         List.of(indiaICEMRStudy.getTimeSinceLastMalaria()), List.of(multiFilter),
-        TabularResponses.Type.TABULAR.getFormatter(), new TabularReportConfig(), outputStream, binaryDirectory);
+        TabularResponses.Type.TABULAR.getFormatter(), new TabularReportConfig(), outputStream, binaryDirectory, List.of(new PathPattern("PATH:.")));
   }
 
   @Test
@@ -76,7 +77,7 @@ public class DataFlowMapReduceTreeTest {
     final ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
     FilteredResultFactory.produceTabularSubsetFromFile(indiaICEMRStudy.getStudy(), indiaICEMRStudy.getParticipantEntity(),
         List.of(indiaICEMRStudy.getTimeSinceLastMalaria()), List.of(multiFilter),
-        TabularResponses.Type.TABULAR.getFormatter(), new TabularReportConfig(), outputStream, binaryDirectory);
+        TabularResponses.Type.TABULAR.getFormatter(), new TabularReportConfig(), outputStream, binaryDirectory, List.of(new PathPattern("PATH:.")));
   }
 
   @Test
@@ -87,7 +88,7 @@ public class DataFlowMapReduceTreeTest {
     final ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
     FilteredResultFactory.produceTabularSubsetFromFile(indiaICEMRStudy.getStudy(), indiaICEMRStudy.getParticipantEntity(),
         List.of(indiaICEMRStudy.getTimeSinceLastMalaria()), List.of(stringSetFilter),
-        TabularResponses.Type.TABULAR.getFormatter(), new TabularReportConfig(), outputStream, binaryDirectory);
+        TabularResponses.Type.TABULAR.getFormatter(), new TabularReportConfig(), outputStream, binaryDirectory, List.of(new PathPattern("PATH:.")));
   }
 
   @Test
@@ -109,7 +110,7 @@ public class DataFlowMapReduceTreeTest {
     final ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
     FilteredResultFactory.produceTabularSubsetFromFile(indiaICEMRStudy.getStudy(), indiaICEMRStudy.getParticipantEntity(),
         List.of(indiaICEMRStudy.getTimeSinceLastMalaria()), List.of(rangeFilter, rootRangeFilter),
-        TabularResponses.Type.TABULAR.getFormatter(), new TabularReportConfig(), outputStream, binaryDirectory);
+        TabularResponses.Type.TABULAR.getFormatter(), new TabularReportConfig(), outputStream, binaryDirectory, List.of(new PathPattern("PATH:.")));
     MatcherAssert.assertThat(Arrays.stream(outputStream.toString().split("\n"))
         .collect(Collectors.toList()), Matchers.hasSize(63));
   }
@@ -119,7 +120,7 @@ public class DataFlowMapReduceTreeTest {
     final ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
     FilteredResultFactory.produceTabularSubsetFromFile(indiaICEMRStudy.getStudy(), indiaICEMRStudy.getParticipantEntity(),
         List.of(indiaICEMRStudy.getTimeSinceLastMalaria()), List.of(),
-        TabularResponses.Type.TABULAR.getFormatter(), new TabularReportConfig(), outputStream, binaryDirectory);
+        TabularResponses.Type.TABULAR.getFormatter(), new TabularReportConfig(), outputStream, binaryDirectory, List.of(new PathPattern("PATH:.")));
     MatcherAssert.assertThat(Arrays.stream(outputStream.toString().split("\n"))
         .collect(Collectors.toList()), Matchers.hasSize(498));
   }

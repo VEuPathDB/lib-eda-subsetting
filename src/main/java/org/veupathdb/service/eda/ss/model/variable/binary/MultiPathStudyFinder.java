@@ -1,0 +1,63 @@
+package org.veupathdb.service.eda.ss.model.variable.binary;
+
+import java.nio.file.Path;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+
+/**
+ * Finds study files on a file system in accordance with paths configured to be available relative to the configured
+ * root directory.
+ */
+public class MultiPathStudyFinder implements StudyFinder {
+  private List<PathPattern> availablePaths;
+  private Path root;
+  private Map<String, Path> studyIdToLocationCache;
+
+  /**
+   * Constructs an instance of a MultiPathStudyFinder.
+   *
+   * @param availablePaths The list of paths relative to the root directory in which studies should be discovered.
+   *                       Since the root directory may contain data scoped outside the running instance of the
+   *                       service, this argument is used to restrict traversal of external data.
+   * @param root The root directory from which traversal of availablePaths should start.
+   */
+  public MultiPathStudyFinder(List<PathPattern> availablePaths, Path root) {
+    this.availablePaths = availablePaths;
+    this.root = root;
+    this.studyIdToLocationCache = new HashMap<>();
+  }
+
+  /**
+   * Find the path to the studyDir in accordance with configured available paths. The implementation sequentially
+   * searches each available path in the order specified in {@link MultiPathStudyFinder#availablePaths}.
+   *
+   * @param studyDir Name of study directory to search.
+   * @return Path of study directory if found.
+   */
+  @Override
+  public Path findStudyPath(String studyDir) {
+    Optional<Path> cachedStudyDir = lookupStudyDir(studyDir)
+        .filter(path -> path.toFile().exists());
+    if (cachedStudyDir.isPresent()) {
+      return cachedStudyDir.get();
+    }
+    for (PathPattern availablePath : availablePaths) {
+      Optional<Path> foundStudyPath = availablePath.findStudy(root.toString(), studyDir);
+      if (foundStudyPath.isPresent()) {
+        cacheStudyDir(studyDir, foundStudyPath.get());
+        return foundStudyPath.get();
+      }
+    }
+    throw new RuntimeException("Could not find study directory: " + studyDir + " in any of the specified paths " + availablePaths);
+  }
+
+  private Optional<Path> lookupStudyDir(String studyDir) {
+    return Optional.ofNullable(studyIdToLocationCache.get(studyDir));
+  }
+
+  private void cacheStudyDir(String studyDir, Path path) {
+    studyIdToLocationCache.put(studyDir, path);
+  }
+}

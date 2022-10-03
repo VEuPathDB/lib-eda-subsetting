@@ -22,8 +22,8 @@ public class BinaryValuesStreamer {
 
   private final BinaryFilesManager binaryFilesManager;
 
-  public BinaryValuesStreamer(Path entityRepositoryDir, List<PathPattern> availablePaths) {
-    this.binaryFilesManager = new BinaryFilesManager(new MultiPathStudyFinder(availablePaths, entityRepositoryDir));
+  public BinaryValuesStreamer(BinaryFilesManager binaryFilesManager) {
+    this.binaryFilesManager = binaryFilesManager;
   }
 
   /**

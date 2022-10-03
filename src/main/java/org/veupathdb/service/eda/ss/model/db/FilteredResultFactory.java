@@ -153,10 +153,10 @@ public class FilteredResultFactory {
                                                   OutputStream outputStream,
                                                   Path binaryFilesDir,
                                                   List<PathPattern> availablePaths) {
+    final BinaryFilesManager binaryFilesManager = new BinaryFilesManager(new MultiPathStudyFinder(availablePaths, binaryFilesDir));
     final DataFlowTreeFactory dataFlowTreeFactory = new DataFlowTreeFactory();
-    final BinaryValuesStreamer binaryValuesStreamer = new BinaryValuesStreamer(binaryFilesDir, availablePaths);
-    final EntityIdIndexIteratorConverter idIndexEntityConverter = new EntityIdIndexIteratorConverter(
-        new BinaryFilesManager(new MultiPathStudyFinder(availablePaths, binaryFilesDir)));
+    final BinaryValuesStreamer binaryValuesStreamer = new BinaryValuesStreamer(binaryFilesManager);
+    final EntityIdIndexIteratorConverter idIndexEntityConverter = new EntityIdIndexIteratorConverter(binaryFilesManager);
     final TreeNode<Entity> prunedEntityTree = pruneTree(study.getEntityTree(), filters, outputEntity);
     final TreeNode<DataFlowNodeContents> dataFlowTree = dataFlowTreeFactory.create(
         prunedEntityTree, outputEntity, filters, outputVariables, study);

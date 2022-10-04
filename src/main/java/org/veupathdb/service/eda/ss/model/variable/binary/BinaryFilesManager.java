@@ -18,7 +18,7 @@ import org.veupathdb.service.eda.ss.model.Study;
 import org.veupathdb.service.eda.ss.model.variable.Variable;
 
 public class BinaryFilesManager {
-  final Path _studiesDirectory;
+  final StudyFinder studyFinder;
 
   public static final String ANCESTORS_FILE_NAME = "ancestors";
   public static final String IDS_MAP_FILE_NAME = "ids_map";
@@ -52,7 +52,11 @@ public class BinaryFilesManager {
    */
 
   public BinaryFilesManager(Path studiesDirectory) {
-    _studiesDirectory = studiesDirectory;
+    this.studyFinder = new SimpleStudyFinder(studiesDirectory.toString());
+  }
+
+  public BinaryFilesManager(StudyFinder studyFinder) {
+    this.studyFinder = studyFinder;
   }
 
   public boolean studyHasFiles(Study study) {
@@ -69,9 +73,11 @@ public class BinaryFilesManager {
   }
 
   public Path getStudyDir(Study study, Operation op) {
-    if (op == Operation.READ) return getStudyDir(study);
+    if (op == Operation.READ) {
+      return getStudyDir(study);
+    }
     else {
-      Path studyDir = Path.of(_studiesDirectory.toString(), getStudyDirName(study));
+      Path studyDir = studyFinder.findStudyPath(getStudyDirName(study));
       createDir(studyDir);
       return studyDir;
     }
@@ -80,7 +86,7 @@ public class BinaryFilesManager {
   public Path getEntityDir(Study study, Entity entity, Operation op) {
     if (op == Operation.READ) return getEntityDir(study, entity);
     else {
-      Path entityDir = Path.of(_studiesDirectory.toString(), getStudyDir(study).getFileName().toString(), getEntityDirName(entity));
+      Path entityDir = Path.of(studyFinder.findStudyPath(getStudyDirName(study)).toString(), getEntityDirName(entity));
       createDir(entityDir);
       return entityDir;
     }
@@ -208,13 +214,16 @@ public class BinaryFilesManager {
   }
 
   private Path getEntityDir(Study study, Entity entity) {
-    Path entityDir = Path.of(_studiesDirectory.toString(), getStudyDirName(study), getEntityDirName(entity));
+    Path entityDir = Path.of(getStudyDir(study).toString(), getEntityDirName(entity));
     if (!Files.isDirectory(entityDir)) throw new RuntimeException("Entity directory '" + entityDir + "' does not exist");
     return entityDir;
   }
 
   private Path getStudyDir(Study study) {
-    Path studyDir = Path.of(_studiesDirectory.toString(), getStudyDirName(study));
+    if (studyFinder != null) {
+      return studyFinder.findStudyPath(getStudyDirName(study));
+    }
+    Path studyDir = studyFinder.findStudyPath(getStudyDirName(study));
     if (!Files.isDirectory(studyDir)) throw new RuntimeException("Study directory '" + studyDir + "' does not exist");
     return studyDir;
   }

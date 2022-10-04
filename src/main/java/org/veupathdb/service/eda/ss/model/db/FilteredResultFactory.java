@@ -45,6 +45,7 @@ import org.veupathdb.service.eda.ss.model.variable.VariableType;
 import org.veupathdb.service.eda.ss.model.variable.VariableValueIdPair;
 import org.veupathdb.service.eda.ss.model.variable.VariableWithValues;
 import org.veupathdb.service.eda.ss.model.variable.binary.BinaryFilesManager;
+import org.veupathdb.service.eda.ss.model.variable.binary.MultiPathStudyFinder;
 
 import static org.gusdb.fgputil.iterator.IteratorUtil.toIterable;
 import static org.veupathdb.service.eda.ss.model.db.DB.Tables.AttributeValue.Columns.DATE_VALUE_COL_NAME;
@@ -146,14 +147,15 @@ public class FilteredResultFactory {
    * @param filters         filters to apply to create a subset of records
    */
   public static void produceTabularSubsetFromFile(Study study, Entity outputEntity,
-                                           List<VariableWithValues> outputVariables, List<Filter> filters,
-                                           FormatterFactory formatter, TabularReportConfig reportConfig,
-                                           OutputStream outputStream,
-                                           Path binaryFilesDir) {
+                                                  List<VariableWithValues> outputVariables, List<Filter> filters,
+                                                  FormatterFactory formatter, TabularReportConfig reportConfig,
+                                                  OutputStream outputStream,
+                                                  Path binaryFilesDir,
+                                                  List<String> availablePaths) {
+    final BinaryFilesManager binaryFilesManager = new BinaryFilesManager(new MultiPathStudyFinder(availablePaths, binaryFilesDir));
     final DataFlowTreeFactory dataFlowTreeFactory = new DataFlowTreeFactory();
-    final BinaryValuesStreamer binaryValuesStreamer = new BinaryValuesStreamer(binaryFilesDir);
-    final EntityIdIndexIteratorConverter idIndexEntityConverter = new EntityIdIndexIteratorConverter(
-        new BinaryFilesManager(binaryFilesDir));
+    final BinaryValuesStreamer binaryValuesStreamer = new BinaryValuesStreamer(binaryFilesManager);
+    final EntityIdIndexIteratorConverter idIndexEntityConverter = new EntityIdIndexIteratorConverter(binaryFilesManager);
     final TreeNode<Entity> prunedEntityTree = pruneTree(study.getEntityTree(), filters, outputEntity);
     final TreeNode<DataFlowNodeContents> dataFlowTree = dataFlowTreeFactory.create(
         prunedEntityTree, outputEntity, filters, outputVariables, study);

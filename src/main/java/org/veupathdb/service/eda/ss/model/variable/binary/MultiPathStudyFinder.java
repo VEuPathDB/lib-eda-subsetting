@@ -1,5 +1,9 @@
 package org.veupathdb.service.eda.ss.model.variable.binary;
 
+import org.gusdb.fgputil.IoUtil;
+
+import java.io.IOException;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.HashMap;
 import java.util.List;
@@ -11,7 +15,7 @@ import java.util.Optional;
  * root directory.
  */
 public class MultiPathStudyFinder implements StudyFinder {
-  private List<PathPattern> availablePaths;
+  private List<String> availablePaths;
   private Path root;
   private Map<String, Path> studyIdToLocationCache;
 
@@ -23,7 +27,7 @@ public class MultiPathStudyFinder implements StudyFinder {
    *                       service, this argument is used to restrict traversal of external data.
    * @param root The root directory from which traversal of availablePaths should start.
    */
-  public MultiPathStudyFinder(List<PathPattern> availablePaths, Path root) {
+  public MultiPathStudyFinder(List<String> availablePaths, Path root) {
     this.availablePaths = availablePaths;
     this.root = root;
     this.studyIdToLocationCache = new HashMap<>();
@@ -43,8 +47,8 @@ public class MultiPathStudyFinder implements StudyFinder {
     if (cachedStudyDir.isPresent()) {
       return cachedStudyDir.get();
     }
-    for (PathPattern availablePath : availablePaths) {
-      Optional<Path> foundStudyPath = availablePath.findStudy(root.toString(), studyDir);
+    for (String availablePath : availablePaths) {
+      Optional<Path> foundStudyPath = tryFindStudyPath(studyDir, availablePath);
       if (foundStudyPath.isPresent()) {
         cacheStudyDir(studyDir, foundStudyPath.get());
         return foundStudyPath.get();
@@ -52,6 +56,19 @@ public class MultiPathStudyFinder implements StudyFinder {
     }
     throw new RuntimeException("Could not find study directory: " + studyDir + " in any of the specified paths " + availablePaths);
   }
+
+  private Optional<Path> tryFindStudyPath(String studyDir, String pattern) {
+    String absolutePattern = String.join("/", root.toString(), pattern, studyDir);
+    try {
+      List<Path> paths = IoUtil.findDirsFromAbsoluteDirWithWildcards(absolutePattern);
+      return paths.stream()
+          .filter(path -> Files.exists(path))
+          .findFirst();
+    } catch (IOException e) {
+      throw new RuntimeException(e);
+    }
+  }
+
 
   private Optional<Path> lookupStudyDir(String studyDir) {
     return Optional.ofNullable(studyIdToLocationCache.get(studyDir));

@@ -45,7 +45,6 @@ import org.veupathdb.service.eda.ss.model.variable.VariableType;
 import org.veupathdb.service.eda.ss.model.variable.VariableValueIdPair;
 import org.veupathdb.service.eda.ss.model.variable.VariableWithValues;
 import org.veupathdb.service.eda.ss.model.variable.binary.BinaryFilesManager;
-import org.veupathdb.service.eda.ss.model.variable.binary.PathPattern;
 import org.veupathdb.service.eda.ss.model.variable.binary.MultiPathStudyFinder;
 
 import static org.gusdb.fgputil.iterator.IteratorUtil.toIterable;
@@ -152,7 +151,7 @@ public class FilteredResultFactory {
                                                   FormatterFactory formatter, TabularReportConfig reportConfig,
                                                   OutputStream outputStream,
                                                   Path binaryFilesDir,
-                                                  List<PathPattern> availablePaths) {
+                                                  List<String> availablePaths) {
     final BinaryFilesManager binaryFilesManager = new BinaryFilesManager(new MultiPathStudyFinder(availablePaths, binaryFilesDir));
     final DataFlowTreeFactory dataFlowTreeFactory = new DataFlowTreeFactory();
     final BinaryValuesStreamer binaryValuesStreamer = new BinaryValuesStreamer(binaryFilesManager);

@@ -2,10 +2,7 @@ package org.veupathdb.service.eda.ss.model.reducer.ancestor;
 
 import org.veupathdb.service.eda.ss.model.Entity;
 import org.veupathdb.service.eda.ss.model.Study;
-import org.veupathdb.service.eda.ss.model.variable.binary.AncestorDeserializer;
-import org.veupathdb.service.eda.ss.model.variable.binary.BinaryFilesManager;
-import org.veupathdb.service.eda.ss.model.variable.binary.ListConverter;
-import org.veupathdb.service.eda.ss.model.variable.binary.LongValueConverter;
+import org.veupathdb.service.eda.ss.model.variable.binary.*;
 
 import java.io.IOException;
 import java.nio.file.Path;
@@ -35,7 +32,7 @@ public class EntityIdIndexIteratorConverter {
     if (from.getAncestorEntities().contains(to)) {
       // If "to" is an ancestor of "from", open "from"'s ancestor file.
       Path path = binaryFilesManager.getAncestorFile(study, from, BinaryFilesManager.Operation.READ);
-      final ListConverter<Long> listConverter = new ListConverter<>(LONG_VALUE_CONVERTER, from.getAncestorEntities().size() + 1);
+      final ArrayConverter<Long> listConverter = new ArrayConverter<>(LONG_VALUE_CONVERTER, from.getAncestorEntities().size() + 1, Long.class);
       final AncestorDeserializer ancestorDeserializer = new AncestorDeserializer(listConverter, from.getAncestorEntities().indexOf(to) + 1);
       try {
         return new DescendantCollapser(path, ancestorDeserializer, idStream);
@@ -45,7 +42,7 @@ public class EntityIdIndexIteratorConverter {
     } else if (to.getAncestorEntities().contains(from)) {
       // If "from" is an ancestor of "to", open "to"'s ancestor file.
       Path path = binaryFilesManager.getAncestorFile(study, to, BinaryFilesManager.Operation.READ);
-      final ListConverter<Long> listConverter = new ListConverter<>(LONG_VALUE_CONVERTER, to.getAncestorEntities().size() + 1);
+      final ArrayConverter<Long> listConverter = new ArrayConverter<>(LONG_VALUE_CONVERTER, to.getAncestorEntities().size() + 1, Long.class);
       final AncestorDeserializer ancestorDeserializer = new AncestorDeserializer(listConverter, to.getAncestorEntities().indexOf(from) + 1);
       try {
         return new AncestorExpander(path, ancestorDeserializer, idStream);

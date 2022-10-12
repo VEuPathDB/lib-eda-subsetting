@@ -4,6 +4,7 @@ import java.io.BufferedWriter;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -38,6 +39,7 @@ import org.veupathdb.service.eda.ss.model.tabular.TabularHeaderFormat;
 import org.veupathdb.service.eda.ss.model.tabular.TabularReportConfig;
 import org.veupathdb.service.eda.ss.model.db.DB.Tables.Ancestors;
 import org.veupathdb.service.eda.ss.model.filter.Filter;
+import org.veupathdb.service.eda.ss.model.tabular.TabularResponses;
 import org.veupathdb.service.eda.ss.model.tabular.TabularResponses.FormatterFactory;
 import org.veupathdb.service.eda.ss.model.tabular.TabularResponses.ResultConsumer;
 import org.veupathdb.service.eda.ss.model.variable.Variable;
@@ -148,7 +150,7 @@ public class FilteredResultFactory {
    */
   public static void produceTabularSubsetFromFile(Study study, Entity outputEntity,
                                                   List<VariableWithValues> outputVariables, List<Filter> filters,
-                                                  FormatterFactory formatter, TabularReportConfig reportConfig,
+                                                  TabularResponses.BinaryFormatterFactory formatter, TabularReportConfig reportConfig,
                                                   OutputStream outputStream,
                                                   Path binaryFilesDir,
                                                   List<String> availablePaths) {
@@ -168,9 +170,14 @@ public class FilteredResultFactory {
 
     final DataFlowTreeReducer driver = new DataFlowTreeReducer(idIndexEntityConverter, binaryValuesStreamer);
     try (BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(outputStream))) {
-      final ResultConsumer resultConsumer = formatter.getFormatter(writer);
+      final TabularResponses.BinaryResultConsumer resultConsumer = formatter.getFormatter(outputStream);
 
-      resultConsumer.consumeRow(usePrettyHeader ? getTabularPrettyHeaders(outputEntity, outputVariables) : outputColumns);
+      resultConsumer.consumeRow(usePrettyHeader ? getTabularPrettyHeaders(outputEntity, outputVariables).stream()
+          .map(s -> s.getBytes(StandardCharsets.UTF_8))
+          .toArray(byte[][]::new):
+          outputColumns.stream()
+          .map(s -> s.getBytes(StandardCharsets.UTF_8))
+          .toArray(byte[][]::new));
 
       // Retrieve stream of ID Indexes with all filters applied by traversing the map reduce data flow tree.
       final Iterator<Long> idIndexStream = driver.reduce(dataFlowTree);
@@ -185,7 +192,7 @@ public class FilteredResultFactory {
         outputVarStreams.add(valStream);
       }
 
-      final Iterator<VariableValueIdPair<List<String>>> idsMapStream = binaryValuesStreamer.streamIdMap(outputEntity, study);
+      final Iterator<VariableValueIdPair<List<byte[]>>> idsMapStream = binaryValuesStreamer.streamIdMap(outputEntity, study);
 
       final FormattedTabularRecordStreamer resultStreamer = new FormattedTabularRecordStreamer(
           outputVarStreams,

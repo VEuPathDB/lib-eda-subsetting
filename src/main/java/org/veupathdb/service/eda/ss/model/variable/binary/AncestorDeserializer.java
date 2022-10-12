@@ -10,7 +10,7 @@ import java.util.List;
  * ancestors. Rather than returning all ancestors, it only returns a single ancestor indicated by {@link AncestorDeserializer#ancestorColumn}
  */
 public class AncestorDeserializer implements BinaryDeserializer<VariableValueIdPair<Long>> {
-  private ListConverter<Long> listConverter;
+  private ArrayConverter<Long> listConverter;
   private int ancestorColumn;
 
   /**
@@ -20,7 +20,7 @@ public class AncestorDeserializer implements BinaryDeserializer<VariableValueIdP
    * @param listConverter Tuple serializer used to deserialize all ancestors.
    * @param ancestorColumn Column number (0-indexed) of ancestor to be returned.
    */
-  public AncestorDeserializer(ListConverter<Long> listConverter, int ancestorColumn) {
+  public AncestorDeserializer(ArrayConverter<Long> listConverter, int ancestorColumn) {
     if (ancestorColumn < 0 || ancestorColumn > listConverter.getSize()) {
       throw new IndexOutOfBoundsException("Ancestor column number " + ancestorColumn + " is out of bounds");
     }
@@ -30,21 +30,21 @@ public class AncestorDeserializer implements BinaryDeserializer<VariableValueIdP
 
   @Override
   public VariableValueIdPair<Long> fromBytes(byte[] bytes) {
-    List<Long> ancestors = listConverter.fromBytes(bytes);
-    return new VariableValueIdPair<>(ancestors.get(0), ancestors.get(ancestorColumn));
+    Long[] ancestors = listConverter.fromBytes(bytes);
+    return new VariableValueIdPair<>(ancestors[0], ancestors[ancestorColumn]);
   }
 
   @Override
   public VariableValueIdPair<Long> fromBytes(byte[] bytes, int offset) {
     ByteBuffer buf = ByteBuffer.wrap(bytes).position(offset);
-    List<Long> ancestors = listConverter.fromBytes(buf);
-    return new VariableValueIdPair<>(ancestors.get(0), ancestors.get(ancestorColumn));
+    Long[] ancestors = listConverter.fromBytes(buf);
+    return new VariableValueIdPair<>(ancestors[0], ancestors[ancestorColumn]);
   }
 
   @Override
   public VariableValueIdPair<Long> fromBytes(ByteBuffer buffer) {
-    List<Long> ancestors = listConverter.fromBytes(buffer);
-    return new VariableValueIdPair<>(ancestors.get(0), ancestors.get(ancestorColumn));
+    Long[] ancestors = listConverter.fromBytes(buffer);
+    return new VariableValueIdPair<>(ancestors[0], ancestors[ancestorColumn]);
   }
 
   @Override

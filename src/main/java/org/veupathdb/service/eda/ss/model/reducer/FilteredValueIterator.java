@@ -20,8 +20,7 @@ import java.util.function.Predicate;
  */
 public class FilteredValueIterator<V, T> implements AutoCloseable, Iterator<T> {
   private final Predicate<V> filterPredicate;
-  private final DualBufferBinaryRecordReader reader;
-  private final BinaryDeserializer<? extends VariableValueIdPair<V>> deserializer;
+  private final DualBufferBinaryRecordReader<VariableValueIdPair<V>> reader;
   private final Function<VariableValueIdPair<V>, T> pairExtractor;
   private T next;
   private boolean hasStarted;
@@ -41,13 +40,11 @@ public class FilteredValueIterator<V, T> implements AutoCloseable, Iterator<T> {
                                Predicate<V> filterPredicate,
                                BinaryDeserializer<? extends VariableValueIdPair<V>> deserializer,
                                Function<VariableValueIdPair<V>, T> pairExtractor) throws IOException {
-    final byte[] byteBuffer = new byte[deserializer.numBytes()];
     this.filterPredicate = filterPredicate;
-    this.reader = new DualBufferBinaryRecordReader(path,
+    this.reader = new DualBufferBinaryRecordReader<>(path,
         deserializer.numBytes(),
         1024,
-        () -> byteBuffer);
-    this.deserializer = deserializer;
+        byteBuf -> deserializer.fromBytes(byteBuf));
     this.pairExtractor = pairExtractor;
   }
 
@@ -75,12 +72,12 @@ public class FilteredValueIterator<V, T> implements AutoCloseable, Iterator<T> {
   private void nextMatch() {
     hasStarted = true;
     do {
-      Optional<byte[]> bytes = reader.next();
-      if (bytes.isEmpty()) {
+      Optional<VariableValueIdPair<V>> valuePairOpt = reader.next();
+      if (valuePairOpt.isEmpty()) {
         next = null;
         return;
       }
-      VariableValueIdPair<V> valuePair = deserializer.fromBytes(bytes.get());
+      VariableValueIdPair<V> valuePair = valuePairOpt.get();
       if (filterPredicate.test(valuePair.getValue())) {
         next = pairExtractor.apply(valuePair);
       } else {

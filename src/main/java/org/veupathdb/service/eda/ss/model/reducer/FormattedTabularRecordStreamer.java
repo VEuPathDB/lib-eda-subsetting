@@ -3,6 +3,8 @@ package org.veupathdb.service.eda.ss.model.reducer;
 import org.veupathdb.service.eda.ss.model.reducer.formatter.TabularValueFormatter;
 import org.veupathdb.service.eda.ss.model.variable.VariableValueIdPair;
 
+import java.nio.ByteBuffer;
+import java.nio.charset.StandardCharsets;
 import java.util.*;
 
 /**
@@ -12,10 +14,10 @@ import java.util.*;
  *
  * TODO Handle header lines.
  */
-public class FormattedTabularRecordStreamer implements Iterator<List<String>> {
+public class FormattedTabularRecordStreamer implements Iterator<byte[][]> {
   // These value streams need to have associated with them the variable
   private List<ValueStream<String>> valuePairStreams;
-  private Iterator<VariableValueIdPair<List<String>>> idMapStream;
+  private Iterator<VariableValueIdPair<List<byte[]>>> idMapStream;
   private Iterator<Long> idIndexStream;
   private Long currentIdIndex;
 
@@ -31,7 +33,7 @@ public class FormattedTabularRecordStreamer implements Iterator<List<String>> {
    */
   public FormattedTabularRecordStreamer(List<ValueStream<String>> valuePairStreams,
                                         Iterator<Long> idIndexStream,
-                                        Iterator<VariableValueIdPair<List<String>>> idMapStream) {
+                                        Iterator<VariableValueIdPair<List<byte[]>>> idMapStream) {
     this.valuePairStreams = valuePairStreams;
     this.idIndexStream = idIndexStream;
     if (idIndexStream.hasNext()) {
@@ -46,21 +48,26 @@ public class FormattedTabularRecordStreamer implements Iterator<List<String>> {
   }
 
   @Override
-  public List<String> next() {
+  public byte[][] next() {
     if (currentIdIndex == null) {
       throw new NoSuchElementException("No tabular records remain in stream.");
     }
-    List<String> record = new ArrayList<>();
-
-    VariableValueIdPair<List<String>> ids;
+    byte[][] rec;
+    int recIndex = 0;
+    VariableValueIdPair<List<byte[]>> ids;
     do {
       ids = idMapStream.next();
     } while (ids.getIdIndex() < currentIdIndex);
-    record.addAll(ids.getValue());
+    rec = new byte[valuePairStreams.size() + ids.getValue().size()][];
+    for (int i = 0; i < ids.getValue().size(); i++) {
+      ByteBuffer buf = ByteBuffer.wrap(ids.getValue().get(i));
+      int size = buf.getInt();
+      rec[recIndex++] = Arrays.copyOfRange(ids.getValue().get(i), Integer.BYTES, size + Integer.BYTES);
+    }
 
     for (ValueStream<String> valueStream: valuePairStreams) {
       if (valueStream.hasNext() && valueStream.peek().getIdIndex() > currentIdIndex) {
-        record.add("");
+        rec[recIndex++] = new byte[0];
         continue;
       }
       // Advance stream until it equals or exceeds the currentIdIndex.
@@ -68,9 +75,9 @@ public class FormattedTabularRecordStreamer implements Iterator<List<String>> {
         valueStream.next();
       }
       if (!valueStream.hasNext() || valueStream.peek().getIdIndex() != currentIdIndex) {
-        record.add("");
+        rec[recIndex++] = new byte[0];
       } else {
-        record.add(valueStream.valueFormatter.format(valueStream, currentIdIndex));
+        rec[recIndex++] = valueStream.valueFormatter.format(valueStream, currentIdIndex).getBytes(StandardCharsets.UTF_8);
       }
     }
     if (idIndexStream.hasNext()) {
@@ -78,7 +85,7 @@ public class FormattedTabularRecordStreamer implements Iterator<List<String>> {
     } else {
       currentIdIndex = null;
     }
-    return record;
+    return rec;
   }
 
   public static class ValueStream<T> implements Iterator<VariableValueIdPair<T>> {

@@ -1,5 +1,6 @@
 package org.veupathdb.service.eda.ss.model.variable.binary;
 
+import java.lang.reflect.Array;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.List;
@@ -8,13 +9,15 @@ import java.util.List;
  * Serializer for a list of items.
  * @param <T> Type stored in list to serialize.
  */
-public class ListConverter<T> implements BinaryConverter<List<T>> {
+public class ArrayConverter<T> implements BinaryConverter<T[]> {
   private BinaryConverter<T> converter;
   private int size;
+  private Class<T> clazz;
 
-  public ListConverter(BinaryConverter<T> converter, int size) {
+  public ArrayConverter(BinaryConverter<T> converter, int size, Class<T> clazz) {
     this.converter = converter;
     this.size = size;
+    this.clazz = clazz;
   }
 
   public int getSize() {
@@ -22,33 +25,35 @@ public class ListConverter<T> implements BinaryConverter<List<T>> {
   }
 
   @Override
-  public byte[] toBytes(List<T> items) {
-    if (items.size() != size) {
+  public byte[] toBytes(T[] items) {
+    if (items.length != size) {
       throw new IllegalArgumentException("Can only convert a fixed length list of size " + size);
     }
     final ByteBuffer buffer = ByteBuffer.allocate(size * converter.numBytes());
-    items.forEach(item -> buffer.put(converter.toBytes(item)));
+    for (T item: items) {
+      buffer.put(converter.toBytes(item));
+    }
     return buffer.array();
   }
 
   @Override
-  public List<T> fromBytes(byte[] bytes) {
+  public T[] fromBytes(byte[] bytes) {
     final ByteBuffer buffer = ByteBuffer.wrap(bytes);
     return fromBytes(buffer);
   }
 
   @Override
-  public List<T> fromBytes(byte[] bytes, int offset) {
+  public T[] fromBytes(byte[] bytes, int offset) {
     final ByteBuffer buffer = ByteBuffer.wrap(bytes);
     buffer.position(offset);
     return fromBytes(buffer);
   }
 
   @Override
-  public List<T> fromBytes(ByteBuffer buffer) {
-    final List<T> tuple = new ArrayList<>(size);
+  public T[] fromBytes(ByteBuffer buffer) {
+    final T[] tuple = (T[]) Array.newInstance(clazz, size);
     for (int i = 0; i < size; i++) {
-      tuple.add(converter.fromBytes(buffer));
+      tuple[i] = converter.fromBytes(buffer);
     }
     return tuple;
   }

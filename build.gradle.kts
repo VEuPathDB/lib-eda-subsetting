@@ -96,7 +96,7 @@ repositories {
     }
   }
 }
-val fgputil = "2.7.5-jakarta-SNAPSHOT" // FgpUtil version
+val fgputil = "2.8.0-jakarta" // FgpUtil version
 val log4j   = "2.17.2"        // Log4J version
 val junit   = "5.8.2"         // JUnit version
 

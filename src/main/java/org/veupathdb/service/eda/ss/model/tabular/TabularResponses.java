@@ -1,6 +1,5 @@
 package org.veupathdb.service.eda.ss.model.tabular;
 
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.Writer;
@@ -19,14 +18,14 @@ public class TabularResponses {
   private TabularResponses(){}
 
   public enum Type {
-    TABULAR(TABULAR_FORMATTER, MimeTypes.TEXT_TABULAR, TABULAR_BINARY_FORMATTER),
-    JSON(JSON_FORMATTER, MediaType.APPLICATION_JSON, TABULAR_BINARY_FORMATTER);
+    TABULAR(TABULAR_FORMATTER, TABULAR_BINARY_FORMATTER, MimeTypes.TEXT_TABULAR),
+    JSON(JSON_FORMATTER, JSON_BINARY_FORMATTER, MediaType.APPLICATION_JSON);
 
     private final FormatterFactory _formatter;
     private final BinaryFormatterFactory _binaryFormatter;
     private final String _mediaType;
 
-    Type(FormatterFactory formatter, String mediaType, BinaryFormatterFactory binaryFormatterFactory) {
+    Type(FormatterFactory formatter, BinaryFormatterFactory binaryFormatterFactory, String mediaType) {
       _formatter = formatter;
       _mediaType = mediaType;
       _binaryFormatter = binaryFormatterFactory;
@@ -135,5 +134,34 @@ public class TabularResponses {
       _writer.write(']');
     }
   };
+
+  private static final BinaryFormatterFactory JSON_BINARY_FORMATTER = outputStream -> new BinaryFormatter(outputStream) {
+    private boolean _firstWritten = false;
+    @Override
+    public void begin() throws IOException {
+      _outputStream.write('[');
+    }
+
+    @Override
+    public void consumeRow(byte[][] values) throws IOException {
+      if (_firstWritten) {
+        _outputStream.write(',');
+      }
+      else {
+        _firstWritten = true;
+      }
+      for (int i = 0; i < values.length; i++) {
+        if (i != 0) {
+          _outputStream.write(',');
+        }
+        _outputStream.write(values[i]);
+      }
+    }
+    @Override
+    public void end() throws IOException {
+      _outputStream.write(']');
+    }
+  };
+
 }
 

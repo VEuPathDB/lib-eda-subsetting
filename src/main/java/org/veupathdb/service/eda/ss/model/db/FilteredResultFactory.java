@@ -1,9 +1,6 @@
 package org.veupathdb.service.eda.ss.model.db;
 
-import java.io.BufferedWriter;
-import java.io.IOException;
-import java.io.OutputStream;
-import java.io.OutputStreamWriter;
+import java.io.*;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
 import java.sql.ResultSet;
@@ -169,8 +166,8 @@ public class FilteredResultFactory {
     List<String> outputColumns = getTabularOutputColumns(outputEntity, outputVariables);
 
     final DataFlowTreeReducer driver = new DataFlowTreeReducer(idIndexEntityConverter, binaryValuesStreamer);
-    try (BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(outputStream))) {
-      final TabularResponses.BinaryResultConsumer resultConsumer = formatter.getFormatter(outputStream);
+    try (BufferedOutputStream bufferedOutputStream = new BufferedOutputStream(outputStream)) {
+      final TabularResponses.BinaryResultConsumer resultConsumer = formatter.getFormatter(bufferedOutputStream);
 
       resultConsumer.consumeRow(usePrettyHeader ? getTabularPrettyHeaders(outputEntity, outputVariables).stream()
           .map(s -> s.getBytes(StandardCharsets.UTF_8))

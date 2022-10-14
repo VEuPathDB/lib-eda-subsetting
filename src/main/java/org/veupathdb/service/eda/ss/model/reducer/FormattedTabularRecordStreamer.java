@@ -11,8 +11,6 @@ import java.util.*;
  * Provides a stream of variable value records extracted from a stream of ID indexes and a collection of
  * ID index, variable value pairs. The resulting stream provides formatted tuples of strings containing entity IDs,
  * ancestor IDs and all associated variable values.
- *
- * TODO Handle header lines.
  */
 public class FormattedTabularRecordStreamer implements Iterator<byte[][]> {
   // These value streams need to have associated with them the variable

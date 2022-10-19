@@ -21,7 +21,7 @@ public class ByteArrayConverter implements BinaryConverter<byte[]> {
 
   @Override
   public byte[] fromBytes(ByteBuffer buffer) {
-    byte[] bytes = new byte[buffer.remaining()];
+    byte[] bytes = new byte[numBytes];
     buffer.get(bytes);
     return bytes;
   }

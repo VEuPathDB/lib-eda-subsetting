@@ -47,9 +47,7 @@ public class DataFlowMapReduceTreeTest {
     final ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
     FilteredResultFactory.produceTabularSubsetFromFile(indiaICEMRStudy.getStudy(), indiaICEMRStudy.getHouseholdEntity(),
         List.of(indiaICEMRStudy.getPersonsInHousehold()), List.of(sampleRangeFilter, timeSinceLastMalariaFilter, personsInHouseholdFilter),
-        TabularResponses.Type.TABULAR.getFormatter(), new TabularReportConfig(), outputStream, binaryDirectory, List.of("./"));
-    MatcherAssert.assertThat(Arrays.stream(outputStream.toString().split("\n"))
-        .collect(Collectors.toList()), Matchers.hasSize(1));
+        TabularResponses.Type.TABULAR.getBinaryFormatter(), new TabularReportConfig(), outputStream, binaryDirectory, List.of("./"));
   }
 
   @Test
@@ -62,7 +60,8 @@ public class DataFlowMapReduceTreeTest {
     final ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
     FilteredResultFactory.produceTabularSubsetFromFile(indiaICEMRStudy.getStudy(), indiaICEMRStudy.getParticipantEntity(),
         List.of(indiaICEMRStudy.getTimeSinceLastMalaria()), List.of(multiFilter),
-        TabularResponses.Type.TABULAR.getFormatter(), new TabularReportConfig(), outputStream, binaryDirectory, List.of("./"));
+        TabularResponses.Type.TABULAR.getBinaryFormatter(), new TabularReportConfig(), outputStream, binaryDirectory, List.of("./"));
+    System.out.println(outputStream);
   }
 
   @Test
@@ -76,7 +75,8 @@ public class DataFlowMapReduceTreeTest {
     final ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
     FilteredResultFactory.produceTabularSubsetFromFile(indiaICEMRStudy.getStudy(), indiaICEMRStudy.getParticipantEntity(),
         List.of(indiaICEMRStudy.getTimeSinceLastMalaria()), List.of(multiFilter),
-        TabularResponses.Type.TABULAR.getFormatter(), new TabularReportConfig(), outputStream, binaryDirectory, List.of("./"));
+        TabularResponses.Type.TABULAR.getBinaryFormatter(), new TabularReportConfig(), outputStream, binaryDirectory, List.of("./"));
+    System.out.println(outputStream);
   }
 
   @Test
@@ -87,7 +87,8 @@ public class DataFlowMapReduceTreeTest {
     final ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
     FilteredResultFactory.produceTabularSubsetFromFile(indiaICEMRStudy.getStudy(), indiaICEMRStudy.getParticipantEntity(),
         List.of(indiaICEMRStudy.getTimeSinceLastMalaria()), List.of(stringSetFilter),
-        TabularResponses.Type.TABULAR.getFormatter(), new TabularReportConfig(), outputStream, binaryDirectory, List.of("./"));
+        TabularResponses.Type.TABULAR.getBinaryFormatter(), new TabularReportConfig(), outputStream, binaryDirectory, List.of("./"));
+    System.out.println(outputStream);
   }
 
   @Test
@@ -109,7 +110,7 @@ public class DataFlowMapReduceTreeTest {
     final ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
     FilteredResultFactory.produceTabularSubsetFromFile(indiaICEMRStudy.getStudy(), indiaICEMRStudy.getParticipantEntity(),
         List.of(indiaICEMRStudy.getTimeSinceLastMalaria()), List.of(rangeFilter, rootRangeFilter),
-        TabularResponses.Type.TABULAR.getFormatter(), new TabularReportConfig(), outputStream, binaryDirectory, List.of("./"));
+        TabularResponses.Type.TABULAR.getBinaryFormatter(), new TabularReportConfig(), outputStream, binaryDirectory, List.of("./"));
     MatcherAssert.assertThat(Arrays.stream(outputStream.toString().split("\n"))
         .collect(Collectors.toList()), Matchers.hasSize(63));
   }
@@ -119,7 +120,7 @@ public class DataFlowMapReduceTreeTest {
     final ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
     FilteredResultFactory.produceTabularSubsetFromFile(indiaICEMRStudy.getStudy(), indiaICEMRStudy.getParticipantEntity(),
         List.of(indiaICEMRStudy.getTimeSinceLastMalaria()), List.of(),
-        TabularResponses.Type.TABULAR.getFormatter(), new TabularReportConfig(), outputStream, binaryDirectory, List.of("./"));
+        TabularResponses.Type.TABULAR.getBinaryFormatter(), new TabularReportConfig(), outputStream, binaryDirectory, List.of("./"));
     MatcherAssert.assertThat(Arrays.stream(outputStream.toString().split("\n"))
         .collect(Collectors.toList()), Matchers.hasSize(498));
   }

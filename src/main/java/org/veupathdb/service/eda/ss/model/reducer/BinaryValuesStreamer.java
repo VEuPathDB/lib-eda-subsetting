@@ -130,9 +130,9 @@ public class BinaryValuesStreamer {
    * @return A pair in which the left is the ID index and the right is a list of ordered string IDs.
    * @throws IOException if there is a failure to open the underlying file.
    */
-  public Iterator<VariableValueIdPair<List<String>>> streamIdMap(Entity entity, Study study) throws IOException {
+  public Iterator<VariableValueIdPair<List<byte[]>>> streamIdMap(Entity entity, Study study) throws IOException {
     Path path = binaryFilesManager.getIdMapFile(study, entity, BinaryFilesManager.Operation.READ);
-    RecordIdValuesConverter converter = constructIdsConverter(study, entity);
+    BinaryRecordIdValuesConverter converter = constructIdsConverter(study, entity);
     return new FilteredValueIterator<>(path,
         x -> true, // Do not apply any filters.
         converter,
@@ -140,7 +140,7 @@ public class BinaryValuesStreamer {
   }
 
   public Iterator<Long> streamUnfilteredEntityIdIndexes(Study study, Entity entity) throws IOException {
-    RecordIdValuesConverter converter = constructIdsConverter(study, entity);
+    BinaryRecordIdValuesConverter converter = constructIdsConverter(study, entity);
     return new FilteredValueIterator<>(
         binaryFilesManager.getIdMapFile(study,
             entity,
@@ -150,10 +150,10 @@ public class BinaryValuesStreamer {
         VariableValueIdPair::getIdIndex);
   }
 
-  private RecordIdValuesConverter constructIdsConverter(Study study, Entity entity) {
+  private BinaryRecordIdValuesConverter constructIdsConverter(Study study, Entity entity) {
     List<Integer> bytesReservedForAncestors = binaryFilesManager.getBytesReservedForAncestry(study, entity);
     Integer bytesReservedForId = binaryFilesManager.getBytesReservedForEntity(study, entity);
-    RecordIdValuesConverter converter = new RecordIdValuesConverter(bytesReservedForAncestors, bytesReservedForId);
+    BinaryRecordIdValuesConverter converter = new BinaryRecordIdValuesConverter(bytesReservedForAncestors, bytesReservedForId);
     return converter;
   }
 }

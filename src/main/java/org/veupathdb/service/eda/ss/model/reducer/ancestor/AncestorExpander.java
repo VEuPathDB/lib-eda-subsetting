@@ -67,6 +67,9 @@ public class AncestorExpander implements Iterator<Long> {
   private void initialize() {
     currentEntity = entityIdIndexStream.hasNext() ? entityIdIndexStream.next() : null;
     nextMatch();
+    if (currentEntity == null) {
+      currentDescendant = null;
+    }
     isInitialized = true;
   }
 

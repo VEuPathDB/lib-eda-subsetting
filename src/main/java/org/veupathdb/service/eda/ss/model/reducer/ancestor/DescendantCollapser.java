@@ -19,8 +19,8 @@ public class DescendantCollapser implements Iterator<Long> {
   private final Iterator<Long> currentEntityStream;
   private VariableValueIdPair<Long> currentAncestor;
   private Long currentEntity;
-  private Long lastAncestor;
-  private boolean hasStarted = false;
+  private boolean initialized = false;
+  private Long matchedAncestor;
 
   public DescendantCollapser(Path ancestorFilePath,
                              AncestorDeserializer deserializer,
@@ -40,41 +40,66 @@ public class DescendantCollapser implements Iterator<Long> {
 
   @Override
   public boolean hasNext() {
-    setCurrentIfNotStarted();
-    return this.currentAncestor != null && this.currentEntity != null;
+    if (!initialized) {
+      initialize();
+    }
+    return currentEntity != null && currentAncestor != null;
   }
 
   @Override
   public Long next() {
-    setCurrentIfNotStarted();
-    return nextMatch();
+    if (!initialized) {
+      initialize();
+    }
+    Long toReturn = matchedAncestor;
+    nextMatch(false);
+    return toReturn;
   }
 
-  private void setCurrentIfNotStarted() {
-    if (!hasStarted) {
-      currentAncestor = ancestorStream.hasNext() ? ancestorStream.next() : null;
-      currentEntity = currentEntityStream.hasNext() ?  currentEntityStream.next() : null;
-      hasStarted = true;
-    }
-  }
-
-  private Long nextMatch() {
-    // Continue until currentDescendant matches ancestor mapping's descendant, so we can return the parent.
-    // If the parent is the same as lastAncestor, we also want to continue since we've already returned the parent.
-    while (currentAncestor.getIdIndex() != currentEntity || Objects.equals(lastAncestor, currentAncestor.getValue())) {
-      if (currentAncestor.getIdIndex() > currentEntity) {
-        // Advance the input entity stream if ancestor is greater to catch up.
-        this.currentEntity = currentEntityStream.hasNext() ? currentEntityStream.next() : null;
-      } else {
-        // If ancestor is less than or equal to currentEntity, we advance it.
-        this.currentAncestor = ancestorStream.hasNext() ? ancestorStream.next() : null;
-      }
-      if (this.currentEntity == null || this.currentAncestor == null) {
-        return null;
-      }
-    }
-    lastAncestor = currentAncestor.getValue();
+  private void initialize() {
     currentEntity = currentEntityStream.hasNext() ? currentEntityStream.next() : null;
-    return lastAncestor;
+    currentAncestor = ancestorStream.hasNext() ? ancestorStream.next() : null;
+    if (currentEntity == null || currentAncestor == null) {
+      return;
+    }
+    // Indicate that this is the first match attempt
+    nextMatch(true);
+    initialized = true;
+  }
+
+  private void nextMatch(boolean firstMatch) {
+    if (!firstMatch) {
+      // If this is not our first match, advance the currentEntityStream by one element since the previous was already returned
+      if (currentEntityStream.hasNext()) {
+        currentEntity = currentEntityStream.next();
+      } else {
+        currentEntity = null;
+        return;
+      }
+    }
+    // Continue looping until we find an entity that matches the ancestor stream.
+    while (!currentEntity.equals(currentAncestor.getIdIndex()) || Objects.equals(matchedAncestor, currentAncestor.getValue())) {
+      // Check which is ahead, ancestor stream or entity stream and advance one accordingly.
+      if (currentEntity > currentAncestor.getIdIndex()) {
+        if (ancestorStream.hasNext()) {
+          currentAncestor = ancestorStream.next();
+        } else {
+          // Either stream ending indicates the end of output stream. No more matches will be found.
+          currentAncestor = null;
+          return;
+        }
+      } else {
+        if (currentEntityStream.hasNext()) {
+          currentEntity = currentEntityStream.next();
+        } else {
+          // Either stream ending indicates the end of output stream. No more matches will be found.
+          currentEntity = null;
+          return;
+        }
+      }
+    }
+    // Keep track of matched ancestor, as we only want to return the ancestor once even if multiple entities have the same
+    // ancestor in the entity stream.
+    matchedAncestor = currentAncestor.getValue();
   }
 }

@@ -128,6 +128,28 @@ public class AncestorExpanderTest {
 
   }
 
+  @Test
+  public void testEmptyEntityStream() {
+    List<VariableValueIdPair<Long>> descendantStream = List.of(
+        new VariableValueIdPair<>(1L, 1L),
+        new VariableValueIdPair<>(2L, 1L),
+        new VariableValueIdPair<>(3L, 2L),
+        new VariableValueIdPair<>(4L, 2L),
+        new VariableValueIdPair<>(5L, 3L),
+        new VariableValueIdPair<>(6L, 3L),
+        new VariableValueIdPair<>(7L, 3L),
+        new VariableValueIdPair<>(8L, 4L),
+        new VariableValueIdPair<>(9L, 4L),
+        new VariableValueIdPair<>(10L, 4L),
+        new VariableValueIdPair<>(11L, 5L),
+        new VariableValueIdPair<>(12L, 5L)
+    );
+    List<Long> entityStream = List.of();
+    Iterable<Long> outputStream = () -> constructExpander(descendantStream, entityStream);
+
+    MatcherAssert.assertThat(outputStream, Matchers.emptyIterable());
+  }
+
 
   private Iterator<Long> constructExpander(List<VariableValueIdPair<Long>> ancestorStream,
                                            List<Long> entityStream) {

@@ -1,5 +1,6 @@
 package org.veupathdb.service.eda.ss.model.reducer;
 
+import org.gusdb.fgputil.iterator.CloseableIterator;
 import org.hamcrest.MatcherAssert;
 import org.hamcrest.Matchers;
 import org.junit.jupiter.api.Assertions;
@@ -38,14 +39,16 @@ public class StreamIntersectMergerTest {
     @Test
     public void testOneStream() {
       final Iterator<Long> stream1 = new ArrayList<>(oneToOneHundred).iterator();
-      Assertions.assertThrows(IllegalArgumentException.class, () -> new StreamIntersectMerger(List.of(stream1)));
+      Assertions.assertThrows(IllegalArgumentException.class, () -> new StreamIntersectMerger(List.of(CloseableIterator.of(stream1))));
     }
 
     @Test
     public void testTwoEqualStreams() {
       final List<Long> stream1 = new ArrayList<>(oneToOneHundred);
       final List<Long> stream2 = new ArrayList<>(oneToOneHundred);
-      Iterable<Long> iterable = () -> new StreamIntersectMerger(List.of(stream1.iterator(), stream2.iterator()));
+      Iterable<Long> iterable = () -> new StreamIntersectMerger(List.of(
+          CloseableIterator.of(stream1.iterator()),
+          CloseableIterator.of(stream2.iterator())));
       MatcherAssert.assertThat(iterable, Matchers.iterableWithSize(100));
     }
 
@@ -53,7 +56,9 @@ public class StreamIntersectMergerTest {
     public void testTwoDistinctStreams() {
       final List<Long> stream1 = new ArrayList<>(evenNumbers);
       final List<Long> stream2 = new ArrayList<>(oddNumbers);
-      Iterable<Long> iterable = () -> new StreamIntersectMerger(List.of(stream1.iterator(), stream2.iterator()));
+      Iterable<Long> iterable = () -> new StreamIntersectMerger(List.of(
+          CloseableIterator.of(stream1.iterator()),
+          CloseableIterator.of(stream2.iterator())));
       MatcherAssert.assertThat(iterable, Matchers.emptyIterable());
     }
 
@@ -63,9 +68,9 @@ public class StreamIntersectMergerTest {
       final List<Long> stream2 = new ArrayList<>(threeFactors);
       final List<Long> stream3 = new ArrayList<>(fiveFactors);
       Iterable<Long> result = () -> new StreamIntersectMerger(List.of(
-          stream1.iterator(),
-          stream2.iterator(),
-          stream3.iterator()));
+          CloseableIterator.of(stream1.iterator()),
+          CloseableIterator.of(stream2.iterator()),
+          CloseableIterator.of(stream3.iterator())));
       // Common multiples of 2, 3, and 5 between 1 and 100 are 30, 60 and 90.
       MatcherAssert.assertThat(result, Matchers.contains(30L, 60L, 90L));
     }
@@ -76,9 +81,9 @@ public class StreamIntersectMergerTest {
       final List<Long> stream2 = new ArrayList<>(fiveFactors);
       final List<Long> stream3 = new ArrayList<>(threeFactors);
       Iterable<Long> result = () -> new StreamIntersectMerger(List.of(
-          stream1.iterator(),
-          stream2.iterator(),
-          stream3.iterator()));
+          CloseableIterator.of(stream1.iterator()),
+          CloseableIterator.of(stream2.iterator()),
+          CloseableIterator.of(stream3.iterator())));
       // Common multiples of 2, 3, and 5 between 1 and 100 are 30, 60 and 90.
       MatcherAssert.assertThat(result, Matchers.contains(15L, 30L, 45L, 60L, 75L, 90L));
     }
@@ -92,8 +97,8 @@ public class StreamIntersectMergerTest {
     @Test
     public void testDupes1() {
       Iterable<Long> result = () -> new StreamIntersectMerger(List.of(
-          stream1.iterator(),
-          stream2.iterator()));
+          CloseableIterator.of(stream1.iterator()),
+              CloseableIterator.of(stream2.iterator())));
       MatcherAssert.assertThat(result, Matchers.contains(1L, 2L, 4L, 8L));
     }
 
@@ -102,8 +107,8 @@ public class StreamIntersectMergerTest {
       final List<Long> s1 = List.of(1L, 2L, 3L, 4L, 5L, 10L);
       final List<Long> s2 = List.of(2L, 5L, 6L, 10L);
       Iterable<Long> result = () -> new StreamIntersectMerger(List.of(
-          s1.iterator(),
-          s2.iterator()));
+          CloseableIterator.of(s1.iterator()),
+              CloseableIterator.of(s2.iterator())));
       MatcherAssert.assertThat(result, Matchers.contains(2L, 5L, 10L));
     }
 
@@ -112,15 +117,15 @@ public class StreamIntersectMergerTest {
       final List<Long> s1 = List.of(1L, 2L, 3L, 4L, 5L, 9L, 10L);
       final List<Long> s2 = List.of(2L, 5L, 6L, 9L, 10L);
       Iterable<Long> result = () -> new StreamIntersectMerger(List.of(
-          s1.iterator(),
-          s2.iterator()));
+          CloseableIterator.of(s1.iterator()),
+          CloseableIterator.of(s2.iterator())));
       MatcherAssert.assertThat(result, Matchers.contains(2L, 5L, 9L, 10L));
     }
 
     @Test
     public void testDuplicatesSingleStream() {
       final List<Long> s1 = List.of(1L, 1L, 2L, 3L, 3L, 9L, 10L);
-      Assertions.assertThrows(IllegalArgumentException.class, () -> new StreamIntersectMerger(List.of(s1.iterator())));
+      Assertions.assertThrows(IllegalArgumentException.class, () -> new StreamIntersectMerger(List.of(CloseableIterator.of(s1.iterator()))));
     }
   }
 
@@ -134,15 +139,15 @@ public class StreamIntersectMergerTest {
 
     @Test
     public void testOnlyEmptyStream() {
-      Iterable<Long> result = () -> new StreamIntersectMerger(List.of(emptyStream.iterator()));
+      Iterable<Long> result = () -> new StreamIntersectMerger(List.of(CloseableIterator.of(emptyStream.iterator())));
       MatcherAssert.assertThat(result, Matchers.emptyIterable());
     }
 
     @Test
     public void testOneEmptyStream() {
       Iterable<Long> result = () -> new StreamIntersectMerger(List.of(
-          oneToOneHundred.iterator(),
-          emptyStream.iterator()));
+          CloseableIterator.of(oneToOneHundred.iterator()),
+          CloseableIterator.of(emptyStream.iterator())));
       MatcherAssert.assertThat(result, Matchers.emptyIterable());
     }
   }

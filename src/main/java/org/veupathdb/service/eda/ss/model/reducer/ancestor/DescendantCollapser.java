@@ -1,12 +1,12 @@
 package org.veupathdb.service.eda.ss.model.reducer.ancestor;
 
+import org.gusdb.fgputil.iterator.CloseableIterator;
 import org.veupathdb.service.eda.ss.model.reducer.FilteredValueIterator;
 import org.veupathdb.service.eda.ss.model.variable.VariableValueIdPair;
 import org.veupathdb.service.eda.ss.model.variable.binary.AncestorDeserializer;
 
 import java.io.IOException;
 import java.nio.file.Path;
-import java.util.Iterator;
 import java.util.Objects;
 import java.util.function.Function;
 
@@ -14,9 +14,9 @@ import java.util.function.Function;
  * Given a sorted stream of entities and a mapping of those entities to their ancestors, returns a stream of ancestors
  * where each ancestor entity return has at least one descendant in the stream of descendant entities.
  */
-public class DescendantCollapser implements Iterator<Long> {
-  private final Iterator<VariableValueIdPair<Long>> ancestorStream;
-  private final Iterator<Long> currentEntityStream;
+public class DescendantCollapser implements CloseableIterator<Long> {
+  private final CloseableIterator<VariableValueIdPair<Long>> ancestorStream;
+  private final CloseableIterator<Long> currentEntityStream;
   private VariableValueIdPair<Long> currentAncestor;
   private Long currentEntity;
   private boolean initialized = false;
@@ -24,7 +24,7 @@ public class DescendantCollapser implements Iterator<Long> {
 
   public DescendantCollapser(Path ancestorFilePath,
                              AncestorDeserializer deserializer,
-                             Iterator<Long> currentEntityStream) throws IOException {
+                             CloseableIterator<Long> currentEntityStream) throws IOException {
     this.ancestorStream = new FilteredValueIterator<>(ancestorFilePath,
         x -> true,
         deserializer,
@@ -32,8 +32,8 @@ public class DescendantCollapser implements Iterator<Long> {
     this.currentEntityStream = currentEntityStream;
   }
 
-  public DescendantCollapser(Iterator<VariableValueIdPair<Long>> ancestorStream,
-                             Iterator<Long> currentEntityStream) {
+  public DescendantCollapser(CloseableIterator<VariableValueIdPair<Long>> ancestorStream,
+                             CloseableIterator<Long> currentEntityStream) {
     this.ancestorStream = ancestorStream;
     this.currentEntityStream = currentEntityStream;
   }
@@ -101,5 +101,11 @@ public class DescendantCollapser implements Iterator<Long> {
     // Keep track of matched ancestor, as we only want to return the ancestor once even if multiple entities have the same
     // ancestor in the entity stream.
     matchedAncestor = currentAncestor.getValue();
+  }
+
+  @Override
+  public void close() throws Exception {
+    ancestorStream.close();
+    currentEntityStream.close();
   }
 }

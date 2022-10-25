@@ -23,6 +23,7 @@ import org.gusdb.fgputil.db.runner.SingleLongResultSetHandler;
 import org.gusdb.fgputil.db.stream.ResultSetIterator;
 import org.gusdb.fgputil.db.stream.ResultSets;
 import org.gusdb.fgputil.functional.TreeNode;
+import org.gusdb.fgputil.iterator.CloseableIterator;
 import org.gusdb.fgputil.iterator.GroupingIterator;
 import org.veupathdb.service.eda.ss.model.Entity;
 import org.veupathdb.service.eda.ss.model.Study;
@@ -177,7 +178,7 @@ public class FilteredResultFactory {
           .toArray(byte[][]::new));
 
       // Retrieve stream of ID Indexes with all filters applied by traversing the map reduce data flow tree.
-      final Iterator<Long> idIndexStream = driver.reduce(dataFlowTree);
+      final CloseableIterator<Long> idIndexStream = driver.reduce(dataFlowTree);
 
       // Open streams of output variables and ancestors identifiers used to decorate ID index stream to produce tabular records.
       List<FormattedTabularRecordStreamer.ValueStream<String>> outputVarStreams = new ArrayList<>();
@@ -189,15 +190,19 @@ public class FilteredResultFactory {
         outputVarStreams.add(valStream);
       }
 
-      final Iterator<VariableValueIdPair<List<byte[]>>> idsMapStream = binaryValuesStreamer.streamIdMap(outputEntity, study);
+      final CloseableIterator<VariableValueIdPair<List<byte[]>>> idsMapStream = binaryValuesStreamer.streamIdMap(outputEntity, study);
 
-      final FormattedTabularRecordStreamer resultStreamer = new FormattedTabularRecordStreamer(
+
+      try (final FormattedTabularRecordStreamer resultStreamer = new FormattedTabularRecordStreamer(
           outputVarStreams,
           idIndexStream,
           idsMapStream
-      );
-      while (resultStreamer.hasNext()) {
-        resultConsumer.consumeRow(resultStreamer.next());
+      )) {
+        while (resultStreamer.hasNext()) {
+          resultConsumer.consumeRow(resultStreamer.next());
+        }
+      } catch (Exception e) {
+        throw new RuntimeException("Failed to write result", e);
       }
     } catch (IOException e) {
       throw new RuntimeException("Failed to write result", e);

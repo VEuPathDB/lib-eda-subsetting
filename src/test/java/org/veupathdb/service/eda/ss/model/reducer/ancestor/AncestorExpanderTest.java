@@ -1,5 +1,6 @@
 package org.veupathdb.service.eda.ss.model.reducer.ancestor;
 
+import org.gusdb.fgputil.iterator.CloseableIterator;
 import org.hamcrest.MatcherAssert;
 import org.hamcrest.Matchers;
 import org.junit.jupiter.api.Test;
@@ -151,9 +152,9 @@ public class AncestorExpanderTest {
   }
 
 
-  private Iterator<Long> constructExpander(List<VariableValueIdPair<Long>> ancestorStream,
-                                           List<Long> entityStream) {
-    return new AncestorExpander(ancestorStream.iterator(), entityStream.iterator());
+  private CloseableIterator<Long> constructExpander(List<VariableValueIdPair<Long>> ancestorStream,
+                                                    List<Long> entityStream) {
+    return new AncestorExpander(CloseableIterator.of(ancestorStream.iterator()), CloseableIterator.of(entityStream.iterator()));
   }
 
 }

@@ -7,6 +7,7 @@ import java.util.List;
 
 import static org.gusdb.fgputil.FormatUtil.NL;
 
+import org.gusdb.fgputil.iterator.CloseableIterator;
 import org.veupathdb.service.eda.ss.model.Entity;
 import org.veupathdb.service.eda.ss.model.Study;
 import org.veupathdb.service.eda.ss.model.reducer.BinaryValuesStreamer;
@@ -56,7 +57,7 @@ public class MultiFilter extends Filter {
   }
 
   @Override
-  public Iterator<Long> streamFilteredIds(BinaryValuesStreamer binaryValuesStreamer, Study study) {
+  public CloseableIterator<Long> streamFilteredIds(BinaryValuesStreamer binaryValuesStreamer, Study study) {
     try {
       return binaryValuesStreamer.streamMultiFilteredEntityIdIndexes(this, study);
     } catch (IOException e) {

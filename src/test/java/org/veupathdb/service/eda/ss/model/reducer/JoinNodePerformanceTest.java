@@ -1,5 +1,6 @@
 package org.veupathdb.service.eda.ss.model.reducer;
 
+import org.gusdb.fgputil.iterator.CloseableIterator;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Tag;
@@ -52,13 +53,13 @@ public class JoinNodePerformanceTest {
 
   @Test
   public void run() throws Exception {
-    List<Iterator<Long>> filteredValueFiles = new ArrayList<>();
+    List<CloseableIterator<Long>> filteredValueFiles = new ArrayList<>();
     final ValueWithIdDeserializer<Long> serializer = new ValueWithIdDeserializer(new LongValueConverter());
     for (Path path : files) {
       filteredValueFiles.add(
           new FilteredValueIterator<>(path, i -> true, serializer, VariableValueIdPair::getIdIndex));
     }
-    Iterator<Long> merger = new StreamIntersectMerger(filteredValueFiles);
+    CloseableIterator<Long> merger = new StreamIntersectMerger(filteredValueFiles);
     Instant start = Instant.now();
     while (merger.hasNext()) {
       merger.next();

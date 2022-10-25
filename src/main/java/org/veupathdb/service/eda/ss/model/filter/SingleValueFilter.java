@@ -1,5 +1,6 @@
 package org.veupathdb.service.eda.ss.model.filter;
 
+import org.gusdb.fgputil.iterator.CloseableIterator;
 import org.veupathdb.service.eda.ss.model.Entity;
 import org.veupathdb.service.eda.ss.model.Study;
 import org.veupathdb.service.eda.ss.model.reducer.BinaryValuesStreamer;
@@ -38,7 +39,7 @@ public abstract class SingleValueFilter<U, T extends VariableWithValues<U>> exte
   }
 
   @Override
-  public Iterator<Long> streamFilteredIds(BinaryValuesStreamer binaryValuesStreamer, Study study) {
+  public CloseableIterator<Long> streamFilteredIds(BinaryValuesStreamer binaryValuesStreamer, Study study) {
     try {
       return binaryValuesStreamer.streamFilteredEntityIdIndexes(this, study);
     } catch (IOException e) {

@@ -1,5 +1,6 @@
 package org.veupathdb.service.eda.ss.model.reducer.ancestor;
 
+import org.gusdb.fgputil.iterator.CloseableIterator;
 import org.veupathdb.service.eda.ss.model.reducer.FilteredValueIterator;
 import org.veupathdb.service.eda.ss.model.variable.VariableValueIdPair;
 import org.veupathdb.service.eda.ss.model.variable.binary.AncestorDeserializer;
@@ -16,16 +17,16 @@ import java.util.function.Function;
  * to the stream of ancestor entities. This effectively takes the stream of entities and "expands" it,
  * returning a stream with all IDs for at one level of descendence.
  */
-public class AncestorExpander implements Iterator<Long> {
-  private final Iterator<VariableValueIdPair<Long>> descendantStream;
-  private final Iterator<Long> entityIdIndexStream;
+public class AncestorExpander implements CloseableIterator<Long> {
+  private final CloseableIterator<VariableValueIdPair<Long>> descendantStream;
+  private final CloseableIterator<Long> entityIdIndexStream;
   private VariableValueIdPair<Long> currentDescendant;
   private Long currentEntity;
   private boolean isInitialized = false;
 
   public AncestorExpander(Path descendantsFilePath,
                           AncestorDeserializer deserializer,
-                          Iterator<Long> entityIdIndexStream) throws IOException {
+                          CloseableIterator<Long> entityIdIndexStream) throws IOException {
     this(new FilteredValueIterator(descendantsFilePath,
         x -> true,
         deserializer,
@@ -33,8 +34,8 @@ public class AncestorExpander implements Iterator<Long> {
   }
 
   // Visible for testing
-  AncestorExpander(Iterator<VariableValueIdPair<Long>> descendantStream,
-                   Iterator<Long> entityIdIndexStream) {
+  AncestorExpander(CloseableIterator<VariableValueIdPair<Long>> descendantStream,
+                   CloseableIterator<Long> entityIdIndexStream) {
     this.descendantStream = descendantStream;
     this.entityIdIndexStream = entityIdIndexStream;
   }
@@ -109,5 +110,11 @@ public class AncestorExpander implements Iterator<Long> {
         }
       }
     }
+  }
+
+  @Override
+  public void close() throws Exception {
+    descendantStream.close();
+    entityIdIndexStream.close();
   }
 }

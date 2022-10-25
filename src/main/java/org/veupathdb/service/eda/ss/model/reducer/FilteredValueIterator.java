@@ -1,6 +1,7 @@
 package org.veupathdb.service.eda.ss.model.reducer;
 
 import org.gusdb.fgputil.DualBufferBinaryRecordReader;
+import org.gusdb.fgputil.iterator.CloseableIterator;
 import org.veupathdb.service.eda.ss.model.variable.VariableValueIdPair;
 import org.veupathdb.service.eda.ss.model.variable.binary.BinaryDeserializer;
 
@@ -18,7 +19,7 @@ import java.util.function.Predicate;
  * Outputs the ID indexes while applying a filter to the variable values.
  * @param <V> type of the value returned by the iterator
  */
-public class FilteredValueIterator<V, T> implements AutoCloseable, Iterator<T> {
+public class FilteredValueIterator<V, T> implements CloseableIterator<T> {
   private final Predicate<V> filterPredicate;
   private final DualBufferBinaryRecordReader<VariableValueIdPair<V>> reader;
   private final Function<VariableValueIdPair<V>, T> pairExtractor;

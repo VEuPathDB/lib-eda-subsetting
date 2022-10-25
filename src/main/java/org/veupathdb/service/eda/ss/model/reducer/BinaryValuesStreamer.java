@@ -1,6 +1,7 @@
 package org.veupathdb.service.eda.ss.model.reducer;
 
 import org.gusdb.fgputil.functional.Functions;
+import org.gusdb.fgputil.iterator.CloseableIterator;
 import org.veupathdb.service.eda.ss.model.Entity;
 import org.veupathdb.service.eda.ss.model.Study;
 import org.veupathdb.service.eda.ss.model.filter.MultiFilter;
@@ -56,9 +57,9 @@ public class BinaryValuesStreamer {
    * @return
    * @throws IOException
    */
-  public Iterator<Long> streamMultiFilteredEntityIdIndexes(
+  public CloseableIterator<Long> streamMultiFilteredEntityIdIndexes(
       MultiFilter filter, Study study) throws IOException {
-    List<Iterator<Long>> idStreams = filter.getSubFilters().stream()
+    List<CloseableIterator<Long>> idStreams = filter.getSubFilters().stream()
         .map(Functions.fSwallow(subFilter -> streamFilteredEntityIdIndexes(filter.getFilter(subFilter), study)))
         .collect(Collectors.toList());
     if (idStreams.size() == 1) {
@@ -109,7 +110,7 @@ public class BinaryValuesStreamer {
    * @return Stream of ancestor IDs.
    * @throws IOException
    */
-  public Iterator<VariableValueIdPair<List<Long>>> streamAncestorIds(Entity descendant,
+  public CloseableIterator<VariableValueIdPair<List<Long>>> streamAncestorIds(Entity descendant,
                                                                      Study study) throws IOException {
     Path path = binaryFilesManager.getAncestorFile(study, descendant, BinaryFilesManager.Operation.READ);
     final ListConverter<Long> listConverter = new ListConverter<>(LONG_VALUE_CONVERTER, descendant.getAncestorEntities().size());
@@ -130,7 +131,7 @@ public class BinaryValuesStreamer {
    * @return A pair in which the left is the ID index and the right is a list of ordered string IDs.
    * @throws IOException if there is a failure to open the underlying file.
    */
-  public Iterator<VariableValueIdPair<List<byte[]>>> streamIdMap(Entity entity, Study study) throws IOException {
+  public CloseableIterator<VariableValueIdPair<List<byte[]>>> streamIdMap(Entity entity, Study study) throws IOException {
     Path path = binaryFilesManager.getIdMapFile(study, entity, BinaryFilesManager.Operation.READ);
     BinaryRecordIdValuesConverter converter = constructIdsConverter(study, entity);
     return new FilteredValueIterator<>(path,
@@ -139,7 +140,7 @@ public class BinaryValuesStreamer {
         Function.identity());
   }
 
-  public Iterator<Long> streamUnfilteredEntityIdIndexes(Study study, Entity entity) throws IOException {
+  public CloseableIterator<Long> streamUnfilteredEntityIdIndexes(Study study, Entity entity) throws IOException {
     BinaryRecordIdValuesConverter converter = constructIdsConverter(study, entity);
     return new FilteredValueIterator<>(
         binaryFilesManager.getIdMapFile(study,

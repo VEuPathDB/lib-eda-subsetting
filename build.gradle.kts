@@ -7,7 +7,7 @@
 
 // Project settings
 group   = "org.veupathdb.eda"
-version = "3.3.0"
+version = "3.3.1"
 
 plugins {
   `java-library`
@@ -96,7 +96,7 @@ repositories {
     }
   }
 }
-val fgputil = "2.8.0-jakarta" // FgpUtil version
+val fgputil = "2.8.1-jakarta" // FgpUtil version
 val log4j   = "2.17.2"        // Log4J version
 val junit   = "5.8.2"         // JUnit version
 

@@ -1,5 +1,6 @@
 package org.veupathdb.service.eda.ss.model.reducer;
 
+import org.gusdb.fgputil.iterator.CloseableIterator;
 import org.veupathdb.service.eda.ss.model.reducer.formatter.TabularValueFormatter;
 import org.veupathdb.service.eda.ss.model.variable.VariableValueIdPair;
 
@@ -12,11 +13,11 @@ import java.util.*;
  * ID index, variable value pairs. The resulting stream provides formatted tuples of strings containing entity IDs,
  * ancestor IDs and all associated variable values.
  */
-public class FormattedTabularRecordStreamer implements Iterator<byte[][]> {
+public class FormattedTabularRecordStreamer implements CloseableIterator<byte[][]> {
   // These value streams need to have associated with them the variable
   private List<ValueStream<String>> valuePairStreams;
-  private Iterator<VariableValueIdPair<List<byte[]>>> idMapStream;
-  private Iterator<Long> idIndexStream;
+  private CloseableIterator<VariableValueIdPair<List<byte[]>>> idMapStream;
+  private CloseableIterator<Long> idIndexStream;
   private Long currentIdIndex;
 
   /**
@@ -30,8 +31,8 @@ public class FormattedTabularRecordStreamer implements Iterator<byte[][]> {
    * @param idMapStream
    */
   public FormattedTabularRecordStreamer(List<ValueStream<String>> valuePairStreams,
-                                        Iterator<Long> idIndexStream,
-                                        Iterator<VariableValueIdPair<List<byte[]>>> idMapStream) {
+                                        CloseableIterator<Long> idIndexStream,
+                                        CloseableIterator<VariableValueIdPair<List<byte[]>>> idMapStream) {
     this.valuePairStreams = valuePairStreams;
     this.idIndexStream = idIndexStream;
     if (idIndexStream.hasNext()) {
@@ -84,6 +85,12 @@ public class FormattedTabularRecordStreamer implements Iterator<byte[][]> {
       currentIdIndex = null;
     }
     return rec;
+  }
+
+  @Override
+  public void close() throws Exception {
+    idMapStream.close();
+    idIndexStream.close();
   }
 
   public static class ValueStream<T> implements Iterator<VariableValueIdPair<T>> {

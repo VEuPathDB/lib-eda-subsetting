@@ -1,5 +1,6 @@
 package org.veupathdb.service.eda.ss.model.reducer.ancestor;
 
+import org.gusdb.fgputil.iterator.CloseableIterator;
 import org.hamcrest.MatcherAssert;
 import org.hamcrest.Matchers;
 import org.junit.jupiter.api.Test;
@@ -120,6 +121,7 @@ public class DescendantCollapserTest {
 
   private Iterator<Long> constructCollapser(List<VariableValueIdPair<Long>> ancestorStream,
                                             List<Long> entityStream) {
-    return new DescendantCollapser(ancestorStream.iterator(), entityStream.iterator());
+    return new DescendantCollapser(CloseableIterator.of(ancestorStream.iterator()),
+        CloseableIterator.of(entityStream.iterator()));
   }
 }

@@ -1,5 +1,10 @@
 package org.veupathdb.service.eda.ss.model.reducer;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+import org.gusdb.fgputil.iterator.CloseableIterator;
+import org.veupathdb.service.eda.ss.model.Entity;
+
 import java.util.*;
 
 /**
@@ -9,15 +14,19 @@ import java.util.*;
  * This is done by maintaining a min heap containing the next element from each input iterator. After removing an
  * element from the heap, we add the next element from that stream.
  */
-public class StreamUnionMerger implements Iterator<Long> {
+public class StreamUnionMerger implements CloseableIterator<Long> {
+  private static final Logger LOG = LogManager.getLogger(StreamUnionMerger.class);
+
   // A possible optimization is to use a slimmed-down min-heap as opposed to a PriorityQueue (implemented as a heap).
   private PriorityQueue<HeapElement> minHeap;
+  private List<CloseableIterator<Long>> streams;
   private long lastIdIndex;
   private boolean first;
   private Long next;
 
-  public StreamUnionMerger(List<Iterator<Long>> streams) {
+  public StreamUnionMerger(List<CloseableIterator<Long>> streams) {
     this.minHeap = new PriorityQueue<>(streams.size(), Comparator.comparing(element -> element.idIndex));
+    this.streams = streams;
     // Add the first element from each stream to the min heap
     streams.forEach(stream -> {
       if (stream.hasNext()) {
@@ -72,6 +81,17 @@ public class StreamUnionMerger implements Iterator<Long> {
     // Set the lastIdIndex variable to allow us to omit duplicates on subsequent invocations of next().
     lastIdIndex = nextElement.idIndex;
     next = nextElement.idIndex;
+  }
+
+  @Override
+  public void close() throws Exception {
+    streams.forEach(stream -> {
+      try {
+        stream.close();
+      } catch (Exception e) {
+        LOG.warn("Failed to close stream.", e);
+      }
+    });
   }
 
   private static class HeapElement {

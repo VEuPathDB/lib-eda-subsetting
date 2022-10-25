@@ -4,6 +4,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.gusdb.fgputil.functional.Functions;
 import org.gusdb.fgputil.functional.TreeNode;
+import org.gusdb.fgputil.iterator.CloseableIterator;
 import org.veupathdb.service.eda.ss.model.reducer.ancestor.EntityIdIndexIteratorConverter;
 
 import java.io.IOException;
@@ -27,8 +28,8 @@ public class DataFlowTreeReducer {
     this.binaryValuesStreamer = binaryValuesStreamer;
   }
 
-  public Iterator<Long> reduce(TreeNode<DataFlowNodeContents> root) {
-    final List<Iterator<Long>> allStreams = new ArrayList<>();
+  public CloseableIterator<Long> reduce(TreeNode<DataFlowNodeContents> root) {
+    final List<CloseableIterator<Long>> allStreams = new ArrayList<>();
     DataFlowNodeContents contents = root.getContents();
 
     // Recursively call reduce() on children, converting the child's entity ID indexes to this entity's.

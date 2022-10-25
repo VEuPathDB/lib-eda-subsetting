@@ -1,5 +1,9 @@
 package org.veupathdb.service.eda.ss.model.reducer;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+import org.gusdb.fgputil.iterator.CloseableIterator;
+
 import java.util.*;
 
 
@@ -8,7 +12,9 @@ import java.util.*;
  * stream of output longs, each of which are present in ALL input streams. This behavior is only well defined if
  * all input streams are sorted.
  */
-public class StreamIntersectMerger implements Iterator<Long> {
+public class StreamIntersectMerger implements CloseableIterator<Long> {
+  private static final Logger LOG = LogManager.getLogger(StreamIntersectMerger.class);
+
   private final PeekableIterator[] peekableIdIndexStreams;
   private Long nextOutputIndex;
   private PeekableIterator currentIdIndexStream;
@@ -18,7 +24,7 @@ public class StreamIntersectMerger implements Iterator<Long> {
   /**
    * @param sortedStreams Collection of sorted streams to merge by intersection.
    */
-  public StreamIntersectMerger(List<Iterator<Long>> sortedStreams) {
+  public StreamIntersectMerger(List<CloseableIterator<Long>> sortedStreams) {
     // If no input streams are provided, it should act as an "empty" Iterator.
     // If any input stream is "empty", should act as an "empty" Iterator since we are intersecting Iterators.
     if (sortedStreams.isEmpty() || !sortedStreams.stream().allMatch(Iterator::hasNext)) {
@@ -109,6 +115,20 @@ public class StreamIntersectMerger implements Iterator<Long> {
     nextOutputIndex = candidateIdIndex;
   }
 
+  @Override
+  public void close() throws Exception {
+    if (peekableIdIndexStreams != null) {
+      Arrays.stream(peekableIdIndexStreams)
+          .forEach(stream -> {
+            try {
+              stream.close();
+            } catch (Exception e) {
+              LOG.warn("Unable to close stream.", e);
+            }
+          });
+    }
+  }
+
   /**
   /**
    * Utility class which stores a linked list of PeekableIterators. The elements are linked in a ring-like structure
@@ -154,11 +174,11 @@ public class StreamIntersectMerger implements Iterator<Long> {
   /**
    * An iterator whose next element can be previewed without consuming it from the iterator.
    */
-  protected static class PeekableIterator implements Iterator<Long> {
+  protected static class PeekableIterator implements CloseableIterator<Long> {
     private Long next;
-    private final Iterator<Long> stream;
+    private final CloseableIterator<Long> stream;
 
-    public PeekableIterator(Iterator<Long> stream) {
+    public PeekableIterator(CloseableIterator<Long> stream) {
       this.stream = stream;
       if (stream.hasNext()) {
         this.next = stream.next();
@@ -224,6 +244,11 @@ public class StreamIntersectMerger implements Iterator<Long> {
         }
         return curr;
       }
+    }
+
+    @Override
+    public void close() throws Exception {
+      stream.close();
     }
   }
 }

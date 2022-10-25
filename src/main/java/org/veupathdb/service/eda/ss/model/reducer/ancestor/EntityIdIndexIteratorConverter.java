@@ -1,5 +1,6 @@
 package org.veupathdb.service.eda.ss.model.reducer.ancestor;
 
+import org.gusdb.fgputil.iterator.CloseableIterator;
 import org.veupathdb.service.eda.ss.model.Entity;
 import org.veupathdb.service.eda.ss.model.Study;
 import org.veupathdb.service.eda.ss.model.variable.binary.*;
@@ -27,7 +28,7 @@ public class EntityIdIndexIteratorConverter {
    * @param to Destination entity type to map IDs to
    * @return a stream of idIndexes corresponding to {@code Entity}
    */
-  public Iterator<Long> fromEntity(Iterator<Long> idStream, Study study, Entity from, Entity to) {
+  public CloseableIterator<Long> fromEntity(CloseableIterator<Long> idStream, Study study, Entity from, Entity to) {
     // Check who is an ancestor of whom, this determines how we will convert the input idStream.
     if (from.getAncestorEntities().contains(to)) {
       // If "to" is an ancestor of "from", open "from"'s ancestor file.

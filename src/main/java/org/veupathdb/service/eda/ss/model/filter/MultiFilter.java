@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import static org.gusdb.fgputil.FormatUtil.NL;
 
@@ -12,6 +13,7 @@ import org.veupathdb.service.eda.ss.model.Entity;
 import org.veupathdb.service.eda.ss.model.Study;
 import org.veupathdb.service.eda.ss.model.reducer.BinaryValuesStreamer;
 import org.veupathdb.service.eda.ss.model.variable.StringVariable;
+import org.veupathdb.service.eda.ss.model.variable.VariableWithValues;
 
 public class MultiFilter extends Filter {
 
@@ -63,6 +65,13 @@ public class MultiFilter extends Filter {
     } catch (IOException e) {
       throw new RuntimeException("IO operation failed while trying to stream filtered IDs.", e);
     }
+  }
+
+  @Override
+  public List<VariableWithValues> getAllVariables() {
+    return subFilters.stream()
+        .map(MultiFilterSubFilter::getVariable)
+        .collect(Collectors.toList());
   }
 
   public MultiFilter(String appDbSchema, Entity entity, List<MultiFilterSubFilter> subFilters, MultiFilterOperation operation) {

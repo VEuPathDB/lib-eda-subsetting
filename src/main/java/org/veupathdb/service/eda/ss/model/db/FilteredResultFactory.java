@@ -150,9 +150,7 @@ public class FilteredResultFactory {
                                                   List<VariableWithValues> outputVariables, List<Filter> filters,
                                                   TabularResponses.BinaryFormatterFactory formatter, TabularReportConfig reportConfig,
                                                   OutputStream outputStream,
-                                                  Path binaryFilesDir,
-                                                  List<String> availablePaths) {
-    final BinaryFilesManager binaryFilesManager = new BinaryFilesManager(new MultiPathStudyFinder(availablePaths, binaryFilesDir));
+                                                  BinaryFilesManager binaryFilesManager) {;
     final DataFlowTreeFactory dataFlowTreeFactory = new DataFlowTreeFactory();
     final BinaryValuesStreamer binaryValuesStreamer = new BinaryValuesStreamer(binaryFilesManager);
     final EntityIdIndexIteratorConverter idIndexEntityConverter = new EntityIdIndexIteratorConverter(binaryFilesManager);

@@ -8,6 +8,7 @@ import org.veupathdb.service.eda.ss.model.variable.VariableWithValues;
 
 import java.io.IOException;
 import java.util.Iterator;
+import java.util.List;
 import java.util.function.Predicate;
 
 import static org.gusdb.fgputil.FormatUtil.NL;
@@ -31,6 +32,10 @@ public abstract class SingleValueFilter<U, T extends VariableWithValues<U>> exte
 
   public T getVariable() {
     return _variable;
+  }
+
+  public List<VariableWithValues> getAllVariables() {
+    return List.of(_variable);
   }
 
   @Override

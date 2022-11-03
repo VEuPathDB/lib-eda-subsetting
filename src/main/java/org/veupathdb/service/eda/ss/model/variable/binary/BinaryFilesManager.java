@@ -83,6 +83,10 @@ public class BinaryFilesManager {
     }
   }
 
+  public boolean studyDirExists(Study study) {
+    return Files.exists(getStudyDir(study, Operation.READ));
+  }
+
   public Path getEntityDir(Study study, Entity entity, Operation op) {
     if (op == Operation.READ) return getEntityDir(study, entity);
     else {
@@ -92,9 +96,17 @@ public class BinaryFilesManager {
     }
   }
 
+  public boolean entityDirExists(Study study, Entity entity) {
+    return Files.isDirectory(Path.of(getStudyDir(study, Operation.READ).toString(), getEntityDirName(entity)));
+  }
+
   public Path getAncestorFile(Study study, Entity entity, Operation op) {
     if (op == Operation.READ) return getFile(study, entity, ANCESTORS_FILE_NAME);
     return createFile(study, entity, ANCESTORS_FILE_NAME);
+  }
+
+  public boolean ancestorFileExists(Study study, Entity entity) {
+    return Files.exists(Path.of(getStudyDir(study, Operation.READ).toString(), getEntityDirName(entity), ANCESTORS_FILE_NAME));
   }
 
   public Path getIdMapFile(Study study, Entity entity, Operation op) {
@@ -102,9 +114,17 @@ public class BinaryFilesManager {
     return createFile(study, entity, IDS_MAP_FILE_NAME);
   }
 
+  public boolean idMapFileExists(Study study, Entity entity) {
+    return Files.exists(Path.of(getStudyDir(study, Operation.READ).toString(), getEntityDirName(entity), IDS_MAP_FILE_NAME));
+  }
+
   public Path getVariableFile(Study study, Entity entity, Variable var, Operation op) {
     if (op == Operation.READ) return getFile(study, entity, getVarFileName(var));
     return createFile(study, entity, getVarFileName(var));
+  }
+
+  public boolean variableFileExists(Study study, Entity entity, Variable var) {
+    return Files.exists(Path.of(getStudyDir(study, Operation.READ).toString(), getEntityDirName(entity), getVarFileName(var)));
   }
 
   Path getVocabFile(Study study, Entity entity, Variable var, Operation op) {

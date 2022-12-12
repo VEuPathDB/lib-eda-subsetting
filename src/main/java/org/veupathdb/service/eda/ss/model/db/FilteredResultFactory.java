@@ -190,7 +190,6 @@ public class FilteredResultFactory {
 
       final CloseableIterator<VariableValueIdPair<List<byte[]>>> idsMapStream = binaryValuesStreamer.streamIdMap(outputEntity, study);
 
-
       try (final FormattedTabularRecordStreamer resultStreamer = new FormattedTabularRecordStreamer(
           outputVarStreams,
           idIndexStream,
@@ -328,6 +327,27 @@ public class FilteredResultFactory {
     String sql = generateEntityCountSql(appDbSchema, targetEntity, filters, prunedEntityTree);
     return new SQLRunner(datasource, sql, "Get entity count").executeQuery(new SingleLongResultSetHandler())
         .orElseThrow(() -> new RuntimeException("Could not retrieve variable count"));
+  }
+
+  public static long getEntityCount(TreeNode<Entity> prunedEntityTree,
+                                    Entity targetEntity,
+                                    List<Filter> filters,
+                                    BinaryFilesManager binaryFilesManager,
+                                    Study study) {
+    final DataFlowTreeFactory dataFlowTreeFactory = new DataFlowTreeFactory();
+    final BinaryValuesStreamer binaryValuesStreamer = new BinaryValuesStreamer(binaryFilesManager);
+    final EntityIdIndexIteratorConverter idIndexEntityConverter = new EntityIdIndexIteratorConverter(binaryFilesManager);
+    final TreeNode<DataFlowNodeContents> dataFlowTree = dataFlowTreeFactory.create(
+        prunedEntityTree, targetEntity, filters, List.of(), study);
+
+    final DataFlowTreeReducer driver = new DataFlowTreeReducer(idIndexEntityConverter, binaryValuesStreamer);
+    CloseableIterator outputStream = driver.reduce(dataFlowTree);
+    int count = 0;
+    while (outputStream.hasNext()) {
+      outputStream.next();
+      count++;
+    }
+    return count;
   }
 
   /**

@@ -5,12 +5,10 @@ import org.apache.logging.log4j.Logger;
 import org.gusdb.fgputil.iterator.CloseableIterator;
 import org.veupathdb.service.eda.ss.model.Entity;
 import org.veupathdb.service.eda.ss.model.Study;
-import org.veupathdb.service.eda.ss.model.reducer.DataFlowTreeReducer;
 import org.veupathdb.service.eda.ss.model.variable.binary.*;
 
 import java.io.IOException;
 import java.nio.file.Path;
-import java.util.Iterator;
 
 /**
  * Converts a stream of ID indexes of one entity type to ID indexes of either an ancestor of a descendant.

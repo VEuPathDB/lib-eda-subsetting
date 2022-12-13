@@ -1,5 +1,7 @@
 package org.veupathdb.service.eda.ss.model.reducer.ancestor;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.gusdb.fgputil.iterator.CloseableIterator;
 import org.veupathdb.service.eda.ss.model.Entity;
 import org.veupathdb.service.eda.ss.model.Study;
@@ -7,12 +9,13 @@ import org.veupathdb.service.eda.ss.model.variable.binary.*;
 
 import java.io.IOException;
 import java.nio.file.Path;
-import java.util.Iterator;
 
 /**
  * Converts a stream of ID indexes of one entity type to ID indexes of either an ancestor of a descendant.
  */
 public class EntityIdIndexIteratorConverter {
+  private static final Logger LOG = LogManager.getLogger(EntityIdIndexIteratorConverter.class);
+
   private static final LongValueConverter LONG_VALUE_CONVERTER = new LongValueConverter();
 
   private BinaryFilesManager binaryFilesManager;
@@ -29,6 +32,7 @@ public class EntityIdIndexIteratorConverter {
    * @return a stream of idIndexes corresponding to {@code Entity}
    */
   public CloseableIterator<Long> fromEntity(CloseableIterator<Long> idStream, Study study, Entity from, Entity to) {
+    LOG.info("Mapping IDs from " + from.getDisplayName() + " to " + to.getDisplayName());
     // Check who is an ancestor of whom, this determines how we will convert the input idStream.
     if (from.getAncestorEntities().contains(to)) {
       // If "to" is an ancestor of "from", open "from"'s ancestor file.

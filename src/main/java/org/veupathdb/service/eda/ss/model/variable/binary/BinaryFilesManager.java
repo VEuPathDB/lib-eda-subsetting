@@ -240,9 +240,6 @@ public class BinaryFilesManager {
   }
 
   private Path getStudyDir(Study study) {
-    if (studyFinder != null) {
-      return studyFinder.findStudyPath(getStudyDirName(study));
-    }
     Path studyDir = studyFinder.findStudyPath(getStudyDirName(study));
     if (!Files.isDirectory(studyDir)) throw new RuntimeException("Study directory '" + studyDir + "' does not exist");
     return studyDir;

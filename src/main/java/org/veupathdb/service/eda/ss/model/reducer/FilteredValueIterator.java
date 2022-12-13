@@ -1,5 +1,7 @@
 package org.veupathdb.service.eda.ss.model.reducer;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.gusdb.fgputil.DualBufferBinaryRecordReader;
 import org.gusdb.fgputil.iterator.CloseableIterator;
 import org.veupathdb.service.eda.ss.model.variable.VariableValueIdPair;
@@ -7,7 +9,7 @@ import org.veupathdb.service.eda.ss.model.variable.binary.BinaryDeserializer;
 
 import java.io.IOException;
 import java.nio.file.Path;
-import java.util.Iterator;
+import java.time.Duration;
 import java.util.NoSuchElementException;
 import java.util.Optional;
 import java.util.function.Function;
@@ -20,6 +22,8 @@ import java.util.function.Predicate;
  * @param <V> type of the value returned by the iterator
  */
 public class FilteredValueIterator<V, T> implements CloseableIterator<T> {
+  private static final Logger LOG = LogManager.getLogger(FilteredValueIterator.class);
+
   private final Predicate<V> filterPredicate;
   private final DualBufferBinaryRecordReader<VariableValueIdPair<V>> reader;
   private final Function<VariableValueIdPair<V>, T> pairExtractor;
@@ -89,7 +93,7 @@ public class FilteredValueIterator<V, T> implements CloseableIterator<T> {
 
   @Override
   public void close() {
+    LOG.info("Total time spent awaiting disk reads: {}", Duration.ofMillis(reader.getTimeAwaitingFill()));
     reader.close();
   }
-
 }

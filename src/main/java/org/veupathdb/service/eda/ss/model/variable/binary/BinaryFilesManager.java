@@ -6,6 +6,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -60,12 +61,12 @@ public class BinaryFilesManager {
   }
 
   public boolean studyHasFiles(Study study) {
-    final Path studyDir = getStudyDir(study, Operation.READ);
-    if (!studyDir.toFile().exists()) {
+    final Optional<Path> studyDir = getStudyDirIfExists(study);
+    if (studyDir.isEmpty()) {
       LOG.debug("Study directory for study {} does not exist", study.getStudyId());
       return false;
     }
-    if (!getDoneFile(studyDir, Operation.READ).toFile().exists()) {
+    if (!getDoneFile(studyDir.get(), Operation.READ).toFile().exists()) {
       LOG.debug("Study directory for study {} exists but data is incomplete.", study.getStudyId());
       return false;
     }
@@ -74,7 +75,7 @@ public class BinaryFilesManager {
 
   public Path getStudyDir(Study study, Operation op) {
     if (op == Operation.READ) {
-      return getStudyDir(study);
+      return mustGetExistingStudyDir(study);
     }
     else {
       Path studyDir = studyFinder.findStudyPath(getStudyDirName(study));
@@ -84,7 +85,7 @@ public class BinaryFilesManager {
   }
 
   public boolean studyDirExists(Study study) {
-    return Files.exists(getStudyDir(study, Operation.READ));
+    return getStudyDirIfExists(study).isPresent();
   }
 
   public Path getEntityDir(Study study, Entity entity, Operation op) {
@@ -97,7 +98,7 @@ public class BinaryFilesManager {
   }
 
   public boolean entityDirExists(Study study, Entity entity) {
-    return Files.isDirectory(Path.of(getStudyDir(study, Operation.READ).toString(), getEntityDirName(entity)));
+    return Files.isDirectory(Path.of(mustGetExistingStudyDir(study).toString(), getEntityDirName(entity)));
   }
 
   public Path getAncestorFile(Study study, Entity entity, Operation op) {
@@ -234,15 +235,21 @@ public class BinaryFilesManager {
   }
 
   private Path getEntityDir(Study study, Entity entity) {
-    Path entityDir = Path.of(getStudyDir(study).toString(), getEntityDirName(entity));
+    Path entityDir = Path.of(mustGetExistingStudyDir(study).toString(),
+        getEntityDirName(entity));
     if (!Files.isDirectory(entityDir)) throw new RuntimeException("Entity directory '" + entityDir + "' does not exist");
     return entityDir;
   }
 
-  private Path getStudyDir(Study study) {
+  private Path mustGetExistingStudyDir(Study study) {
+    return getStudyDirIfExists(study)
+        .orElseThrow(() -> new RuntimeException("Study directory '" + getStudyDirName(study) + "' does not exist"));
+  }
+
+  private Optional<Path> getStudyDirIfExists(Study study) {
     Path studyDir = studyFinder.findStudyPath(getStudyDirName(study));
-    if (!Files.isDirectory(studyDir)) throw new RuntimeException("Study directory '" + studyDir + "' does not exist");
-    return studyDir;
+    if (!Files.isDirectory(studyDir)) return Optional.empty();
+    return Optional.of(studyDir);
   }
 
   private Path createDoneFile(Path directory) {

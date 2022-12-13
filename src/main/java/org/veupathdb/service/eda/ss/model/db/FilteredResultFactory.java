@@ -2,7 +2,6 @@ package org.veupathdb.service.eda.ss.model.db;
 
 import java.io.*;
 import java.nio.charset.StandardCharsets;
-import java.nio.file.Path;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.*;
@@ -45,7 +44,6 @@ import org.veupathdb.service.eda.ss.model.variable.VariableType;
 import org.veupathdb.service.eda.ss.model.variable.VariableValueIdPair;
 import org.veupathdb.service.eda.ss.model.variable.VariableWithValues;
 import org.veupathdb.service.eda.ss.model.variable.binary.BinaryFilesManager;
-import org.veupathdb.service.eda.ss.model.variable.binary.MultiPathStudyFinder;
 
 import static org.gusdb.fgputil.iterator.IteratorUtil.toIterable;
 import static org.veupathdb.service.eda.ss.model.db.DB.Tables.AttributeValue.Columns.DATE_VALUE_COL_NAME;
@@ -341,13 +339,16 @@ public class FilteredResultFactory {
         prunedEntityTree, targetEntity, filters, List.of(), study);
 
     final DataFlowTreeReducer driver = new DataFlowTreeReducer(idIndexEntityConverter, binaryValuesStreamer);
-    CloseableIterator outputStream = driver.reduce(dataFlowTree);
-    int count = 0;
-    while (outputStream.hasNext()) {
-      outputStream.next();
-      count++;
+    try (CloseableIterator<Long> outputStream = driver.reduce(dataFlowTree)) {
+      int count = 0;
+      while (outputStream.hasNext()) {
+        outputStream.next();
+        count++;
+      }
+      return count;
+    } catch (Exception e) {
+      throw new RuntimeException("Error when producing count for entity " + targetEntity.getId() + " for study " + study.getStudyId(), e);
     }
-    return count;
   }
 
   /**

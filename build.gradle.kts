@@ -89,33 +89,31 @@ repositories {
   mavenLocal()
   maven {
     name = "GitHubPackages"
-    url  = uri("https://maven.pkg.github.com/veupathdb/maven-packages")
+    url = uri("https://maven.pkg.github.com/veupathdb/maven-packages")
     credentials {
       username = project.findProperty("gpr.user") as String? ?: System.getenv("GITHUB_USERNAME")
       password = project.findProperty("gpr.key") as String? ?: System.getenv("GITHUB_TOKEN")
     }
   }
 }
-val fgputil = "2.9.3-jakarta" // FgpUtil version
-val log4j   = "2.17.2"        // Log4J version
-val junit   = "5.8.2"         // JUnit version
 
 dependencies {
 
   // FgpUtil Dependencies
+  val fgputil = "2.9.3-jakarta"
   implementation("org.gusdb:fgputil-core:${fgputil}")
   implementation("org.gusdb:fgputil-db:${fgputil}")
   implementation("org.gusdb:fgputil-json:${fgputil}")
   implementation("org.gusdb:fgputil-web:${fgputil}")
 
   // Log4J
-  implementation("org.apache.logging.log4j:log4j-api:${log4j}")
-  implementation("org.apache.logging.log4j:log4j-core:${log4j}")
+  implementation("org.apache.logging.log4j:log4j-api:2.19.0")
+  implementation("org.apache.logging.log4j:log4j-core:2.19.0")
 
   // Stub database (included in distribution since StubDB is used in EdaSubsettingService unit tests)
-  implementation("org.hsqldb:hsqldb:2.6.1")
+  implementation("org.hsqldb:hsqldb:2.7.1")
 
   // Unit Testing
-  testImplementation("org.junit.jupiter:junit-jupiter:${junit}")
+  testImplementation("org.junit.jupiter:junit-jupiter:5.9.0")
   testImplementation("org.hamcrest:hamcrest:2.2")
 }

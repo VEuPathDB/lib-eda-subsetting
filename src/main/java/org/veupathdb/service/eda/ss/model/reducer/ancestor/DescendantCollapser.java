@@ -22,18 +22,8 @@ public class DescendantCollapser implements CloseableIterator<Long> {
   private boolean initialized = false;
   private Long matchedAncestor;
 
-  public DescendantCollapser(Path ancestorFilePath,
-                             AncestorDeserializer deserializer,
-                             CloseableIterator<Long> currentEntityStream) throws IOException {
-    this.ancestorStream = new FilteredValueIterator<>(ancestorFilePath,
-        x -> true,
-        deserializer,
-        Function.identity());
-    this.currentEntityStream = currentEntityStream;
-  }
-
   public DescendantCollapser(CloseableIterator<VariableValueIdPair<Long>> ancestorStream,
-                             CloseableIterator<Long> currentEntityStream) {
+                             CloseableIterator<Long> currentEntityStream) throws IOException {
     this.ancestorStream = ancestorStream;
     this.currentEntityStream = currentEntityStream;
   }

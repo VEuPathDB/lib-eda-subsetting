@@ -6,6 +6,7 @@ import org.hamcrest.Matchers;
 import org.junit.jupiter.api.Test;
 import org.veupathdb.service.eda.ss.model.variable.VariableValueIdPair;
 
+import java.io.IOException;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
@@ -121,7 +122,11 @@ public class DescendantCollapserTest {
 
   private Iterator<Long> constructCollapser(List<VariableValueIdPair<Long>> ancestorStream,
                                             List<Long> entityStream) {
-    return new DescendantCollapser(CloseableIterator.of(ancestorStream.iterator()),
-        CloseableIterator.of(entityStream.iterator()));
+    try {
+      return new DescendantCollapser(CloseableIterator.of(ancestorStream.iterator()),
+              CloseableIterator.of(entityStream.iterator()));
+    } catch (IOException e) {
+      throw new RuntimeException(e);
+    }
   }
 }

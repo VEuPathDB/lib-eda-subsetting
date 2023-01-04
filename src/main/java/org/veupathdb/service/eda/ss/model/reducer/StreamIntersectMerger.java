@@ -83,7 +83,7 @@ public class StreamIntersectMerger implements CloseableIterator<Long> {
       return;
     }
     // value not null; counts as first concurring stream
-    int numConcurringStreams = 1;
+     int numConcurringStreams = 1;
 
     // continual loop, trying to match all iterators to the same value
     while (numConcurringStreams < streamRing.size()) {

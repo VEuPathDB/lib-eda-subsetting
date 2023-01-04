@@ -17,9 +17,12 @@ import org.veupathdb.service.eda.ss.testutil.IndiaICEMRStudy;
 import java.io.*;
 import java.nio.file.Path;
 import java.util.*;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import java.util.stream.Collectors;
 
 public class DataFlowMapReduceTreeTest {
+  private static final ExecutorService THREAD_POOL = Executors.newSingleThreadExecutor();
   private final Path binaryDirectory = Path.of(System.getProperty("user.dir"), "src/test/resources");
   private final IndiaICEMRStudy indiaICEMRStudy = new IndiaICEMRStudy();
 
@@ -50,7 +53,7 @@ public class DataFlowMapReduceTreeTest {
     FilteredResultFactory.produceTabularSubsetFromFile(indiaICEMRStudy.getStudy(), indiaICEMRStudy.getHouseholdEntity(),
         List.of(indiaICEMRStudy.getPersonsInHousehold()), List.of(sampleRangeFilter, timeSinceLastMalariaFilter, personsInHouseholdFilter),
         TabularResponses.Type.TABULAR.getBinaryFormatter(), new TabularReportConfig(), outputStream,
-        new BinaryFilesManager(binaryDirectory));
+        new BinaryValuesStreamer(new BinaryFilesManager(binaryDirectory), THREAD_POOL, THREAD_POOL));
   }
 
   @Test
@@ -63,8 +66,8 @@ public class DataFlowMapReduceTreeTest {
     final ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
     FilteredResultFactory.produceTabularSubsetFromFile(indiaICEMRStudy.getStudy(), indiaICEMRStudy.getParticipantEntity(),
         List.of(indiaICEMRStudy.getTimeSinceLastMalaria()), List.of(multiFilter),
-        TabularResponses.Type.TABULAR.getBinaryFormatter(), new TabularReportConfig(), outputStream, new BinaryFilesManager(binaryDirectory));
-    System.out.println(outputStream);
+        TabularResponses.Type.TABULAR.getBinaryFormatter(), new TabularReportConfig(), outputStream, new BinaryValuesStreamer(
+                new BinaryFilesManager(binaryDirectory), THREAD_POOL, THREAD_POOL));
   }
 
   @Test
@@ -78,8 +81,8 @@ public class DataFlowMapReduceTreeTest {
     final ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
     FilteredResultFactory.produceTabularSubsetFromFile(indiaICEMRStudy.getStudy(), indiaICEMRStudy.getParticipantEntity(),
         List.of(indiaICEMRStudy.getTimeSinceLastMalaria()), List.of(multiFilter),
-        TabularResponses.Type.TABULAR.getBinaryFormatter(), new TabularReportConfig(), outputStream, new BinaryFilesManager(binaryDirectory));
-    System.out.println(outputStream);
+        TabularResponses.Type.TABULAR.getBinaryFormatter(), new TabularReportConfig(), outputStream, new BinaryValuesStreamer(
+                new BinaryFilesManager(binaryDirectory), THREAD_POOL, THREAD_POOL));
   }
 
   @Test
@@ -90,8 +93,8 @@ public class DataFlowMapReduceTreeTest {
     final ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
     FilteredResultFactory.produceTabularSubsetFromFile(indiaICEMRStudy.getStudy(), indiaICEMRStudy.getParticipantEntity(),
         List.of(indiaICEMRStudy.getTimeSinceLastMalaria()), List.of(stringSetFilter),
-        TabularResponses.Type.TABULAR.getBinaryFormatter(), new TabularReportConfig(), outputStream, new BinaryFilesManager(binaryDirectory));
-    System.out.println(outputStream);
+        TabularResponses.Type.TABULAR.getBinaryFormatter(), new TabularReportConfig(), outputStream, new BinaryValuesStreamer(
+                new BinaryFilesManager(binaryDirectory), THREAD_POOL, THREAD_POOL));
   }
 
   @Test
@@ -113,7 +116,8 @@ public class DataFlowMapReduceTreeTest {
     final ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
     FilteredResultFactory.produceTabularSubsetFromFile(indiaICEMRStudy.getStudy(), indiaICEMRStudy.getParticipantEntity(),
         List.of(indiaICEMRStudy.getTimeSinceLastMalaria()), List.of(rangeFilter, rootRangeFilter),
-        TabularResponses.Type.TABULAR.getBinaryFormatter(), new TabularReportConfig(), outputStream, new BinaryFilesManager(binaryDirectory));
+        TabularResponses.Type.TABULAR.getBinaryFormatter(), new TabularReportConfig(), outputStream, new BinaryValuesStreamer(
+                new BinaryFilesManager(binaryDirectory), THREAD_POOL, THREAD_POOL));
     MatcherAssert.assertThat(Arrays.stream(outputStream.toString().split("\n"))
         .collect(Collectors.toList()), Matchers.hasSize(63));
   }
@@ -123,7 +127,8 @@ public class DataFlowMapReduceTreeTest {
     final ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
     FilteredResultFactory.produceTabularSubsetFromFile(indiaICEMRStudy.getStudy(), indiaICEMRStudy.getParticipantEntity(),
         List.of(indiaICEMRStudy.getTimeSinceLastMalaria()), List.of(),
-        TabularResponses.Type.TABULAR.getBinaryFormatter(), new TabularReportConfig(), outputStream, new BinaryFilesManager(binaryDirectory));
+        TabularResponses.Type.TABULAR.getBinaryFormatter(), new TabularReportConfig(), outputStream, new BinaryValuesStreamer
+                    (new BinaryFilesManager(binaryDirectory), THREAD_POOL, THREAD_POOL));
     MatcherAssert.assertThat(Arrays.stream(outputStream.toString().split("\n"))
         .collect(Collectors.toList()), Matchers.hasSize(498));
   }

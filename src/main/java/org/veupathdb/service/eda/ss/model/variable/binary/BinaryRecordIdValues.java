@@ -10,16 +10,31 @@ import java.util.Objects;
  * @author sfischer
  *
  */
-public class BinaryRecordIdValues extends VariableValueIdPair<List<byte[]>> {
+public class BinaryRecordIdValues extends VariableValueIdPair<byte[][]> {
   private long idIndex;
   private byte[] entityId;
-  private List<byte[]> ancestorIds;
+  private byte[][] ancestorIds;
 
-  public BinaryRecordIdValues(long idIndex, byte[] entityId, List<byte[]> ancestorIds) {
-    super(idIndex, new ListBuilder<>(entityId).addAll(ancestorIds).toList());
+  public BinaryRecordIdValues(long idIndex, byte[] entityId, byte[][] ancestorIds) {
+    super(idIndex, constructList(entityId, ancestorIds));
     this.idIndex = idIndex;
     this.entityId = entityId;
     this.ancestorIds = ancestorIds;
+  }
+
+  private static byte[][] constructList(byte[] entityId, byte[][] ancestorIds) {
+    byte[][] outputList = new byte[ancestorIds.length + 1][];
+    outputList[0] = new byte[entityId.length];
+    for (int i = 0; i < entityId.length; i++) {
+      outputList[0][i] = entityId[i];
+    }
+    for (int i = 0; i < ancestorIds.length; i++) {
+      outputList[i + 1] = new byte[ancestorIds[i].length];
+      for (int j = 0; j < ancestorIds[i].length; j++) {
+        outputList[i + 1][j] = ancestorIds[i][j];
+      }
+    }
+    return outputList;
   }
 
   public long getIdIndex() {
@@ -30,7 +45,7 @@ public class BinaryRecordIdValues extends VariableValueIdPair<List<byte[]>> {
     return entityId;
   }
 
-  public List<byte[]> getAncestorIds() {
+  public byte[][] getAncestorIds() {
     return ancestorIds;
   }
 

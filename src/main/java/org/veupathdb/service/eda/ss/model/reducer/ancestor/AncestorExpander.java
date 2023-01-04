@@ -24,15 +24,6 @@ public class AncestorExpander implements CloseableIterator<Long> {
   private Long currentEntity;
   private boolean isInitialized = false;
 
-  public AncestorExpander(Path descendantsFilePath,
-                          AncestorDeserializer deserializer,
-                          CloseableIterator<Long> entityIdIndexStream) throws IOException {
-    this(new FilteredValueIterator(descendantsFilePath,
-        x -> true,
-        deserializer,
-        Function.identity()), entityIdIndexStream);
-  }
-
   // Visible for testing
   AncestorExpander(CloseableIterator<VariableValueIdPair<Long>> descendantStream,
                    CloseableIterator<Long> entityIdIndexStream) {

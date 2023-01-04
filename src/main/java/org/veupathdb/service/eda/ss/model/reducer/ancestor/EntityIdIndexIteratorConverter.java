@@ -5,6 +5,7 @@ import org.apache.logging.log4j.Logger;
 import org.gusdb.fgputil.iterator.CloseableIterator;
 import org.veupathdb.service.eda.ss.model.Entity;
 import org.veupathdb.service.eda.ss.model.Study;
+import org.veupathdb.service.eda.ss.model.reducer.BinaryValuesStreamer;
 import org.veupathdb.service.eda.ss.model.variable.binary.*;
 
 import java.io.IOException;
@@ -18,10 +19,10 @@ public class EntityIdIndexIteratorConverter {
 
   private static final LongValueConverter LONG_VALUE_CONVERTER = new LongValueConverter();
 
-  private BinaryFilesManager binaryFilesManager;
+  private BinaryValuesStreamer binaryValuesStreamer;
 
-  public EntityIdIndexIteratorConverter(BinaryFilesManager binaryFilesManager) {
-    this.binaryFilesManager = binaryFilesManager;
+  public EntityIdIndexIteratorConverter(BinaryValuesStreamer binaryValuesStreamer) {
+    this.binaryValuesStreamer = binaryValuesStreamer;
   }
 
   /**
@@ -35,22 +36,16 @@ public class EntityIdIndexIteratorConverter {
     LOG.info("Mapping IDs from " + from.getDisplayName() + " to " + to.getDisplayName());
     // Check who is an ancestor of whom, this determines how we will convert the input idStream.
     if (from.getAncestorEntities().contains(to)) {
-      // If "to" is an ancestor of "from", open "from"'s ancestor file.
-      Path path = binaryFilesManager.getAncestorFile(study, from, BinaryFilesManager.Operation.READ);
-      final ArrayConverter<Long> listConverter = new ArrayConverter<>(LONG_VALUE_CONVERTER, from.getAncestorEntities().size() + 1, Long.class);
-      final AncestorDeserializer ancestorDeserializer = new AncestorDeserializer(listConverter, from.getAncestorEntities().indexOf(to) + 1);
       try {
-        return new DescendantCollapser(path, ancestorDeserializer, idStream);
+        // If "to" is an ancestor of "from", open "from"'s ancestor file.
+        return new DescendantCollapser(binaryValuesStreamer.streamAncestorIds(from, study, from.getAncestorEntities().indexOf(to) + 1), idStream);
       } catch (IOException e) {
         throw new RuntimeException(e);
       }
     } else if (to.getAncestorEntities().contains(from)) {
       // If "from" is an ancestor of "to", open "to"'s ancestor file.
-      Path path = binaryFilesManager.getAncestorFile(study, to, BinaryFilesManager.Operation.READ);
-      final ArrayConverter<Long> listConverter = new ArrayConverter<>(LONG_VALUE_CONVERTER, to.getAncestorEntities().size() + 1, Long.class);
-      final AncestorDeserializer ancestorDeserializer = new AncestorDeserializer(listConverter, to.getAncestorEntities().indexOf(from) + 1);
       try {
-        return new AncestorExpander(path, ancestorDeserializer, idStream);
+        return new AncestorExpander(binaryValuesStreamer.streamAncestorIds(to, study, to.getAncestorEntities().indexOf(from) + 1), idStream);
       } catch (IOException e) {
         throw new RuntimeException(e);
       }

@@ -12,6 +12,7 @@ import java.nio.file.Path;
 import java.time.Duration;
 import java.util.NoSuchElementException;
 import java.util.Optional;
+import java.util.concurrent.ExecutorService;
 import java.util.function.Function;
 import java.util.function.Predicate;
 
@@ -44,12 +45,17 @@ public class FilteredValueIterator<V, T> implements CloseableIterator<T> {
   public FilteredValueIterator(Path path,
                                Predicate<V> filterPredicate,
                                BinaryDeserializer<? extends VariableValueIdPair<V>> deserializer,
-                               Function<VariableValueIdPair<V>, T> pairExtractor) throws IOException {
+                               Function<VariableValueIdPair<V>, T> pairExtractor,
+                               ExecutorService fileChannelThreadPool,
+                               ExecutorService deserializerThreadPool) throws IOException {
     this.filterPredicate = filterPredicate;
     this.reader = new DualBufferBinaryRecordReader<>(path,
-        deserializer.numBytes(),
-        1024,
-        byteBuf -> deserializer.fromBytes(byteBuf));
+            deserializer.numBytes(),
+            1024,
+            byteBuf -> deserializer.fromBytes(byteBuf),
+            fileChannelThreadPool,
+            deserializerThreadPool
+    );
     this.pairExtractor = pairExtractor;
   }
 

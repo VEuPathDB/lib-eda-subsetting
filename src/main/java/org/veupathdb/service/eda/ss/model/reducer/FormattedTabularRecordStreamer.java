@@ -16,7 +16,7 @@ import java.util.*;
 public class FormattedTabularRecordStreamer implements CloseableIterator<byte[][]> {
   // These value streams need to have associated with them the variable
   private List<ValueStream<String>> valuePairStreams;
-  private CloseableIterator<VariableValueIdPair<List<byte[]>>> idMapStream;
+  private CloseableIterator<VariableValueIdPair<byte[][]>> idMapStream;
   private CloseableIterator<Long> idIndexStream;
   private Long currentIdIndex;
 
@@ -32,7 +32,7 @@ public class FormattedTabularRecordStreamer implements CloseableIterator<byte[][
    */
   public FormattedTabularRecordStreamer(List<ValueStream<String>> valuePairStreams,
                                         CloseableIterator<Long> idIndexStream,
-                                        CloseableIterator<VariableValueIdPair<List<byte[]>>> idMapStream) {
+                                        CloseableIterator<VariableValueIdPair<byte[][]>> idMapStream) {
     this.valuePairStreams = valuePairStreams;
     this.idIndexStream = idIndexStream;
     if (idIndexStream.hasNext()) {
@@ -53,15 +53,15 @@ public class FormattedTabularRecordStreamer implements CloseableIterator<byte[][
     }
     byte[][] rec;
     int recIndex = 0;
-    VariableValueIdPair<List<byte[]>> ids;
+    VariableValueIdPair<byte[][]> ids;
     do {
       ids = idMapStream.next();
     } while (ids.getIdIndex() < currentIdIndex);
-    rec = new byte[valuePairStreams.size() + ids.getValue().size()][];
-    for (int i = 0; i < ids.getValue().size(); i++) {
-      ByteBuffer buf = ByteBuffer.wrap(ids.getValue().get(i));
+    rec = new byte[valuePairStreams.size() + ids.getValue().length][];
+    for (int i = 0; i < ids.getValue().length; i++) {
+      ByteBuffer buf = ByteBuffer.wrap(ids.getValue()[i]);
       int size = buf.getInt();
-      rec[recIndex++] = Arrays.copyOfRange(ids.getValue().get(i), Integer.BYTES, size + Integer.BYTES);
+      rec[recIndex++] = Arrays.copyOfRange(ids.getValue()[i], Integer.BYTES, size + Integer.BYTES);
     }
 
     for (ValueStream<String> valueStream: valuePairStreams) {

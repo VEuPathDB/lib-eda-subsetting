@@ -148,10 +148,9 @@ public class FilteredResultFactory {
                                                   List<VariableWithValues> outputVariables, List<Filter> filters,
                                                   TabularResponses.BinaryFormatterFactory formatter, TabularReportConfig reportConfig,
                                                   OutputStream outputStream,
-                                                  BinaryFilesManager binaryFilesManager) {;
+                                                  BinaryValuesStreamer binaryValuesStreamer) {
     final DataFlowTreeFactory dataFlowTreeFactory = new DataFlowTreeFactory();
-    final BinaryValuesStreamer binaryValuesStreamer = new BinaryValuesStreamer(binaryFilesManager);
-    final EntityIdIndexIteratorConverter idIndexEntityConverter = new EntityIdIndexIteratorConverter(binaryFilesManager);
+    final EntityIdIndexIteratorConverter idIndexEntityConverter = new EntityIdIndexIteratorConverter(binaryValuesStreamer);
     final TreeNode<Entity> prunedEntityTree = pruneTree(study.getEntityTree(), filters, outputEntity);
     final TreeNode<DataFlowNodeContents> dataFlowTree = dataFlowTreeFactory.create(
         prunedEntityTree, outputEntity, filters, outputVariables, study);
@@ -186,7 +185,7 @@ public class FilteredResultFactory {
         outputVarStreams.add(valStream);
       }
 
-      final CloseableIterator<VariableValueIdPair<List<byte[]>>> idsMapStream = binaryValuesStreamer.streamIdMap(outputEntity, study);
+      final CloseableIterator<VariableValueIdPair<byte[][]>> idsMapStream = binaryValuesStreamer.streamIdMap(outputEntity, study);
 
       try (final FormattedTabularRecordStreamer resultStreamer = new FormattedTabularRecordStreamer(
           outputVarStreams,
@@ -330,11 +329,10 @@ public class FilteredResultFactory {
   public static long getEntityCount(TreeNode<Entity> prunedEntityTree,
                                     Entity targetEntity,
                                     List<Filter> filters,
-                                    BinaryFilesManager binaryFilesManager,
+                                    BinaryValuesStreamer binaryValuesStreamer,
                                     Study study) {
     final DataFlowTreeFactory dataFlowTreeFactory = new DataFlowTreeFactory();
-    final BinaryValuesStreamer binaryValuesStreamer = new BinaryValuesStreamer(binaryFilesManager);
-    final EntityIdIndexIteratorConverter idIndexEntityConverter = new EntityIdIndexIteratorConverter(binaryFilesManager);
+    final EntityIdIndexIteratorConverter idIndexEntityConverter = new EntityIdIndexIteratorConverter(binaryValuesStreamer);
     final TreeNode<DataFlowNodeContents> dataFlowTree = dataFlowTreeFactory.create(
         prunedEntityTree, targetEntity, filters, List.of(), study);
 

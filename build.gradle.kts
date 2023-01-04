@@ -7,7 +7,7 @@
 
 // Project settings
 group   = "org.veupathdb.eda"
-version = "3.5.3"
+version = "3.6.0"
 
 plugins {
   `java-library`
@@ -97,10 +97,11 @@ repositories {
   }
 }
 
+
 dependencies {
 
   // FgpUtil Dependencies
-  val fgputil = "2.9.3-jakarta"
+  val fgputil = "2.10.1-jakarta"
   implementation("org.gusdb:fgputil-core:${fgputil}")
   implementation("org.gusdb:fgputil-db:${fgputil}")
   implementation("org.gusdb:fgputil-json:${fgputil}")

@@ -36,7 +36,7 @@ public class BinaryRecordIdValuesConverter implements BinarySerializer<BinaryRec
     for (int i = 0; i < ancestorConverters.size(); i++) {
       // Find string value converter that aligns with the ID that needs to be converted.
       // Each ancestor may be encoded with a different number of bytes.
-      final byte[] ancestorId = recordIdValues.getAncestorIds().get(i);
+      final byte[] ancestorId = recordIdValues.getAncestorIds()[i];
       final ByteArrayConverter converter = ancestorConverters.get(i);
       byteBuffer.put(converter.toBytes(ancestorId));
     }
@@ -63,9 +63,10 @@ public class BinaryRecordIdValuesConverter implements BinarySerializer<BinaryRec
     // Find the entityId converter corresponding with the primary entity.
     byte[] entityId = idConverter.fromBytes(bytes, offset);
     offset += idConverter.numBytes();
-    List<byte[]> ancestors = new ArrayList<>();
-    for (ByteArrayConverter ancestorConverter: ancestorConverters) {
-      ancestors.add(ancestorConverter.fromBytes(bytes, offset));
+    byte[][] ancestors = new byte[ancestorConverters.size()][];
+    for (int i = 0; i < ancestorConverters.size(); i++) {
+      ByteArrayConverter ancestorConverter = ancestorConverters.get(i);
+      ancestors[i] = ancestorConverter.fromBytes(bytes, offset);
       offset += ancestorConverter.numBytes();
     }
     return new BinaryRecordIdValues(idIndex, entityId, ancestors);
@@ -75,12 +76,12 @@ public class BinaryRecordIdValuesConverter implements BinarySerializer<BinaryRec
   public BinaryRecordIdValues fromBytes(ByteBuffer bytes) {
     Long idIndex = bytes.getLong();
     byte[] entityId = idConverter.fromBytes(bytes);
-    List<byte[]> ancestors = new ArrayList<>();
-    for (ByteArrayConverter ancestorConverter: ancestorConverters) {
-      ancestors.add(ancestorConverter.fromBytes(bytes));
+    byte[][] ancestors = new byte[ancestorConverters.size()][];
+    for (int i = 0; i < ancestorConverters.size(); i++) {
+      ByteArrayConverter ancestorConverter = ancestorConverters.get(i);
+      ancestors[i] = ancestorConverter.fromBytes(bytes);
     }
     return new BinaryRecordIdValues(idIndex, entityId, ancestors);
   }
-
 }
 

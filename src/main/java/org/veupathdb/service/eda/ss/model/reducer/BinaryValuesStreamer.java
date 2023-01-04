@@ -15,6 +15,7 @@ import java.io.IOException;
 import java.nio.file.Path;
 import java.util.Iterator;
 import java.util.List;
+import java.util.concurrent.ExecutorService;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -22,9 +23,15 @@ public class BinaryValuesStreamer {
   private static final LongValueConverter LONG_VALUE_CONVERTER = new LongValueConverter();
 
   private final BinaryFilesManager binaryFilesManager;
+  private final ExecutorService fileChannelExecutorService;
+  private final ExecutorService deserializerExecutorService;
 
-  public BinaryValuesStreamer(BinaryFilesManager binaryFilesManager) {
+  public BinaryValuesStreamer(BinaryFilesManager binaryFilesManager,
+                              ExecutorService fileChannelExecutorService,
+                              ExecutorService deserializerExecutorService) {
     this.binaryFilesManager = binaryFilesManager;
+    this.fileChannelExecutorService = fileChannelExecutorService;
+    this.deserializerExecutorService = deserializerExecutorService;
   }
 
   /**
@@ -40,13 +47,15 @@ public class BinaryValuesStreamer {
       SingleValueFilter<V, T> filter, Study study) throws IOException {
     BinaryConverter<V> serializer = filter.getVariable().getBinaryConverter();
     return new FilteredValueIterator<>(
-        binaryFilesManager.getVariableFile(study,
-            filter.getEntity(),
-            filter.getVariable(),
-            BinaryFilesManager.Operation.READ),
-        filter.getPredicate(),
-        new ValueWithIdDeserializer<>(serializer),
-        VariableValueIdPair::getIdIndex);
+            binaryFilesManager.getVariableFile(study,
+                    filter.getEntity(),
+                    filter.getVariable(),
+                    BinaryFilesManager.Operation.READ),
+            filter.getPredicate(),
+            new ValueWithIdDeserializer<>(serializer),
+            VariableValueIdPair::getIdIndex,
+            fileChannelExecutorService,
+            deserializerExecutorService);
   }
 
   /**
@@ -95,13 +104,15 @@ public class BinaryValuesStreamer {
     }
     BinaryConverter<V> serializer = variable.getBinaryConverter();
     return new FilteredValueIterator(
-        binaryFilesManager.getVariableFile(study,
-            variable.getEntity(),
-            variable,
-            BinaryFilesManager.Operation.READ),
-        x -> true, // Always return true, extract all ID index pairs and variable values.
-        new ValueWithIdDeserializer<>(serializer),
-        extractor); // Provide a stream of entire VariableValueIdPair objects.
+            binaryFilesManager.getVariableFile(study,
+                    variable.getEntity(),
+                    variable,
+                    BinaryFilesManager.Operation.READ),
+            x -> true, // Always return true, extract all ID index pairs and variable values.
+            new ValueWithIdDeserializer<>(serializer),
+            extractor,
+            fileChannelExecutorService,
+            deserializerExecutorService); // Provide a stream of entire VariableValueIdPair objects.
   }
 
   /**
@@ -116,10 +127,32 @@ public class BinaryValuesStreamer {
     final ListConverter<Long> listConverter = new ListConverter<>(LONG_VALUE_CONVERTER, descendant.getAncestorEntities().size());
     final ValueWithIdDeserializer<List<Long>> ancestorsWithId = new ValueWithIdDeserializer<>(listConverter);
     return new FilteredValueIterator<>(path,
-        x -> true, // Do not apply any filters
-        ancestorsWithId,
-        Function.identity());
+            x -> true, // Do not apply any filters
+            ancestorsWithId,
+            Function.identity(),
+            fileChannelExecutorService,
+            deserializerExecutorService);
   }
+
+  /**
+   * @param descendant Entity for which to retrieve ancestors stream.
+   * @param study Study the entity belongs to.
+   * @return Stream of ancestor IDs.
+   * @throws IOException
+   */
+  public CloseableIterator<VariableValueIdPair<Long>> streamAncestorIds(Entity descendant,
+                                                                        Study study,
+                                                                        int colIndex) throws IOException {
+    Path path = binaryFilesManager.getAncestorFile(study, descendant, BinaryFilesManager.Operation.READ);
+    final ArrayConverter<Long> arrayConverter = new ArrayConverter<>(LONG_VALUE_CONVERTER, descendant.getAncestorEntities().size() + 1, Long.class);
+    return new FilteredValueIterator<>(path,
+            x -> true, // Do not apply any filters
+            new AncestorDeserializer(arrayConverter, colIndex),
+            Function.identity(),
+            fileChannelExecutorService,
+            deserializerExecutorService);
+  }
+
 
   /**
    * As an iterator, provide a stream of tuples containing:
@@ -131,24 +164,28 @@ public class BinaryValuesStreamer {
    * @return A pair in which the left is the ID index and the right is a list of ordered string IDs.
    * @throws IOException if there is a failure to open the underlying file.
    */
-  public CloseableIterator<VariableValueIdPair<List<byte[]>>> streamIdMap(Entity entity, Study study) throws IOException {
+  public CloseableIterator<VariableValueIdPair<byte[][]>> streamIdMap(Entity entity, Study study) throws IOException {
     Path path = binaryFilesManager.getIdMapFile(study, entity, BinaryFilesManager.Operation.READ);
     BinaryRecordIdValuesConverter converter = constructIdsConverter(study, entity);
     return new FilteredValueIterator<>(path,
-        x -> true, // Do not apply any filters.
-        converter,
-        Function.identity());
+            x -> true, // Do not apply any filters.
+            converter,
+            Function.identity(),
+            fileChannelExecutorService,
+            deserializerExecutorService);
   }
 
   public CloseableIterator<Long> streamUnfilteredEntityIdIndexes(Study study, Entity entity) throws IOException {
     BinaryRecordIdValuesConverter converter = constructIdsConverter(study, entity);
     return new FilteredValueIterator<>(
-        binaryFilesManager.getIdMapFile(study,
-            entity,
-            BinaryFilesManager.Operation.READ),
-        x -> true,
-        converter,
-        VariableValueIdPair::getIdIndex);
+            binaryFilesManager.getIdMapFile(study,
+                    entity,
+                    BinaryFilesManager.Operation.READ),
+            x -> true,
+            converter,
+            VariableValueIdPair::getIdIndex,
+            fileChannelExecutorService,
+            deserializerExecutorService);
   }
 
   private BinaryRecordIdValuesConverter constructIdsConverter(Study study, Entity entity) {

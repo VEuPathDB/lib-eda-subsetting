@@ -19,6 +19,8 @@ import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
@@ -27,8 +29,11 @@ public class JoinNodePerformanceTest {
   private static String directory;
   private static List<Path> files;
 
+  private static ExecutorService threadPool;
+
   @BeforeAll
   public static void beforeAll() throws Exception {
+    threadPool = Executors.newCachedThreadPool();
     directory = Files.createTempDirectory("tmpDirPrefix").toFile().getAbsolutePath();
     files = new ArrayList<>();
     final File studyDir = new File(directory, TestDataProvider.STUDY_ID);
@@ -48,6 +53,7 @@ public class JoinNodePerformanceTest {
 
   @AfterAll
   public static void afterAll() {
+    threadPool.shutdown();
     files.forEach(file -> file.toFile().deleteOnExit());
   }
 
@@ -57,7 +63,7 @@ public class JoinNodePerformanceTest {
     final ValueWithIdDeserializer<Long> serializer = new ValueWithIdDeserializer(new LongValueConverter());
     for (Path path : files) {
       filteredValueFiles.add(
-          new FilteredValueIterator<>(path, i -> true, serializer, VariableValueIdPair::getIdIndex));
+          new FilteredValueIterator<>(path, i -> true, serializer, VariableValueIdPair::getIdIndex, threadPool, threadPool));
     }
     CloseableIterator<Long> merger = new StreamIntersectMerger(filteredValueFiles);
     Instant start = Instant.now();

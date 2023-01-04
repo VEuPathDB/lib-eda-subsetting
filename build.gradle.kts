@@ -20,6 +20,13 @@ java {
   withSourcesJar()
   withJavadocJar()
 }
+tasks.withType<Jar> {
+  duplicatesStrategy = DuplicatesStrategy.INCLUDE
+}
+
+//tasks.named("jar") {
+//  duplicatesStrategy =
+//}
 
 val test by tasks.getting(Test::class) {
   // use junit platform for unit tests
@@ -108,8 +115,8 @@ dependencies {
   implementation("org.gusdb:fgputil-web:${fgputil}")
 
   // Log4J
-  implementation("org.apache.logging.log4j:log4j-api:2.19.0")
-  implementation("org.apache.logging.log4j:log4j-core:2.19.0")
+  implementation("org.apache.logging.log4j:log4j-api:2.17.2")
+  implementation("org.apache.logging.log4j:log4j-core:2.17.2")
 
   // Stub database (included in distribution since StubDB is used in EdaSubsettingService unit tests)
   implementation("org.hsqldb:hsqldb:2.7.1")

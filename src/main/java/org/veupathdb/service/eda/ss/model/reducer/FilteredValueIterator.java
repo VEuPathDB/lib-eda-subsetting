@@ -49,15 +49,15 @@ public class FilteredValueIterator<V, T> implements CloseableIterator<T> {
                                Function<VariableValueIdPair<V>, T> pairExtractor,
                                ExecutorService fileChannelThreadPool,
                                ExecutorService deserializerThreadPool) throws IOException {
-    this.filterPredicate = filterPredicate;
-    this.reader = new DualBufferBinaryRecordReader<>(path,
-            deserializer.numBytes(),
-1024,
-            byteBuf -> deserializer.fromBytes(byteBuf),
-            fileChannelThreadPool,
-            deserializerThreadPool
-    );
-    this.pairExtractor = pairExtractor;
+      this.filterPredicate = filterPredicate;
+      this.reader = new DualBufferBinaryRecordReader<>(path,
+          deserializer.numBytes(),
+          1024,
+          byteBuf -> deserializer.fromBytes(byteBuf),
+          fileChannelThreadPool,
+          deserializerThreadPool
+      );
+      this.pairExtractor = pairExtractor;
   }
 
   @Override
@@ -84,12 +84,11 @@ public class FilteredValueIterator<V, T> implements CloseableIterator<T> {
   private void nextMatch() {
     hasStarted = true;
     do {
-      Optional<VariableValueIdPair<V>> valuePairOpt = reader.next();
-      if (valuePairOpt.isEmpty()) {
+      if (!reader.hasNext()) {
         next = null;
         return;
       }
-      VariableValueIdPair<V> valuePair = valuePairOpt.get();
+      VariableValueIdPair<V> valuePair = reader.next();
       if (filterPredicate.test(valuePair.getValue())) {
         next = pairExtractor.apply(valuePair);
       } else {

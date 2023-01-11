@@ -55,6 +55,16 @@ class VariableFactory {
         + "ORDER BY " + DB.Tables.AttributeGraph.Columns.VARIABLE_ID_COL_NAME;  // stable ordering supports unit testing
   }
 
+  /**
+   * 
+   * @param rs Database result set containing variable metadata.
+   * @param entity Entity associated with variable.
+   * @param binaryMetadataProvider Optional metadata provider to decorate variables with metadata describing how the
+   *                               values are encoded as binary. This can be null if we are reading from the database
+   *                               exclusively.
+   * @return Variable with metadata fully populated.
+   * @throws SQLException If there is a failure in executing the query.
+   */
   static Variable createVariableFromResultSet(ResultSet rs, Entity entity, BinaryMetadataProvider binaryMetadataProvider) throws SQLException {
     Variable.Properties varProps = new Variable.Properties(
         getRsOptionalString(rs, PROVIDER_LABEL_COL_NAME, "No Provider Label available"), // TODO remove hack when in db
@@ -66,7 +76,10 @@ class VariableFactory {
         getRsOptionalString(rs, VARIABLE_PARENT_ID_COL_NAME, null),
         getRsOptionalString(rs, DEFINITION_COL_NAME, ""),
         parseJsonArrayOfString(rs, HIDE_FROM_COL_NAME));
-    Optional<BinaryProperties> binaryProperties = binaryMetadataProvider != null ? binaryMetadataProvider.getBinaryProperties(entity.getStudyAbbrev(), entity, varProps.id) : Optional.empty();
+    // Only set binary properties if binaryMetadataProvider is present.
+    Optional<BinaryProperties> binaryProperties = binaryMetadataProvider != null
+        ? binaryMetadataProvider.getBinaryProperties(entity.getStudyAbbrev(), entity, varProps.id)
+        : Optional.empty();
     return getRsRequiredBoolean(rs, HAS_VALUES_COL_NAME)
         ? createValueVarFromResultSet(rs, varProps, binaryProperties.orElse(null))
         : new VariablesCategory(varProps);

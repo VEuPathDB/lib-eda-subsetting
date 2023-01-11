@@ -6,6 +6,7 @@ import org.veupathdb.service.eda.ss.model.distribution.DateDistributionConfig;
 import org.veupathdb.service.eda.ss.model.tabular.TabularReportConfig;
 import org.veupathdb.service.eda.ss.model.variable.binary.BinaryConverter;
 import org.veupathdb.service.eda.ss.model.variable.binary.DateValueConverter;
+import org.veupathdb.service.eda.ss.model.variable.binary.EmptyBinaryProperties;
 import org.veupathdb.service.eda.ss.model.variable.binary.LongValueConverter;
 
 import java.time.Instant;
@@ -22,13 +23,18 @@ public class DateVariable extends VariableWithValues<Long> {
     validateType(VariableType.DATE);
   }
 
-  public static BinaryConverter<Long> getGenericBinaryConverter() {
+  public static BinaryConverter<Long> getGenericBinaryConverter(BinaryProperties empty) {
     return new LongValueConverter();
   }
 
   @Override
+  public BinaryProperties getBinaryProperties() {
+    return new EmptyBinaryProperties();
+  }
+
+  @Override
   public BinaryConverter<Long> getBinaryConverter() {
-    return getGenericBinaryConverter();
+    return getGenericBinaryConverter(null);
   }
 
   @Override

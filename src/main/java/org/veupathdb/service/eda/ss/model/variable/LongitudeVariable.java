@@ -4,6 +4,7 @@ import jakarta.ws.rs.BadRequestException;
 import org.veupathdb.service.eda.ss.model.tabular.TabularReportConfig;
 import org.veupathdb.service.eda.ss.model.variable.binary.BinaryConverter;
 import org.veupathdb.service.eda.ss.model.variable.binary.DoubleValueConverter;
+import org.veupathdb.service.eda.ss.model.variable.binary.EmptyBinaryProperties;
 
 public class LongitudeVariable extends VariableWithValues<Double> {
 
@@ -25,14 +26,19 @@ public class LongitudeVariable extends VariableWithValues<Double> {
   }
 
   // static version for use when we don't have an instance
-  public static BinaryConverter<Double> getGenericBinaryConverter() {
+  public static BinaryConverter<Double> getGenericBinaryConverter(BinaryProperties empty) {
     return new DoubleValueConverter();
   }
-  
+
+  @Override
+  public BinaryProperties getBinaryProperties() {
+    return new EmptyBinaryProperties();
+  }
+
   // instance method that provides typed return value
   @Override
   public BinaryConverter<Double> getBinaryConverter() {
-    return getGenericBinaryConverter();
+    return getGenericBinaryConverter(null);
   }
 
   @Override

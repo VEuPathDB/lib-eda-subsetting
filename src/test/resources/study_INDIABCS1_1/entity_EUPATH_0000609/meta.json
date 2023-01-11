@@ -1,17 +1,1 @@
-{
-  "var_EUPATH_0021030": "string",
-  "var_EUPATH_0000546": "integer",
-  "var_EUPATH_0021081": "string",
-  "var_EUPATH_0021306": "string",
-  "bytesReservedPerAncestor": [
-    11,
-    12
-  ],
-  "var_EUPATH_0021028": "string",
-  "var_EUPATH_0021027": "string",
-  "var_OBI_0001619": "date",
-  "var_EUPATH_0021029": "string",
-  "var_EUPATH_0027004": "string",
-  "var_EUPATH_0000550": "integer",
-  "bytesReservedForId": 13
-}
+{"variableMetadata":[{"type":"integer","variableId":"EUPATH_0000546","properties":{"@type":"number"}},{"type":"integer","variableId":"EUPATH_0000550","properties":{"@type":"number"}},{"type":"string","variableId":"EUPATH_0021027","properties":{"@type":"string","maxLength":7}},{"type":"string","variableId":"EUPATH_0021028","properties":{"@type":"string","maxLength":7}},{"type":"string","variableId":"EUPATH_0021029","properties":{"@type":"string","maxLength":6}},{"type":"string","variableId":"EUPATH_0021030","properties":{"@type":"string","maxLength":6}},{"type":"string","variableId":"EUPATH_0021081","properties":{"@type":"string","maxLength":7}},{"type":"string","variableId":"EUPATH_0021306","properties":{"@type":"string","maxLength":25}},{"type":"string","variableId":"EUPATH_0027004","properties":{"@type":"string","maxLength":7}},{"type":"date","variableId":"OBI_0001619","properties":{"@type":"number"}}],"bytesReservedPerAncestor":[11,12],"bytesReservedForId":13}

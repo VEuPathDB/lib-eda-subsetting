@@ -13,6 +13,7 @@ import java.time.Duration;
 import java.util.NoSuchElementException;
 import java.util.Optional;
 import java.util.concurrent.ExecutorService;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Function;
 import java.util.function.Predicate;
 
@@ -51,7 +52,7 @@ public class FilteredValueIterator<V, T> implements CloseableIterator<T> {
     this.filterPredicate = filterPredicate;
     this.reader = new DualBufferBinaryRecordReader<>(path,
             deserializer.numBytes(),
-            1024,
+1024,
             byteBuf -> deserializer.fromBytes(byteBuf),
             fileChannelThreadPool,
             deserializerThreadPool

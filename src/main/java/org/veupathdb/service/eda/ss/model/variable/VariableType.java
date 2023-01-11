@@ -33,13 +33,13 @@ public enum VariableType {
   private final String typeString;
   private final FunctionWithException<ResultSet, String> resultSetToStringValue;
   private final FunctionWithException<List<String>, JSONArray> multiValStringListToJsonArray;
-  private final Supplier<BinaryConverter<?>> converterSupplier;
+  private final FunctionWithException<BinaryProperties, BinaryConverter<?>> converterSupplier;
 
   VariableType(String tallTableColumnName,
                String typeString,
                FunctionWithException<ResultSet, String> resultSetToStringValue,
                FunctionWithException<List<String>, JSONArray> multiValStringListToJsonArray,
-               Supplier<BinaryConverter<?>> converterSupplier) {
+               FunctionWithException<BinaryProperties, BinaryConverter<?>> converterSupplier) {
     this.tallTableColumnName = tallTableColumnName;
     this.resultSetToStringValue = resultSetToStringValue;
     this.multiValStringListToJsonArray = multiValStringListToJsonArray;
@@ -127,8 +127,8 @@ public enum VariableType {
   public String getTypeString() {
     return typeString;
   }
-  
-  public Supplier<BinaryConverter<?>> getConverterSupplier() {
+
+  public FunctionWithException<BinaryProperties, BinaryConverter<?>> getConverterSupplier() {
     return converterSupplier;
   }
 }

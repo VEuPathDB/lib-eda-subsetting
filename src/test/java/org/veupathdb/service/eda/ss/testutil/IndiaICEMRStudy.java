@@ -38,11 +38,13 @@ public class IndiaICEMRStudy {
         .withEntity(householdEntity)
         .withVariableType(VariableType.STRING)
         .withVariableId("EUPATH_0021243")
+        .withMaxLength(7)
         .build();
     householdMosquitoRepellentMats = new TestDataProvider.StringVariableBuilder()
         .withEntity(householdEntity)
         .withVariableType(VariableType.STRING)
         .withVariableId("EUPATH_0021246")
+        .withMaxLength(7)
         .build();
 
     personsInHousehold =  new TestDataProvider.IntegerVariableBuilder()
@@ -84,6 +86,7 @@ public class IndiaICEMRStudy {
         .withEntity(participantEntity)
         .withVariableId("EUPATH_0021002")
         .withVariableType(VariableType.STRING)
+        .withMaxLength(30)
         .build();
     participantEntity.addVariable(symptoms);
     this.study = new TestDataProvider.StudyBuilder(studyAbbrev, studyAbbrev)

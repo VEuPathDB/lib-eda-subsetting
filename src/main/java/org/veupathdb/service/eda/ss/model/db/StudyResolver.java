@@ -4,6 +4,7 @@ import org.gusdb.fgputil.ListBuilder;
 import org.gusdb.fgputil.functional.Functions;
 import org.veupathdb.service.eda.ss.model.Study;
 import org.veupathdb.service.eda.ss.model.StudyOverview;
+import org.veupathdb.service.eda.ss.model.variable.binary.BinaryFilesManager;
 
 import java.util.List;
 

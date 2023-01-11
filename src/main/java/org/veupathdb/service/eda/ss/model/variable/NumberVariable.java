@@ -2,6 +2,7 @@ package org.veupathdb.service.eda.ss.model.variable;
 
 import org.veupathdb.service.eda.ss.model.distribution.NumberDistributionConfig;
 import org.veupathdb.service.eda.ss.model.tabular.TabularReportConfig;
+import org.veupathdb.service.eda.ss.model.variable.binary.EmptyBinaryProperties;
 
 /**
  * This is a superclass supporting ONLY float and integer types, which can both

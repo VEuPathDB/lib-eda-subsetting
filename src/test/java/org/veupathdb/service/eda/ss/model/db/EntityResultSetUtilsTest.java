@@ -3,14 +3,15 @@ package org.veupathdb.service.eda.ss.model.db;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.veupathdb.service.eda.ss.test.StubDb.*;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import org.mockito.Mockito;
+import org.veupathdb.service.eda.ss.model.Entity;
+import org.veupathdb.service.eda.ss.model.reducer.BinaryMetadataProvider;
 import org.veupathdb.service.eda.ss.test.MockFilters;
 import org.veupathdb.service.eda.ss.model.Study;
 import org.veupathdb.service.eda.ss.test.MockModel;
@@ -20,14 +21,24 @@ import org.veupathdb.service.eda.ss.test.StubDb;
 public class EntityResultSetUtilsTest {
 
   private static MockModel _model;
+  private BinaryMetadataProvider _binaryMetadataProvider;
+
+  private Study study;
 
   @BeforeAll
   public static void setUp() {
     _model = new MockModel();
-    Study study = new StudyFactory(StubDb.getDataSource(), APP_DB_SCHEMA, USER_STUDIES_FLAG).getStudyById(LoadStudyTest.STUDY_ID);
+  }
+
+  @BeforeEach
+  public void beforeEach() {
+    _binaryMetadataProvider = Mockito.mock(BinaryMetadataProvider.class);
+    Mockito.when(_binaryMetadataProvider.getBinaryProperties(Mockito.anyString(), Mockito.any(Entity.class), Mockito.anyString()))
+            .thenReturn(Optional.empty());
+    Study study = new StudyFactory(StubDb.getDataSource(), APP_DB_SCHEMA, USER_STUDIES_FLAG, _binaryMetadataProvider).getStudyById(LoadStudyTest.STUDY_ID);
     new MockFilters(study);
   }
-  
+
   @Test
   @DisplayName("Test getting set of entity IDs from set of filters ")
   void testPutMultiValuesAsJsonIntoWideRow() {

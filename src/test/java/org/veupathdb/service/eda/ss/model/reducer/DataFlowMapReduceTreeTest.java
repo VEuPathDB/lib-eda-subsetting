@@ -127,8 +127,8 @@ public class DataFlowMapReduceTreeTest {
     final ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
     FilteredResultFactory.produceTabularSubsetFromFile(indiaICEMRStudy.getStudy(), indiaICEMRStudy.getParticipantEntity(),
         List.of(indiaICEMRStudy.getTimeSinceLastMalaria()), List.of(),
-        TabularResponses.Type.TABULAR.getBinaryFormatter(), new TabularReportConfig(), outputStream, new BinaryValuesStreamer
-                    (new BinaryFilesManager(binaryDirectory), THREAD_POOL, THREAD_POOL));
+        TabularResponses.Type.TABULAR.getBinaryFormatter(), new TabularReportConfig(), outputStream,
+            new BinaryValuesStreamer(new BinaryFilesManager(binaryDirectory), THREAD_POOL, THREAD_POOL));
     MatcherAssert.assertThat(Arrays.stream(outputStream.toString().split("\n"))
         .collect(Collectors.toList()), Matchers.hasSize(498));
   }

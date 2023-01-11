@@ -36,6 +36,8 @@ public abstract class VariableWithValues<T> extends Variable {
     }
   }
 
+  public abstract BinaryProperties getBinaryProperties();
+
   public abstract BinaryConverter<T> getBinaryConverter();
 
   public abstract T fromString(String s);

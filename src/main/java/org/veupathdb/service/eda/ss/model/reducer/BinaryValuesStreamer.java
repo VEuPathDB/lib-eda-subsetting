@@ -7,6 +7,7 @@ import org.veupathdb.service.eda.ss.model.Study;
 import org.veupathdb.service.eda.ss.model.filter.MultiFilter;
 import org.veupathdb.service.eda.ss.model.filter.SingleValueFilter;
 import org.veupathdb.service.eda.ss.model.tabular.TabularReportConfig;
+import org.veupathdb.service.eda.ss.model.variable.BinaryProperties;
 import org.veupathdb.service.eda.ss.model.variable.VariableValueIdPair;
 import org.veupathdb.service.eda.ss.model.variable.VariableWithValues;
 import org.veupathdb.service.eda.ss.model.variable.binary.*;
@@ -102,6 +103,7 @@ public class BinaryValuesStreamer {
       extractor = pair -> new VariableValueIdPair<>(
           pair.getIdIndex(), variable.valueToString(pair.getValue(), reportConfig));
     }
+
     BinaryConverter<V> serializer = variable.getBinaryConverter();
     return new FilteredValueIterator(
             binaryFilesManager.getVariableFile(study,

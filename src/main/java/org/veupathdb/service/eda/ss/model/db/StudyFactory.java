@@ -8,6 +8,8 @@ import org.veupathdb.service.eda.ss.model.Entity;
 import org.veupathdb.service.eda.ss.model.Study;
 import org.veupathdb.service.eda.ss.model.StudyOverview;
 import org.veupathdb.service.eda.ss.model.StudyOverview.StudySourceType;
+import org.veupathdb.service.eda.ss.model.reducer.BinaryMetadataProvider;
+import org.veupathdb.service.eda.ss.model.variable.binary.BinaryFilesManager;
 
 import javax.sql.DataSource;
 import java.util.ArrayList;
@@ -25,11 +27,16 @@ public class StudyFactory implements StudyProvider {
   private final DataSource _dataSource;
   private final String _dataSchema;
   private final StudySourceType _sourceType;
+  private final BinaryMetadataProvider _binaryMetadataProvider;
 
-  public StudyFactory(DataSource dataSource, String dataSchema, StudySourceType sourceType) {
+  public StudyFactory(DataSource dataSource,
+                      String dataSchema,
+                      StudySourceType sourceType,
+                      BinaryMetadataProvider binaryMetadataProvider) {
     _dataSource = dataSource;
     _dataSchema = dataSchema;
     _sourceType = sourceType;
+    _binaryMetadataProvider = binaryMetadataProvider;
   }
 
   private static String getStudyOverviewSql(String appDbSchema) {
@@ -68,7 +75,7 @@ public class StudyFactory implements StudyProvider {
     CollectionFactory collectionFactory = new CollectionFactory(_dataSource, _dataSchema);
 
     for (Entity entity : entityIdMap.values()) {
-      entity.assignVariables(variableFactory.loadVariables(entity));
+      entity.assignVariables(variableFactory.loadVariables(studyId, entity, _binaryMetadataProvider));
       if (entity.hasCollections()) {
         LOG.info("Entity " + entity.getId() + " has collections.  Loading them...");
         entity.assignCollections(collectionFactory.loadCollections(entity));

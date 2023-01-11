@@ -149,6 +149,7 @@ public class TestDataProvider {
     private Entity entity;
     private String variableId;
     private VariableType variableType;
+    private int maxLength = 200;
 
     public StringVariableBuilder withEntity(Entity entity) {
       this.entity = entity;
@@ -165,10 +166,16 @@ public class TestDataProvider {
       return this;
     }
 
+    public StringVariableBuilder withMaxLength(int maxLength) {
+      this.maxLength = maxLength;
+      return this;
+    }
+
     public StringVariable build() {
       return new StringVariable(
           constructGenericVarProps(entity, variableId),
-          constructVarValuesProps(variableType, false)
+          constructVarValuesProps(variableType, false),
+          new StringVariable.StringBinaryProperties(maxLength)
       );
     }
   }

@@ -5,7 +5,10 @@ import org.gusdb.fgputil.distribution.HistogramBin;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import org.mockito.Mockito;
 import org.veupathdb.service.eda.ss.model.Entity;
+import org.veupathdb.service.eda.ss.model.reducer.BinaryMetadataProvider;
+import org.veupathdb.service.eda.ss.model.variable.binary.BinaryFilesManager;
 import org.veupathdb.service.eda.ss.test.MockFilters;
 import org.veupathdb.service.eda.ss.model.Study;
 import org.veupathdb.service.eda.ss.model.db.StudyFactory;
@@ -25,11 +28,15 @@ public class StudiesTest {
 
   private static DataSource _dataSource;
   private static MockFilters _filtersForTesting;
+  private static BinaryMetadataProvider _binaryMetadataProvider;
 
   @BeforeAll
   public static void setUp() {
     _dataSource = StubDb.getDataSource();
-    Study study = new StudyFactory(_dataSource, APP_DB_SCHEMA, USER_STUDIES_FLAG).getStudyById("DS-2324");
+    _binaryMetadataProvider = Mockito.mock(BinaryMetadataProvider.class);
+    Mockito.when(_binaryMetadataProvider.getBinaryProperties(Mockito.anyString(), Mockito.any(Entity.class), Mockito.anyString()))
+            .thenReturn(Optional.empty());
+    Study study = new StudyFactory(_dataSource, APP_DB_SCHEMA, USER_STUDIES_FLAG, _binaryMetadataProvider).getStudyById("DS-2324");
     _filtersForTesting = new MockFilters(study);
   }
 
@@ -38,7 +45,7 @@ public class StudiesTest {
   @DisplayName("Test variable distribution - no filters")
   void testVariableDistributionNoFilters() {
 
-    Study study = new StudyFactory(_dataSource, APP_DB_SCHEMA, USER_STUDIES_FLAG).getStudyById("DS-2324");
+    Study study = new StudyFactory(_dataSource, APP_DB_SCHEMA, USER_STUDIES_FLAG, _binaryMetadataProvider).getStudyById("DS-2324");
 
     String entityId = "GEMS_Part";
     Entity entity = study.getEntity(entityId).orElseThrow();
@@ -63,7 +70,7 @@ public class StudiesTest {
   @DisplayName("Test variable distribution - with filters")
   void testVariableDistribution() {
 
-    Study study = new StudyFactory(_dataSource, APP_DB_SCHEMA, USER_STUDIES_FLAG).getStudyById("DS-2324");
+    Study study = new StudyFactory(_dataSource, APP_DB_SCHEMA, USER_STUDIES_FLAG, _binaryMetadataProvider).getStudyById("DS-2324");
 
     String entityId = "GEMS_Part";
     Entity entity = study.getEntity(entityId).orElseThrow();

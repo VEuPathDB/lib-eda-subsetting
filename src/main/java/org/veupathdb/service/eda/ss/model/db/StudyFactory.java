@@ -29,13 +29,6 @@ public class StudyFactory implements StudyProvider {
   private final StudySourceType _sourceType;
   private final VariableFactory _variableFactory;
 
-  /**
-   *
-   * @param dataSource
-   * @param dataSchema
-   * @param sourceType
-   * @param variableFactory
-   */
   public StudyFactory(DataSource dataSource,
                       String dataSchema,
                       StudySourceType sourceType,

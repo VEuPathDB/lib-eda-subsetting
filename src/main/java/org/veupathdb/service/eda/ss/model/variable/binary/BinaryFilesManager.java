@@ -67,17 +67,22 @@ public class BinaryFilesManager {
   }
 
   public boolean studyHasFiles(Study study) {
-    final Optional<Path> studyDir = getStudyDirIfExists(study.getInternalAbbrev());
+    return studyHasFiles(study.getInternalAbbrev());
+  }
+
+  public boolean studyHasFiles(String studyAbbrev) {
+    final Optional<Path> studyDir = getStudyDirIfExists(studyAbbrev);
     if (studyDir.isEmpty()) {
-      LOG.debug("Study directory for study {} does not exist", study.getStudyId());
+      LOG.debug("Study directory for study {} does not exist", studyAbbrev);
       return false;
     }
     if (!getDoneFile(studyDir.get(), Operation.READ).toFile().exists()) {
-      LOG.debug("Study directory for study {} exists but data is incomplete.", study.getStudyId());
+      LOG.debug("Study directory for study {} exists but data is incomplete.", studyAbbrev);
       return false;
     }
     return true;
   }
+
 
   public Path getStudyDir(Study study, Operation op) {
     if (op == Operation.READ) {

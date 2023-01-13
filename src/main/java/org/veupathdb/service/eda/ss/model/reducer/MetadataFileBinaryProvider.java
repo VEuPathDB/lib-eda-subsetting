@@ -19,6 +19,9 @@ public class MetadataFileBinaryProvider implements BinaryMetadataProvider {
 
     @Override
     public Optional<BinaryProperties> getBinaryProperties(String studyAbbrev, Entity entity, String variableId) {
+        if (!binaryFilesManager.studyHasFiles(studyAbbrev)) {
+            return Optional.empty();
+        }
         Optional<BinaryFilesManager.Metadata> metadata = binaryFilesManager.readMetadata(studyAbbrev, entity);
         Optional<BinaryFilesManager.VariableMeta> varMetadata = metadata.flatMap(meta -> meta.getVariableMetadata().stream()
             .filter(varMeta -> varMeta.getVariableId().equals(variableId))

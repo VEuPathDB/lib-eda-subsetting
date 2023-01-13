@@ -25,23 +25,25 @@ import static org.veupathdb.service.eda.ss.model.db.ResultSetUtils.getRsRequired
 import static org.veupathdb.service.eda.ss.model.db.ResultSetUtils.getRsOptionalString;
 import static org.veupathdb.service.eda.ss.model.db.ResultSetUtils.parseJsonArrayOfString;
 
-class VariableFactory {
+public class VariableFactory {
 
   private final DataSource _dataSource;
   private final String _appDbSchema;
+  private final BinaryMetadataProvider _binaryMetadataProvider;
 
-  public VariableFactory(DataSource dataSource, String appDbSchema) {
+  public VariableFactory(DataSource dataSource, String appDbSchema, BinaryMetadataProvider binaryMetadataProvider) {
     _dataSource = dataSource;
     _appDbSchema = appDbSchema;
+    _binaryMetadataProvider = binaryMetadataProvider;
   }
 
-  List<Variable> loadVariables(String studyAbbrev, Entity entity, BinaryMetadataProvider binaryMetadataProvider) {
+  List<Variable> loadVariables(String studyAbbrev, Entity entity) {
     String sql = generateStudyVariablesListSql(entity, _appDbSchema);
 
     return new SQLRunner(_dataSource, sql, "Get entity variables metadata for: '" + entity.getDisplayName() + "'").executeQuery(rs -> {
       List<Variable> variables = new ArrayList<>();
       while (rs.next()) {
-        variables.add(createVariableFromResultSet(rs, entity, binaryMetadataProvider));
+        variables.add(createVariableFromResultSet(rs, entity, _binaryMetadataProvider));
       }
       return variables;
     });

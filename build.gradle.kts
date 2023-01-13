@@ -108,7 +108,7 @@ repositories {
 dependencies {
 
   // FgpUtil Dependencies
-  val fgputil = "2.11.0-jakarta"
+  val fgputil = "2.12.0-jakarta"
   implementation("org.gusdb:fgputil-core:${fgputil}")
   implementation("org.gusdb:fgputil-db:${fgputil}")
   implementation("org.gusdb:fgputil-json:${fgputil}")

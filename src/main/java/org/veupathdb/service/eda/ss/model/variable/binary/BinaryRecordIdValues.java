@@ -1,8 +1,7 @@
 package org.veupathdb.service.eda.ss.model.variable.binary;
-import org.gusdb.fgputil.ListBuilder;
 import org.veupathdb.service.eda.ss.model.variable.VariableValueIdPair;
 
-import java.util.List;
+import java.util.Arrays;
 import java.util.Objects;
 
 /**
@@ -24,15 +23,9 @@ public class BinaryRecordIdValues extends VariableValueIdPair<byte[][]> {
 
   private static byte[][] constructList(byte[] entityId, byte[][] ancestorIds) {
     byte[][] outputList = new byte[ancestorIds.length + 1][];
-    outputList[0] = new byte[entityId.length];
-    for (int i = 0; i < entityId.length; i++) {
-      outputList[0][i] = entityId[i];
-    }
+    outputList[0] = Arrays.copyOf(entityId, entityId.length);
     for (int i = 0; i < ancestorIds.length; i++) {
-      outputList[i + 1] = new byte[ancestorIds[i].length];
-      for (int j = 0; j < ancestorIds[i].length; j++) {
-        outputList[i + 1][j] = ancestorIds[i][j];
-      }
+      outputList[i + 1] = Arrays.copyOf(ancestorIds[i], ancestorIds[i].length);
     }
     return outputList;
   }

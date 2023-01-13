@@ -11,7 +11,6 @@ import java.io.IOException;
 import java.nio.file.Path;
 import java.time.Duration;
 import java.util.NoSuchElementException;
-import java.util.Optional;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Function;
@@ -49,15 +48,15 @@ public class FilteredValueIterator<V, T> implements CloseableIterator<T> {
                                Function<VariableValueIdPair<V>, T> pairExtractor,
                                ExecutorService fileChannelThreadPool,
                                ExecutorService deserializerThreadPool) throws IOException {
-      this.filterPredicate = filterPredicate;
-      this.reader = new DualBufferBinaryRecordReader<>(path,
-          deserializer.numBytes(),
-          1024,
-          byteBuf -> deserializer.fromBytes(byteBuf),
-          fileChannelThreadPool,
-          deserializerThreadPool
-      );
-      this.pairExtractor = pairExtractor;
+    this.filterPredicate = filterPredicate;
+    this.reader = new DualBufferBinaryRecordReader<>(path,
+        deserializer.numBytes(),
+        1024,
+        deserializer::fromBytes,
+        fileChannelThreadPool,
+        deserializerThreadPool
+    );
+    this.pairExtractor = pairExtractor;
   }
 
   @Override

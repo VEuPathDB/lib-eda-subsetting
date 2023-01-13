@@ -35,7 +35,8 @@ public class EntityResultSetUtilsTest {
     _binaryMetadataProvider = Mockito.mock(BinaryMetadataProvider.class);
     Mockito.when(_binaryMetadataProvider.getBinaryProperties(Mockito.anyString(), Mockito.any(Entity.class), Mockito.anyString()))
             .thenReturn(Optional.empty());
-    Study study = new StudyFactory(StubDb.getDataSource(), APP_DB_SCHEMA, USER_STUDIES_FLAG, _binaryMetadataProvider).getStudyById(LoadStudyTest.STUDY_ID);
+    Study study = new StudyFactory(StubDb.getDataSource(), APP_DB_SCHEMA, USER_STUDIES_FLAG,
+        new VariableFactory(StubDb.getDataSource(), APP_DB_SCHEMA, _binaryMetadataProvider)).getStudyById(LoadStudyTest.STUDY_ID);
     new MockFilters(study);
   }
 

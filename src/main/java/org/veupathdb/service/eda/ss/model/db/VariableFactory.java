@@ -4,22 +4,16 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import javax.sql.DataSource;
 import org.gusdb.fgputil.db.runner.SQLRunner;
 import org.veupathdb.service.eda.ss.model.Entity;
+import org.veupathdb.service.eda.ss.model.Study;
 import org.veupathdb.service.eda.ss.model.distribution.NumberDistributionConfig;
 import org.veupathdb.service.eda.ss.model.distribution.DateDistributionConfig;
-import org.veupathdb.service.eda.ss.model.variable.DateVariable;
-import org.veupathdb.service.eda.ss.model.variable.FloatingPointVariable;
-import org.veupathdb.service.eda.ss.model.variable.IntegerVariable;
-import org.veupathdb.service.eda.ss.model.variable.LongitudeVariable;
-import org.veupathdb.service.eda.ss.model.variable.StringVariable;
-import org.veupathdb.service.eda.ss.model.variable.Variable;
-import org.veupathdb.service.eda.ss.model.variable.VariableDataShape;
-import org.veupathdb.service.eda.ss.model.variable.VariableDisplayType;
-import org.veupathdb.service.eda.ss.model.variable.VariableType;
-import org.veupathdb.service.eda.ss.model.variable.VariableWithValues;
-import org.veupathdb.service.eda.ss.model.variable.VariablesCategory;
+import org.veupathdb.service.eda.ss.model.reducer.BinaryMetadataProvider;
+import org.veupathdb.service.eda.ss.model.variable.*;
+import org.veupathdb.service.eda.ss.model.variable.binary.BinaryFilesManager;
 
 import static org.gusdb.fgputil.FormatUtil.NL;
 import static org.veupathdb.service.eda.ss.model.db.DB.Tables.AttributeGraph.Columns.*;
@@ -31,24 +25,25 @@ import static org.veupathdb.service.eda.ss.model.db.ResultSetUtils.getRsRequired
 import static org.veupathdb.service.eda.ss.model.db.ResultSetUtils.getRsOptionalString;
 import static org.veupathdb.service.eda.ss.model.db.ResultSetUtils.parseJsonArrayOfString;
 
-class VariableFactory {
+public class VariableFactory {
 
   private final DataSource _dataSource;
   private final String _appDbSchema;
+  private final BinaryMetadataProvider _binaryMetadataProvider;
 
-  public VariableFactory(DataSource dataSource, String appDbSchema) {
+  public VariableFactory(DataSource dataSource, String appDbSchema, BinaryMetadataProvider binaryMetadataProvider) {
     _dataSource = dataSource;
     _appDbSchema = appDbSchema;
+    _binaryMetadataProvider = binaryMetadataProvider;
   }
 
-  List<Variable> loadVariables(Entity entity) {
-
+  List<Variable> loadVariables(String studyAbbrev, Entity entity) {
     String sql = generateStudyVariablesListSql(entity, _appDbSchema);
-    
+
     return new SQLRunner(_dataSource, sql, "Get entity variables metadata for: '" + entity.getDisplayName() + "'").executeQuery(rs -> {
       List<Variable> variables = new ArrayList<>();
       while (rs.next()) {
-        variables.add(createVariableFromResultSet(rs, entity));
+        variables.add(createVariableFromResultSet(rs, entity, _binaryMetadataProvider));
       }
       return variables;
     });
@@ -62,8 +57,17 @@ class VariableFactory {
         + "ORDER BY " + DB.Tables.AttributeGraph.Columns.VARIABLE_ID_COL_NAME;  // stable ordering supports unit testing
   }
 
-  static Variable createVariableFromResultSet(ResultSet rs, Entity entity) throws SQLException {
-
+  /**
+   * 
+   * @param rs Database result set containing variable metadata.
+   * @param entity Entity associated with variable.
+   * @param binaryMetadataProvider Optional metadata provider to decorate variables with metadata describing how the
+   *                               values are encoded as binary. This can be null if we are reading from the database
+   *                               exclusively.
+   * @return Variable with metadata fully populated.
+   * @throws SQLException If there is a failure in executing the query.
+   */
+  static Variable createVariableFromResultSet(ResultSet rs, Entity entity, BinaryMetadataProvider binaryMetadataProvider) throws SQLException {
     Variable.Properties varProps = new Variable.Properties(
         getRsOptionalString(rs, PROVIDER_LABEL_COL_NAME, "No Provider Label available"), // TODO remove hack when in db
         getRsRequiredString(rs, VARIABLE_ID_COL_NAME),
@@ -74,15 +78,19 @@ class VariableFactory {
         getRsOptionalString(rs, VARIABLE_PARENT_ID_COL_NAME, null),
         getRsOptionalString(rs, DEFINITION_COL_NAME, ""),
         parseJsonArrayOfString(rs, HIDE_FROM_COL_NAME));
-
+    // Only set binary properties if binaryMetadataProvider is present.
+    Optional<BinaryProperties> binaryProperties = binaryMetadataProvider != null
+        ? binaryMetadataProvider.getBinaryProperties(entity.getStudyAbbrev(), entity, varProps.id)
+        : Optional.empty();
     return getRsRequiredBoolean(rs, HAS_VALUES_COL_NAME)
-        ? createValueVarFromResultSet(rs, varProps)
+        ? createValueVarFromResultSet(rs, varProps, binaryProperties.orElse(null))
         : new VariablesCategory(varProps);
   }
 
-  static Variable createValueVarFromResultSet(ResultSet rs, Variable.Properties varProps) {
+  static Variable createValueVarFromResultSet(ResultSet rs,
+                                              Variable.Properties varProps,
+                                              BinaryProperties binaryProperties) {
     try {
-
       VariableWithValues.Properties valueProps = new VariableWithValues.Properties(
           VariableType.fromString(getRsRequiredString(rs, VARIABLE_TYPE_COL_NAME)),
           VariableDataShape.fromString(getRsRequiredString(rs, DATA_SHAPE_COL_NAME)),
@@ -96,6 +104,7 @@ class VariableFactory {
       );
 
       switch(valueProps.type) {
+
 
         case NUMBER: return
             new FloatingPointVariable(varProps, valueProps, createFloatDistributionConfig(rs, true), createFloatProperties(rs));
@@ -111,8 +120,8 @@ class VariableFactory {
         case DATE: return
             new DateVariable(varProps, valueProps, createDateDistributionConfig(valueProps.dataShape, rs, true));
 
-        case STRING: return
-            new StringVariable(varProps, valueProps);
+        case STRING:
+          return new StringVariable(varProps, valueProps, (StringVariable.StringBinaryProperties) binaryProperties);
 
         default: throw new RuntimeException("Entity:  " + varProps.entity.getId() +
             " variable: " + varProps.id + " has unrecognized type " + valueProps.type);

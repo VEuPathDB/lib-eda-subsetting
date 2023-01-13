@@ -5,6 +5,7 @@ import org.veupathdb.service.eda.ss.model.distribution.NumberDistributionConfig;
 import org.veupathdb.service.eda.ss.model.tabular.TabularReportConfig;
 import org.veupathdb.service.eda.ss.model.variable.binary.BinaryConverter;
 import org.veupathdb.service.eda.ss.model.variable.binary.DoubleValueConverter;
+import org.veupathdb.service.eda.ss.model.variable.binary.EmptyBinaryProperties;
 
 import java.util.Optional;
 
@@ -41,13 +42,18 @@ public class FloatingPointVariable extends NumberVariable<Double> {
 
   }
 
-  public static BinaryConverter<Double> getGenericBinaryConverter() {
+  public static BinaryConverter<Double> getGenericBinaryConverter(BinaryProperties empty) {
     return new DoubleValueConverter();
   }
 
   @Override
+  public BinaryProperties getBinaryProperties() {
+    return new EmptyBinaryProperties();
+  }
+
+  @Override
   public BinaryConverter<Double> getBinaryConverter() {
-    return getGenericBinaryConverter();
+    return getGenericBinaryConverter(null);
   }
 
   @Override

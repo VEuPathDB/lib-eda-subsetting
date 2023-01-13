@@ -6,6 +6,8 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.veupathdb.service.eda.ss.model.Entity;
+import org.veupathdb.service.eda.ss.model.db.VariableFactory;
+import org.veupathdb.service.eda.ss.model.reducer.EmptyBinaryMetadataProvider;
 import org.veupathdb.service.eda.ss.test.MockFilters;
 import org.veupathdb.service.eda.ss.model.Study;
 import org.veupathdb.service.eda.ss.model.db.StudyFactory;
@@ -25,11 +27,13 @@ public class StudiesTest {
 
   private static DataSource _dataSource;
   private static MockFilters _filtersForTesting;
+  private static VariableFactory _variableFactory;
 
   @BeforeAll
   public static void setUp() {
     _dataSource = StubDb.getDataSource();
-    Study study = new StudyFactory(_dataSource, APP_DB_SCHEMA, USER_STUDIES_FLAG).getStudyById("DS-2324");
+    _variableFactory = new VariableFactory(_dataSource, APP_DB_SCHEMA, new EmptyBinaryMetadataProvider());
+    Study study = new StudyFactory(_dataSource, APP_DB_SCHEMA, USER_STUDIES_FLAG, _variableFactory).getStudyById("DS-2324");
     _filtersForTesting = new MockFilters(study);
   }
 
@@ -37,8 +41,7 @@ public class StudiesTest {
   @Test
   @DisplayName("Test variable distribution - no filters")
   void testVariableDistributionNoFilters() {
-
-    Study study = new StudyFactory(_dataSource, APP_DB_SCHEMA, USER_STUDIES_FLAG).getStudyById("DS-2324");
+    Study study = new StudyFactory(_dataSource, APP_DB_SCHEMA, USER_STUDIES_FLAG, _variableFactory).getStudyById("DS-2324");
 
     String entityId = "GEMS_Part";
     Entity entity = study.getEntity(entityId).orElseThrow();
@@ -62,8 +65,7 @@ public class StudiesTest {
   @Test
   @DisplayName("Test variable distribution - with filters")
   void testVariableDistribution() {
-
-    Study study = new StudyFactory(_dataSource, APP_DB_SCHEMA, USER_STUDIES_FLAG).getStudyById("DS-2324");
+    Study study = new StudyFactory(_dataSource, APP_DB_SCHEMA, USER_STUDIES_FLAG, _variableFactory).getStudyById("DS-2324");
 
     String entityId = "GEMS_Part";
     Entity entity = study.getEntity(entityId).orElseThrow();

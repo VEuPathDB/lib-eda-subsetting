@@ -4,6 +4,7 @@ import jakarta.ws.rs.BadRequestException;
 import org.veupathdb.service.eda.ss.model.distribution.NumberDistributionConfig;
 import org.veupathdb.service.eda.ss.model.tabular.TabularReportConfig;
 import org.veupathdb.service.eda.ss.model.variable.binary.BinaryConverter;
+import org.veupathdb.service.eda.ss.model.variable.binary.EmptyBinaryProperties;
 import org.veupathdb.service.eda.ss.model.variable.binary.LongValueConverter;
 import java.util.Optional;
 
@@ -37,13 +38,18 @@ public class IntegerVariable extends NumberVariable<Long> {
   }
   
   // static version for use when we don't have an instance
-  public static BinaryConverter<Long> getGenericBinaryConverter() {
+  public static BinaryConverter<Long> getGenericBinaryConverter(BinaryProperties empty) {
     return new LongValueConverter();
   }
-  
+
+  @Override
+  public BinaryProperties getBinaryProperties() {
+    return new EmptyBinaryProperties();
+  }
+
   @Override
   public BinaryConverter<Long> getBinaryConverter() {
-    return getGenericBinaryConverter();
+    return getGenericBinaryConverter(null);
   }
 
   @Override

@@ -1,5 +1,7 @@
 package org.veupathdb.service.eda.ss.model.variable.binary;
 
+import java.io.File;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.nio.file.FileAlreadyExistsException;
 import java.nio.file.Files;
@@ -8,6 +10,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -16,9 +19,12 @@ import org.json.JSONException;
 import org.json.JSONObject;
 import org.veupathdb.service.eda.ss.model.Entity;
 import org.veupathdb.service.eda.ss.model.Study;
+import org.veupathdb.service.eda.ss.model.variable.BinaryProperties;
 import org.veupathdb.service.eda.ss.model.variable.Variable;
+import org.veupathdb.service.eda.ss.model.variable.VariableWithValues;
 
 public class BinaryFilesManager {
+  private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
   final StudyFinder studyFinder;
 
   public static final String ANCESTORS_FILE_NAME = "ancestors";
@@ -61,7 +67,7 @@ public class BinaryFilesManager {
   }
 
   public boolean studyHasFiles(Study study) {
-    final Optional<Path> studyDir = getStudyDirIfExists(study);
+    final Optional<Path> studyDir = getStudyDirIfExists(study.getInternalAbbrev());
     if (studyDir.isEmpty()) {
       LOG.debug("Study directory for study {} does not exist", study.getStudyId());
       return false;
@@ -75,35 +81,35 @@ public class BinaryFilesManager {
 
   public Path getStudyDir(Study study, Operation op) {
     if (op == Operation.READ) {
-      return mustGetExistingStudyDir(study);
+      return mustGetExistingStudyDir(study.getInternalAbbrev());
     }
     else {
-      Path studyDir = studyFinder.findStudyPath(getStudyDirName(study));
+      Path studyDir = studyFinder.findStudyPath(getStudyDirName(study.getInternalAbbrev()));
       createDir(studyDir);
       return studyDir;
     }
   }
 
   public boolean studyDirExists(Study study) {
-    return getStudyDirIfExists(study).isPresent();
+    return getStudyDirIfExists(study.getInternalAbbrev()).isPresent();
   }
 
   public Path getEntityDir(Study study, Entity entity, Operation op) {
-    if (op == Operation.READ) return getEntityDir(study, entity);
+    if (op == Operation.READ) return getEntityDir(study.getInternalAbbrev(), entity);
     else {
-      Path entityDir = Path.of(studyFinder.findStudyPath(getStudyDirName(study)).toString(), getEntityDirName(entity));
+      Path entityDir = Path.of(studyFinder.findStudyPath(getStudyDirName(study.getInternalAbbrev())).toString(), getEntityDirName(entity));
       createDir(entityDir);
       return entityDir;
     }
   }
 
   public boolean entityDirExists(Study study, Entity entity) {
-    return Files.isDirectory(Path.of(mustGetExistingStudyDir(study).toString(), getEntityDirName(entity)));
+    return Files.isDirectory(Path.of(mustGetExistingStudyDir(study.getInternalAbbrev()).toString(), getEntityDirName(entity)));
   }
 
   public Path getAncestorFile(Study study, Entity entity, Operation op) {
     if (op == Operation.READ) return getFile(study, entity, ANCESTORS_FILE_NAME);
-    return createFile(study, entity, ANCESTORS_FILE_NAME);
+    return createFile(study.getInternalAbbrev(), entity, ANCESTORS_FILE_NAME);
   }
 
   public boolean ancestorFileExists(Study study, Entity entity) {
@@ -112,7 +118,7 @@ public class BinaryFilesManager {
 
   public Path getIdMapFile(Study study, Entity entity, Operation op) {
     if (op == Operation.READ) return getFile(study, entity, IDS_MAP_FILE_NAME);
-    return createFile(study, entity, IDS_MAP_FILE_NAME);
+    return createFile(study.getInternalAbbrev(), entity, IDS_MAP_FILE_NAME);
   }
 
   public boolean idMapFileExists(Study study, Entity entity) {
@@ -121,7 +127,7 @@ public class BinaryFilesManager {
 
   public Path getVariableFile(Study study, Entity entity, Variable var, Operation op) {
     if (op == Operation.READ) return getFile(study, entity, getVarFileName(var));
-    return createFile(study, entity, getVarFileName(var));
+    return createFile(study.getInternalAbbrev(), entity, getVarFileName(var));
   }
 
   public boolean variableFileExists(Study study, Entity entity, Variable var) {
@@ -130,12 +136,17 @@ public class BinaryFilesManager {
 
   Path getVocabFile(Study study, Entity entity, Variable var, Operation op) {
     if (op == Operation.READ) return getFile(study, entity, getVocabFileName(var));
-    return createFile(study, entity, getVocabFileName(var));
+    return createFile(study.getInternalAbbrev(), entity, getVocabFileName(var));
   }
 
   public Path getMetaJsonFile(Study study, Entity entity, Operation op) {
     if (op == Operation.READ) return getFile(study, entity, "meta.json");
-    return createFile(study, entity, "meta.json");
+    return createFile(study.getInternalAbbrev(), entity, "meta.json");
+  }
+
+  public Path getMetaJsonFile(String studyAbbrev, Entity entity, Operation op) {
+    if (op == Operation.READ) return getFile(studyAbbrev, entity, "meta.json");
+    return createFile(studyAbbrev, entity, "meta.json");
   }
 
   public Path getDoneFile(Path directory, Operation op) {
@@ -167,15 +178,39 @@ public class BinaryFilesManager {
    * @return number of bytes reserved for entity.
    */
   public Integer getBytesReservedForEntity(Study study, Entity entity) {
-    JSONObject metajson = readMetaJsonFile(getMetaJsonFile(study, entity, Operation.READ));
-    return metajson.getInt(META_KEY_BYTES_FOR_ID);
+    return readMetadata(study.getInternalAbbrev(), entity).get().getBytesReservedForId();
   }
 
+  public void writeMetadata(Study study, Entity entity, Metadata metadata) {
+    try {
+      OBJECT_MAPPER.writeValue(getMetaJsonFile(study, entity, Operation.WRITE).toFile(), metadata);
+    } catch (IOException e) {
+      throw new RuntimeException("Failed writing meta.json file.", e);
+    }
+  }
+
+  /**
+   * Returns empty if files are not available in this environment.
+   * @param studyAbbrev
+   * @param entity
+   * @return
+   */
+  public Optional<Metadata> readMetadata(String studyAbbrev, Entity entity) {
+    try {
+      File file = getMetaJsonFile(studyAbbrev, entity, Operation.READ).toFile();
+      if (!file.exists()) {
+        return Optional.empty();
+      }
+      return Optional.of(OBJECT_MAPPER.readValue(file, Metadata.class));
+    } catch (IOException e) {
+      throw new RuntimeException("Failed reading meta.json file.", e);
+    }
+  }
 
   ////////////////////////////////////////////////////////
 
-  private String getStudyDirName(Study study) {
-    return STUDY_FILE_PREFIX + study.getInternalAbbrev();
+  private String getStudyDirName(String studyAbbrev) {
+    return STUDY_FILE_PREFIX + studyAbbrev;
   }
 
   private String getEntityDirName(Entity entity) {
@@ -201,9 +236,9 @@ public class BinaryFilesManager {
     }
   }
 
-  private Path createFile(Study study, Entity entity, String filename) {
+  private Path createFile(String studyAbbrev, Entity entity, String filename) {
 
-    Path entityDir = getEntityDir(study, entity);
+    Path entityDir = getEntityDir(studyAbbrev, entity);
     Path filepath = Path.of(entityDir.toString(), filename);
     LOG.info("Creating file: " + filepath);
     try {
@@ -217,11 +252,19 @@ public class BinaryFilesManager {
   }
 
   private Path getFile(Study study, Entity entity, String fileName) {
-    Path entityDir = getEntityDir(study, entity);
+    Path entityDir = getEntityDir(study.getInternalAbbrev(), entity);
     Path file = Path.of(entityDir.toString(), fileName);
     if (!Files.exists(file)) throw new RuntimeException("File '" + file + "' does not exist");
     return file;
   }
+
+  private Path getFile(String studyAbbrev, Entity entity, String fileName) {
+    Path entityDir = getEntityDir(studyAbbrev, entity);
+    Path file = Path.of(entityDir.toString(), fileName);
+    if (!Files.exists(file)) throw new RuntimeException("File '" + file + "' does not exist");
+    return file;
+  }
+
 
   private void createDir(Path dir) {
     LOG.info("Creating dir: " + dir);
@@ -234,20 +277,20 @@ public class BinaryFilesManager {
     }
   }
 
-  private Path getEntityDir(Study study, Entity entity) {
-    Path entityDir = Path.of(mustGetExistingStudyDir(study).toString(),
+  private Path getEntityDir(String studyAbbrev, Entity entity) {
+    Path entityDir = Path.of(mustGetExistingStudyDir(studyAbbrev).toString(),
         getEntityDirName(entity));
     if (!Files.isDirectory(entityDir)) throw new RuntimeException("Entity directory '" + entityDir + "' does not exist");
     return entityDir;
   }
 
-  private Path mustGetExistingStudyDir(Study study) {
-    return getStudyDirIfExists(study)
-        .orElseThrow(() -> new RuntimeException("Study directory '" + getStudyDirName(study) + "' does not exist"));
+  private Path mustGetExistingStudyDir(String studyAbbrev) {
+    return getStudyDirIfExists(studyAbbrev)
+        .orElseThrow(() -> new RuntimeException("Study directory '" + studyFinder.findStudyPath(getStudyDirName(studyAbbrev)) + "' does not exist"));
   }
 
-  private Optional<Path> getStudyDirIfExists(Study study) {
-    Path studyDir = studyFinder.findStudyPath(getStudyDirName(study));
+  private Optional<Path> getStudyDirIfExists(String studyAbbrev) {
+    Path studyDir = studyFinder.findStudyPath(getStudyDirName(studyAbbrev));
     if (!Files.isDirectory(studyDir)) return Optional.empty();
     return Optional.of(studyDir);
   }
@@ -263,5 +306,71 @@ public class BinaryFilesManager {
       throw new RuntimeException(e);
     }
     return filepath;
+  }
+
+  public static class Metadata {
+    private List<VariableMeta> variableMetadata;
+    private List<Integer> bytesReservedPerAncestor;
+    private Integer bytesReservedForId;
+
+    public Metadata() { }
+
+    public List<VariableMeta> getVariableMetadata() {
+      return variableMetadata;
+    }
+
+    public void setVariableMetadata(List<VariableMeta> variableMetadata) {
+      this.variableMetadata = variableMetadata;
+    }
+
+    public List<Integer> getBytesReservedPerAncestor() {
+      return bytesReservedPerAncestor;
+    }
+
+    public void setBytesReservedPerAncestor(List<Integer> bytesReservedPerAncestor) {
+      this.bytesReservedPerAncestor = bytesReservedPerAncestor;
+    }
+
+    public Integer getBytesReservedForId() {
+      return bytesReservedForId;
+    }
+
+    public void setBytesReservedForId(Integer bytesReservedForId) {
+      this.bytesReservedForId = bytesReservedForId;
+    }
+  }
+
+  public static class VariableMeta {
+    private String type;
+    private String variableId;
+    private BinaryProperties properties;
+
+    public VariableMeta() {
+
+    }
+
+    public String getType() {
+      return type;
+    }
+
+    public void setType(String type) {
+      this.type = type;
+    }
+
+    public String getVariableId() {
+      return variableId;
+    }
+
+    public void setVariableId(String variableId) {
+      this.variableId = variableId;
+    }
+
+    public BinaryProperties getProperties() {
+      return properties;
+    }
+
+    public void setProperties(BinaryProperties properties) {
+      this.properties = properties;
+    }
   }
 }

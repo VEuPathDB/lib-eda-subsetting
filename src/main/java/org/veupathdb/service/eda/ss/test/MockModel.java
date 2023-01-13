@@ -7,6 +7,7 @@ import org.veupathdb.service.eda.ss.model.StudyOverview;
 import org.veupathdb.service.eda.ss.model.distribution.DateDistributionConfig;
 import org.veupathdb.service.eda.ss.model.distribution.NumberDistributionConfig;
 import org.veupathdb.service.eda.ss.model.variable.*;
+import org.veupathdb.service.eda.ss.model.variable.binary.EmptyBinaryProperties;
 
 import java.util.*;
 
@@ -93,7 +94,8 @@ public class MockModel {
   private static StringVariable getMockStringVar(String label, String id, Entity entity, long distinctValuesCount, boolean isMultiValued, List<String> vocab) {
     return new StringVariable(
         new Variable.Properties(label, id, entity, VariableDisplayType.DEFAULT, label, null, null, "Their " + label, Collections.emptyList()),
-        new VariableWithValues.Properties(VariableType.STRING, VariableDataShape.CATEGORICAL, vocab, distinctValuesCount, false, false, false, isMultiValued, false)
+        new VariableWithValues.Properties(VariableType.STRING, VariableDataShape.CATEGORICAL, vocab, distinctValuesCount, false, false, false, isMultiValued, false),
+        new StringVariable.StringBinaryProperties(100)
     );
   }
 

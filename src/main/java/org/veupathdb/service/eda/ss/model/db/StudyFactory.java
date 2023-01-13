@@ -8,6 +8,8 @@ import org.veupathdb.service.eda.ss.model.Entity;
 import org.veupathdb.service.eda.ss.model.Study;
 import org.veupathdb.service.eda.ss.model.StudyOverview;
 import org.veupathdb.service.eda.ss.model.StudyOverview.StudySourceType;
+import org.veupathdb.service.eda.ss.model.reducer.BinaryMetadataProvider;
+import org.veupathdb.service.eda.ss.model.variable.binary.BinaryFilesManager;
 
 import javax.sql.DataSource;
 import java.util.ArrayList;
@@ -25,11 +27,16 @@ public class StudyFactory implements StudyProvider {
   private final DataSource _dataSource;
   private final String _dataSchema;
   private final StudySourceType _sourceType;
+  private final VariableFactory _variableFactory;
 
-  public StudyFactory(DataSource dataSource, String dataSchema, StudySourceType sourceType) {
+  public StudyFactory(DataSource dataSource,
+                      String dataSchema,
+                      StudySourceType sourceType,
+                      VariableFactory variableFactory) {
     _dataSource = dataSource;
     _dataSchema = dataSchema;
     _sourceType = sourceType;
+    _variableFactory = variableFactory;
   }
 
   private static String getStudyOverviewSql(String appDbSchema) {
@@ -64,11 +71,10 @@ public class StudyFactory implements StudyProvider {
 
     Map<String, Entity> entityIdMap = entityTree.flatten().stream().collect(Collectors.toMap(Entity::getId, e -> e));
 
-    VariableFactory variableFactory = new VariableFactory(_dataSource, _dataSchema);
     CollectionFactory collectionFactory = new CollectionFactory(_dataSource, _dataSchema);
 
     for (Entity entity : entityIdMap.values()) {
-      entity.assignVariables(variableFactory.loadVariables(entity));
+      entity.assignVariables(_variableFactory.loadVariables(studyId, entity));
       if (entity.hasCollections()) {
         LOG.info("Entity " + entity.getId() + " has collections.  Loading them...");
         entity.assignCollections(collectionFactory.loadCollections(entity));
@@ -77,5 +83,4 @@ public class StudyFactory implements StudyProvider {
 
     return new Study(overview, entityTree, entityIdMap);
   }
-
 }

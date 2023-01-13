@@ -7,7 +7,7 @@
 
 // Project settings
 group   = "org.veupathdb.eda"
-version = "3.6.2"
+version = "3.7.0"
 
 plugins {
   `java-library`
@@ -108,7 +108,7 @@ repositories {
 dependencies {
 
   // FgpUtil Dependencies
-  val fgputil = "2.10.1-jakarta"
+  val fgputil = "2.12.0-jakarta"
   implementation("org.gusdb:fgputil-core:${fgputil}")
   implementation("org.gusdb:fgputil-db:${fgputil}")
   implementation("org.gusdb:fgputil-json:${fgputil}")
@@ -123,5 +123,6 @@ dependencies {
 
   // Unit Testing
   testImplementation("org.junit.jupiter:junit-jupiter:5.9.0")
+  testImplementation("org.mockito:mockito-core:2.1.0")
   testImplementation("org.hamcrest:hamcrest:2.2")
 }

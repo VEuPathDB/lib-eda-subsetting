@@ -1,14 +1,7 @@
 package org.veupathdb.service.eda.ss.model.db;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Scanner;
-import java.util.Set;
+import java.util.*;
+
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.gusdb.fgputil.DelimitedDataParser;
@@ -21,6 +14,7 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.veupathdb.service.eda.ss.model.Entity;
+import org.veupathdb.service.eda.ss.model.reducer.EmptyBinaryMetadataProvider;
 import org.veupathdb.service.eda.ss.test.MockFilters;
 import org.veupathdb.service.eda.ss.model.Study;
 import org.veupathdb.service.eda.ss.model.tabular.TabularReportConfig;
@@ -49,13 +43,15 @@ public class StudySubsettingUtilsTest {
   private static MockFilters _filtesFromMockStudy;
   private static DataSource _dataSource;
   private static MockFilters _filtersFromDbStudy;
+  private static VariableFactory _variableFactory;
 
   @BeforeAll
   public static void setUp() {
     _model = new MockModel();
     _filtesFromMockStudy = new MockFilters(_model.study);
     _dataSource = StubDb.getDataSource();
-    Study study = new StudyFactory(_dataSource, APP_DB_SCHEMA, USER_STUDIES_FLAG).getStudyById(LoadStudyTest.STUDY_ID);
+    _variableFactory = new VariableFactory(_dataSource, APP_DB_SCHEMA, new EmptyBinaryMetadataProvider());
+    Study study = new StudyFactory(_dataSource, APP_DB_SCHEMA, USER_STUDIES_FLAG, _variableFactory).getStudyById(LoadStudyTest.STUDY_ID);
     _filtersFromDbStudy = new MockFilters(study);
   }
 
@@ -374,8 +370,7 @@ public class StudySubsettingUtilsTest {
   @Test
   @DisplayName("Test get entity count - no filters") 
   void testEntityCountNoFiltersFromDb() {
-
-    Study study = new StudyFactory(_dataSource, APP_DB_SCHEMA, USER_STUDIES_FLAG).getStudyById(LoadStudyTest.STUDY_ID);
+    Study study = new StudyFactory(_dataSource, APP_DB_SCHEMA, USER_STUDIES_FLAG, _variableFactory).getStudyById(LoadStudyTest.STUDY_ID);
 
     String entityId = "GEMS_Part";
     Entity entity = study.getEntity(entityId).orElseThrow();
@@ -391,8 +386,7 @@ public class StudySubsettingUtilsTest {
   @Test
   @DisplayName("Test get entity count - with filters") 
   void testEntityCountFromDb() {
-
-    Study study = new StudyFactory(_dataSource, APP_DB_SCHEMA, USER_STUDIES_FLAG).getStudyById(LoadStudyTest.STUDY_ID);
+    Study study = new StudyFactory(_dataSource, APP_DB_SCHEMA, USER_STUDIES_FLAG, _variableFactory).getStudyById(LoadStudyTest.STUDY_ID);
 
     String entityId = "GEMS_Part";
     Entity entity = study.getEntity(entityId).orElseThrow();
@@ -410,8 +404,7 @@ public class StudySubsettingUtilsTest {
   @Test
   @DisplayName("Test get tabular report - no filters") 
   void testTabularReportNoFiltersFromDb() {
-
-    Study study = new StudyFactory(_dataSource, APP_DB_SCHEMA, USER_STUDIES_FLAG).getStudyById(LoadStudyTest.STUDY_ID);
+    Study study = new StudyFactory(_dataSource, APP_DB_SCHEMA, USER_STUDIES_FLAG, _variableFactory).getStudyById(LoadStudyTest.STUDY_ID);
 
     String entityId = "GEMS_Part";
     Entity entity = study.getEntity(entityId).orElseThrow();
@@ -440,7 +433,7 @@ public class StudySubsettingUtilsTest {
   @DisplayName("Test get tabular report - with filters") 
   void testTestTabularReportFromDb() {
 
-    Study study = new StudyFactory(_dataSource, APP_DB_SCHEMA, USER_STUDIES_FLAG).getStudyById(LoadStudyTest.STUDY_ID);
+    Study study = new StudyFactory(_dataSource, APP_DB_SCHEMA, USER_STUDIES_FLAG, _variableFactory).getStudyById(LoadStudyTest.STUDY_ID);
 
     String entityId = "GEMS_Part";
     Entity entity = study.getEntity(entityId).orElseThrow();
@@ -471,7 +464,7 @@ public class StudySubsettingUtilsTest {
   @DisplayName("Test get variable count - no filters") 
   void testVariableCountNoFiltersFromDb() {
 
-    Study study = new StudyFactory(_dataSource, APP_DB_SCHEMA, USER_STUDIES_FLAG).getStudyById(LoadStudyTest.STUDY_ID);
+    Study study = new StudyFactory(_dataSource, APP_DB_SCHEMA, USER_STUDIES_FLAG, _variableFactory).getStudyById(LoadStudyTest.STUDY_ID);
 
     String entityId = "GEMS_Part";
     Entity entity = study.getEntity(entityId).orElseThrow();
@@ -491,8 +484,7 @@ public class StudySubsettingUtilsTest {
   @Test
   @DisplayName("Test get variable count - with filters") 
   void testVariableCountFromDb() {
-
-    Study study = new StudyFactory(_dataSource, APP_DB_SCHEMA, USER_STUDIES_FLAG).getStudyById(LoadStudyTest.STUDY_ID);
+    Study study = new StudyFactory(_dataSource, APP_DB_SCHEMA, USER_STUDIES_FLAG, _variableFactory).getStudyById(LoadStudyTest.STUDY_ID);
 
     String entityId = "GEMS_Part";
     Entity entity = study.getEntity(entityId).orElseThrow();
@@ -514,8 +506,7 @@ public class StudySubsettingUtilsTest {
   @Test
   @DisplayName("Test variable distribution - no filters") 
   void testVariableDistributionNoFilters() {
-
-    Study study = new StudyFactory(_dataSource, APP_DB_SCHEMA, USER_STUDIES_FLAG).getStudyById(LoadStudyTest.STUDY_ID);
+    Study study = new StudyFactory(_dataSource, APP_DB_SCHEMA, USER_STUDIES_FLAG, _variableFactory).getStudyById(LoadStudyTest.STUDY_ID);
 
     String entityId = "GEMS_Part";
     Entity entity = study.getEntity(entityId).orElseThrow();
@@ -537,8 +528,7 @@ public class StudySubsettingUtilsTest {
   @Test
   @DisplayName("Test variable distribution - with filters") 
   void testVariableDistribution() {
-
-    Study study = new StudyFactory(_dataSource, APP_DB_SCHEMA, USER_STUDIES_FLAG).getStudyById(LoadStudyTest.STUDY_ID);
+    Study study = new StudyFactory(_dataSource, APP_DB_SCHEMA, USER_STUDIES_FLAG, _variableFactory).getStudyById(LoadStudyTest.STUDY_ID);
 
     String entityId = "GEMS_Part";
     Entity entity = study.getEntity(entityId).orElseThrow();

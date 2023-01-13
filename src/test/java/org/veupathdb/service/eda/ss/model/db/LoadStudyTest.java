@@ -3,6 +3,7 @@ package org.veupathdb.service.eda.ss.model.db;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 import javax.sql.DataSource;
@@ -12,8 +13,10 @@ import org.gusdb.fgputil.functional.TreeNode;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import org.mockito.Mockito;
 import org.veupathdb.service.eda.ss.model.Entity;
 import org.veupathdb.service.eda.ss.model.Study;
+import org.veupathdb.service.eda.ss.model.reducer.BinaryMetadataProvider;
 import org.veupathdb.service.eda.ss.test.MockModel;
 import org.veupathdb.service.eda.ss.model.variable.Variable;
 import org.veupathdb.service.eda.ss.model.variable.VariableDataShape;
@@ -28,12 +31,16 @@ import static org.veupathdb.service.eda.ss.test.StubDb.*;
 public class LoadStudyTest {
   
   private static DataSource datasource;
+  private static BinaryMetadataProvider binaryMetadataProvider;
 
   public final static String STUDY_ID = "DS-2324";
   
   @BeforeAll
   public static void setUp() {
     datasource = StubDb.getDataSource();
+    binaryMetadataProvider = Mockito.mock(BinaryMetadataProvider.class);
+    Mockito.when(binaryMetadataProvider.getBinaryProperties(Mockito.anyString(), Mockito.any(Entity.class), Mockito.anyString()))
+            .thenReturn(Optional.empty());
   }
   
   @Test
@@ -82,7 +89,7 @@ public class LoadStudyTest {
     
     Variable var = new SQLRunner(datasource, sql).executeQuery(rs -> {
       rs.next();
-      return VariableFactory.createVariableFromResultSet(rs, entity);
+      return VariableFactory.createVariableFromResultSet(rs, entity, binaryMetadataProvider);
     });
 
    // --(stable_id, ontology_term_id, parent_stable_id, provider_label, display_name, term_type, has_value, data_type, has_multiple_values_per_entity, data_shape, unit, unit_ontology_term_id, precision)
@@ -115,15 +122,16 @@ public class LoadStudyTest {
 
     Entity entity = entityIdMap.get("GEMS_Part");
 
-    List<Variable> variables = new VariableFactory(datasource, APP_DB_SCHEMA).loadVariables(entity);
-    
+    List<Variable> variables = new VariableFactory(datasource, APP_DB_SCHEMA, binaryMetadataProvider).loadVariables(STUDY_ID, entity);
+
     assertEquals(5, variables.size());
   }
   
   @Test
   @DisplayName("Load study test") 
   void testLoadStudy() {
-    Study study = new StudyFactory(datasource, APP_DB_SCHEMA, USER_STUDIES_FLAG).getStudyById(STUDY_ID);
+    VariableFactory variableFactory = new VariableFactory(datasource, APP_DB_SCHEMA, binaryMetadataProvider);
+    Study study = new StudyFactory(datasource, APP_DB_SCHEMA, USER_STUDIES_FLAG, variableFactory).getStudyById(STUDY_ID);
     assertNotNull(study);
   }
 }

@@ -13,7 +13,6 @@ import org.veupathdb.service.eda.ss.model.variable.binary.*;
 
 import java.io.IOException;
 import java.nio.file.Path;
-import java.util.Iterator;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.function.Function;
@@ -102,6 +101,7 @@ public class BinaryValuesStreamer {
       extractor = pair -> new VariableValueIdPair<>(
           pair.getIdIndex(), variable.valueToString(pair.getValue(), reportConfig));
     }
+
     BinaryConverter<V> serializer = variable.getBinaryConverter();
     return new FilteredValueIterator(
             binaryFilesManager.getVariableFile(study,

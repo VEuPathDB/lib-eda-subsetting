@@ -44,7 +44,7 @@ public class DataFlowTreeReducer {
         .map(Functions.fSwallow(filter -> filter.streamFilteredIds(binaryValuesStreamer, contents.getStudy())))
         .forEach(allStreams::add);
 
-    if (!root.getContents().getUnfilteredOutputVars().isEmpty()) {
+    if (root.getContents().shouldIncludeUnfilteredStream()) {
       try {
         allStreams.add(binaryValuesStreamer.streamUnfilteredEntityIdIndexes(contents.getStudy(), contents.getEntity()));
       } catch (IOException e) {

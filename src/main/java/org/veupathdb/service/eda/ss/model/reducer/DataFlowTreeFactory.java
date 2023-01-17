@@ -61,12 +61,14 @@ public class DataFlowTreeFactory {
             applicableFilters.stream().noneMatch(filter -> filter.getEntity().equals(var.getEntity())))
         .collect(Collectors.toList());
 
+    final boolean includeUnfilteredStream = !unfilteredVars.isEmpty() || outputVariables.isEmpty();
+
     // Convert the entity node to a data flow node.
     final DataFlowNodeContents contents = new DataFlowNodeContents(
         applicableFilters,
         currentTraversalNode.getContents(),
         study,
-        unfilteredVars
+        includeUnfilteredStream
     );
     TreeNode<DataFlowNodeContents> newRoot = new TreeNode<>(contents);
     Optional<TreeNode<Entity>> parentOpt = parentRetriever.apply(currentTraversalNode);

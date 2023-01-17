@@ -15,24 +15,24 @@ public class DataFlowNodeContents {
   private final List<Filter> filters; // ID indexes of this Entity's "type" for filtered data streams.
   private final Entity entity;
   private final Study study;
-  private final List<Variable> unfilteredOutputVars;
+  private final boolean includeUnfilteredStream;
 
   public DataFlowNodeContents(List<Filter> filters,
                               Entity entity,
                               Study study,
-                              List<Variable> unfilteredOutputVars) {
+                              boolean includeUnfilteredStream) {
     this.filters = filters;
     this.entity = entity;
     this.study = study;
-    this.unfilteredOutputVars = unfilteredOutputVars;
+    this.includeUnfilteredStream = includeUnfilteredStream;
   }
 
   public List<Filter> getFilters() {
     return filters;
   }
 
-  public List<Variable> getUnfilteredOutputVars() {
-    return unfilteredOutputVars;
+  public boolean shouldIncludeUnfilteredStream() {
+    return includeUnfilteredStream;
   }
 
   public Entity getEntity() {

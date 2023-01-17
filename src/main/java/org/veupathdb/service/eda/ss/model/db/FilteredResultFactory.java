@@ -195,6 +195,7 @@ public class FilteredResultFactory {
         while (resultStreamer.hasNext()) {
           resultConsumer.consumeRow(resultStreamer.next());
         }
+        LOG.info("Completed processing file-based subsetting request");
       } catch (Exception e) {
         throw new RuntimeException("Failed to write result", e);
       }

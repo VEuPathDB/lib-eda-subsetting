@@ -6,6 +6,8 @@ import org.veupathdb.service.eda.ss.model.variable.binary.BinaryConverter;
 import org.veupathdb.service.eda.ss.model.variable.binary.DoubleValueConverter;
 import org.veupathdb.service.eda.ss.model.variable.binary.EmptyBinaryProperties;
 
+import java.nio.charset.StandardCharsets;
+
 public class LongitudeVariable extends VariableWithValues<Double> {
 
   public static class Properties {
@@ -54,6 +56,16 @@ public class LongitudeVariable extends VariableWithValues<Double> {
   @Override
   public String valueToJsonText(Double val, TabularReportConfig reportConfig) {
     return valueToString(val, reportConfig);
+  }
+
+  @Override
+  public byte[] valueToJsonTextBytes(Double val, TabularReportConfig config) {
+    return val.toString().getBytes(StandardCharsets.UTF_8);
+  }
+
+  @Override
+  public byte[] valueToUtf8Bytes(Double val, TabularReportConfig config) {
+    return quote(val.toString()).getBytes(StandardCharsets.UTF_8);
   }
 
   public Long getPrecision() {

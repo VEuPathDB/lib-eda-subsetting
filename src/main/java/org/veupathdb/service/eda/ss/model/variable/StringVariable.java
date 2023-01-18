@@ -50,6 +50,22 @@ public class StringVariable extends VariableWithValues<byte[]> {
     return quote(valueToString(val, config));
   }
 
+  @Override
+  public byte[] valueToJsonTextBytes(byte[] val, TabularReportConfig config) {
+    byte[] result = new byte[val.length + 2];
+    result[0] = '"';
+    result[result.length - 1] = '"';
+    for (int i = 0; i < val.length; i++) {
+      result[i + 1] = val[i];
+    }
+    return result;
+  }
+
+  @Override
+  public byte[] valueToUtf8Bytes(byte[] val, TabularReportConfig config) {
+    return val;
+  }
+
   public static StringVariable assertType(Variable variable) {
     if (variable instanceof StringVariable) return (StringVariable)variable;
     throw new BadRequestException("Variable " + variable.getId() +

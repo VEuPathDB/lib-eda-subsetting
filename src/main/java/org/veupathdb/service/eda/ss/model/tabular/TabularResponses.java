@@ -15,6 +15,8 @@ import static org.gusdb.fgputil.FormatUtil.NL;
 import static org.gusdb.fgputil.FormatUtil.TAB;
 
 public class TabularResponses {
+  private static final byte[] NEW_LINE_BYTES = System.lineSeparator().getBytes(StandardCharsets.UTF_8);
+
   private TabularResponses(){}
 
   public enum Type {
@@ -107,7 +109,7 @@ public class TabularResponses {
           outStream.write('\t');
         }
       }
-      outStream.write(System.lineSeparator().getBytes(StandardCharsets.UTF_8));
+      outStream.write(NEW_LINE_BYTES);
     }
 
   };

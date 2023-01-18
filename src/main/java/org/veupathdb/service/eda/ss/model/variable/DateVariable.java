@@ -9,6 +9,7 @@ import org.veupathdb.service.eda.ss.model.variable.binary.DateValueConverter;
 import org.veupathdb.service.eda.ss.model.variable.binary.EmptyBinaryProperties;
 import org.veupathdb.service.eda.ss.model.variable.binary.LongValueConverter;
 
+import java.nio.charset.StandardCharsets;
 import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
@@ -53,6 +54,16 @@ public class DateVariable extends VariableWithValues<Long> {
   @Override
   public String valueToJsonText(Long val, TabularReportConfig config) {
     return quote(valueToString(val, config));
+  }
+
+  @Override
+  public byte[] valueToJsonTextBytes(Long val, TabularReportConfig config) {
+    return quote(valueToString(val, config)).getBytes(StandardCharsets.UTF_8);
+  }
+
+  @Override
+  public byte[] valueToUtf8Bytes(Long val, TabularReportConfig config) {
+    return valueToString(val, config).getBytes(StandardCharsets.UTF_8);
   }
 
   public DateDistributionConfig getDistributionConfig() {

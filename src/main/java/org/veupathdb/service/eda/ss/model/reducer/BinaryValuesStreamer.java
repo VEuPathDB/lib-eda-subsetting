@@ -116,6 +116,41 @@ public class BinaryValuesStreamer {
   }
 
   /**
+   * Streams tuples of all entity ID indexes and the string version of variable values associate with the variable
+   * passed in.
+   * @param study The study that the variable belongs to. Used to locate the binary file.
+   * @param variable The variable whose values are requested.
+   * @param <V> The type of the variable values.
+   * @return An iterator  all {@link VariableValueIdPair}s containing all ID indexes and associated variable values.
+   * @throws IOException if there is a failure to open the binary file.
+   */
+  public <V> FilteredValueIterator<V, VariableValueIdPair<byte[]>> streamIdValueBinaryPairs(
+      Study study,
+      VariableWithValues<V> variable,
+      TabularReportConfig reportConfig) throws IOException {
+    Function<VariableValueIdPair<V>, VariableValueIdPair<byte[]>> extractor;
+    if (variable.getIsMultiValued()) {
+      extractor = pair -> new VariableValueIdPair<>(
+          pair.getIdIndex(), variable.valueToJsonTextBytes(pair.getValue(), reportConfig));
+    } else {
+      extractor = pair -> new VariableValueIdPair<>(
+          pair.getIdIndex(), variable.valueToUtf8Bytes(pair.getValue(), reportConfig));
+    }
+
+    BinaryConverter<V> serializer = variable.getBinaryConverter();
+    return new FilteredValueIterator(
+        binaryFilesManager.getVariableFile(study,
+            variable.getEntity(),
+            variable,
+            BinaryFilesManager.Operation.READ),
+        x -> true, // Always return true, extract all ID index pairs and variable values.
+        new ValueWithIdDeserializer<>(serializer),
+        extractor,
+        fileChannelExecutorService,
+        deserializerExecutorService); // Provide a stream of entire VariableValueIdPair objects.
+  }
+
+  /**
    * @param descendant Entity for which to retrieve ancestors stream.
    * @param study Study the entity belongs to.
    * @return Stream of ancestor IDs.

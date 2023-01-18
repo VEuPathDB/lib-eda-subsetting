@@ -14,8 +14,10 @@ import java.util.*;
  * ancestor IDs and all associated variable values.
  */
 public class FormattedTabularRecordStreamer implements CloseableIterator<byte[][]> {
+  private static final byte[] EMPTY_BYTE_ARRAY = new byte[0];
+
   // These value streams need to have associated with them the variable
-  private List<ValueStream<String>> valuePairStreams;
+  private List<ValueStream<byte[]>> valuePairStreams;
   private CloseableIterator<VariableValueIdPair<byte[][]>> idMapStream;
   private CloseableIterator<Long> idIndexStream;
   private Long currentIdIndex;
@@ -30,7 +32,7 @@ public class FormattedTabularRecordStreamer implements CloseableIterator<byte[][
    * @param idIndexStream    Stream of ID indexes, indicating which entity records to output.
    * @param idMapStream
    */
-  public FormattedTabularRecordStreamer(List<ValueStream<String>> valuePairStreams,
+  public FormattedTabularRecordStreamer(List<ValueStream<byte[]>> valuePairStreams,
                                         CloseableIterator<Long> idIndexStream,
                                         CloseableIterator<VariableValueIdPair<byte[][]>> idMapStream) {
     this.valuePairStreams = valuePairStreams;
@@ -64,9 +66,9 @@ public class FormattedTabularRecordStreamer implements CloseableIterator<byte[][
       rec[recIndex++] = Arrays.copyOfRange(ids.getValue()[i], Integer.BYTES, size + Integer.BYTES);
     }
 
-    for (ValueStream<String> valueStream: valuePairStreams) {
+    for (ValueStream<byte[]> valueStream: valuePairStreams) {
       if (valueStream.hasNext() && valueStream.peek().getIdIndex() > currentIdIndex) {
-        rec[recIndex++] = new byte[0];
+        rec[recIndex++] = EMPTY_BYTE_ARRAY;
         continue;
       }
       // Advance stream until it equals or exceeds the currentIdIndex.
@@ -74,9 +76,9 @@ public class FormattedTabularRecordStreamer implements CloseableIterator<byte[][
         valueStream.next();
       }
       if (!valueStream.hasNext() || valueStream.peek().getIdIndex() != currentIdIndex) {
-        rec[recIndex++] = new byte[0];
+        rec[recIndex++] = EMPTY_BYTE_ARRAY;
       } else {
-        rec[recIndex++] = valueStream.valueFormatter.format(valueStream, currentIdIndex).getBytes(StandardCharsets.UTF_8);
+        rec[recIndex++] = valueStream.valueFormatter.format(valueStream, currentIdIndex);
       }
     }
     if (idIndexStream.hasNext()) {

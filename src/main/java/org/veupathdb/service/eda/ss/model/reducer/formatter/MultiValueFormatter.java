@@ -2,21 +2,31 @@ package org.veupathdb.service.eda.ss.model.reducer.formatter;
 
 import org.veupathdb.service.eda.ss.model.reducer.FormattedTabularRecordStreamer;
 
+import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.stream.Collectors;
 
 public class MultiValueFormatter implements TabularValueFormatter {
 
   @Override
-  public String format(List<String> values) {
-    StringBuilder valueRecord = new StringBuilder("[");
-    valueRecord.append(values.stream().collect(Collectors.joining(",")));
-    valueRecord.append("]");
-    return valueRecord.toString();
+  public byte[] format(List<byte[]> values) {
+    final byte[] result = new byte[values.size() - 1 + values.stream().mapToInt(arr -> arr.length).sum() + 2];
+    int index = 0;
+    result[index++] = '['; // UTF 8?
+    for (byte[] record: values) {
+      for (int i = 0; i < record.length; i++) {
+        result[index++] = record[i];
+      }
+      if (record != values.get(values.size() - 1)) {
+        result[index++] = ',';
+      }
+    }
+    result[index + 1] = ']';
+    return result;
   }
 
   @Override
-  public String format(FormattedTabularRecordStreamer.ValueStream<String> stream,
+  public byte[] format(FormattedTabularRecordStreamer.ValueStream<byte[]> stream,
                        long idIndex) {
     StringBuilder valueRecord = new StringBuilder("[");
     boolean first = true;
@@ -28,6 +38,6 @@ public class MultiValueFormatter implements TabularValueFormatter {
       first = false;
     }
     valueRecord.append("]");
-    return valueRecord.toString();
+    return valueRecord.toString().getBytes(StandardCharsets.UTF_8);
   }
 }

@@ -7,6 +7,7 @@ import org.veupathdb.service.eda.ss.model.variable.binary.BinaryConverter;
 import org.veupathdb.service.eda.ss.model.variable.binary.DoubleValueConverter;
 import org.veupathdb.service.eda.ss.model.variable.binary.EmptyBinaryProperties;
 
+import java.nio.charset.StandardCharsets;
 import java.util.Optional;
 
 public class FloatingPointVariable extends NumberVariable<Double> {
@@ -64,6 +65,16 @@ public class FloatingPointVariable extends NumberVariable<Double> {
   @Override
   public String valueToString(Double val, TabularReportConfig reportConfig) {
     return Double.toString(val);
+  }
+
+  @Override
+  public byte[] valueToJsonTextBytes(Double val, TabularReportConfig config) {
+    return quote(Double.toString(val)).getBytes(StandardCharsets.UTF_8);
+  }
+
+  @Override
+  public byte[] valueToUtf8Bytes(Double val, TabularReportConfig config) {
+    return Double.toString(val).getBytes(StandardCharsets.UTF_8);
   }
 
   @Override

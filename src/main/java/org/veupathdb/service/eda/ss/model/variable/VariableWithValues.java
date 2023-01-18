@@ -46,6 +46,10 @@ public abstract class VariableWithValues<T> extends Variable {
 
   public abstract String valueToJsonText(T val, TabularReportConfig config);
 
+  public abstract byte[] valueToJsonTextBytes(T val, TabularReportConfig config);
+
+  public abstract byte[] valueToUtf8Bytes(T val, TabularReportConfig config);
+
   private final Properties _properties;
 
   public VariableWithValues(Variable.Properties varProperties, Properties properties) {

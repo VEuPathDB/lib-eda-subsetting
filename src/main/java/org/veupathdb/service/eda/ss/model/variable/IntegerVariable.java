@@ -6,6 +6,8 @@ import org.veupathdb.service.eda.ss.model.tabular.TabularReportConfig;
 import org.veupathdb.service.eda.ss.model.variable.binary.BinaryConverter;
 import org.veupathdb.service.eda.ss.model.variable.binary.EmptyBinaryProperties;
 import org.veupathdb.service.eda.ss.model.variable.binary.LongValueConverter;
+
+import java.nio.charset.StandardCharsets;
 import java.util.Optional;
 
 public class IntegerVariable extends NumberVariable<Long> {
@@ -60,6 +62,16 @@ public class IntegerVariable extends NumberVariable<Long> {
   @Override
   public String valueToString(Long val, TabularReportConfig reportConfig) {
     return Long.toString(val);
+  }
+
+  @Override
+  public byte[] valueToJsonTextBytes(Long val, TabularReportConfig config) {
+    return quote(Long.toString(val)).getBytes(StandardCharsets.UTF_8);
+  }
+
+  @Override
+  public byte[] valueToUtf8Bytes(Long val, TabularReportConfig config) {
+    return Long.toString(val).getBytes(StandardCharsets.UTF_8);
   }
 
   @Override

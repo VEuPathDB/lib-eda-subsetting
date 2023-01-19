@@ -135,6 +135,12 @@ public class BinaryFilesManager {
     return createFile(study.getInternalAbbrev(), entity, getVarFileName(var));
   }
 
+  public Path getUtf8VariableFile(Study study, Entity entity, Variable var, Operation op) {
+    final String fileName = getVarFileName(var) + "_utf8";
+    if (op == Operation.READ) return getFile(study, entity, fileName);
+    return createFile(study.getInternalAbbrev(), entity, fileName);
+  }
+
   public boolean variableFileExists(Study study, Entity entity, Variable var) {
     return Files.exists(Path.of(getStudyDir(study, Operation.READ).toString(), getEntityDirName(entity), getVarFileName(var)));
   }

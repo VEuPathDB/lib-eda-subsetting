@@ -6,6 +6,7 @@ import org.veupathdb.service.eda.ss.model.tabular.TabularReportConfig;
 import org.veupathdb.service.eda.ss.model.variable.binary.BinaryConverter;
 import org.veupathdb.service.eda.ss.model.variable.binary.EmptyBinaryProperties;
 import org.veupathdb.service.eda.ss.model.variable.binary.LongValueConverter;
+import org.veupathdb.service.eda.ss.model.variable.binary.StringValueConverter;
 
 import java.nio.charset.StandardCharsets;
 import java.util.Optional;
@@ -52,6 +53,11 @@ public class IntegerVariable extends NumberVariable<Long> {
   @Override
   public BinaryConverter<Long> getBinaryConverter() {
     return getGenericBinaryConverter(null);
+  }
+
+  @Override
+  public BinaryConverter<String> getStringConverter() {
+    return new StringValueConverter(12);
   }
 
   @Override

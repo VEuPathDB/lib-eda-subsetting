@@ -2,6 +2,7 @@ package org.veupathdb.service.eda.ss.model.reducer;
 
 import org.gusdb.fgputil.functional.Functions;
 import org.gusdb.fgputil.iterator.CloseableIterator;
+import org.veupathdb.service.eda.ss.Utils;
 import org.veupathdb.service.eda.ss.model.Entity;
 import org.veupathdb.service.eda.ss.model.Study;
 import org.veupathdb.service.eda.ss.model.filter.MultiFilter;
@@ -89,62 +90,27 @@ public class BinaryValuesStreamer {
    * @return An iterator  all {@link VariableValueIdPair}s containing all ID indexes and associated variable values.
    * @throws IOException if there is a failure to open the binary file.
    */
-  public <V> FilteredValueIterator<V, VariableValueIdPair<String>> streamIdValuePairs(
+  public <V> FilteredValueIterator<byte[], VariableValueIdPair<byte[]>> streamIdValueBinaryPairs(
       Study study,
-      VariableWithValues<V> variable,
-      TabularReportConfig reportConfig) throws IOException {
-    Function<VariableValueIdPair<V>, VariableValueIdPair<String>> extractor;
+      VariableWithValues<V> variable) throws IOException {
+    BinaryConverter<byte[]> serializer = new ByteArrayConverter(variable.getStringConverter().numBytes());
+    final BinaryDeserializer<VariableValueIdPair<byte[]>> deserializer = new ValueWithIdDeserializer<>(serializer);
+
+    Function<VariableValueIdPair<byte[]>, VariableValueIdPair<byte[]>> extractor;
     if (variable.getIsMultiValued()) {
-      extractor = pair -> new VariableValueIdPair<>(
-          pair.getIdIndex(), variable.valueToJsonText(pair.getValue(), reportConfig));
+      // Ugh, need to trim date variables here. This extractor should be grabbed from an abstract method in vartype.
+      extractor = pair -> new VariableValueIdPair<>(pair.getIdIndex(), Utils.quotePaddedBinary(pair.getValue()));
     } else {
-      extractor = pair -> new VariableValueIdPair<>(
-          pair.getIdIndex(), variable.valueToString(pair.getValue(), reportConfig));
+      extractor = pair -> new VariableValueIdPair<>(pair.getIdIndex(), Utils.trimPaddedBinary(pair.getValue()));
     }
 
-    BinaryConverter<V> serializer = variable.getBinaryConverter();
-    return new FilteredValueIterator(
-            binaryFilesManager.getVariableFile(study,
-                    variable.getEntity(),
-                    variable,
-                    BinaryFilesManager.Operation.READ),
-            x -> true, // Always return true, extract all ID index pairs and variable values.
-            new ValueWithIdDeserializer<>(serializer),
-            extractor,
-            fileChannelExecutorService,
-            deserializerExecutorService); // Provide a stream of entire VariableValueIdPair objects.
-  }
-
-  /**
-   * Streams tuples of all entity ID indexes and the string version of variable values associate with the variable
-   * passed in.
-   * @param study The study that the variable belongs to. Used to locate the binary file.
-   * @param variable The variable whose values are requested.
-   * @param <V> The type of the variable values.
-   * @return An iterator  all {@link VariableValueIdPair}s containing all ID indexes and associated variable values.
-   * @throws IOException if there is a failure to open the binary file.
-   */
-  public <V> FilteredValueIterator<V, VariableValueIdPair<byte[]>> streamIdValueBinaryPairs(
-      Study study,
-      VariableWithValues<V> variable,
-      TabularReportConfig reportConfig) throws IOException {
-    Function<VariableValueIdPair<V>, VariableValueIdPair<byte[]>> extractor;
-    if (variable.getIsMultiValued()) {
-      extractor = pair -> new VariableValueIdPair<>(
-          pair.getIdIndex(), variable.valueToJsonTextBytes(pair.getValue(), reportConfig));
-    } else {
-      extractor = pair -> new VariableValueIdPair<>(
-          pair.getIdIndex(), variable.valueToUtf8Bytes(pair.getValue(), reportConfig));
-    }
-
-    BinaryConverter<V> serializer = variable.getBinaryConverter();
-    return new FilteredValueIterator(
-        binaryFilesManager.getVariableFile(study,
+    return new FilteredValueIterator<>(
+        binaryFilesManager.getUtf8VariableFile(study,
             variable.getEntity(),
             variable,
             BinaryFilesManager.Operation.READ),
         x -> true, // Always return true, extract all ID index pairs and variable values.
-        new ValueWithIdDeserializer<>(serializer),
+        deserializer,
         extractor,
         fileChannelExecutorService,
         deserializerExecutorService); // Provide a stream of entire VariableValueIdPair objects.

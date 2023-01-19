@@ -2,9 +2,13 @@ package org.veupathdb.service.eda.ss.model.variable;
 
 import jakarta.ws.rs.BadRequestException;
 import org.gusdb.fgputil.FormatUtil;
+import org.veupathdb.service.eda.ss.Utils;
 import org.veupathdb.service.eda.ss.model.tabular.TabularReportConfig;
 import org.veupathdb.service.eda.ss.model.variable.binary.BinaryConverter;
 import org.veupathdb.service.eda.ss.model.variable.binary.ByteArrayConverter;
+import org.veupathdb.service.eda.ss.model.variable.binary.StringValueConverter;
+
+import java.util.Arrays;
 
 public class StringVariable extends VariableWithValues<byte[]> {
   private StringBinaryProperties binaryProperties;
@@ -36,6 +40,14 @@ public class StringVariable extends VariableWithValues<byte[]> {
   }
 
   @Override
+  public BinaryConverter<String> getStringConverter() {
+    if (binaryProperties == null) {
+      throw new IllegalStateException("No metadata file was found to parse binary properties from for variable " + getId());
+    }
+    return new StringValueConverter(binaryProperties.getMaxLength());
+  }
+
+  @Override
   public byte[] fromString(String s) {
     return FormatUtil.stringToPaddedBinary(s, binaryProperties.maxLength);
   }
@@ -52,18 +64,20 @@ public class StringVariable extends VariableWithValues<byte[]> {
 
   @Override
   public byte[] valueToJsonTextBytes(byte[] val, TabularReportConfig config) {
-    byte[] result = new byte[val.length + 2];
-    result[0] = '"';
-    result[result.length - 1] = '"';
-    for (int i = 0; i < val.length; i++) {
-      result[i + 1] = val[i];
+    byte[] utf8Bytes = valueToUtf8Bytes(val, config);
+    byte[] quoted = new byte[val.length + 2];
+    quoted[0] = '"';
+    quoted[quoted.length - 1] = '"';
+    for (int i = 0; i < utf8Bytes.length; i++) {
+      quoted[i + 1] = utf8Bytes[i];
     }
-    return result;
+    return quoted;
   }
 
   @Override
   public byte[] valueToUtf8Bytes(byte[] val, TabularReportConfig config) {
-    return val;
+    int length = Utils.getPaddedUtf8StringLength(val);
+    return Arrays.copyOfRange(val, Integer.BYTES, length + Integer.BYTES);
   }
 
   public static StringVariable assertType(Variable variable) {

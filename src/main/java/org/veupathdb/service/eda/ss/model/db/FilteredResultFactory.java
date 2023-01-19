@@ -182,7 +182,7 @@ public class FilteredResultFactory {
         TabularValueFormatter valFormatter = varWithVals.getIsMultiValued() ? new MultiValueFormatter() : new SingleValueFormatter();
         // ValueStream should be UTF-8 byte arrays.
         FormattedTabularRecordStreamer.ValueStream<byte[]> valStream = new FormattedTabularRecordStreamer.ValueStream<>(
-            binaryValuesStreamer.streamIdValueBinaryPairs(study, varWithVals, reportConfig), valFormatter);
+            binaryValuesStreamer.streamIdValueBinaryPairs(study, varWithVals), valFormatter);
         outputVarStreams.add(valStream);
       }
 

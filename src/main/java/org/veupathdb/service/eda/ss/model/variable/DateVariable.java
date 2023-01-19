@@ -4,10 +4,7 @@ import jakarta.ws.rs.BadRequestException;
 import org.gusdb.fgputil.FormatUtil;
 import org.veupathdb.service.eda.ss.model.distribution.DateDistributionConfig;
 import org.veupathdb.service.eda.ss.model.tabular.TabularReportConfig;
-import org.veupathdb.service.eda.ss.model.variable.binary.BinaryConverter;
-import org.veupathdb.service.eda.ss.model.variable.binary.DateValueConverter;
-import org.veupathdb.service.eda.ss.model.variable.binary.EmptyBinaryProperties;
-import org.veupathdb.service.eda.ss.model.variable.binary.LongValueConverter;
+import org.veupathdb.service.eda.ss.model.variable.binary.*;
 
 import java.nio.charset.StandardCharsets;
 import java.time.Instant;
@@ -36,6 +33,11 @@ public class DateVariable extends VariableWithValues<Long> {
   @Override
   public BinaryConverter<Long> getBinaryConverter() {
     return getGenericBinaryConverter(null);
+  }
+
+  @Override
+  public BinaryConverter<String> getStringConverter() {
+    return new StringValueConverter(24);
   }
 
   @Override

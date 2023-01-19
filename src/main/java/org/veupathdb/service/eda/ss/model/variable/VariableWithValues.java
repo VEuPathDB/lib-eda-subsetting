@@ -40,6 +40,8 @@ public abstract class VariableWithValues<T> extends Variable {
 
   public abstract BinaryConverter<T> getBinaryConverter();
 
+  public abstract BinaryConverter<String> getStringConverter();
+
   public abstract T fromString(String s);
 
   public abstract String valueToString(T val, TabularReportConfig config);

@@ -6,6 +6,7 @@ import org.veupathdb.service.eda.ss.model.tabular.TabularReportConfig;
 import org.veupathdb.service.eda.ss.model.variable.binary.BinaryConverter;
 import org.veupathdb.service.eda.ss.model.variable.binary.DoubleValueConverter;
 import org.veupathdb.service.eda.ss.model.variable.binary.EmptyBinaryProperties;
+import org.veupathdb.service.eda.ss.model.variable.binary.StringValueConverter;
 
 import java.nio.charset.StandardCharsets;
 import java.util.Optional;
@@ -55,6 +56,11 @@ public class FloatingPointVariable extends NumberVariable<Double> {
   @Override
   public BinaryConverter<Double> getBinaryConverter() {
     return getGenericBinaryConverter(null);
+  }
+
+  @Override
+  public BinaryConverter<String> getStringConverter() {
+    return new StringValueConverter(25); // 16 decimal points + "e" + "." + max of 7 digits.
   }
 
   @Override

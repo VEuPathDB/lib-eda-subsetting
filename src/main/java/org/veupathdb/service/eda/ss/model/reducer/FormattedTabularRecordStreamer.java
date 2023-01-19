@@ -75,7 +75,7 @@ public class FormattedTabularRecordStreamer implements CloseableIterator<byte[][
       while (valueStream.hasNext() && valueStream.peek().getIdIndex() < currentIdIndex) {
         valueStream.next();
       }
-      if (!valueStream.hasNext() || valueStream.peek().getIdIndex() != currentIdIndex) {
+      if (!valueStream.hasNext() || !Objects.equals(valueStream.peek().getIdIndex(), currentIdIndex)) {
         rec[recIndex++] = EMPTY_BYTE_ARRAY;
       } else {
         rec[recIndex++] = valueStream.valueFormatter.format(valueStream, currentIdIndex);

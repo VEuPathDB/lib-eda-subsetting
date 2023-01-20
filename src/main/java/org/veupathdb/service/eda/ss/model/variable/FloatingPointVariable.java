@@ -60,7 +60,7 @@ public class FloatingPointVariable extends NumberVariable<Double> {
 
   @Override
   public BinaryConverter<String> getStringConverter() {
-    return new StringValueConverter(25); // 16 decimal points + "e" + "." + max of 7 digits.
+    return new StringValueConverter(Integer.BYTES + 3 + getPrecision().intValue());
   }
 
   @Override

@@ -99,9 +99,15 @@ public class BinaryValuesStreamer {
     Function<VariableValueIdPair<byte[]>, VariableValueIdPair<byte[]>> extractor;
     if (variable.getIsMultiValued()) {
       // Ugh, need to trim date variables here. This extractor should be grabbed from an abstract method in vartype.
-      extractor = pair -> new VariableValueIdPair<>(pair.getIdIndex(), Utils.quotePaddedBinary(pair.getValue()));
+      extractor = pair -> {
+        pair.setValue(Utils.quotePaddedBinary(pair.getValue()));
+        return pair;
+      };
     } else {
-      extractor = pair -> new VariableValueIdPair<>(pair.getIdIndex(), Utils.trimPaddedBinary(pair.getValue()));
+      extractor = pair -> {
+        pair.setValue(Utils.trimPaddedBinary(pair.getValue()));
+        return pair;
+      };
     }
 
     return new FilteredValueIterator<>(

@@ -57,7 +57,8 @@ public class IntegerVariable extends NumberVariable<Long> {
 
   @Override
   public BinaryConverter<String> getStringConverter() {
-    return new StringValueConverter(12);
+    return new StringValueConverter(_distributionConfig.getRangeMax().toString()
+        .getBytes(StandardCharsets.UTF_8).length + Integer.BYTES);
   }
 
   @Override

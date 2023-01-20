@@ -32,7 +32,7 @@ public class Utils {
 
   public static byte[] quotePaddedBinary(byte[] paddedUtf8Bytes) {
     byte[] utf8Bytes = trimPaddedBinary(paddedUtf8Bytes);
-    byte[] quoted = new byte[paddedUtf8Bytes.length + 2];
+    byte[] quoted = new byte[utf8Bytes.length + 2];
     quoted[0] = '"';
     quoted[quoted.length - 1] = '"';
     System.arraycopy(utf8Bytes, 0, quoted, 1, utf8Bytes.length);

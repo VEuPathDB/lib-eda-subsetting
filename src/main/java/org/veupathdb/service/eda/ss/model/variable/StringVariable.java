@@ -11,7 +11,7 @@ import org.veupathdb.service.eda.ss.model.variable.binary.StringValueConverter;
 import java.util.Arrays;
 
 public class StringVariable extends VariableWithValues<byte[]> {
-  private StringBinaryProperties binaryProperties;
+  private final StringBinaryProperties binaryProperties;
 
   public StringVariable(Variable.Properties varProperties,
                         VariableWithValues.Properties valueProperties,
@@ -56,30 +56,7 @@ public class StringVariable extends VariableWithValues<byte[]> {
   public String valueToString(byte[] val, TabularReportConfig reportConfig) {
     return FormatUtil.paddedBinaryToString(val);
   }
-
-  @Override
-  public String valueToJsonText(byte[] val, TabularReportConfig config) {
-    return quote(valueToString(val, config));
-  }
-
-  @Override
-  public byte[] valueToJsonTextBytes(byte[] val, TabularReportConfig config) {
-    byte[] utf8Bytes = valueToUtf8Bytes(val, config);
-    byte[] quoted = new byte[val.length + 2];
-    quoted[0] = '"';
-    quoted[quoted.length - 1] = '"';
-    for (int i = 0; i < utf8Bytes.length; i++) {
-      quoted[i + 1] = utf8Bytes[i];
-    }
-    return quoted;
-  }
-
-  @Override
-  public byte[] valueToUtf8Bytes(byte[] val, TabularReportConfig config) {
-    int length = Utils.getPaddedUtf8StringLength(val);
-    return Arrays.copyOfRange(val, Integer.BYTES, length + Integer.BYTES);
-  }
-
+  
   public static StringVariable assertType(Variable variable) {
     if (variable instanceof StringVariable) return (StringVariable)variable;
     throw new BadRequestException("Variable " + variable.getId() +

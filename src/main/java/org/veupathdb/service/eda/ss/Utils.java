@@ -35,9 +35,7 @@ public class Utils {
     byte[] quoted = new byte[paddedUtf8Bytes.length + 2];
     quoted[0] = '"';
     quoted[quoted.length - 1] = '"';
-    for (int i = 0; i < utf8Bytes.length; i++) {
-      quoted[i + 1] = utf8Bytes[i];
-    }
+    System.arraycopy(utf8Bytes, 0, quoted, 1, utf8Bytes.length);
     return quoted;
   }
 }

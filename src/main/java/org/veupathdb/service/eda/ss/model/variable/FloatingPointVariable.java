@@ -12,6 +12,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.Optional;
 
 public class FloatingPointVariable extends NumberVariable<Double> {
+  private static final int BYTE_COUNT_FOR_INTEGER_DECIMAL_AND_EXP_CHAR = 3;
 
   public static class Properties {
 
@@ -60,7 +61,10 @@ public class FloatingPointVariable extends NumberVariable<Double> {
 
   @Override
   public BinaryConverter<String> getStringConverter() {
-    return new StringValueConverter(Integer.BYTES + 3 + getPrecision().intValue());
+    // Floating point values are greater than 1e7 are displayed in scientific notation. For this reason, the maximum
+    // size of our string is our precision + 3 bytes for the integer part of the decimal, the "e" in scientific notation
+    // and the integer part of our value. We also reserve 4 bytes for the size of the padded string.
+    return new StringValueConverter(Integer.BYTES + BYTE_COUNT_FOR_INTEGER_DECIMAL_AND_EXP_CHAR + getPrecision().intValue());
   }
 
   @Override
@@ -71,16 +75,6 @@ public class FloatingPointVariable extends NumberVariable<Double> {
   @Override
   public String valueToString(Double val, TabularReportConfig reportConfig) {
     return Double.toString(val);
-  }
-
-  @Override
-  public byte[] valueToJsonTextBytes(Double val, TabularReportConfig config) {
-    return quote(Double.toString(val)).getBytes(StandardCharsets.UTF_8);
-  }
-
-  @Override
-  public byte[] valueToUtf8Bytes(Double val, TabularReportConfig config) {
-    return Double.toString(val).getBytes(StandardCharsets.UTF_8);
   }
 
   @Override

@@ -132,4 +132,18 @@ public class DataFlowMapReduceTreeTest {
     MatcherAssert.assertThat(Arrays.stream(outputStream.toString().split("\n"))
         .collect(Collectors.toList()), Matchers.hasSize(498));
   }
+
+  @Test
+  public void testOutputDateVariables() {
+    TabularReportConfig config = new TabularReportConfig();
+    config.setTrimTimeFromDateVars(true);
+    final ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+    FilteredResultFactory.produceTabularSubsetFromFile(indiaICEMRStudy.getStudy(), indiaICEMRStudy.getParticipantEntity(),
+        List.of(indiaICEMRStudy.getObservationDate()), List.of(),
+        TabularResponses.Type.TABULAR.getBinaryFormatter(), config, outputStream,
+        new BinaryValuesStreamer(new BinaryFilesManager(binaryDirectory), THREAD_POOL, THREAD_POOL));
+    MatcherAssert.assertThat(Arrays.stream(outputStream.toString().split("\n"))
+        .collect(Collectors.toList()), Matchers.hasSize(498));
+    System.out.println(outputStream);
+  }
 }

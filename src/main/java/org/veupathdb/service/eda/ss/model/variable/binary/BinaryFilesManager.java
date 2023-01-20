@@ -33,9 +33,8 @@ public class BinaryFilesManager {
   private static final String ENTITY_FILE_PREFIX = "entity_";
   private static final String VAR_FILE_PREFIX = "var_";
   private static final String VOCAB_FILE_PREFIX = "vocab_";
+  private static final String UTF_8_POSTFIX = "_utf8";
 
-  public static final String META_KEY_NUM_ANCESTORS = "numAncestors";
-  public static final String META_KEY_BYTES_FOR_ID = "bytesReservedForId";
   public static final String META_KEY_BYTES_PER_ANCESTOR = "bytesReservedPerAncestor";
 
   static final String DONE_FILE_NAME = "DONE";
@@ -136,7 +135,7 @@ public class BinaryFilesManager {
   }
 
   public Path getUtf8VariableFile(Study study, Entity entity, Variable var, Operation op) {
-    final String fileName = getVarFileName(var) + "_utf8";
+    final String fileName = getVarFileName(var) + UTF_8_POSTFIX;
     if (op == Operation.READ) return getFile(study, entity, fileName);
     return createFile(study.getInternalAbbrev(), entity, fileName);
   }

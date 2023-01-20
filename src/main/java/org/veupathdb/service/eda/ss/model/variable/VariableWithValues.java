@@ -1,9 +1,11 @@
 package org.veupathdb.service.eda.ss.model.variable;
 
+import org.veupathdb.service.eda.ss.Utils;
 import org.veupathdb.service.eda.ss.model.tabular.TabularReportConfig;
 import org.veupathdb.service.eda.ss.model.variable.binary.BinaryConverter;
 
 import java.util.List;
+import java.util.function.Function;
 
 public abstract class VariableWithValues<T> extends Variable {
 
@@ -45,12 +47,6 @@ public abstract class VariableWithValues<T> extends Variable {
   public abstract T fromString(String s);
 
   public abstract String valueToString(T val, TabularReportConfig config);
-
-  public abstract String valueToJsonText(T val, TabularReportConfig config);
-
-  public abstract byte[] valueToJsonTextBytes(T val, TabularReportConfig config);
-
-  public abstract byte[] valueToUtf8Bytes(T val, TabularReportConfig config);
 
   private final Properties _properties;
 
@@ -106,7 +102,18 @@ public abstract class VariableWithValues<T> extends Variable {
     return _properties.type;
   }
 
-  protected String quote(String s) {
-    return "\"" + s + "\"";
+  /**
+   * Method that returns a function which transforms length-padded UTF-8 bytes into a formatted result. For some
+   * variables this may be dependent on the tabularReportConfig variable. The default behavior is to remove the padding
+   * on the string and wrap it in quotes for multi-val variables.
+   *
+   * Note that we are returning a function here to avoid branching in the low-level code that gets executed per
+   * variable value.
+   *
+   * @param tabularReportConfig Report configuration for the request
+   * @return Function to translate bytes properly for this variable with the given report configuration.
+   */
+  public Function<byte[], byte[]> getRawUtf8BinaryFormatter(TabularReportConfig tabularReportConfig) {
+    return getIsMultiValued() ? Utils::quotePaddedBinary : Utils::trimPaddedBinary;
   }
 }

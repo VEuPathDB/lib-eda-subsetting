@@ -12,7 +12,6 @@ import java.nio.file.Path;
 import java.time.Duration;
 import java.util.NoSuchElementException;
 import java.util.concurrent.ExecutorService;
-import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Function;
 import java.util.function.Predicate;
 
@@ -27,7 +26,7 @@ public class FilteredValueIterator<V, T> implements CloseableIterator<T> {
 
   private final Predicate<V> filterPredicate;
   private final DualBufferBinaryRecordReader<VariableValueIdPair<V>> reader;
-  private final Function<VariableValueIdPair<V>, T> pairExtractor;
+  private final Function<VariableValueIdPair<V>, T> idValuePairMapper;
   private T next;
   private boolean hasStarted;
 
@@ -37,7 +36,7 @@ public class FilteredValueIterator<V, T> implements CloseableIterator<T> {
    * @param path Path to file containing binary-encoded variable ID index, variable value tuples.
    * @param filterPredicate Predicate applied to variable values to filter tuples.
    * @param deserializer Deserializer used to deserialize binary-encoded data.
-   * @param pairExtractor Function applied to determine data to extract from tuples and output in the stream. In some
+   * @param idValuePairMapper Function applied to determine data to extract from tuples and output in the stream. In some
    *                      instances, we may only need the ID indexes while in others, we might want to extract the
    *                      values or the entire tuple.
    * @throws IOException If an I/O error occurs while opening binary file.
@@ -45,7 +44,7 @@ public class FilteredValueIterator<V, T> implements CloseableIterator<T> {
   public FilteredValueIterator(Path path,
                                Predicate<V> filterPredicate,
                                BinaryDeserializer<? extends VariableValueIdPair<V>> deserializer,
-                               Function<VariableValueIdPair<V>, T> pairExtractor,
+                               Function<VariableValueIdPair<V>, T> idValuePairMapper,
                                ExecutorService fileChannelThreadPool,
                                ExecutorService deserializerThreadPool) throws IOException {
     this.filterPredicate = filterPredicate;
@@ -56,7 +55,7 @@ public class FilteredValueIterator<V, T> implements CloseableIterator<T> {
         fileChannelThreadPool,
         deserializerThreadPool
     );
-    this.pairExtractor = pairExtractor;
+    this.idValuePairMapper = idValuePairMapper;
   }
 
   @Override
@@ -89,7 +88,7 @@ public class FilteredValueIterator<V, T> implements CloseableIterator<T> {
       }
       VariableValueIdPair<V> valuePair = reader.next();
       if (filterPredicate.test(valuePair.getValue())) {
-        next = pairExtractor.apply(valuePair);
+        next = idValuePairMapper.apply(valuePair);
       } else {
         next = null;
       }

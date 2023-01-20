@@ -72,16 +72,6 @@ public class IntegerVariable extends NumberVariable<Long> {
   }
 
   @Override
-  public byte[] valueToJsonTextBytes(Long val, TabularReportConfig config) {
-    return quote(Long.toString(val)).getBytes(StandardCharsets.UTF_8);
-  }
-
-  @Override
-  public byte[] valueToUtf8Bytes(Long val, TabularReportConfig config) {
-    return Long.toString(val).getBytes(StandardCharsets.UTF_8);
-  }
-
-  @Override
   public String getUnits() {
     return _properties.units;
   }

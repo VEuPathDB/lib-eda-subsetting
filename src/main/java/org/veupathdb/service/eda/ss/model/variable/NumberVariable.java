@@ -31,8 +31,4 @@ public abstract class NumberVariable<T extends Number & Comparable<T>> extends V
     String unitsStr = units == null || units.isBlank() ? "" : " (" + units.trim() + ")";
     return getDisplayName() + unitsStr + " [" + getId() + "]";
   }
-
-  public String valueToJsonText(T val, TabularReportConfig config) {
-    return valueToString(val, config);
-  }
 }

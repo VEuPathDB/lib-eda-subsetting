@@ -4,7 +4,8 @@ import java.util.Arrays;
 
 public enum DataSourceType {
   FILES("file"),
-  DATABASE("database");
+  DATABASE("database"),
+  UNSPECIFIED(null);
 
   private String value;
 
@@ -13,6 +14,9 @@ public enum DataSourceType {
   }
 
   public static DataSourceType fromValue(String s) {
+    if (s == null) {
+      return UNSPECIFIED;
+    }
     return Arrays.stream(values())
         .filter(enumInstance -> enumInstance.value.equals(s))
         .findFirst()

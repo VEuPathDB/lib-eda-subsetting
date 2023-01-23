@@ -14,7 +14,7 @@ public class TabularReportConfig {
   private Long _offset = 0L;
   private TabularHeaderFormat _headerFormat = TabularHeaderFormat.STANDARD;
   private boolean _trimTimeFromDateVars = false;
-  private DataSourceType _dataSourceType = DataSourceType.DATABASE;
+  private DataSourceType _dataSourceType = DataSourceType.UNSPECIFIED;
 
   /**
    * Whether this configuration contains paging or sorting (paging always requires sorting)

@@ -45,7 +45,7 @@ public class DateVariable extends VariableWithValues<Long> {
 
   @Override
   public Function<byte[], byte[]> getRawUtf8BinaryFormatter(TabularReportConfig tabularReportConfig) {
-    // If we need to trip time from date vars, return everything between padding in the beginning and the first
+    // If we need to trim time from date vars, return everything between padding in the beginning and the first
     // occurrence of the byte 'T'.
     if (tabularReportConfig.getTrimTimeFromDateVars()) {
       return utf8Bytes -> {

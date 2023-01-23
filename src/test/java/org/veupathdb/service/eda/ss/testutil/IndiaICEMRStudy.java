@@ -2,6 +2,7 @@ package org.veupathdb.service.eda.ss.testutil;
 
 import org.veupathdb.service.eda.ss.model.Entity;
 import org.veupathdb.service.eda.ss.model.Study;
+import org.veupathdb.service.eda.ss.model.variable.DateVariable;
 import org.veupathdb.service.eda.ss.model.variable.NumberVariable;
 import org.veupathdb.service.eda.ss.model.variable.StringVariable;
 import org.veupathdb.service.eda.ss.model.variable.VariableType;
@@ -21,6 +22,8 @@ public class IndiaICEMRStudy {
   private StringVariable householdMosquitoRepellentMats;
   private StringVariable symptoms;
 
+  private DateVariable observationDate;
+
   public IndiaICEMRStudy() {
     final String householdEntityId = "PCO_0000024";
     final String participantEntityId = "EUPATH_0000096";
@@ -29,6 +32,7 @@ public class IndiaICEMRStudy {
         .withEntityId(householdEntityId)
         .withInternalStudyAbbrev(studyAbbrev)
         .build();
+
     householdMosquitoRepellent = new TestDataProvider.StringVariableBuilder()
         .withEntity(householdEntity)
         .withVariableType(VariableType.STRING)
@@ -51,6 +55,8 @@ public class IndiaICEMRStudy {
         .withVariableId("EUPATH_0000019")
         .withEntity(householdEntity)
         .withVariableType(VariableType.INTEGER)
+        .withMin(1)
+        .withMax(50)
         .build();
     householdEntity.addVariable(personsInHousehold);
     householdEntity.addVariable(householdMosquitoRepellent);
@@ -60,16 +66,25 @@ public class IndiaICEMRStudy {
         .withVariableId("EUPATH_0020213")
         .withEntity(householdEntity)
         .withVariableType(VariableType.INTEGER)
+        .withMin(1)
+        .withMax(13)
         .build();
     householdEntity.addVariable(healthFacilityDist);
     participantEntity = new TestDataProvider.EntityBuilder()
         .withEntityId(participantEntityId)
         .withInternalStudyAbbrev(studyAbbrev)
         .build();
+    observationDate = new TestDataProvider.DateVariableBuilder()
+        .withVariableType(VariableType.DATE)
+        .withEntity(participantEntity)
+        .withVariableId("EUPATH_0004991")
+        .build();
     timeSinceLastMalaria = new TestDataProvider.IntegerVariableBuilder()
         .withVariableId("EUPATH_0000427")
         .withEntity(participantEntity)
         .withVariableType(VariableType.INTEGER)
+        .withMin(1)
+        .withMax(360)
         .build();
     participantEntity.addVariable(timeSinceLastMalaria);
     sampleEntity = new TestDataProvider.EntityBuilder()
@@ -80,6 +95,8 @@ public class IndiaICEMRStudy {
         .withVariableId("EUPATH_0000546")
         .withEntity(sampleEntity)
         .withVariableType(VariableType.INTEGER)
+        .withMin(0)
+        .withMax(200)
         .build();
     sampleEntity.addVariable(plasmoFalcGametocytes);
     symptoms = new TestDataProvider.StringVariableBuilder()
@@ -146,5 +163,9 @@ public class IndiaICEMRStudy {
 
   public StringVariable getSymptoms() {
     return symptoms;
+  }
+
+  public DateVariable getObservationDate() {
+    return observationDate;
   }
 }

@@ -14,7 +14,7 @@ public abstract class NumberVariable<T extends Number & Comparable<T>> extends V
   public abstract T validateBinWidth(Number binWidth);
   public abstract String getUnits();
 
-  private final NumberDistributionConfig<T> _distributionConfig;
+  protected final NumberDistributionConfig<T> _distributionConfig;
 
   public NumberVariable(Variable.Properties varProperties, Properties properties, NumberDistributionConfig<T> distributionConfig) {
     super(varProperties, properties);
@@ -30,9 +30,5 @@ public abstract class NumberVariable<T extends Number & Comparable<T>> extends V
     String units = getUnits();
     String unitsStr = units == null || units.isBlank() ? "" : " (" + units.trim() + ")";
     return getDisplayName() + unitsStr + " [" + getId() + "]";
-  }
-
-  public String valueToJsonText(T val, TabularReportConfig config) {
-    return valueToString(val, config);
   }
 }

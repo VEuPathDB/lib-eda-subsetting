@@ -184,6 +184,8 @@ public class TestDataProvider {
     private VariableType variableType;
     private String variableId;
     private Entity entity;
+    private long max;
+    private long min;
     private boolean multiValued = false;
 
     public IntegerVariableBuilder withVariableId(String variableId) {
@@ -206,11 +208,21 @@ public class TestDataProvider {
       return this;
     }
 
+    public IntegerVariableBuilder withMax(long max) {
+      this.max = max;
+      return this;
+    }
+
+    public IntegerVariableBuilder withMin(long min) {
+      this.min = min;
+      return this;
+    }
+
     public IntegerVariable build() {
       return new IntegerVariable(
           constructGenericVarProps(entity, variableId),
           constructVarValuesProps(variableType, multiValued),
-          new NumberDistributionConfig<>(0L, 10L, 0L, 10L, 2L, 2L),
+          new NumberDistributionConfig<>(min, max, min, max, 2L, 2L),
           new IntegerVariable.Properties("bleep bloops")
       );
     }

@@ -2,12 +2,16 @@ package org.veupathdb.service.eda.ss.model.variable;
 
 import jakarta.ws.rs.BadRequestException;
 import org.gusdb.fgputil.FormatUtil;
+import org.veupathdb.service.eda.ss.Utils;
 import org.veupathdb.service.eda.ss.model.tabular.TabularReportConfig;
 import org.veupathdb.service.eda.ss.model.variable.binary.BinaryConverter;
 import org.veupathdb.service.eda.ss.model.variable.binary.ByteArrayConverter;
+import org.veupathdb.service.eda.ss.model.variable.binary.StringValueConverter;
+
+import java.util.Arrays;
 
 public class StringVariable extends VariableWithValues<byte[]> {
-  private StringBinaryProperties binaryProperties;
+  private final StringBinaryProperties binaryProperties;
 
   public StringVariable(Variable.Properties varProperties,
                         VariableWithValues.Properties valueProperties,
@@ -36,6 +40,14 @@ public class StringVariable extends VariableWithValues<byte[]> {
   }
 
   @Override
+  public BinaryConverter<String> getStringConverter() {
+    if (binaryProperties == null) {
+      throw new IllegalStateException("No metadata file was found to parse binary properties from for variable " + getId());
+    }
+    return new StringValueConverter(binaryProperties.getMaxLength());
+  }
+
+  @Override
   public byte[] fromString(String s) {
     return FormatUtil.stringToPaddedBinary(s, binaryProperties.maxLength);
   }
@@ -44,12 +56,7 @@ public class StringVariable extends VariableWithValues<byte[]> {
   public String valueToString(byte[] val, TabularReportConfig reportConfig) {
     return FormatUtil.paddedBinaryToString(val);
   }
-
-  @Override
-  public String valueToJsonText(byte[] val, TabularReportConfig config) {
-    return quote(valueToString(val, config));
-  }
-
+  
   public static StringVariable assertType(Variable variable) {
     if (variable instanceof StringVariable) return (StringVariable)variable;
     throw new BadRequestException("Variable " + variable.getId() +

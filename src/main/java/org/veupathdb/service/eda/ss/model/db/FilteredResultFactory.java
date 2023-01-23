@@ -176,12 +176,13 @@ public class FilteredResultFactory {
       final CloseableIterator<Long> idIndexStream = driver.reduce(dataFlowTree);
 
       // Open streams of output variables and ancestors identifiers used to decorate ID index stream to produce tabular records.
-      List<FormattedTabularRecordStreamer.ValueStream<String>> outputVarStreams = new ArrayList<>();
+      List<FormattedTabularRecordStreamer.ValueStream<byte[]>> outputVarStreams = new ArrayList<>();
       for (Variable outputVar: outputVariables) {
         VariableWithValues<?> varWithVals = (VariableWithValues<?>) outputVar;
         TabularValueFormatter valFormatter = varWithVals.getIsMultiValued() ? new MultiValueFormatter() : new SingleValueFormatter();
-        FormattedTabularRecordStreamer.ValueStream<String> valStream = new FormattedTabularRecordStreamer.ValueStream<>(
-            binaryValuesStreamer.streamIdValuePairs(study, varWithVals, reportConfig), valFormatter);
+        // ValueStream should be UTF-8 byte arrays.
+        FormattedTabularRecordStreamer.ValueStream<byte[]> valStream = new FormattedTabularRecordStreamer.ValueStream<>(
+            binaryValuesStreamer.streamIdValueBinaryPairs(study, varWithVals, reportConfig), valFormatter);
         outputVarStreams.add(valStream);
       }
 

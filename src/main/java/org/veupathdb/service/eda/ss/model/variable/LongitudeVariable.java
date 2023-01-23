@@ -5,8 +5,12 @@ import org.veupathdb.service.eda.ss.model.tabular.TabularReportConfig;
 import org.veupathdb.service.eda.ss.model.variable.binary.BinaryConverter;
 import org.veupathdb.service.eda.ss.model.variable.binary.DoubleValueConverter;
 import org.veupathdb.service.eda.ss.model.variable.binary.EmptyBinaryProperties;
+import org.veupathdb.service.eda.ss.model.variable.binary.StringValueConverter;
+
+import java.nio.charset.StandardCharsets;
 
 public class LongitudeVariable extends VariableWithValues<Double> {
+  private static final int BYTE_COUNT_FOR_INTEGER_DECIMAL_AND_EXP_CHAR = 3;
 
   public static class Properties {
 
@@ -42,6 +46,14 @@ public class LongitudeVariable extends VariableWithValues<Double> {
   }
 
   @Override
+  public BinaryConverter<String> getStringConverter() {
+    // Floating point values are greater than 1e7 are displayed in scientific notation. For this reason, the maximum
+    // size of our string is our precision + 3 bytes for the integer part of the decimal, the "e" in scientific notation
+    // and the integer part of our value. We also reserve 4 bytes for the size of the padded string.
+    return new StringValueConverter(Integer.BYTES + BYTE_COUNT_FOR_INTEGER_DECIMAL_AND_EXP_CHAR + getPrecision().intValue());
+  }
+
+  @Override
   public Double fromString(String s) {
     return Double.valueOf(s);
   }
@@ -49,11 +61,6 @@ public class LongitudeVariable extends VariableWithValues<Double> {
   @Override
   public String valueToString(Double val, TabularReportConfig reportConfig) {
     return Double.toString(val);
-  }
-
-  @Override
-  public String valueToJsonText(Double val, TabularReportConfig reportConfig) {
-    return valueToString(val, reportConfig);
   }
 
   public Long getPrecision() {

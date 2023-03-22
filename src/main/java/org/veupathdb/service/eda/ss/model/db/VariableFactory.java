@@ -1,5 +1,14 @@
 package org.veupathdb.service.eda.ss.model.db;
 
+import org.gusdb.fgputil.db.runner.SQLRunner;
+import org.veupathdb.service.eda.ss.model.Entity;
+import org.veupathdb.service.eda.ss.model.distribution.DateDistributionConfig;
+import org.veupathdb.service.eda.ss.model.distribution.NumberDistributionConfig;
+import org.veupathdb.service.eda.ss.model.reducer.BinaryMetadataProvider;
+import org.veupathdb.service.eda.ss.model.variable.*;
+import org.veupathdb.service.eda.ss.model.variable.binary.BinaryFilesManager;
+
+import javax.sql.DataSource;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
@@ -7,26 +16,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentMap;
-import javax.sql.DataSource;
-import org.gusdb.fgputil.db.runner.SQLRunner;
-import org.veupathdb.service.eda.ss.model.Entity;
-import org.veupathdb.service.eda.ss.model.Study;
-import org.veupathdb.service.eda.ss.model.distribution.NumberDistributionConfig;
-import org.veupathdb.service.eda.ss.model.distribution.DateDistributionConfig;
-import org.veupathdb.service.eda.ss.model.reducer.BinaryMetadataProvider;
-import org.veupathdb.service.eda.ss.model.variable.*;
-import org.veupathdb.service.eda.ss.model.variable.binary.BinaryFilesManager;
 
 import static org.gusdb.fgputil.FormatUtil.NL;
 import static org.veupathdb.service.eda.ss.model.db.DB.Tables.AttributeGraph.Columns.*;
-import static org.veupathdb.service.eda.ss.model.db.ResultSetUtils.getDoubleFromString;
-import static org.veupathdb.service.eda.ss.model.db.ResultSetUtils.getIntegerFromString;
-import static org.veupathdb.service.eda.ss.model.db.ResultSetUtils.getRsOptionalLong;
-import static org.veupathdb.service.eda.ss.model.db.ResultSetUtils.getRsRequiredBoolean;
-import static org.veupathdb.service.eda.ss.model.db.ResultSetUtils.getRsRequiredString;
-import static org.veupathdb.service.eda.ss.model.db.ResultSetUtils.getRsOptionalString;
-import static org.veupathdb.service.eda.ss.model.db.ResultSetUtils.parseJsonArrayOfString;
+import static org.veupathdb.service.eda.ss.model.db.ResultSetUtils.*;
 
 public class VariableFactory {
 

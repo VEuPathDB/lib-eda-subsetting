@@ -30,11 +30,13 @@ public class VariableFactory {
   private final DataSource _dataSource;
   private final String _appDbSchema;
   private final BinaryMetadataProvider _binaryMetadataProvider;
+  private final BinaryFilesManager _binaryFilesManager;
 
-  public VariableFactory(DataSource dataSource, String appDbSchema, BinaryMetadataProvider binaryMetadataProvider) {
+  public VariableFactory(DataSource dataSource, String appDbSchema, BinaryMetadataProvider binaryMetadataProvider, BinaryFilesManager binaryFilesManager) {
     _dataSource = dataSource;
     _appDbSchema = appDbSchema;
     _binaryMetadataProvider = binaryMetadataProvider;
+    _binaryFilesManager = binaryFilesManager;
   }
 
   List<Variable> loadVariables(String studyAbbrev, Entity entity) {
@@ -43,7 +45,8 @@ public class VariableFactory {
     return new SQLRunner(_dataSource, sql, "Get entity variables metadata for: '" + entity.getDisplayName() + "'").executeQuery(rs -> {
       List<Variable> variables = new ArrayList<>();
       while (rs.next()) {
-        variables.add(createVariableFromResultSet(rs, entity, _binaryMetadataProvider));
+        final BinaryMetadataProvider metadataProvider = _binaryFilesManager.studyHasFiles(studyAbbrev) ? _binaryMetadataProvider : null;
+        variables.add(createVariableFromResultSet(rs, entity, metadataProvider));
       }
       return variables;
     });

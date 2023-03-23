@@ -1,49 +1,53 @@
 package org.veupathdb.service.eda.ss.model.db;
 
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
-import javax.sql.DataSource;
 import org.gusdb.fgputil.db.runner.SQLRunner;
 import org.veupathdb.service.eda.ss.model.Entity;
-import org.veupathdb.service.eda.ss.model.Study;
-import org.veupathdb.service.eda.ss.model.distribution.NumberDistributionConfig;
 import org.veupathdb.service.eda.ss.model.distribution.DateDistributionConfig;
+import org.veupathdb.service.eda.ss.model.distribution.NumberDistributionConfig;
 import org.veupathdb.service.eda.ss.model.reducer.BinaryMetadataProvider;
 import org.veupathdb.service.eda.ss.model.variable.*;
 import org.veupathdb.service.eda.ss.model.variable.binary.BinaryFilesManager;
 
+import javax.sql.DataSource;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.concurrent.ConcurrentHashMap;
+
 import static org.gusdb.fgputil.FormatUtil.NL;
 import static org.veupathdb.service.eda.ss.model.db.DB.Tables.AttributeGraph.Columns.*;
-import static org.veupathdb.service.eda.ss.model.db.ResultSetUtils.getDoubleFromString;
-import static org.veupathdb.service.eda.ss.model.db.ResultSetUtils.getIntegerFromString;
-import static org.veupathdb.service.eda.ss.model.db.ResultSetUtils.getRsOptionalLong;
-import static org.veupathdb.service.eda.ss.model.db.ResultSetUtils.getRsRequiredBoolean;
-import static org.veupathdb.service.eda.ss.model.db.ResultSetUtils.getRsRequiredString;
-import static org.veupathdb.service.eda.ss.model.db.ResultSetUtils.getRsOptionalString;
-import static org.veupathdb.service.eda.ss.model.db.ResultSetUtils.parseJsonArrayOfString;
+import static org.veupathdb.service.eda.ss.model.db.ResultSetUtils.*;
 
 public class VariableFactory {
 
   private final DataSource _dataSource;
   private final String _appDbSchema;
-  private final BinaryMetadataProvider _binaryMetadataProvider;
+  private final Optional<BinaryMetadataProvider> _binaryMetadataProvider;
+  private final BinaryFilesManager _binaryFilesManager;
+  private final Map<String,Boolean> _studyHasFilesMap;
 
-  public VariableFactory(DataSource dataSource, String appDbSchema, BinaryMetadataProvider binaryMetadataProvider) {
+  public VariableFactory(DataSource dataSource, String appDbSchema, BinaryMetadataProvider binaryMetadataProvider, BinaryFilesManager binaryFilesManager) {
     _dataSource = dataSource;
     _appDbSchema = appDbSchema;
-    _binaryMetadataProvider = binaryMetadataProvider;
+    _binaryMetadataProvider = Optional.ofNullable(binaryMetadataProvider);
+    _binaryFilesManager = binaryFilesManager;
+    _studyHasFilesMap = new ConcurrentHashMap<>();
   }
 
   List<Variable> loadVariables(String studyAbbrev, Entity entity) {
+
     String sql = generateStudyVariablesListSql(entity, _appDbSchema);
+
+    Optional<BinaryMetadataProvider> metadataProvider = _binaryMetadataProvider.flatMap(provider ->
+        _studyHasFilesMap.computeIfAbsent(studyAbbrev, _binaryFilesManager::studyHasFiles) ? Optional.of(provider) : Optional.empty());
 
     return new SQLRunner(_dataSource, sql, "Get entity variables metadata for: '" + entity.getDisplayName() + "'").executeQuery(rs -> {
       List<Variable> variables = new ArrayList<>();
       while (rs.next()) {
-        variables.add(createVariableFromResultSet(rs, entity, _binaryMetadataProvider));
+        variables.add(createVariableFromResultSet(rs, entity, metadataProvider));
       }
       return variables;
     });
@@ -67,7 +71,7 @@ public class VariableFactory {
    * @return Variable with metadata fully populated.
    * @throws SQLException If there is a failure in executing the query.
    */
-  static Variable createVariableFromResultSet(ResultSet rs, Entity entity, BinaryMetadataProvider binaryMetadataProvider) throws SQLException {
+  static Variable createVariableFromResultSet(ResultSet rs, Entity entity, Optional<BinaryMetadataProvider> binaryMetadataProvider) throws SQLException {
     Variable.Properties varProps = new Variable.Properties(
         getRsOptionalString(rs, PROVIDER_LABEL_COL_NAME, "No Provider Label available"), // TODO remove hack when in db
         getRsRequiredString(rs, VARIABLE_ID_COL_NAME),
@@ -79,9 +83,8 @@ public class VariableFactory {
         getRsOptionalString(rs, DEFINITION_COL_NAME, ""),
         parseJsonArrayOfString(rs, HIDE_FROM_COL_NAME));
     // Only set binary properties if binaryMetadataProvider is present.
-    Optional<BinaryProperties> binaryProperties = binaryMetadataProvider != null
-        ? binaryMetadataProvider.getBinaryProperties(entity.getStudyAbbrev(), entity, varProps.id)
-        : Optional.empty();
+    Optional<BinaryProperties> binaryProperties = binaryMetadataProvider.flatMap(provider ->
+        provider.getBinaryProperties(entity.getStudyAbbrev(), entity, varProps.id));
     return getRsRequiredBoolean(rs, HAS_VALUES_COL_NAME)
         ? createValueVarFromResultSet(rs, varProps, binaryProperties.orElse(null))
         : new VariablesCategory(varProps);

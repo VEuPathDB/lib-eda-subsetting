@@ -11,10 +11,13 @@ import org.gusdb.fgputil.functional.Functions;
 import org.gusdb.fgputil.functional.TreeNode;
 import org.gusdb.fgputil.iterator.IteratorUtil;
 import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import org.mockito.Mockito;
 import org.veupathdb.service.eda.ss.model.Entity;
 import org.veupathdb.service.eda.ss.model.reducer.EmptyBinaryMetadataProvider;
+import org.veupathdb.service.eda.ss.model.variable.binary.BinaryFilesManager;
 import org.veupathdb.service.eda.ss.test.MockFilters;
 import org.veupathdb.service.eda.ss.model.Study;
 import org.veupathdb.service.eda.ss.model.tabular.TabularReportConfig;
@@ -47,10 +50,12 @@ public class StudySubsettingUtilsTest {
 
   @BeforeAll
   public static void setUp() {
+    BinaryFilesManager bfm = Mockito.mock(BinaryFilesManager.class);
+    Mockito.when(bfm.studyHasFiles(Mockito.anyString())).thenReturn(false);
     _model = new MockModel();
     _filtesFromMockStudy = new MockFilters(_model.study);
     _dataSource = StubDb.getDataSource();
-    _variableFactory = new VariableFactory(_dataSource, APP_DB_SCHEMA, new EmptyBinaryMetadataProvider());
+    _variableFactory = new VariableFactory(_dataSource, APP_DB_SCHEMA, new EmptyBinaryMetadataProvider(), bfm);
     Study study = new StudyFactory(_dataSource, APP_DB_SCHEMA, USER_STUDIES_FLAG, _variableFactory).getStudyById(LoadStudyTest.STUDY_ID);
     _filtersFromDbStudy = new MockFilters(study);
   }
@@ -58,7 +63,7 @@ public class StudySubsettingUtilsTest {
   @Test
   @DisplayName("Test getting set of entity IDs from set of filters ")
   void testGetEntityIdsInFilters() {
-   
+
     // add it to a set
     List<Filter> filters = new ArrayList<>();
     filters.add(_filtesFromMockStudy.obsWeightFilter);
@@ -74,7 +79,7 @@ public class StudySubsettingUtilsTest {
   @Test
   @DisplayName("Test pruning an entity tree using 1 filter below")
   void testPruning1() {
-    
+
     // create filter set with obs filter
     List<Filter> filters = new ArrayList<>();
     filters.add(_filtesFromMockStudy.obsWeightFilter);

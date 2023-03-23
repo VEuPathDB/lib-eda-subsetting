@@ -5,9 +5,11 @@ import org.gusdb.fgputil.distribution.HistogramBin;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import org.mockito.Mockito;
 import org.veupathdb.service.eda.ss.model.Entity;
 import org.veupathdb.service.eda.ss.model.db.VariableFactory;
 import org.veupathdb.service.eda.ss.model.reducer.EmptyBinaryMetadataProvider;
+import org.veupathdb.service.eda.ss.model.variable.binary.BinaryFilesManager;
 import org.veupathdb.service.eda.ss.test.MockFilters;
 import org.veupathdb.service.eda.ss.model.Study;
 import org.veupathdb.service.eda.ss.model.db.StudyFactory;
@@ -28,11 +30,14 @@ public class StudiesTest {
   private static DataSource _dataSource;
   private static MockFilters _filtersForTesting;
   private static VariableFactory _variableFactory;
+  private static BinaryFilesManager _binaryFilesManager;
 
   @BeforeAll
   public static void setUp() {
     _dataSource = StubDb.getDataSource();
-    _variableFactory = new VariableFactory(_dataSource, APP_DB_SCHEMA, new EmptyBinaryMetadataProvider());
+    _binaryFilesManager = Mockito.mock(BinaryFilesManager.class);
+    Mockito.when(_binaryFilesManager.studyHasFiles(Mockito.anyString())).thenReturn(false);
+    _variableFactory = new VariableFactory(_dataSource, APP_DB_SCHEMA, new EmptyBinaryMetadataProvider(), _binaryFilesManager);
     Study study = new StudyFactory(_dataSource, APP_DB_SCHEMA, USER_STUDIES_FLAG, _variableFactory).getStudyById("DS-2324");
     _filtersForTesting = new MockFilters(study);
   }

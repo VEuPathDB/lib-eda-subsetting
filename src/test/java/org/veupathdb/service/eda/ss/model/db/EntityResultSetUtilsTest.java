@@ -12,6 +12,7 @@ import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 import org.veupathdb.service.eda.ss.model.Entity;
 import org.veupathdb.service.eda.ss.model.reducer.BinaryMetadataProvider;
+import org.veupathdb.service.eda.ss.model.variable.binary.BinaryFilesManager;
 import org.veupathdb.service.eda.ss.test.MockFilters;
 import org.veupathdb.service.eda.ss.model.Study;
 import org.veupathdb.service.eda.ss.test.MockModel;
@@ -22,6 +23,7 @@ public class EntityResultSetUtilsTest {
 
   private static MockModel _model;
   private BinaryMetadataProvider _binaryMetadataProvider;
+  private BinaryFilesManager _binaryFilesManager;
 
   private Study study;
 
@@ -32,11 +34,13 @@ public class EntityResultSetUtilsTest {
 
   @BeforeEach
   public void beforeEach() {
+    _binaryFilesManager = Mockito.mock(BinaryFilesManager.class);
+    Mockito.when(_binaryFilesManager.studyHasFiles(Mockito.anyString())).thenReturn(false);
     _binaryMetadataProvider = Mockito.mock(BinaryMetadataProvider.class);
     Mockito.when(_binaryMetadataProvider.getBinaryProperties(Mockito.anyString(), Mockito.any(Entity.class), Mockito.anyString()))
             .thenReturn(Optional.empty());
     Study study = new StudyFactory(StubDb.getDataSource(), APP_DB_SCHEMA, USER_STUDIES_FLAG,
-        new VariableFactory(StubDb.getDataSource(), APP_DB_SCHEMA, _binaryMetadataProvider)).getStudyById(LoadStudyTest.STUDY_ID);
+        new VariableFactory(StubDb.getDataSource(), APP_DB_SCHEMA, _binaryMetadataProvider, _binaryFilesManager)).getStudyById(LoadStudyTest.STUDY_ID);
     new MockFilters(study);
   }
 

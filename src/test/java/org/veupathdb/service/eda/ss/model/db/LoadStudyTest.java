@@ -93,7 +93,7 @@ public class LoadStudyTest {
     
     Variable var = new SQLRunner(datasource, sql).executeQuery(rs -> {
       rs.next();
-      return VariableFactory.createVariableFromResultSet(rs, entity, binaryMetadataProvider);
+      return VariableFactory.createVariableFromResultSet(rs, entity, Optional.of(binaryMetadataProvider));
     });
 
    // --(stable_id, ontology_term_id, parent_stable_id, provider_label, display_name, term_type, has_value, data_type, has_multiple_values_per_entity, data_shape, unit, unit_ontology_term_id, precision)

@@ -6,12 +6,14 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import javax.sql.DataSource;
+
 import org.gusdb.fgputil.db.runner.SQLRunner;
 import org.veupathdb.service.eda.ss.model.Entity;
 import org.veupathdb.service.eda.ss.model.Study;
 import org.veupathdb.service.eda.ss.model.distribution.NumberDistributionConfig;
 import org.veupathdb.service.eda.ss.model.distribution.DateDistributionConfig;
 import org.veupathdb.service.eda.ss.model.reducer.BinaryMetadataProvider;
+import org.veupathdb.service.eda.ss.model.reducer.EmptyBinaryMetadataProvider;
 import org.veupathdb.service.eda.ss.model.variable.*;
 import org.veupathdb.service.eda.ss.model.variable.binary.BinaryFilesManager;
 
@@ -45,7 +47,9 @@ public class VariableFactory {
     return new SQLRunner(_dataSource, sql, "Get entity variables metadata for: '" + entity.getDisplayName() + "'").executeQuery(rs -> {
       List<Variable> variables = new ArrayList<>();
       while (rs.next()) {
-        final BinaryMetadataProvider metadataProvider = _binaryFilesManager.studyHasFiles(studyAbbrev) ? _binaryMetadataProvider : null;
+        final BinaryMetadataProvider metadataProvider = _binaryFilesManager.studyHasFiles(studyAbbrev)
+            ? _binaryMetadataProvider
+            : new EmptyBinaryMetadataProvider();
         variables.add(createVariableFromResultSet(rs, entity, metadataProvider));
       }
       return variables;
@@ -61,9 +65,8 @@ public class VariableFactory {
   }
 
   /**
-   * 
-   * @param rs Database result set containing variable metadata.
-   * @param entity Entity associated with variable.
+   * @param rs                     Database result set containing variable metadata.
+   * @param entity                 Entity associated with variable.
    * @param binaryMetadataProvider Optional metadata provider to decorate variables with metadata describing how the
    *                               values are encoded as binary. This can be null if we are reading from the database
    *                               exclusively.
@@ -81,10 +84,8 @@ public class VariableFactory {
         getRsOptionalString(rs, VARIABLE_PARENT_ID_COL_NAME, null),
         getRsOptionalString(rs, DEFINITION_COL_NAME, ""),
         parseJsonArrayOfString(rs, HIDE_FROM_COL_NAME));
-    // Only set binary properties if binaryMetadataProvider is present.
-    Optional<BinaryProperties> binaryProperties = binaryMetadataProvider != null
-        ? binaryMetadataProvider.getBinaryProperties(entity.getStudyAbbrev(), entity, varProps.id)
-        : Optional.empty();
+    Optional<BinaryProperties> binaryProperties = binaryMetadataProvider.getBinaryProperties(
+        entity.getStudyAbbrev(), entity, varProps.id);
     return getRsRequiredBoolean(rs, HAS_VALUES_COL_NAME)
         ? createValueVarFromResultSet(rs, varProps, binaryProperties.orElse(null))
         : new VariablesCategory(varProps);
@@ -106,31 +107,35 @@ public class VariableFactory {
           rs.getBoolean(IMPUTE_ZERO)
       );
 
-      switch(valueProps.type) {
+      switch (valueProps.type) {
 
 
-        case NUMBER: return
-            new FloatingPointVariable(varProps, valueProps, createFloatDistributionConfig(rs, true), createFloatProperties(rs));
+        case NUMBER:
+          return
+              new FloatingPointVariable(varProps, valueProps, createFloatDistributionConfig(rs, true), createFloatProperties(rs));
 
-        case LONGITUDE: return
-            new LongitudeVariable(varProps, valueProps, new LongitudeVariable.Properties(
-                getRsOptionalLong(rs, PRECISION_COL_NAME, 1L)
-            ));
+        case LONGITUDE:
+          return
+              new LongitudeVariable(varProps, valueProps, new LongitudeVariable.Properties(
+                  getRsOptionalLong(rs, PRECISION_COL_NAME, 1L)
+              ));
 
-        case INTEGER: return
-            new IntegerVariable(varProps, valueProps, createIntegerDistributionConfig(rs, true), createIntegerProperties(rs));
+        case INTEGER:
+          return
+              new IntegerVariable(varProps, valueProps, createIntegerDistributionConfig(rs, true), createIntegerProperties(rs));
 
-        case DATE: return
-            new DateVariable(varProps, valueProps, createDateDistributionConfig(valueProps.dataShape, rs, true));
+        case DATE:
+          return
+              new DateVariable(varProps, valueProps, createDateDistributionConfig(valueProps.dataShape, rs, true));
 
         case STRING:
           return new StringVariable(varProps, valueProps, (StringVariable.StringBinaryProperties) binaryProperties);
 
-        default: throw new RuntimeException("Entity:  " + varProps.entity.getId() +
-            " variable: " + varProps.id + " has unrecognized type " + valueProps.type);
+        default:
+          throw new RuntimeException("Entity:  " + varProps.entity.getId() +
+              " variable: " + varProps.id + " has unrecognized type " + valueProps.type);
       }
-    }
-    catch (SQLException e) {
+    } catch (SQLException e) {
       throw new RuntimeException("Entity:  " + varProps.entity.getId() + " variable: " + varProps.id, e);
     }
   }

@@ -11,7 +11,7 @@ import java.util.Optional;
  * used by a consumer of the generated binary files.
  */
 public class MetadataFileBinaryProvider implements BinaryMetadataProvider {
-    private BinaryFilesManager binaryFilesManager;
+    private final BinaryFilesManager binaryFilesManager;
 
     public MetadataFileBinaryProvider(BinaryFilesManager binaryFilesManager) {
         this.binaryFilesManager = binaryFilesManager;
@@ -23,9 +23,11 @@ public class MetadataFileBinaryProvider implements BinaryMetadataProvider {
             return Optional.empty();
         }
         Optional<BinaryFilesManager.Metadata> metadata = binaryFilesManager.readMetadata(studyAbbrev, entity);
-        Optional<BinaryFilesManager.VariableMeta> varMetadata = metadata.flatMap(meta -> meta.getVariableMetadata().stream()
-            .filter(varMeta -> varMeta.getVariableId().equals(variableId))
-            .findFirst());
-        return varMetadata.map(varMeta -> varMeta.getProperties());
+        Optional<BinaryFilesManager.VariableMeta> varMetadata = metadata
+            .flatMap(meta -> meta.getVariableMetadata().stream()
+                .filter(varMeta -> varMeta.getVariableId().equals(variableId))
+                .findFirst()
+            );
+        return varMetadata.map(BinaryFilesManager.VariableMeta::getProperties);
     }
 }

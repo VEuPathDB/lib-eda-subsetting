@@ -12,7 +12,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.Optional;
 
 public class FloatingPointVariable extends NumberVariable<Double> {
-  private static final int BYTE_COUNT_FOR_INTEGER_DECIMAL_AND_EXP_CHAR = 3;
+  private static final int BYTE_COUNT_FOR_INTEGER_DECIMAL_AND_EXP_CHAR = 2;
   private static final int MAX_DIGITS_BEFORE_SCIENTIFIC_NOTATION = 7;
 
   public static class Properties {
@@ -66,11 +66,12 @@ public class FloatingPointVariable extends NumberVariable<Double> {
     // size of our string is our precision + 3 bytes for the integer part of the decimal, the "e" in scientific notation
     // and the integer part of our value. We also reserve 4 bytes for the size of the padded string.
     int integerPartBytes = Integer.toString(_distributionConfig.getRangeMax().intValue()).getBytes(StandardCharsets.UTF_8).length;
-    int numBytesReservedForIntPart = Math.min(integerPartBytes, 7); // After 7 digits, we start using scientific notation
+    int numBytesReservedForIntPart = Math.min(integerPartBytes, MAX_DIGITS_BEFORE_SCIENTIFIC_NOTATION); // After 7 digits, we start using scientific notation
     int bytesReservedForIntegerPartOrScienitificNotation = Math.max(numBytesReservedForIntPart, BYTE_COUNT_FOR_INTEGER_DECIMAL_AND_EXP_CHAR);
     return new StringValueConverter(Integer.BYTES // Reserved for all padded strings
-        + bytesReservedForIntegerPartOrScienitificNotation // Reserved for integer part o
-        + getPrecision().intValue());
+        + bytesReservedForIntegerPartOrScienitificNotation // Reserved for integer part and/or left part of scientific notation.
+        + getPrecision().intValue() // Plus space for decimal part.
+        + 1); // Plus one for decimal point.
   }
 
   @Override

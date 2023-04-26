@@ -55,7 +55,7 @@ public class StudySubsettingUtilsTest {
     _model = new MockModel();
     _filtesFromMockStudy = new MockFilters(_model.study);
     _dataSource = StubDb.getDataSource();
-    _variableFactory = new VariableFactory(_dataSource, APP_DB_SCHEMA, new EmptyBinaryMetadataProvider(), bfm);
+    _variableFactory = new VariableFactory(_dataSource, APP_DB_SCHEMA, new EmptyBinaryMetadataProvider(), studyId -> false);
     Study study = new StudyFactory(_dataSource, APP_DB_SCHEMA, USER_STUDIES_FLAG, _variableFactory).getStudyById(LoadStudyTest.STUDY_ID);
     _filtersFromDbStudy = new MockFilters(study);
   }

@@ -126,7 +126,7 @@ public class LoadStudyTest {
 
     Entity entity = entityIdMap.get("GEMS_Part");
 
-    List<Variable> variables = new VariableFactory(datasource, APP_DB_SCHEMA, binaryMetadataProvider, binaryFilesManager)
+    List<Variable> variables = new VariableFactory(datasource, APP_DB_SCHEMA, binaryMetadataProvider, studyId -> false)
         .loadVariables(STUDY_ID, entity);
 
     assertEquals(5, variables.size());
@@ -135,7 +135,7 @@ public class LoadStudyTest {
   @Test
   @DisplayName("Load study test") 
   void testLoadStudy() {
-    VariableFactory variableFactory = new VariableFactory(datasource, APP_DB_SCHEMA, binaryMetadataProvider, binaryFilesManager);
+    VariableFactory variableFactory = new VariableFactory(datasource, APP_DB_SCHEMA, binaryMetadataProvider, studyId -> false);
     Study study = new StudyFactory(datasource, APP_DB_SCHEMA, USER_STUDIES_FLAG, variableFactory).getStudyById(STUDY_ID);
     assertNotNull(study);
   }

@@ -16,6 +16,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.function.Function;
 
 import static org.gusdb.fgputil.FormatUtil.NL;
 import static org.veupathdb.service.eda.ss.model.db.DB.Tables.AttributeGraph.Columns.*;
@@ -26,23 +27,28 @@ public class VariableFactory {
   private final DataSource _dataSource;
   private final String _appDbSchema;
   private final Optional<BinaryMetadataProvider> _binaryMetadataProvider;
-  private final BinaryFilesManager _binaryFilesManager;
   private final Map<String,Boolean> _studyHasFilesMap;
+  private final Function<String, Boolean> _shouldAppendMetaForStudy;
 
-  public VariableFactory(DataSource dataSource, String appDbSchema, BinaryMetadataProvider binaryMetadataProvider, BinaryFilesManager binaryFilesManager) {
+  public VariableFactory(DataSource dataSource,
+                         String appDbSchema,
+                         BinaryMetadataProvider binaryMetadataProvider,
+                         Function<String, Boolean> shouldAppendMetaForStudy) {
     _dataSource = dataSource;
     _appDbSchema = appDbSchema;
     _binaryMetadataProvider = Optional.ofNullable(binaryMetadataProvider);
-    _binaryFilesManager = binaryFilesManager;
+    _shouldAppendMetaForStudy = shouldAppendMetaForStudy;
     _studyHasFilesMap = new ConcurrentHashMap<>();
   }
+
 
   List<Variable> loadVariables(String studyAbbrev, Entity entity) {
 
     String sql = generateStudyVariablesListSql(entity, _appDbSchema);
 
-    Optional<BinaryMetadataProvider> metadataProvider = _binaryMetadataProvider.flatMap(provider ->
-        _studyHasFilesMap.computeIfAbsent(studyAbbrev, _binaryFilesManager::studyHasFiles) ? Optional.of(provider) : Optional.empty());
+    Optional<BinaryMetadataProvider> metadataProvider = _shouldAppendMetaForStudy.apply(studyAbbrev)
+        ? _binaryMetadataProvider
+        : Optional.empty();
 
     return new SQLRunner(_dataSource, sql, "Get entity variables metadata for: '" + entity.getDisplayName() + "'").executeQuery(rs -> {
       List<Variable> variables = new ArrayList<>();

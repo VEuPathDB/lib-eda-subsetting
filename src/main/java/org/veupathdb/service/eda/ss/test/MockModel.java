@@ -7,7 +7,6 @@ import org.veupathdb.service.eda.ss.model.StudyOverview;
 import org.veupathdb.service.eda.ss.model.distribution.DateDistributionConfig;
 import org.veupathdb.service.eda.ss.model.distribution.NumberDistributionConfig;
 import org.veupathdb.service.eda.ss.model.variable.*;
-import org.veupathdb.service.eda.ss.model.variable.binary.EmptyBinaryProperties;
 
 import java.util.*;
 
@@ -42,7 +41,7 @@ public class MockModel {
   
   public MockModel() {
     createTestEntities();
-    StudyOverview overview = new StudyOverview("GEMS", "ds2324", StudyOverview.StudySourceType.CURATED);
+    StudyOverview overview = new StudyOverview("GEMS", "ds2324", StudyOverview.StudySourceType.CURATED, new Date());
     study = new Study(overview, constructEntityTree(), createIdMap());
     constructVariables();
   }

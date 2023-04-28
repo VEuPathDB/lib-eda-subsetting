@@ -9,6 +9,7 @@ import org.veupathdb.service.eda.ss.model.distribution.NumberDistributionConfig;
 import org.veupathdb.service.eda.ss.model.variable.*;
 
 import java.util.Collections;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -72,7 +73,7 @@ public class TestDataProvider {
     }
 
     public Study build() {
-      final StudyOverview studyOverview = new StudyOverview(studyId, internalAbbrev, StudyOverview.StudySourceType.CURATED);
+      final StudyOverview studyOverview = new StudyOverview(studyId, internalAbbrev, StudyOverview.StudySourceType.CURATED, new Date());
       return new Study(studyOverview, rootEntity, entityIdMap);
     }
 

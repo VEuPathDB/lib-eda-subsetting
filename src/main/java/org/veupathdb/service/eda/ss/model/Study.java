@@ -14,7 +14,7 @@ public class Study extends StudyOverview {
   private final Map<String, Entity> _entityIdMap;
 
   public Study(StudyOverview overview, TreeNode<Entity> entityTree, Map<String, Entity> entityIdMap) {
-    super(overview.getStudyId(), overview.getInternalAbbrev(), overview.getStudySourceType());
+    super(overview.getStudyId(), overview.getInternalAbbrev(), overview.getStudySourceType(), overview.getLastModified());
     _entityTree = entityTree;
     _entityIdMap = entityIdMap;
     initEntities(entityTree);

@@ -9,6 +9,7 @@ create table Study (
   stable_id varchar(50) not null,
   display_name varchar(30) not null,
   internal_abbrev varchar(30),
+  modification_date date,
   PRIMARY KEY (stable_id)
 );
 alter table Study add unique (display_name);

@@ -10,7 +10,7 @@
 ------------------------------------------------------------
 
 --(stable_id, display_nme, internal_abbrev)
-insert into study values ('DS-2324', 'GEMS', 'ds2324');
+insert into study values ('DS-2324', 'GEMS', 'ds2324', '2023-01-01');
 
 insert into StudyIdDatasetId values('DS-2324', 'datasetid_2222');
 

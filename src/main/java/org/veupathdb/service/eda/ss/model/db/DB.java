@@ -20,6 +20,7 @@ public interface DB {
       interface Columns extends ColumnCollection {
         String STUDY_ID_COL_NAME = "stable_id";
         String STUDY_ABBREV_COL_NAME = "internal_abbrev";
+        String STUDY_DATE_MODIFIED_COL_NAME = "modification_date";
       }
     }
 

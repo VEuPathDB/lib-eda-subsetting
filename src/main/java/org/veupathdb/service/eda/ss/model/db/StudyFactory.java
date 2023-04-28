@@ -8,16 +8,17 @@ import org.veupathdb.service.eda.ss.model.Entity;
 import org.veupathdb.service.eda.ss.model.Study;
 import org.veupathdb.service.eda.ss.model.StudyOverview;
 import org.veupathdb.service.eda.ss.model.StudyOverview.StudySourceType;
-import org.veupathdb.service.eda.ss.model.reducer.BinaryMetadataProvider;
-import org.veupathdb.service.eda.ss.model.variable.binary.BinaryFilesManager;
 
 import javax.sql.DataSource;
+import java.time.Instant;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
 import static org.veupathdb.service.eda.ss.model.db.DB.Tables.Study.Columns.STUDY_ABBREV_COL_NAME;
+import static org.veupathdb.service.eda.ss.model.db.DB.Tables.Study.Columns.STUDY_DATE_MODIFIED_COL_NAME;
 import static org.veupathdb.service.eda.ss.model.db.DB.Tables.Study.Columns.STUDY_ID_COL_NAME;
 
 public class StudyFactory implements StudyProvider {
@@ -40,7 +41,7 @@ public class StudyFactory implements StudyProvider {
   }
 
   private static String getStudyOverviewSql(String appDbSchema) {
-    return "select s." + STUDY_ID_COL_NAME + ", s." + STUDY_ABBREV_COL_NAME +
+    return "select s." + STUDY_ID_COL_NAME + ", s." + STUDY_ABBREV_COL_NAME + ", s." + STUDY_DATE_MODIFIED_COL_NAME +
            " from " + appDbSchema + DB.Tables.Study.NAME + " s ";
   }
 
@@ -52,7 +53,8 @@ public class StudyFactory implements StudyProvider {
       while (rs.next()) {
         String id = rs.getString(1);
         String abbrev = rs.getString(2);
-        StudyOverview study = new StudyOverview(id, abbrev, _sourceType);
+        Date lastModified = rs.getDate(3);
+        StudyOverview study = new StudyOverview(id, abbrev, _sourceType, lastModified);
         studyOverviews.add(study);
       }
       return studyOverviews;

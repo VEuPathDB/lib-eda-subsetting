@@ -7,9 +7,7 @@ import org.veupathdb.service.eda.ss.model.StudyOverview;
 import org.veupathdb.service.eda.ss.model.distribution.DateDistributionConfig;
 import org.veupathdb.service.eda.ss.model.distribution.NumberDistributionConfig;
 import org.veupathdb.service.eda.ss.model.variable.*;
-import org.veupathdb.service.eda.ss.model.variable.binary.EmptyBinaryProperties;
 
-import java.time.Instant;
 import java.util.*;
 
 /**

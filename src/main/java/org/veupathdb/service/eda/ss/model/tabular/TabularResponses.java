@@ -142,13 +142,18 @@ public class TabularResponses {
     private boolean _firstWritten = false;
 
     @Override
-    public void consumeRow(byte[][] values) throws IOException {
+    public void begin() throws IOException {
       _outputStream.write('[');
+    }
+
+    @Override
+    public void consumeRow(byte[][] values) throws IOException {
       if (_firstWritten) {
         _outputStream.write(',');
       } else {
         _firstWritten = true;
       }
+      _outputStream.write('[');
       for (int i = 0; i < values.length; i++) {
         if (i != 0) {
           _outputStream.write(',');
@@ -164,7 +169,11 @@ public class TabularResponses {
         }
       }
       _outputStream.write(']');
-      _outputStream.write(NEW_LINE_BYTES);
+    }
+
+    @Override
+    public void end() throws IOException {
+      _outputStream.write(']');
     }
   };
 

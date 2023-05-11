@@ -21,11 +21,14 @@ public class TabularResponsesTest {
     input[2] = "klmno".getBytes(StandardCharsets.UTF_8);
     input[3] = "pqrst".getBytes(StandardCharsets.UTF_8);
     input[4] = "uvwxy".getBytes(StandardCharsets.UTF_8);
+    formatter.begin();
     formatter.consumeRow(input);
     formatter.consumeRow(input);
-    String[] outputRows = output.toString().split("\n");
-    Assertions.assertEquals(5, new JSONArray(outputRows[0]).length());
-    Assertions.assertEquals(5, new JSONArray(outputRows[1]).length());
+    formatter.end();
+    JSONArray arr = new JSONArray(output.toString());
+    Assertions.assertEquals(2, arr.length());
+    Assertions.assertEquals(arr.getJSONArray(0).length(), 5);
+    Assertions.assertEquals(arr.getJSONArray(1).length(), 5);
   }
 
   @Test
@@ -39,11 +42,14 @@ public class TabularResponsesTest {
     input[2] = "klmn/".getBytes(StandardCharsets.UTF_8);
     input[3] = "pqrst".getBytes(StandardCharsets.UTF_8);
     input[4] = "uvwxy".getBytes(StandardCharsets.UTF_8);
+    formatter.begin();
     formatter.consumeRow(input);
     formatter.consumeRow(input);
-    String[] outputRows = output.toString().split("\n");
-    Assertions.assertEquals(5, new JSONArray(outputRows[0]).length()); // Make sure it can be parsed as josn
-    Assertions.assertEquals(5, new JSONArray(outputRows[1]).length());
+    formatter.end();
+    JSONArray arr = new JSONArray(output.toString());;
+    Assertions.assertEquals(2, arr.length());
+    Assertions.assertEquals(arr.getJSONArray(0).length(), 5);
+    Assertions.assertEquals(arr.getJSONArray(1).length(), 5);
   }
 
 }

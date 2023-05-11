@@ -195,6 +195,7 @@ public class FilteredResultFactory {
       )) {
         long rowsConsumed = 0L;
         long rowsSkipped = 0L;
+        resultConsumer.begin();
         while (resultStreamer.hasNext()) {
           if (rowsSkipped > reportConfig.getOffset()) {
             resultConsumer.consumeRow(resultStreamer.next());
@@ -206,6 +207,7 @@ public class FilteredResultFactory {
             break;
           }
         }
+        resultConsumer.end();
         LOG.info("Completed processing file-based subsetting request");
       } catch (Exception e) {
         throw new RuntimeException("Failed to write result", e);

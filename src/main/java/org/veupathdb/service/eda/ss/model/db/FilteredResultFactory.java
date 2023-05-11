@@ -165,6 +165,7 @@ public class FilteredResultFactory {
     try (BufferedOutputStream bufferedOutputStream = new BufferedOutputStream(outputStream)) {
       final TabularResponses.BinaryResultConsumer resultConsumer = formatter.getFormatter(bufferedOutputStream);
 
+      resultConsumer.begin();
       resultConsumer.consumeRow(usePrettyHeader ? getTabularPrettyHeaders(outputEntity, outputVariables).stream()
           .map(s -> s.getBytes(StandardCharsets.UTF_8))
           .toArray(byte[][]::new):
@@ -195,7 +196,6 @@ public class FilteredResultFactory {
       )) {
         long rowsConsumed = 0L;
         long rowsSkipped = 0L;
-        resultConsumer.begin();
         while (resultStreamer.hasNext()) {
           if (rowsSkipped > reportConfig.getOffset()) {
             resultConsumer.consumeRow(resultStreamer.next());

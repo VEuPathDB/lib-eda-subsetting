@@ -139,10 +139,16 @@ public class TabularResponses {
   };
 
   private static final BinaryFormatterFactory JSON_BINARY_FORMATTER = outputStream -> new BinaryFormatter(outputStream) {
+    private boolean _firstWritten = false;
 
     @Override
     public void consumeRow(byte[][] values) throws IOException {
       _outputStream.write('[');
+      if (_firstWritten) {
+        _outputStream.write(',');
+      } else {
+        _firstWritten = true;
+      }
       for (int i = 0; i < values.length; i++) {
         if (i != 0) {
           _outputStream.write(',');

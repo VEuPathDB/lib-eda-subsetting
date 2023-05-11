@@ -193,8 +193,18 @@ public class FilteredResultFactory {
           idIndexStream,
           idsMapStream
       )) {
+        long rowsConsumed = 0L;
+        long rowsSkipped = 0L;
         while (resultStreamer.hasNext()) {
-          resultConsumer.consumeRow(resultStreamer.next());
+          if (rowsSkipped > reportConfig.getOffset()) {
+            resultConsumer.consumeRow(resultStreamer.next());
+            rowsConsumed++;
+          } else {
+            rowsSkipped++;
+          }
+          if (reportConfig.getNumRows().isPresent() && rowsConsumed >= reportConfig.getNumRows().get()) {
+            break;
+          }
         }
         LOG.info("Completed processing file-based subsetting request");
       } catch (Exception e) {

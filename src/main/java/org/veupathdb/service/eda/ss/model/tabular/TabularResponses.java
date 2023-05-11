@@ -10,6 +10,7 @@ import jakarta.ws.rs.core.HttpHeaders;
 import jakarta.ws.rs.core.MediaType;
 import org.gusdb.fgputil.web.MimeTypes;
 import org.json.JSONArray;
+import org.json.JSONObject;
 
 import static org.gusdb.fgputil.FormatUtil.NL;
 import static org.gusdb.fgputil.FormatUtil.TAB;
@@ -146,12 +147,28 @@ public class TabularResponses {
         if (i != 0) {
           _outputStream.write(',');
         }
-        _outputStream.write(values[i]);
+        if (containsJsonEscapeCharacter(values[i])) {
+          // Very slow! We don't have to worry much about performance for JSON requests.
+          _outputStream.write(JSONObject.valueToString(new String(values[i], StandardCharsets.UTF_8))
+              .getBytes(StandardCharsets.UTF_8));
+        } else {
+          _outputStream.write('"');
+          _outputStream.write(values[i]);
+          _outputStream.write('"');
+        }
       }
       _outputStream.write(']');
       _outputStream.write(NEW_LINE_BYTES);
     }
   };
 
+  private static boolean containsJsonEscapeCharacter(byte[] value) {
+    for (byte b: value) {
+      if (b == '"' || b == '/' || b == '\b' || b == '\f' || b == '\n' || b == '\r' || b == '\t') {
+        return true;
+      }
+    }
+    return false;
+  }
 }
 

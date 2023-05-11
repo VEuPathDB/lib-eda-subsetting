@@ -72,7 +72,6 @@ public class BinaryFilesManager {
   public boolean studyHasFiles(String studyAbbrev) {
     final Optional<Path> studyDir = getStudyDirIfExists(studyAbbrev);
     if (studyDir.isEmpty()) {
-      LOG.debug("Study directory for study {} does not exist", studyAbbrev);
       return false;
     }
     if (!getDoneFile(studyDir.get(), Operation.READ).toFile().exists()) {

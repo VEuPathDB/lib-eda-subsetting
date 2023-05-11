@@ -13,9 +13,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Function;
 
 import static org.gusdb.fgputil.FormatUtil.NL;
@@ -27,7 +25,6 @@ public class VariableFactory {
   private final DataSource _dataSource;
   private final String _appDbSchema;
   private final Optional<BinaryMetadataProvider> _binaryMetadataProvider;
-  private final Map<String,Boolean> _studyHasFilesMap;
   private final Function<String, Boolean> _shouldAppendMetaForStudy;
 
   public VariableFactory(DataSource dataSource,
@@ -38,7 +35,6 @@ public class VariableFactory {
     _appDbSchema = appDbSchema;
     _binaryMetadataProvider = Optional.ofNullable(binaryMetadataProvider);
     _shouldAppendMetaForStudy = shouldAppendMetaForStudy;
-    _studyHasFilesMap = new ConcurrentHashMap<>();
   }
 
 

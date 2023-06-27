@@ -39,6 +39,11 @@ public class ResultSetUtils {
         "Column " + columnName + " is required but returned null."));
   }
 
+  public static Boolean getRsOptionalBoolean(ResultSet rs, String columnName, boolean defaultVal) throws SQLException {
+    boolean val = rs.getBoolean(columnName);
+    return rs.wasNull() ? defaultVal : val;
+  }
+
   public static String getRsOptionalString(ResultSet rs, String columnName, String defaultVal) throws SQLException {
     return Optional.ofNullable(rs.getString(columnName)).orElse(defaultVal);
   }

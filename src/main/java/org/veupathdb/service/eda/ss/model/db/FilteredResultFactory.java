@@ -201,6 +201,7 @@ public class FilteredResultFactory {
             resultConsumer.consumeRow(resultStreamer.next());
             rowsConsumed++;
           } else {
+            resultStreamer.next();
             rowsSkipped++;
           }
           if (reportConfig.getNumRows().isPresent() && rowsConsumed >= reportConfig.getNumRows().get()) {

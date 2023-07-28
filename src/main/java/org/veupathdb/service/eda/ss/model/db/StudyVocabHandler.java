@@ -3,11 +3,8 @@ package org.veupathdb.service.eda.ss.model.db;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.gusdb.fgputil.db.runner.SQLRunner;
-import org.gusdb.fgputil.db.stream.ResultSetIterator;
 import org.veupathdb.service.eda.ss.model.Entity;
-import org.veupathdb.service.eda.ss.model.Study;
 import org.veupathdb.service.eda.ss.model.tabular.TabularResponses;
-import org.veupathdb.service.eda.ss.model.variable.Variable;
 import org.veupathdb.service.eda.ss.model.variable.VariableWithValues;
 
 import javax.sql.DataSource;
@@ -17,8 +14,7 @@ import java.util.List;
 public class StudyVocabHandler {
   private static final Logger LOG = LogManager.getLogger(StudyVocabHandler.class);
 
-  // TODO Cache vocabs
-//  private static final ConcurrentHashMap<String, >
+  // TODO Cache vocabs.
 
   public void queryStudyVocab(String schema,
                               DataSource dataSource,

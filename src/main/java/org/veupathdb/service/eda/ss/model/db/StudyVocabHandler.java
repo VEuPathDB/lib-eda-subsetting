@@ -22,17 +22,12 @@ public class StudyVocabHandler {
                               VariableWithValues vocabularyVariable,
                               TabularResponses.ResultConsumer resultConsumer) {
     new SQLRunner(dataSource, getSqlForVocabQuery(schema, vocabularyVariable.getEntity(), studyEntity, vocabularyVariable)).executeQuery(rs -> {
-      int numConsumed = 0;
       try {
         resultConsumer.begin();
         while (rs.next()) {
           try {
-            numConsumed++;
             final String studyId = rs.getString(studyEntity.getPKColName());
             final String value = vocabularyVariable.getType().convertRowValueToStringValue(rs);
-            if (numConsumed > 5000) {
-              LOG.info("Consuming row: {},{}", studyId, value);
-            }
             resultConsumer.consumeRow(List.of(studyId, value));
           } catch (IOException e) {
             throw new RuntimeException(e);

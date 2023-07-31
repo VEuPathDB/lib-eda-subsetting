@@ -197,7 +197,7 @@ public class FilteredResultFactory {
         long rowsConsumed = 0L;
         long rowsSkipped = 0L;
         while (resultStreamer.hasNext()) {
-          if (rowsSkipped > reportConfig.getOffset()) {
+          if (rowsSkipped >= reportConfig.getOffset()) {
             resultConsumer.consumeRow(resultStreamer.next());
             rowsConsumed++;
           } else {

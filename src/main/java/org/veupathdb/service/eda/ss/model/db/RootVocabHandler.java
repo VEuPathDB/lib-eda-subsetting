@@ -11,11 +11,23 @@ import javax.sql.DataSource;
 import java.io.IOException;
 import java.util.List;
 
-public class StudyVocabHandler {
-  private static final Logger LOG = LogManager.getLogger(StudyVocabHandler.class);
+/**
+ * Business logic class for retrieving vocabularies per study.
+ */
+public class RootVocabHandler {
+  private static final Logger LOG = LogManager.getLogger(RootVocabHandler.class);
 
   // TODO Cache vocabs.
 
+  /**
+   * Query the distinct vocab per study in a megastudy and stream the results to the client.
+   *
+   * @param schema Database schema containing the study.
+   * @param dataSource Database connection.
+   * @param studyEntity Entity of the "study" entity within the megastudy.
+   * @param vocabularyVariable Variable for which we want to know each distinct value within each study.
+   * @param resultConsumer Consumer to stream the results of the query.
+   */
   public void queryStudyVocab(String schema,
                               DataSource dataSource,
                               Entity studyEntity,

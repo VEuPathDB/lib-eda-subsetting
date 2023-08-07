@@ -12,6 +12,6 @@ public class StringVarCollection extends VarCollection<byte[], StringVariable> {
 
   @Override
   protected void assignDistributionDefaults(List<StringVariable> memberVars) {
-
+    // No distribution configuration for StringVariables.
   }
 }

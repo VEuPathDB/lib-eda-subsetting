@@ -106,6 +106,7 @@ public class CollectionFactory {
       case DATE: return new DateVarCollection(properties, createDateDistributionConfig(properties.dataShape, rs, false));
       case INTEGER: return new IntegerVarCollection(properties, createIntegerProperties(rs), createIntegerDistributionConfig(rs, false));
       case NUMBER: return new FloatingPointVarCollection(properties, createFloatProperties(rs), createFloatDistributionConfig(rs, false));
+      case STRING: return new StringVarCollection(properties);
       default: throw new IllegalArgumentException();
     }
   }

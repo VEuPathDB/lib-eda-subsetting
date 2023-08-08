@@ -10,7 +10,10 @@ public enum CollectionType {
   DATE("date"),
 
   @JsonProperty("integer")
-  INTEGER("integer");
+  INTEGER("integer"),
+
+  @JsonProperty("string")
+  STRING("string");
 
   private final String name;
 

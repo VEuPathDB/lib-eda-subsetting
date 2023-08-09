@@ -72,7 +72,7 @@ public class RootVocabHandler {
     selectColsList.add(outputEntity.getPKColName());
     String selectCols = String.join(", ", selectColsList);
 
-    // default WITH body assumes no filters. we use the ancestor table because it is small
+    // default WITH body assumes no filters.
     String withBody = "  SELECT " + selectCols + " FROM " + appDbSchema + DB.Tables.Ancestors.NAME(outputEntity) + NL;
 
     if (!filters.isEmpty()) {

@@ -52,4 +52,11 @@ public abstract class Filter {
   public Entity getEntity() {
     return _entity;
   }
+
+  public boolean filtersOnVariable(VariableWithValues variable) {
+    if (!_entity.getId().equals(variable.getEntity().getId())) {
+      return false;
+    }
+    return getAllVariables().stream().anyMatch(var -> var.getId().equals(variable.getId()));
+  }
 }

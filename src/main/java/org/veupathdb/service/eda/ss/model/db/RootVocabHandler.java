@@ -39,6 +39,9 @@ public class RootVocabHandler {
                               VariableWithValues vocabularyVariable,
                               TabularResponses.ResultConsumer resultConsumer,
                               List<Filter> filters) {
+    // Limit to filters that explicitly apply to vocabulary variable. This vocabulary should be "filter-sensitive"
+    // as opposed to the usual "subset-sensitivity". Vocab values that are incidentally filtered out by filters that
+    // apply to other variables will not be taken into account.
     List<Filter> vocabFilters = filters.stream()
         .filter(filter -> filter.filtersOnVariable(vocabularyVariable))
         .collect(Collectors.toList());

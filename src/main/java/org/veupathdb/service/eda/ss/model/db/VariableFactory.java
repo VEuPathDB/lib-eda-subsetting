@@ -146,7 +146,8 @@ public class VariableFactory {
   public static FloatingPointVariable.Properties createFloatProperties(ResultSet rs) throws SQLException {
     return new FloatingPointVariable.Properties(
         getRsOptionalString(rs, UNITS_COL_NAME, ""),
-        getRsOptionalLong(rs, PRECISION_COL_NAME, 1L)
+        getRsOptionalLong(rs, PRECISION_COL_NAME, 1L),
+        VariableScale.findByValue(getRsOptionalString(rs, SCALE_COL_NAME, null))
     );
   }
 

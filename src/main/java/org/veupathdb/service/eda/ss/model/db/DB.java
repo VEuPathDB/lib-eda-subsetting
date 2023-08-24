@@ -67,6 +67,7 @@ public interface DB {
         String DATA_SHAPE_COL_NAME = "data_shape";
         String UNITS_COL_NAME = "unit";
         String PRECISION_COL_NAME = "precision";
+        String SCALE_COL_NAME = "scale";
         List<String> ALL = getAll(Columns.class);
       }
     }

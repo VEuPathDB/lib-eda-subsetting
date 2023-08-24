@@ -19,10 +19,12 @@ public class FloatingPointVariable extends NumberVariable<Double> {
 
     public final String units;
     public final Long precision;
+    public final VariableScale scale;
 
-    public Properties(String units, Long precision) {
+    public Properties(String units, Long precision, VariableScale scale) {
       this.units = units;
       this.precision = precision;
+      this.scale = scale;
     }
   }
 
@@ -67,9 +69,9 @@ public class FloatingPointVariable extends NumberVariable<Double> {
     // and the integer part of our value. We also reserve 4 bytes for the size of the padded string.
     int integerPartBytes = Integer.toString(_distributionConfig.getRangeMax().intValue()).getBytes(StandardCharsets.UTF_8).length;
     int numBytesReservedForIntPart = Math.min(integerPartBytes, MAX_DIGITS_BEFORE_SCIENTIFIC_NOTATION); // After 7 digits, we start using scientific notation
-    int bytesReservedForIntegerPartOrScienitificNotation = Math.max(numBytesReservedForIntPart, BYTE_COUNT_FOR_INTEGER_DECIMAL_AND_EXP_CHAR);
+    int bytesReservedForIntegerPartOrScientificNotation = Math.max(numBytesReservedForIntPart, BYTE_COUNT_FOR_INTEGER_DECIMAL_AND_EXP_CHAR);
     return new StringValueConverter(Integer.BYTES // Reserved for all padded strings
-        + bytesReservedForIntegerPartOrScienitificNotation // Reserved for integer part and/or left part of scientific notation.
+        + bytesReservedForIntegerPartOrScientificNotation // Reserved for integer part and/or left part of scientific notation.
         + getPrecision().intValue() // Plus space for decimal part.
         + 1); // Plus one for decimal point.
   }
@@ -91,6 +93,10 @@ public class FloatingPointVariable extends NumberVariable<Double> {
 
   public Long getPrecision() {
     return _properties.precision;
+  }
+
+  public VariableScale getScale() {
+    return _properties.scale;
   }
 
   @Override

@@ -1,8 +1,8 @@
 package org.veupathdb.service.eda.ss.model.variable;
 
 public enum VariableScale {
+  LOG_10("log"),
   LOG_2("log2"),
-  LOG_10("log10"),
   NATURAL_LOG("ln");
 
   private final String _value;

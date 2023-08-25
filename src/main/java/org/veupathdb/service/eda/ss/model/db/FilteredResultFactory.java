@@ -224,8 +224,13 @@ public class FilteredResultFactory {
   }
 
   static <T extends Variable> List<String> getTabularOutputColumns(Entity outputEntity, List<T> outputVariables) {
-    return getColumns(outputEntity, outputVariables, Entity::getPKColName, Variable::getId);
+    return getTabularOutputColumns(outputEntity, outputVariables, Variable::getId);
   }
+
+  static <T extends Variable> List<String> getTabularOutputColumns(Entity outputEntity, List<T> outputVariables, Function<Variable, String> varMapper) {
+    return getColumns(outputEntity, outputVariables, Entity::getPKColName, varMapper);
+  }
+
 
   private static  <T extends Variable> List<String> getColumns(Entity outputEntity, List<T> outputVariables,
       Function<Entity, String> pkMapper, Function<Variable,String> varMapper) {
@@ -457,9 +462,10 @@ public class FilteredResultFactory {
     String withClauses = joinWithClauses(withClausesList);
 
     //
-    // final select 
+    // final select -- quote the variable names for case sensitivity of var names in DIY studies.
+    // Note that the quotes are a bit of a hack, it's possible we'd rather enforce case insensitivity at load time.
     //
-    List<String> outputCols = getTabularOutputColumns(outputEntity, outputVariables);
+    List<String> outputCols = getTabularOutputColumns(outputEntity, outputVariables, var -> "\"" + var.getId() + "\"");
     return withClauses + NL
         + "select " + String.join(", ", outputCols) + NL
         + "from " + wideTabularWithClauseName + NL
@@ -503,7 +509,7 @@ public class FilteredResultFactory {
     List<String> columns = new ArrayList<String>();
     columns.add(outputEntity.getPKColName());
     columns.addAll(outputEntity.getAncestorPkColNames());
-    for (Variable var : outputVariables) columns.add(var.getId());
+    for (Variable var : outputVariables) columns.add("\"" + var.getId() + "\"");
 
     columns.add("ea.stable_id");
     return

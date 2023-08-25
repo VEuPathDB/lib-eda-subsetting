@@ -79,6 +79,7 @@ DATA_SHAPE                     varchar(30),
 UNIT                           varchar(30),
 PRECISION                      integer,
 IMPUTE_ZERO                    integer,
+SCALE                          varchar(10),
 PRIMARY KEY (stable_id)
 );
 
@@ -123,13 +124,14 @@ IS_MERGE_KEY                   integer,
 IS_REPEATED                    integer,
 HAS_VALUES                     integer,
 DATA_TYPE                      varchar(10),
-HIDDEN			       varchar(100),
+HIDDEN                         varchar(100),
 DISTINCT_VALUES_COUNT          integer,
 IS_MULTI_VALUED                integer,
 DATA_SHAPE                     varchar(30),
 UNIT                           varchar(30),
 PRECISION                      integer,
 IMPUTE_ZERO                    integer,
+SCALE                          varchar(10),
 PRIMARY KEY (stable_id)
 );
 
@@ -182,6 +184,7 @@ DATA_SHAPE                     varchar(30),
 UNIT                           varchar(30),
 PRECISION                      integer,
 IMPUTE_ZERO                    integer,
+SCALE                          varchar(10),
 PRIMARY KEY (stable_id)
 );
 create table AttributeValue_ds2324_Prtcpnt (
@@ -233,6 +236,7 @@ DATA_SHAPE                     varchar(30),
 UNIT                           varchar(30),
 PRECISION                      integer,
 IMPUTE_ZERO                    integer,
+SCALE                          varchar(10),
 PRIMARY KEY (stable_id)
 );
 
@@ -285,6 +289,7 @@ DATA_SHAPE                     varchar(30),
 UNIT                           varchar(30),
 PRECISION                      integer,
 IMPUTE_ZERO                    integer,
+SCALE                          varchar(10),
 PRIMARY KEY (stable_id)
 );
 
@@ -316,5 +321,6 @@ DATA_SHAPE                     varchar(30),
 UNIT                           varchar(30),
 PRECISION                      integer,
 IMPUTE_ZERO                    integer,
+SCALE                          varchar(10),
 PRIMARY KEY (stable_id)
 );

@@ -103,7 +103,7 @@ public class MockModel {
         new Variable.Properties(label, id, entity, VariableDisplayType.DEFAULT, label, null, null, "Their " + label, Collections.emptyList()),
         new VariableWithValues.Properties(VariableType.NUMBER, shape, null, distinctValuesCount, false, false, false, isMultiValued, false),
         new NumberDistributionConfig<>(null, null, null, null, null, null),
-        new FloatingPointVariable.Properties("", 1L)
+        new FloatingPointVariable.Properties("", 1L, null)
     );
   }
 

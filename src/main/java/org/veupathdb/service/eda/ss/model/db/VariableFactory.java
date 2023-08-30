@@ -6,7 +6,6 @@ import org.veupathdb.service.eda.ss.model.distribution.DateDistributionConfig;
 import org.veupathdb.service.eda.ss.model.distribution.NumberDistributionConfig;
 import org.veupathdb.service.eda.ss.model.reducer.BinaryMetadataProvider;
 import org.veupathdb.service.eda.ss.model.variable.*;
-import org.veupathdb.service.eda.ss.model.variable.binary.BinaryFilesManager;
 
 import javax.sql.DataSource;
 import java.sql.ResultSet;
@@ -110,9 +109,8 @@ public class VariableFactory {
 
       switch(valueProps.type) {
 
-
         case NUMBER: return
-            new FloatingPointVariable(varProps, valueProps, createFloatDistributionConfig(rs, true), createFloatProperties(rs));
+            new FloatingPointVariable(varProps, valueProps, createFloatDistributionConfig(rs, true), createFloatProperties(rs, true));
 
         case LONGITUDE: return
             new LongitudeVariable(varProps, valueProps, new LongitudeVariable.Properties(
@@ -143,11 +141,11 @@ public class VariableFactory {
     );
   }
 
-  public static FloatingPointVariable.Properties createFloatProperties(ResultSet rs) throws SQLException {
+  public static FloatingPointVariable.Properties createFloatProperties(ResultSet rs, boolean sqlContainsScale) throws SQLException {
     return new FloatingPointVariable.Properties(
         getRsOptionalString(rs, UNITS_COL_NAME, ""),
         getRsOptionalLong(rs, PRECISION_COL_NAME, 1L),
-        VariableScale.findByValue(getRsOptionalString(rs, SCALE_COL_NAME, null))
+        VariableScale.findByValue(sqlContainsScale ? getRsOptionalString(rs, SCALE_COL_NAME, null) : null)
     );
   }
 

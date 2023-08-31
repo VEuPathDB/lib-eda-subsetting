@@ -115,6 +115,9 @@ public interface DB {
         String DATA_SHAPE = "data_shape";
         String UNIT = "unit";
         String PRECISION = "precision";
+        String IS_PROPORTION = "is_proportion";
+        String IS_COMPOSITIONAL = "is_compositional";
+        String NORMALIZATION_METHOD = "normalization_method";
         List<String> ALL = getAll(Columns.class);
       }
     }

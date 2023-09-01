@@ -98,8 +98,11 @@ public class CollectionFactory {
         type,
         VariableDataShape.fromString(getRsRequiredString(rs, DATA_SHAPE)),
         getRsRequiredLong(rs, NUM_MEMBERS),
-        getRsRequiredBoolean(rs, IMPUTE_ZERO)
-    );
+        getRsRequiredBoolean(rs, IMPUTE_ZERO),
+        getRsRequiredString(rs, NORMALIZATION_METHOD),
+        getRsRequiredBoolean(rs, IS_COMPOSITIONAL),
+        getRsRequiredBoolean(rs, IS_PROPORTION)
+        );
 
     // create typed collection, loading type-specific props
     switch (type) {

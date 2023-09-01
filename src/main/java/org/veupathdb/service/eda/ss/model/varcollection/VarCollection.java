@@ -26,16 +26,23 @@ public abstract class VarCollection<T, S extends VariableWithValues<T>> {
     public final VariableDataShape dataShape;
     public final Long numMembers;
     public final Boolean imputeZero;
+    public final String normalizationMethod;
+    public final Boolean isCompositional;
+    public final Boolean isProportion;
 
     public Properties(String id, String displayName,
                       CollectionType type, VariableDataShape dataShape,
-                      Long numMembers, Boolean imputeZero) {
+                      Long numMembers, Boolean imputeZero, String normalizationMethod,
+                      Boolean isCompositional, Boolean isProportion) {
       this.id = id;
       this.displayName = displayName;
       this.type = type;
       this.dataShape = dataShape;
       this.numMembers = numMembers;
       this.imputeZero = imputeZero;
+      this.normalizationMethod = normalizationMethod;
+      this.isCompositional = isCompositional;
+      this.isProportion = isProportion;
     }
   }
 
@@ -135,6 +142,18 @@ public abstract class VarCollection<T, S extends VariableWithValues<T>> {
 
   public Boolean getImputeZero() {
     return _properties.imputeZero;
+  }
+
+  public Boolean getIsCompositional() {
+    return _properties.isCompositional;
+  }
+
+  public Boolean getIsProportion() {
+    return _properties.isProportion;
+  }
+
+  public String getNormalizationMethod() {
+    return _properties.normalizationMethod;
   }
 
   public Long getDistinctValuesCount() {

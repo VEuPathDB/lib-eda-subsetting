@@ -80,6 +80,8 @@ UNIT                           varchar(30),
 PRECISION                      integer,
 IMPUTE_ZERO                    integer,
 SCALE                          varchar(10),
+HAS_STUDY_DEPENDENT_VOCABULARY integer,
+VARIABLE_SPEC_TO_IMPUTE_ZEROES_FOR varchar(128),
 PRIMARY KEY (stable_id)
 );
 
@@ -132,6 +134,8 @@ UNIT                           varchar(30),
 PRECISION                      integer,
 IMPUTE_ZERO                    integer,
 SCALE                          varchar(10),
+HAS_STUDY_DEPENDENT_VOCABULARY integer,
+VARIABLE_SPEC_TO_IMPUTE_ZEROES_FOR varchar(128),
 PRIMARY KEY (stable_id)
 );
 
@@ -185,6 +189,8 @@ UNIT                           varchar(30),
 PRECISION                      integer,
 IMPUTE_ZERO                    integer,
 SCALE                          varchar(10),
+HAS_STUDY_DEPENDENT_VOCABULARY integer,
+VARIABLE_SPEC_TO_IMPUTE_ZEROES_FOR varchar(128),
 PRIMARY KEY (stable_id)
 );
 create table AttributeValue_ds2324_Prtcpnt (
@@ -237,6 +243,8 @@ UNIT                           varchar(30),
 PRECISION                      integer,
 IMPUTE_ZERO                    integer,
 SCALE                          varchar(10),
+HAS_STUDY_DEPENDENT_VOCABULARY integer,
+VARIABLE_SPEC_TO_IMPUTE_ZEROES_FOR varchar(128),
 PRIMARY KEY (stable_id)
 );
 
@@ -290,6 +298,8 @@ UNIT                           varchar(30),
 PRECISION                      integer,
 IMPUTE_ZERO                    integer,
 SCALE                          varchar(10),
+HAS_STUDY_DEPENDENT_VOCABULARY integer,
+VARIABLE_SPEC_TO_IMPUTE_ZEROES_FOR varchar(128),
 PRIMARY KEY (stable_id)
 );
 
@@ -322,5 +332,7 @@ UNIT                           varchar(30),
 PRECISION                      integer,
 IMPUTE_ZERO                    integer,
 SCALE                          varchar(10),
+HAS_STUDY_DEPENDENT_VOCABULARY integer,
+VARIABLE_SPEC_TO_IMPUTE_ZEROES_FOR varchar(128),
 PRIMARY KEY (stable_id)
 );

@@ -93,7 +93,7 @@ public class MockModel {
   private static StringVariable getMockStringVar(String label, String id, Entity entity, long distinctValuesCount, boolean isMultiValued, List<String> vocab) {
     return new StringVariable(
         new Variable.Properties(label, id, entity, VariableDisplayType.DEFAULT, label, null, null, "Their " + label, Collections.emptyList()),
-        new VariableWithValues.Properties(VariableType.STRING, VariableDataShape.CATEGORICAL, vocab, distinctValuesCount, false, false, false, isMultiValued, false),
+        new VariableWithValues.Properties(VariableType.STRING, VariableDataShape.CATEGORICAL, vocab, distinctValuesCount, false, false, false, isMultiValued, false, false, null),
         new StringVariable.StringBinaryProperties(100)
     );
   }
@@ -101,7 +101,7 @@ public class MockModel {
   private static FloatingPointVariable getMockFloatVar(String label, String id, Entity entity, VariableDataShape shape, long distinctValuesCount, boolean isMultiValued) {
     return new FloatingPointVariable(
         new Variable.Properties(label, id, entity, VariableDisplayType.DEFAULT, label, null, null, "Their " + label, Collections.emptyList()),
-        new VariableWithValues.Properties(VariableType.NUMBER, shape, null, distinctValuesCount, false, false, false, isMultiValued, false),
+        new VariableWithValues.Properties(VariableType.NUMBER, shape, null, distinctValuesCount, false, false, false, isMultiValued, false, false, null),
         new NumberDistributionConfig<>(null, null, null, null, null, null),
         new FloatingPointVariable.Properties("", 1L, null)
     );
@@ -110,7 +110,7 @@ public class MockModel {
   private static DateVariable getMockDateVar(String label, String id, Entity entity, VariableDataShape shape, long distinctValuesCount) {
     return new DateVariable(
         new Variable.Properties(label, id, entity, VariableDisplayType.DEFAULT, label, null, null, label, Collections.emptyList()),
-        new VariableWithValues.Properties(VariableType.DATE, shape, null, distinctValuesCount, true, false, false, false, false),
+        new VariableWithValues.Properties(VariableType.DATE, shape, null, distinctValuesCount, true, false, false, false, false, false, null),
         new DateDistributionConfig(true, shape, null, null, null, null, 1, "week", null)
     );
   }

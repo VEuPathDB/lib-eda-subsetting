@@ -68,6 +68,8 @@ public interface DB {
         String UNITS_COL_NAME = "unit";
         String PRECISION_COL_NAME = "precision";
         String SCALE_COL_NAME = "scale";
+        String HAS_STUDY_DEPENDENT_VOCABULARY = "has_study_dependent_vocabulary";
+        String VARIABLE_SPEC_TO_IMPUTE_ZEROES_FOR = "variable_spec_to_impute_zeroes_for";
         List<String> ALL = getAll(Columns.class);
       }
     }

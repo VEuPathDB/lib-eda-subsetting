@@ -91,15 +91,7 @@ public abstract class VarCollection<T, S extends VariableWithValues<T>> {
         throw new RuntimeException("Collection " + _properties.id +
             " references variable " + varId + " which does not exist in entity " + entity.getId());
       }
-
-      // make sure var is a value var and has the same type/shape as the collection
-      if (!(var.get().hasValues() &&
-            ((VariableWithValues<?>)var.get()).getType().isSameTypeAs(_properties.type) &&
-            ((VariableWithValues<?>)var.get()).getDataShape() == _properties.dataShape)) {
-        throw new RuntimeException("Variable " + varId + " must have values and be the same " +
-            "data type and shape as its parent collection " + _properties.id);
-      }
-
+      
       // add to list for bin values assignment
       S valueVar = (S)var.get(); // need unchecked cast since we are looking up var by name, then checking compatibility
       valueVars.add(valueVar);

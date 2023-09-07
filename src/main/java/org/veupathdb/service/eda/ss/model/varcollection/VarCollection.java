@@ -103,14 +103,7 @@ public abstract class VarCollection<T, S extends VariableWithValues<T>> {
       // collect the union of the vocabularies for the collection vocabulary
       if (valueVar.getVocabulary() != null && !valueVar.getVocabulary().isEmpty()) {
         derivedVocabulary.addAll(valueVar.getVocabulary());
-      }
-
-      if (((VariableWithValues<?>)var.get()).getType().isCompatibleWith(_properties.type) &&
-          ((VariableWithValues<?>)var.get()).getDataShape() == _properties.dataShape)) {
-        throw new RuntimeException("Variable " + varId + " must have values and be the same " +
-            "data type and shape as its parent collection " + _properties.id);
-      }
-      else {
+      } else {
         // do not declare a vocabulary unless all member vars have a vocabulary
         if (useVocabulary) // only log once per collection
           LOG.warn("At least one variable in collection " + _properties.id + " does not have a vocabulary, so collection will not either.");

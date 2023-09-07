@@ -91,7 +91,11 @@ public abstract class VarCollection<T, S extends VariableWithValues<T>> {
         throw new RuntimeException("Collection " + _properties.id +
             " references variable " + varId + " which does not exist in entity " + entity.getId());
       }
-      
+
+      if (!(var.get().hasValues())) {
+        throw new RuntimeException("Variable " + varId + " must have values to be a member of a collection");
+      }
+
       // add to list for bin values assignment
       S valueVar = (S)var.get(); // need unchecked cast since we are looking up var by name, then checking compatibility
       valueVars.add(valueVar);
@@ -99,6 +103,12 @@ public abstract class VarCollection<T, S extends VariableWithValues<T>> {
       // collect the union of the vocabularies for the collection vocabulary
       if (valueVar.getVocabulary() != null && !valueVar.getVocabulary().isEmpty()) {
         derivedVocabulary.addAll(valueVar.getVocabulary());
+      }
+
+      if (((VariableWithValues<?>)var.get()).getType().isCompatibleWith(_properties.type) &&
+          ((VariableWithValues<?>)var.get()).getDataShape() == _properties.dataShape)) {
+        throw new RuntimeException("Variable " + varId + " must have values and be the same " +
+            "data type and shape as its parent collection " + _properties.id);
       }
       else {
         // do not declare a vocabulary unless all member vars have a vocabulary

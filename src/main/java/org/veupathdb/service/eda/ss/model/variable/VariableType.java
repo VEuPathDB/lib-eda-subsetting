@@ -124,6 +124,14 @@ public enum VariableType {
     return type.name().equals(name());
   }
 
+  public boolean isCompatibleWith(CollectionType type) {
+    if (CollectionType.NUMBER == type) {
+      // Number and Integer are compatible with Number collections.
+      return this == NUMBER || this == INTEGER;
+    }
+    return type.name().equals(name());
+  }
+
   public String getTypeString() {
     return typeString;
   }

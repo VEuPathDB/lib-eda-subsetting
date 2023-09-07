@@ -16,6 +16,7 @@ import org.veupathdb.service.eda.ss.model.varcollection.*;
 import org.veupathdb.service.eda.ss.model.variable.VariableDataShape;
 
 import static org.veupathdb.service.eda.ss.model.db.DB.Tables.Collection.Columns.*;
+import static org.veupathdb.service.eda.ss.model.db.ResultSetUtils.getRsOptionalString;
 import static org.veupathdb.service.eda.ss.model.db.ResultSetUtils.getRsRequiredBoolean;
 import static org.veupathdb.service.eda.ss.model.db.ResultSetUtils.getRsRequiredLong;
 import static org.veupathdb.service.eda.ss.model.db.ResultSetUtils.getRsRequiredString;
@@ -99,7 +100,7 @@ public class CollectionFactory {
         VariableDataShape.fromString(getRsRequiredString(rs, DATA_SHAPE)),
         getRsRequiredLong(rs, NUM_MEMBERS),
         getRsRequiredBoolean(rs, IMPUTE_ZERO),
-        getRsRequiredString(rs, NORMALIZATION_METHOD),
+        getRsOptionalString(rs, NORMALIZATION_METHOD, null),
         getRsRequiredBoolean(rs, IS_COMPOSITIONAL),
         getRsRequiredBoolean(rs, IS_PROPORTION)
         );

@@ -7,7 +7,7 @@
 
 // Project settings
 group   = "org.veupathdb.eda"
-version = "4.9.4-no-collection-validation"
+version = "4.9.5-no-collection-validation"
 
 plugins {
   `java-library`

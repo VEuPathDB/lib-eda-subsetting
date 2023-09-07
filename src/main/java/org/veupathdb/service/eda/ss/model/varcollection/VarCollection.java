@@ -109,6 +109,11 @@ public abstract class VarCollection<T, S extends VariableWithValues<T>> {
           LOG.warn("At least one variable in collection " + _properties.id + " does not have a vocabulary, so collection will not either.");
         useVocabulary = false;
       }
+
+//      if (((VariableWithValues<?>)var.get()).getType().isCompatibleWith(_properties.type) &&
+//          ((VariableWithValues<?>)var.get()).getDataShape().isCompatibleWithCollectionShape(_properties.dataShape, derivedVocabulary)) {
+//        throw new RuntimeException("Variable " + varId + " must have a shape and type that are compatible with its parent collection " + _properties.id);
+//      }
     }
     // vocabulary will be completely populated or null; hopefully warnings will alert devs of discrepancies
     if (useVocabulary) {

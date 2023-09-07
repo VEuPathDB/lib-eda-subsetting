@@ -1,6 +1,7 @@
 package org.veupathdb.service.eda.ss.model.variable;
 
 import java.util.List;
+import java.util.Set;
 
 public enum VariableDataShape {
   CONTINUOUS("continuous"),
@@ -23,9 +24,10 @@ public enum VariableDataShape {
     throw new RuntimeException("Unrecognized data shape: " + shapeString);
   }
 
-//  public boolean isCompatibleWithCollectionShape(VariableDataShape collectionShape, List<String> collectionVocab) {
-//    if (this == BINARY || collectionShape == BINARY) {
-//      return collectionVocab.size() <= 2;
-//    }
-//  }
+  public boolean isCompatibleWithCollectionShape(VariableDataShape collectionShape, Set<String> collectionVocab) {
+    if (this == BINARY || collectionShape == BINARY) {
+      return collectionVocab.size() <= 2;
+    }
+    return collectionShape._name.equals(this._name);
+  }
 }

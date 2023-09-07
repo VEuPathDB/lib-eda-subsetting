@@ -20,12 +20,14 @@ public abstract class VariableWithValues<T> extends Variable {
     public final Boolean isMergeKey;
     public final Boolean isMultiValued;
     public final Boolean imputeZero;
+    public final Boolean hasStudyDependentVocabulary;
+    public final String variableSpecToImputeZeroesFor;
 
     public Properties(VariableType type, VariableDataShape dataShape,
                       List<String> vocabulary, Long distinctValuesCount,
                       Boolean isTemporal, Boolean isFeatured,
                       Boolean isMergeKey, Boolean isMultiValued,
-                      Boolean imputeZero) {
+                      Boolean imputeZero, Boolean hasStudyDependentVocabulary, String variableSpecToImputeZeroesFor) {
       this.type = type;
       this.dataShape = dataShape;
       this.vocabulary = vocabulary;
@@ -35,6 +37,8 @@ public abstract class VariableWithValues<T> extends Variable {
       this.isMergeKey = isMergeKey;
       this.isMultiValued = isMultiValued;
       this.imputeZero = imputeZero;
+      this.hasStudyDependentVocabulary = hasStudyDependentVocabulary;
+      this.variableSpecToImputeZeroesFor = variableSpecToImputeZeroesFor;
     }
   }
 
@@ -100,6 +104,14 @@ public abstract class VariableWithValues<T> extends Variable {
 
   public VariableType getType() {
     return _properties.type;
+  }
+
+  public Boolean hasStudyDependentVocabulary() {
+    return _properties.hasStudyDependentVocabulary;
+  }
+
+  public String getVariableSpecToImputeZeroesFor() {
+    return _properties.variableSpecToImputeZeroesFor;
   }
 
   /**

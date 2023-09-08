@@ -5,7 +5,7 @@ import org.veupathdb.service.eda.ss.model.distribution.NumberDistributionConfig;
 import org.veupathdb.service.eda.ss.model.variable.FloatingPointVariable;
 import org.veupathdb.service.eda.ss.model.variable.NumberVariable;
 
-public class FloatingPointVarCollection extends VarCollection<Double, FloatingPointVariable> {
+public class FloatingPointVarCollection<T extends Number & Comparable<T>> extends VarCollection<T, NumberVariable<T>> {
 
   private final FloatingPointVariable.Properties _floatProps;
   private final NumberDistributionConfig<Double> _distributionConfig;
@@ -32,11 +32,11 @@ public class FloatingPointVarCollection extends VarCollection<Double, FloatingPo
   }
 
   @Override
-  protected void assignDistributionDefaults(List<FloatingPointVariable> memberVars) {
-    Double maxBinSize = (double)0; // find the biggest size
-    for (NumberVariable var : memberVars) {
+  protected void assignDistributionDefaults(List<NumberVariable<T>> memberVars) {
+    double maxBinSize = 0.0; // find the biggest size
+    for (NumberVariable<T> var : memberVars) {
       // superclass promises to only pass the correct type here
-      NumberDistributionConfig<Number> varConfig = var.getDistributionConfig();
+      NumberDistributionConfig<T> varConfig = var.getDistributionConfig();
       if (varConfig.getDefaultBinWidth().doubleValue() > maxBinSize) {
         maxBinSize = varConfig.getDefaultBinWidth().doubleValue();
       }

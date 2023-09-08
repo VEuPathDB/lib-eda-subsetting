@@ -96,6 +96,10 @@ public abstract class VarCollection<T, S extends VariableWithValues<T>> {
         throw new RuntimeException("Variable " + varId + " must have values to be a member of a collection");
       }
 
+      if (!((VariableWithValues<?>)var.get()).getType().isCompatibleWith(_properties.type)) {
+        throw new RuntimeException("Variable " + varId + " has a type that is incompatible with its parent collection " + _properties.id);
+      }
+
       // add to list for bin values assignment
       S valueVar = (S)var.get(); // need unchecked cast since we are looking up var by name, then checking compatibility
       valueVars.add(valueVar);
@@ -110,9 +114,8 @@ public abstract class VarCollection<T, S extends VariableWithValues<T>> {
         useVocabulary = false;
       }
 
-      if (((VariableWithValues<?>)var.get()).getType().isCompatibleWith(_properties.type) &&
-          ((VariableWithValues<?>)var.get()).getDataShape().isCompatibleWithCollectionShape(_properties.dataShape, derivedVocabulary)) {
-        throw new RuntimeException("Variable " + varId + " must have a shape and type that are compatible with its parent collection " + _properties.id);
+      if (!valueVar.getDataShape().isCompatibleWithCollectionShape(_properties.dataShape, derivedVocabulary)) {
+        throw new RuntimeException("Variable " + varId + " must have a shape that is compatible with its parent collection " + _properties.id);
       }
     }
     // vocabulary will be completely populated or null; hopefully warnings will alert devs of discrepancies

@@ -104,8 +104,9 @@ public class VariableFactory {
           rs.getBoolean(IS_FEATURED_COL_NAME),
           rs.getBoolean(IS_MERGE_KEY_COL_NAME),
           rs.getBoolean(IS_MULTI_VALUED_COL_NAME),
-          rs.getBoolean(IMPUTE_ZERO)
-      );
+          rs.getBoolean(IMPUTE_ZERO),
+          rs.getBoolean(HAS_STUDY_DEPENDENT_VOCABULARY),
+          rs.getString(VARIABLE_SPEC_TO_IMPUTE_ZEROES_FOR));
 
       switch(valueProps.type) {
 

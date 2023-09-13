@@ -5,6 +5,11 @@ import org.veupathdb.service.eda.ss.model.distribution.NumberDistributionConfig;
 import org.veupathdb.service.eda.ss.model.variable.FloatingPointVariable;
 import org.veupathdb.service.eda.ss.model.variable.NumberVariable;
 
+/**
+ *
+ * @param <T> T is the type of the variables contained in this collection. Note that floating point collections can
+ *            contain FloatingPoint or Integer variables, hence T being compatible with both of these types instead of just floats.
+ */
 public class FloatingPointVarCollection<T extends Number & Comparable<T>> extends VarCollection<T, NumberVariable<T>> {
 
   private final FloatingPointVariable.Properties _floatProps;

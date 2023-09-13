@@ -1,6 +1,5 @@
 package org.veupathdb.service.eda.ss.model.variable;
 
-import java.util.List;
 import java.util.Set;
 
 public enum VariableDataShape {
@@ -24,6 +23,13 @@ public enum VariableDataShape {
     throw new RuntimeException("Unrecognized data shape: " + shapeString);
   }
 
+  /**
+   * Check if this data shape instance is allowed to be a member of a collection with the given collectionShape
+   * and collection vocabulary.
+   *
+   * If the shapes are the same, they should always be compatible. Binary variables are compatible with a binary
+   * collection if they have 2 or fewer vocab values.
+   */
   public boolean isCompatibleWithCollectionShape(VariableDataShape collectionShape, Set<String> collectionVocab) {
     if (this == BINARY || collectionShape == BINARY) {
       return collectionVocab.size() <= 2;

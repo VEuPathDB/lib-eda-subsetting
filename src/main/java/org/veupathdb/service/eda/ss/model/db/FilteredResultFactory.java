@@ -17,6 +17,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.gusdb.fgputil.ListBuilder;
 import org.gusdb.fgputil.Tuples.TwoTuple;
+import org.gusdb.fgputil.collection.InitialSizeStringMap;
 import org.gusdb.fgputil.db.runner.SQLRunner;
 import org.gusdb.fgputil.db.runner.SingleLongResultSetHandler;
 import org.gusdb.fgputil.db.stream.ResultSetIterator;
@@ -134,6 +135,45 @@ public class FilteredResultFactory {
     }, FETCH_SIZE_FOR_TABULAR_QUERIES);
   }
 
+  public static CloseableIterator<Map<String, String>> produceUnformattedTabularSubsetFromFiles(Study study, Entity outputEntity,
+                                                                                                 List<VariableWithValues> outputVariables, List<Filter> filters,
+                                                                                                 BinaryValuesStreamer binaryValuesStreamer) {
+    final DataFlowTreeFactory dataFlowTreeFactory = new DataFlowTreeFactory();
+    final EntityIdIndexIteratorConverter idIndexEntityConverter = new EntityIdIndexIteratorConverter(binaryValuesStreamer);
+    final TreeNode<Entity> prunedEntityTree = pruneTree(study.getEntityTree(), filters, outputEntity);
+    final TreeNode<DataFlowNodeContents> dataFlowTree = dataFlowTreeFactory.create(
+        prunedEntityTree, outputEntity, filters, outputVariables, study);
+
+    List<String> outputColumns = getTabularOutputColumns(outputEntity, outputVariables);
+
+    final DataFlowTreeReducer driver = new DataFlowTreeReducer(idIndexEntityConverter, binaryValuesStreamer);
+    try {
+      // Retrieve stream of ID Indexes with all filters applied by traversing the map reduce data flow tree.
+      final CloseableIterator<Long> idIndexStream = driver.reduce(dataFlowTree);
+
+      // Open streams of output variables and ancestors identifiers used to decorate ID index stream to produce tabular records.
+      List<UnformattedTabularRecordStreamer.ValueStream<String>> outputVarStreams = new ArrayList<>();
+      for (Variable outputVar : outputVariables) {
+        VariableWithValues<?> varWithVals = (VariableWithValues<?>) outputVar;
+        TabularValueFormatter valFormatter = varWithVals.getIsMultiValued() ? new MultiValueFormatter() : new SingleValueFormatter();
+        // ValueStream should be UTF-8 byte arrays.
+        UnformattedTabularRecordStreamer.ValueStream<String> valStream = new UnformattedTabularRecordStreamer.ValueStream<>(
+            binaryValuesStreamer.streamUnformattedIdValueBinaryPairs(study, varWithVals), valFormatter);
+        outputVarStreams.add(valStream);
+      }
+
+      final CloseableIterator<VariableValueIdPair<List<String>>> idsMapStream = binaryValuesStreamer.streamIdMapAsStrings(outputEntity, study);
+      return new UnformattedTabularRecordStreamer(
+          outputVarStreams,
+          idIndexStream,
+          idsMapStream,
+          outputColumns
+      );
+    } catch (IOException e) {
+      throw new RuntimeException(e);
+    }
+  }
+
   /**
    * Writes to the passed output stream a "tabular" result.  Exact format depends on the passed
    * responseType (JSON string[][] vs true tabular). Each row is a record containing
@@ -224,11 +264,11 @@ public class FilteredResultFactory {
   }
 
   static <T extends Variable> List<String> getTabularOutputColumns(Entity outputEntity, List<T> outputVariables) {
-    return getTabularOutputColumns(outputEntity, outputVariables, Variable::getId);
+    return getTabularOutputColumns(outputEntity, outputVariables, var -> var.getEntityId() + "." + var.getId());
   }
 
   static <T extends Variable> List<String> getTabularOutputColumns(Entity outputEntity, List<T> outputVariables, Function<Variable, String> varMapper) {
-    return getColumns(outputEntity, outputVariables, Entity::getPKColName, varMapper);
+    return getColumns(outputEntity, outputVariables, e -> e.getId() + "." + e.getPKColName(), varMapper);
   }
 
 

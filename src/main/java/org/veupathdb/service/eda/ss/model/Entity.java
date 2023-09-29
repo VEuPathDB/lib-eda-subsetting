@@ -48,6 +48,7 @@ public class Entity {
   private final Map<String, Set<String>> _multiFilterMap = new HashMap<String, Set<String>>();
   
   public Entity(String entityId, String studyAbbrev, String displayName, String displayNamePlural, String description, String abbreviation, long loadOrder, boolean hasCollections, boolean isManyToOneWithParent) {
+    LOG.info(entityId + ": Has collections: " + hasCollections);
     this.id = entityId;
     this.studyAbbrev = studyAbbrev;
     this.displayName = displayName;

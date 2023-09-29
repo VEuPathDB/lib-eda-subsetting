@@ -1,5 +1,6 @@
 package org.veupathdb.service.eda.ss.model.variable;
 
+import java.util.List;
 import java.util.Set;
 
 public enum VariableDataShape {
@@ -30,9 +31,9 @@ public enum VariableDataShape {
    * If the shapes are the same, they should always be compatible. Binary variables are compatible with a binary
    * collection if they have 2 or fewer vocab values.
    */
-  public boolean isCompatibleWithCollectionShape(VariableDataShape collectionShape, Set<String> collectionVocab) {
-    if (this == BINARY || collectionShape == BINARY) {
-      return collectionVocab.size() <= 2;
+  public boolean isCompatibleWithCollectionShape(VariableDataShape collectionShape, List<String> variableVocab) {
+    if (collectionShape == BINARY) {
+      return variableVocab.size() <= 2;
     }
     return collectionShape._name.equals(this._name);
   }

@@ -114,8 +114,8 @@ public abstract class VarCollection<T, S extends VariableWithValues<T>> {
         useVocabulary = false;
       }
 
-      if (!valueVar.getDataShape().isCompatibleWithCollectionShape(_properties.dataShape, derivedVocabulary)) {
-        throw new RuntimeException("Variable " + varId + " must have a shape that is compatible with its parent collection " + _properties.id);
+      if (!valueVar.getDataShape().isCompatibleWithCollectionShape(_properties.dataShape, valueVar.getVocabulary())) {
+        throw new RuntimeException("Variable " + varId + " with shape " + _properties.dataShape + " must have a shape that is compatible with its parent collection " + _properties.id + " " + valueVar.getDataShape() + "vocab " + derivedVocabulary);
       }
     }
     // vocabulary will be completely populated or null; hopefully warnings will alert devs of discrepancies

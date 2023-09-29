@@ -109,8 +109,6 @@ public class EntityFactory {
       String abbrev = getRsRequiredString(rs, ENTITY_ABBREV_COL_NAME);
       long loadOrder = getIntegerFromString(rs, ENTITY_LOAD_ORDER_ID, true);
       boolean hasCollections = getRsRequiredBoolean(rs, ENTITY_HAS_ATTRIBUTE_COLLECTIONS);
-      LOG.info("Has collections as booleans: " + hasCollections);
-      LOG.info("Has collections as ints: " + getRsRequiredLong(rs, ENTITY_HAS_ATTRIBUTE_COLLECTIONS));
 
       boolean isManyToOneWithParent = getRsOptionalBoolean(rs, ENTITY_IS_MANY_TO_ONE_WITH_PARENT, true);
 

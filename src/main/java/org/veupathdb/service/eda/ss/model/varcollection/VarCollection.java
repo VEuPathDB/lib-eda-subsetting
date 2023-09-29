@@ -70,8 +70,6 @@ public abstract class VarCollection<T, S extends VariableWithValues<T>> {
    * @param entity parent entity of this collection (provides access to variables)
    */
   public void buildAndValidate(Entity entity) {
-    LOG.info("Building and validating collection " + _properties.id + " on entity " + entity.getId());
-
     // check that num members declared in collection metadata matches number in variable map table
     if (_properties.numMembers != _memberVariableIds.size()) {
       throw new RuntimeException("Discovered " + _memberVariableIds.size() +
@@ -92,12 +90,12 @@ public abstract class VarCollection<T, S extends VariableWithValues<T>> {
             " references variable " + varId + " which does not exist in entity " + entity.getId());
       }
 
-      // make sure var is a value var and has the same type/shape as the collection
-      if (!(var.get().hasValues() &&
-            ((VariableWithValues<?>)var.get()).getType().isSameTypeAs(_properties.type) &&
-            ((VariableWithValues<?>)var.get()).getDataShape() == _properties.dataShape)) {
-        throw new RuntimeException("Variable " + varId + " must have values and be the same " +
-            "data type and shape as its parent collection " + _properties.id);
+      if (!(var.get().hasValues())) {
+        throw new RuntimeException("Variable " + varId + " must have values to be a member of a collection");
+      }
+
+      if (!((VariableWithValues<?>)var.get()).getType().isCompatibleWith(_properties.type)) {
+        throw new RuntimeException("Variable " + varId + " has a type that is incompatible with its parent collection " + _properties.id);
       }
 
       // add to list for bin values assignment
@@ -107,12 +105,16 @@ public abstract class VarCollection<T, S extends VariableWithValues<T>> {
       // collect the union of the vocabularies for the collection vocabulary
       if (valueVar.getVocabulary() != null && !valueVar.getVocabulary().isEmpty()) {
         derivedVocabulary.addAll(valueVar.getVocabulary());
-      }
-      else {
+      } else {
         // do not declare a vocabulary unless all member vars have a vocabulary
         if (useVocabulary) // only log once per collection
           LOG.warn("At least one variable in collection " + _properties.id + " does not have a vocabulary, so collection will not either.");
         useVocabulary = false;
+      }
+
+      if (!valueVar.getDataShape().isCompatibleWithCollectionShape(_properties.dataShape, valueVar.getVocabulary(), derivedVocabulary)) {
+        throw new RuntimeException("Variable " + varId + " with shape " + valueVar.getDataShape()
+            + " must have a shape that is compatible with its parent collection " + _properties.id + " " +  _properties.dataShape + " vocab " + derivedVocabulary);
       }
     }
     // vocabulary will be completely populated or null; hopefully warnings will alert devs of discrepancies

@@ -3,8 +3,14 @@ package org.veupathdb.service.eda.ss.model.varcollection;
 import java.util.List;
 import org.veupathdb.service.eda.ss.model.distribution.NumberDistributionConfig;
 import org.veupathdb.service.eda.ss.model.variable.FloatingPointVariable;
+import org.veupathdb.service.eda.ss.model.variable.NumberVariable;
 
-public class FloatingPointVarCollection extends VarCollection<Double, FloatingPointVariable> {
+/**
+ *
+ * @param <T> T is the type of the variables contained in this collection. Note that floating point collections can
+ *            contain FloatingPoint or Integer variables, hence T being compatible with both of these types instead of just floats.
+ */
+public class FloatingPointVarCollection<T extends Number & Comparable<T>> extends VarCollection<T, NumberVariable<T>> {
 
   private final FloatingPointVariable.Properties _floatProps;
   private final NumberDistributionConfig<Double> _distributionConfig;
@@ -31,13 +37,13 @@ public class FloatingPointVarCollection extends VarCollection<Double, FloatingPo
   }
 
   @Override
-  protected void assignDistributionDefaults(List<FloatingPointVariable> memberVars) {
-    Double maxBinSize = (double)0; // find the biggest size
-    for (FloatingPointVariable var : memberVars) {
+  protected void assignDistributionDefaults(List<NumberVariable<T>> memberVars) {
+    double maxBinSize = 0.0; // find the biggest size
+    for (NumberVariable<T> var : memberVars) {
       // superclass promises to only pass the correct type here
-      NumberDistributionConfig<Double> varConfig = var.getDistributionConfig();
-      if (varConfig.getDefaultBinWidth() > maxBinSize) {
-        maxBinSize = varConfig.getDefaultBinWidth();
+      NumberDistributionConfig<T> varConfig = var.getDistributionConfig();
+      if (varConfig.getDefaultBinWidth().doubleValue() > maxBinSize) {
+        maxBinSize = varConfig.getDefaultBinWidth().doubleValue();
       }
     }
     _distributionConfig.setBinWidth(maxBinSize);

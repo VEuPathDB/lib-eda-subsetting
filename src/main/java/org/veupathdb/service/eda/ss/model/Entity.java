@@ -173,6 +173,10 @@ public class Entity {
     if (tallRowSize == null) tallRowSize = ancestorEntities.size() + 3;
     return tallRowSize;
   }
+
+  public boolean hasGeographicData() {
+    return variablesList.stream().anyMatch(Variable::hasGeographicData);
+  }
   
   public List<Variable> getVariables() {
     return Collections.unmodifiableList(variablesList);

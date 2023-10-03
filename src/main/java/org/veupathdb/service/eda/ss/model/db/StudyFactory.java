@@ -8,6 +8,7 @@ import org.veupathdb.service.eda.ss.model.Entity;
 import org.veupathdb.service.eda.ss.model.Study;
 import org.veupathdb.service.eda.ss.model.StudyOverview;
 import org.veupathdb.service.eda.ss.model.StudyOverview.StudySourceType;
+import org.veupathdb.service.eda.ss.model.variable.Variable;
 
 import javax.sql.DataSource;
 import java.time.Instant;

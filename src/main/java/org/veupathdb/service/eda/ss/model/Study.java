@@ -6,6 +6,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
+
 import org.gusdb.fgputil.functional.TreeNode;
 
 public class Study extends StudyOverview {
@@ -37,6 +38,10 @@ public class Study extends StudyOverview {
 
   public TreeNode<Entity> getEntityTree() {
     return _entityTree.clone();
+  }
+
+  public boolean hasGeographicData() {
+    return _entityTree.reduce(x -> true, (result, entity) -> result || entity.hasGeographicData(), false);
   }
 
   private static void populateEntityAncestors(TreeNode<Entity> rootEntityNode) {

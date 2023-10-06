@@ -85,4 +85,11 @@ public abstract class Variable {
   public String getDownloadColHeader() {
     return getDisplayName() + " [" + getId() + "]";
   }
+
+  public boolean hasGeographicData() {
+    return getDisplayType() == VariableDisplayType.LATITUDE
+        || getDisplayType() == VariableDisplayType.LONGITUDE
+        || getDisplayType() == VariableDisplayType.GEOAGGREGATOR;
+  }
+
 }

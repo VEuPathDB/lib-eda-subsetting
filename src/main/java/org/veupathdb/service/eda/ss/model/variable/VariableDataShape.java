@@ -1,5 +1,6 @@
 package org.veupathdb.service.eda.ss.model.variable;
 
+import java.util.List;
 import java.util.Set;
 
 public enum VariableDataShape {
@@ -30,10 +31,18 @@ public enum VariableDataShape {
    * If the shapes are the same, they should always be compatible. Binary variables are compatible with a binary
    * collection if they have 2 or fewer vocab values.
    */
-  public boolean isCompatibleWithCollectionShape(VariableDataShape collectionShape, Set<String> collectionVocab) {
-    if (this == BINARY || collectionShape == BINARY) {
-      return collectionVocab.size() <= 2;
+  public boolean isCompatibleWithCollectionShape(VariableDataShape collectionShape,
+                                                 List<String> variableVocab,
+                                                 Set<String> collectionVocab) {
+    if (this == BINARY && collectionShape == CATEGORICAL) {
+      // Binary is compatible as a variable data shape with a cat collection.
+      return true;
     }
+    if (collectionShape == BINARY) {
+      // Binary collections can have CATEGORICAL vars if they have 0, 1 or 2 distinct values.
+      return variableVocab.size() <= 2;
+    }
+    // Otherwise, collection type should be the same as variable type.
     return collectionShape._name.equals(this._name);
   }
 }

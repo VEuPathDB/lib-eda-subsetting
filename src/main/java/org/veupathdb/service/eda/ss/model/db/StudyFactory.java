@@ -10,7 +10,6 @@ import org.veupathdb.service.eda.ss.model.StudyOverview;
 import org.veupathdb.service.eda.ss.model.StudyOverview.StudySourceType;
 
 import javax.sql.DataSource;
-import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;

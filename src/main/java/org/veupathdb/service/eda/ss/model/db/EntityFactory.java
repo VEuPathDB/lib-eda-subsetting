@@ -10,6 +10,9 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
 import javax.sql.DataSource;
+
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.gusdb.fgputil.db.runner.SQLRunner;
 import org.gusdb.fgputil.functional.TreeNode;
 import org.veupathdb.service.eda.ss.model.Entity;
@@ -19,7 +22,7 @@ import static org.veupathdb.service.eda.ss.model.db.DB.Tables.EntityTypeGraph.Co
 import static org.veupathdb.service.eda.ss.model.db.ResultSetUtils.*;
 
 public class EntityFactory {
-
+  private static final Logger LOG = LogManager.getLogger(EntityFactory.class);
   private final static String STDY_ABBRV_COL_NM = "study_abbrev"; // for private queries
 
   private final DataSource _dataSource;
@@ -106,6 +109,7 @@ public class EntityFactory {
       String abbrev = getRsRequiredString(rs, ENTITY_ABBREV_COL_NAME);
       long loadOrder = getIntegerFromString(rs, ENTITY_LOAD_ORDER_ID, true);
       boolean hasCollections = getRsRequiredBoolean(rs, ENTITY_HAS_ATTRIBUTE_COLLECTIONS);
+
       boolean isManyToOneWithParent = getRsOptionalBoolean(rs, ENTITY_IS_MANY_TO_ONE_WITH_PARENT, true);
 
       return new Entity(id, studyAbbrev, name, namePlural, descrip, abbrev, loadOrder, hasCollections, isManyToOneWithParent);

@@ -70,8 +70,6 @@ public abstract class VarCollection<T, S extends VariableWithValues<T>> {
    * @param entity parent entity of this collection (provides access to variables)
    */
   public void buildAndValidate(Entity entity) {
-    LOG.info("Building and validating collection " + _properties.id + " on entity " + entity.getId());
-
     // check that num members declared in collection metadata matches number in variable map table
     if (_properties.numMembers != _memberVariableIds.size()) {
       throw new RuntimeException("Discovered " + _memberVariableIds.size() +
@@ -114,8 +112,9 @@ public abstract class VarCollection<T, S extends VariableWithValues<T>> {
         useVocabulary = false;
       }
 
-      if (!valueVar.getDataShape().isCompatibleWithCollectionShape(_properties.dataShape, derivedVocabulary)) {
-        throw new RuntimeException("Variable " + varId + " must have a shape that is compatible with its parent collection " + _properties.id);
+      if (!valueVar.getDataShape().isCompatibleWithCollectionShape(_properties.dataShape, valueVar.getVocabulary(), derivedVocabulary)) {
+        throw new RuntimeException("Variable " + varId + " with shape " + valueVar.getDataShape()
+            + " must have a shape that is compatible with its parent collection " + _properties.id + " " +  _properties.dataShape + " vocab " + derivedVocabulary);
       }
     }
     // vocabulary will be completely populated or null; hopefully warnings will alert devs of discrepancies

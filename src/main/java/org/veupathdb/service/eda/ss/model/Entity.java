@@ -107,6 +107,10 @@ public class Entity {
     return getAbbreviation() + "_stable_id";
   }
 
+  public String getPKColDotNotation() {
+    return getId() + "." + getAbbreviation() + "_stable_id";
+  }
+
   public String getFullPKColName() {
     return getWithClauseName() + "." + getPKColName();
   }

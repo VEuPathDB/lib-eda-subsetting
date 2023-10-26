@@ -7,6 +7,9 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
+
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.json.JSONArray;
 import org.veupathdb.service.eda.ss.model.Entity;
 import org.veupathdb.service.eda.ss.model.variable.Variable;
@@ -20,6 +23,7 @@ import static org.veupathdb.service.eda.ss.model.db.DB.Tables.AttributeValue.Col
  * @author Steve
  */
 public class TallRowConversionUtils {
+  private static final Logger LOG = LogManager.getLogger(TallRowConversionUtils.class);
 
   static final String VARIABLE_VALUE_COL_NAME = "value";
 
@@ -74,6 +78,13 @@ public class TallRowConversionUtils {
    * (all values are converted to strings)
    */
   static Function<List<Map<String, String>>, Map<String, String>> getTallToWideFunction(Entity entity) {
+    return getTallToWideFunction(entity, null, Entity::getPKColName, Variable::getId);
+  }
+
+  static Function<List<Map<String, String>>, Map<String, String>> getTallToWideFunction(Entity entity,
+                                                                                        List<String> outputCols,
+                                                                                        Function<Entity, String> entityKeyNameFn,
+                                                                                        Function<Variable, String> variableKeyNameFn) {
 
     String errPrefix = "Tall row supplied to entity " + entity.getId();
 
@@ -85,7 +96,7 @@ public class TallRowConversionUtils {
       Map<String, List<String>> multiValues = null;  // this map only contains variables that have multiple values
       Map<String, VariableWithValues> variablesMap = new HashMap<>(); // ID -> VariableWithValues
 
-      addPrimaryKeysToWideRow(firstTallRow, entity, wideRow, tallRowEntityId, errPrefix);
+      addPrimaryKeysToWideRow(firstTallRow, entity, wideRow, tallRowEntityId, errPrefix, entityKeyNameFn);
 
       // loop through all tall rows and add vars to wide row, validating along the way
       // temporarily store any multi-values in a dedicated map.  (at the end, reduce them to JSON string)
@@ -99,13 +110,13 @@ public class TallRowConversionUtils {
           // handle multi-valued variable.
           // (this is a rare case, so only allocate the array if needed)
           if (variablesMap.get(variableId).getIsMultiValued()) {
-            multiValues = updateMultiValuesMap(variableId, tallRow, multiValues);
+            multiValues = updateMultiValuesMap(variableKeyNameFn.apply(variablesMap.get(variableId)), tallRow, multiValues);
           }
 
           // else handle single valued variable
           else {
             if (wideRow.containsKey(variableId)) throw new RuntimeException("Variable found to incorrectly have multiple values: " + variableId);
-            wideRow.put(variableId, tallRow.get(VARIABLE_VALUE_COL_NAME));
+            wideRow.put(variableKeyNameFn.apply(variablesMap.get(variableId)), tallRow.get(VARIABLE_VALUE_COL_NAME));
           }
         }
       }
@@ -113,20 +124,25 @@ public class TallRowConversionUtils {
       // reduce multi-values to JSON string, and stuff into wide row
       if (multiValues != null) putMultiValuesAsJsonIntoWideRow(multiValues, wideRow, variablesMap);
 
+      if (outputCols != null) {
+        outputCols.forEach(col -> wideRow.putIfAbsent(col, ""));
+      }
+
       return wideRow;
     };
   }
 
   private static void addPrimaryKeysToWideRow(Map<String, String> firstTallRow,
-                                              Entity entity, Map<String, String> wideRow, String tallRowEntityId, String errPrefix) {
+                                              Entity entity, Map<String, String> wideRow,
+                                              String tallRowEntityId, String errPrefix, Function<Entity, String> idGetter) {
     // add entity PK to the wide row
-    wideRow.put(entity.getPKColName(), tallRowEntityId);
+    wideRow.put(entity.getId() + "." + entity.getPKColName(), tallRowEntityId);
 
     // add ancestor PKs to wide row
-    for (String ancestorPkColName : entity.getAncestorPkColNames()) {
-      if (!firstTallRow.containsKey(ancestorPkColName))
-        throw new RuntimeException(errPrefix + " does not contain column " + ancestorPkColName);
-      wideRow.put(ancestorPkColName, firstTallRow.get(ancestorPkColName));
+    for (Entity ancestorEntity : entity.getAncestorEntities()) {
+      if (!firstTallRow.containsKey(ancestorEntity.getPKColName()))
+        throw new RuntimeException(errPrefix + " does not contain column " + ancestorEntity.getPKColName());
+      wideRow.put(idGetter.apply(ancestorEntity), firstTallRow.get(ancestorEntity.getPKColName()));
     }
   }
 

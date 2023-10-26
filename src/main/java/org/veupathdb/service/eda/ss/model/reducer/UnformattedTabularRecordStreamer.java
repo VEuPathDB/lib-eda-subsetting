@@ -2,13 +2,8 @@ package org.veupathdb.service.eda.ss.model.reducer;
 
 import org.gusdb.fgputil.collection.InitialSizeStringMap;
 import org.gusdb.fgputil.iterator.CloseableIterator;
-import org.veupathdb.service.eda.ss.model.reducer.formatter.TabularValueFormatter;
 import org.veupathdb.service.eda.ss.model.variable.VariableValueIdPair;
 
-import java.nio.ByteBuffer;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.NoSuchElementException;
@@ -26,6 +21,7 @@ public class UnformattedTabularRecordStreamer implements CloseableIterator<Map<S
   private CloseableIterator<Long> idIndexStream;
   private Long currentIdIndex;
   private String[] outputColumns;
+  private InitialSizeStringMap.Builder outputColBuilder;
 
   /**
    * Constructs an instance, which provides a stream of string-formatted records. The stream is composed of all IDs
@@ -48,6 +44,7 @@ public class UnformattedTabularRecordStreamer implements CloseableIterator<Map<S
     }
     this.idMapStream = idMapStream;
     this.outputColumns = outputColumns.toArray(String[]::new);
+    this.outputColBuilder = new InitialSizeStringMap.Builder(this.outputColumns);
   }
 
   @Override
@@ -83,7 +80,7 @@ public class UnformattedTabularRecordStreamer implements CloseableIterator<Map<S
       if (!valueStream.hasNext() || !Objects.equals(valueStream.peek().getIdIndex(), currentIdIndex)) {
         rec[recIndex++] = "";
       } else {
-        rec[recIndex++] = valueStream.valueFormatter.formatString(valueStream, currentIdIndex);
+        rec[recIndex++] = valueStream.getValueFormatter().formatString(valueStream, currentIdIndex);
       }
     }
     if (idIndexStream.hasNext()) {
@@ -91,7 +88,7 @@ public class UnformattedTabularRecordStreamer implements CloseableIterator<Map<S
     } else {
       currentIdIndex = null;
     }
-    return new InitialSizeStringMap.Builder(outputColumns).build().putAll(rec);
+    return outputColBuilder.build().putAll(rec);
   }
 
   @Override
@@ -100,37 +97,4 @@ public class UnformattedTabularRecordStreamer implements CloseableIterator<Map<S
     idIndexStream.close();
   }
 
-  public static class ValueStream<T> implements Iterator<VariableValueIdPair<T>> {
-    private VariableValueIdPair<T> next;
-    private final Iterator<VariableValueIdPair<T>> stream;
-    private final TabularValueFormatter valueFormatter;
-
-    public ValueStream(Iterator<VariableValueIdPair<T>> stream, TabularValueFormatter valueFormatter) {
-      this.stream = stream;
-      this.valueFormatter = valueFormatter;
-      if (stream.hasNext()) {
-        next = stream.next();
-      }
-    }
-
-    public VariableValueIdPair<T> peek() {
-      return next;
-    }
-
-    @Override
-    public boolean hasNext() {
-      return next != null;
-    }
-
-    @Override
-    public VariableValueIdPair<T> next() {
-      VariableValueIdPair<T> curr = next;
-      if (stream.hasNext()) {
-        next = stream.next();
-      } else {
-        next = null;
-      }
-      return curr;
-    }
-  }
 }

@@ -78,7 +78,7 @@ public class FormattedTabularRecordStreamer implements CloseableIterator<byte[][
       if (!valueStream.hasNext() || !Objects.equals(valueStream.peek().getIdIndex(), currentIdIndex)) {
         rec[recIndex++] = EMPTY_BYTE_ARRAY;
       } else {
-        rec[recIndex++] = valueStream.valueFormatter.format(valueStream, currentIdIndex);
+        rec[recIndex++] = valueStream.getValueFormatter().format(valueStream, currentIdIndex);
       }
     }
     if (idIndexStream.hasNext()) {
@@ -93,39 +93,5 @@ public class FormattedTabularRecordStreamer implements CloseableIterator<byte[][
   public void close() throws Exception {
     idMapStream.close();
     idIndexStream.close();
-  }
-
-  public static class ValueStream<T> implements Iterator<VariableValueIdPair<T>> {
-    private VariableValueIdPair<T> next;
-    private final Iterator<VariableValueIdPair<T>> stream;
-    private final TabularValueFormatter valueFormatter;
-
-    public ValueStream(Iterator<VariableValueIdPair<T>> stream, TabularValueFormatter valueFormatter) {
-      this.stream = stream;
-      this.valueFormatter = valueFormatter;
-      if (stream.hasNext()) {
-        next = stream.next();
-      }
-    }
-
-    public VariableValueIdPair<T> peek() {
-      return next;
-    }
-
-    @Override
-    public boolean hasNext() {
-      return next != null;
-    }
-
-    @Override
-    public VariableValueIdPair<T> next() {
-      VariableValueIdPair<T> curr = next;
-      if (stream.hasNext()) {
-        next = stream.next();
-      } else {
-        next = null;
-      }
-      return curr;
-    }
   }
 }

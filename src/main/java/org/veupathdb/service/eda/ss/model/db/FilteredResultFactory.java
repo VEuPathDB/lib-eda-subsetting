@@ -155,12 +155,12 @@ public class FilteredResultFactory {
       final CloseableIterator<Long> idIndexStream = driver.reduce(dataFlowTree);
 
       // Open streams of output variables and ancestors identifiers used to decorate ID index stream to produce tabular records.
-      List<UnformattedTabularRecordStreamer.ValueStream<String>> outputVarStreams = new ArrayList<>();
+      List<ValueStream<String>> outputVarStreams = new ArrayList<>();
       for (Variable outputVar : outputVariables) {
         VariableWithValues<?> varWithVals = (VariableWithValues<?>) outputVar;
         TabularValueFormatter valFormatter = varWithVals.getIsMultiValued() ? new MultiValueFormatter() : new SingleValueFormatter();
         // ValueStream should be UTF-8 byte arrays.
-        UnformattedTabularRecordStreamer.ValueStream<String> valStream = new UnformattedTabularRecordStreamer.ValueStream<>(
+        ValueStream<String> valStream = new ValueStream<>(
             binaryValuesStreamer.streamUnformattedIdValueBinaryPairs(study, varWithVals), valFormatter);
         outputVarStreams.add(valStream);
       }
@@ -293,12 +293,12 @@ public class FilteredResultFactory {
       final CloseableIterator<Long> idIndexStream = driver.reduce(dataFlowTree);
 
       // Open streams of output variables and ancestors identifiers used to decorate ID index stream to produce tabular records.
-      List<FormattedTabularRecordStreamer.ValueStream<byte[]>> outputVarStreams = new ArrayList<>();
+      List<ValueStream<byte[]>> outputVarStreams = new ArrayList<>();
       for (Variable outputVar: outputVariables) {
         VariableWithValues<?> varWithVals = (VariableWithValues<?>) outputVar;
         TabularValueFormatter valFormatter = varWithVals.getIsMultiValued() ? new MultiValueFormatter() : new SingleValueFormatter();
         // ValueStream should be UTF-8 byte arrays.
-        FormattedTabularRecordStreamer.ValueStream<byte[]> valStream = new FormattedTabularRecordStreamer.ValueStream<>(
+        ValueStream<byte[]> valStream = new ValueStream<>(
             binaryValuesStreamer.streamIdValueBinaryPairs(study, varWithVals, reportConfig), valFormatter);
         outputVarStreams.add(valStream);
       }

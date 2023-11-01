@@ -86,6 +86,10 @@ public abstract class Variable {
     return getDisplayName() + " [" + getId() + "]";
   }
 
+  public String getDotNotation() {
+    return getEntityId() + "." + getId();
+  }
+
   public boolean hasGeographicData() {
     return getDisplayType() == VariableDisplayType.LATITUDE
         || getDisplayType() == VariableDisplayType.LONGITUDE

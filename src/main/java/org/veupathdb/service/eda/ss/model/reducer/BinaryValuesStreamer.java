@@ -13,6 +13,7 @@ import org.veupathdb.service.eda.ss.model.variable.VariableWithValues;
 import org.veupathdb.service.eda.ss.model.variable.binary.*;
 
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
@@ -83,6 +84,33 @@ public class BinaryValuesStreamer {
     }
   }
 
+  public <V> FilteredValueIterator<byte[], VariableValueIdPair<byte[]>> streamIdValueBinaryPairs(
+      Study study,
+      VariableWithValues<V> variable,
+      TabularReportConfig reportConfig) throws IOException {
+    Function<byte[], byte[]> binaryFormatter = variable.getRawUtf8BinaryFormatter(reportConfig);
+    return streamIdValueBinaryPairs(study, variable, reportConfig, binaryFormatter);
+  }
+
+  public <V> FilteredValueIterator<byte[], VariableValueIdPair<String>> streamUnformattedIdValueBinaryPairs(
+      Study study,
+      VariableWithValues<V> variable) throws IOException {
+    BinaryConverter<byte[]> serializer = new ByteArrayConverter(variable.getStringConverter().numBytes());
+    final BinaryDeserializer<VariableValueIdPair<byte[]>> deserializer = new ValueWithIdDeserializer<>(serializer);
+    TabularReportConfig reportConfig = new TabularReportConfig();
+    return new FilteredValueIterator<>(
+        binaryFilesManager.getUtf8VariableFile(study,
+            variable.getEntity(),
+            variable,
+            BinaryFilesManager.Operation.READ),
+        x -> true, // Always return true, extract all ID index pairs and variable values.
+        deserializer,
+        pair -> new VariableValueIdPair<>(pair.getIdIndex(), new String(variable.getRawUtf8BinaryFormatter(reportConfig).apply(pair.getValue()), StandardCharsets.UTF_8)),
+        fileChannelExecutorService,
+        deserializerExecutorService); // Provide a stream of entire VariableValueIdPair objects.
+  }
+
+
   /**
    * Streams tuples of all entity ID indexes and the string version of variable values associate with the variable
    * passed in.
@@ -96,12 +124,12 @@ public class BinaryValuesStreamer {
   public <V> FilteredValueIterator<byte[], VariableValueIdPair<byte[]>> streamIdValueBinaryPairs(
       Study study,
       VariableWithValues<V> variable,
-      TabularReportConfig reportConfig) throws IOException {
+      TabularReportConfig reportConfig,
+      Function<byte[], byte[]> binaryFormatter) throws IOException {
     BinaryConverter<byte[]> serializer = new ByteArrayConverter(variable.getStringConverter().numBytes());
     final BinaryDeserializer<VariableValueIdPair<byte[]>> deserializer = new ValueWithIdDeserializer<>(serializer);
 
     // Function to translate raw padded utf-8 bytes with formatted value based on report config and variable metadata.
-    Function<byte[], byte[]> binaryFormatter = variable.getRawUtf8BinaryFormatter(reportConfig);
     Function<VariableValueIdPair<byte[]>, VariableValueIdPair<byte[]>> mapper = pair -> {
       pair.setValue(binaryFormatter.apply(pair.getValue()));
       return pair;
@@ -114,7 +142,7 @@ public class BinaryValuesStreamer {
             BinaryFilesManager.Operation.READ),
         x -> true, // Always return true, extract all ID index pairs and variable values.
         deserializer,
-        mapper, // This will map the raw data to
+        mapper, // This will map the raw data to utf-8 bytes.
         fileChannelExecutorService,
         deserializerExecutorService); // Provide a stream of entire VariableValueIdPair objects.
   }
@@ -176,6 +204,19 @@ public class BinaryValuesStreamer {
         x -> true, // Do not apply any filters.
         converter,
         Function.identity(),
+        fileChannelExecutorService,
+        deserializerExecutorService);
+  }
+
+  public CloseableIterator<VariableValueIdPair<List<String>>> streamIdMapAsStrings(Entity entity, Study study) throws IOException {
+    Path path = binaryFilesManager.getIdMapFile(study, entity, BinaryFilesManager.Operation.READ);
+    List<Integer> bytesReservedForAncestors = binaryFilesManager.getBytesReservedForAncestry(study, entity);
+    Integer bytesReservedForId = binaryFilesManager.getBytesReservedForEntity(study, entity);
+    RecordIdValuesConverter converter = new RecordIdValuesConverter(bytesReservedForAncestors, bytesReservedForId);
+    return new FilteredValueIterator<>(path,
+        x -> true, // Do not apply any filters.
+        converter,
+        x -> x,
         fileChannelExecutorService,
         deserializerExecutorService);
   }

@@ -2,6 +2,7 @@ package org.veupathdb.service.eda.ss.model.db;
 
 import java.io.*;
 import java.nio.charset.StandardCharsets;
+import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.*;
@@ -24,6 +25,7 @@ import org.gusdb.fgputil.db.stream.ResultSets;
 import org.gusdb.fgputil.functional.TreeNode;
 import org.gusdb.fgputil.iterator.CloseableIterator;
 import org.gusdb.fgputil.iterator.GroupingIterator;
+import org.gusdb.fgputil.iterator.IteratorUtil;
 import org.veupathdb.service.eda.ss.model.Entity;
 import org.veupathdb.service.eda.ss.model.Study;
 import org.veupathdb.service.eda.ss.model.reducer.*;
@@ -43,7 +45,6 @@ import org.veupathdb.service.eda.ss.model.variable.Variable;
 import org.veupathdb.service.eda.ss.model.variable.VariableType;
 import org.veupathdb.service.eda.ss.model.variable.VariableValueIdPair;
 import org.veupathdb.service.eda.ss.model.variable.VariableWithValues;
-import org.veupathdb.service.eda.ss.model.variable.binary.BinaryFilesManager;
 
 import static org.gusdb.fgputil.iterator.IteratorUtil.toIterable;
 import static org.veupathdb.service.eda.ss.model.db.DB.Tables.AttributeValue.Columns.DATE_VALUE_COL_NAME;
@@ -92,6 +93,124 @@ public class FilteredResultFactory {
     }
   }
 
+  public static <T, C extends AutoCloseable> CloseableIterator<T> toCloseableIterator(Iterator<T> iterator,  C... closeables) {
+    return new CloseableIterator<>() {
+      @Override
+      public void close() throws Exception {
+        Arrays.stream(closeables).forEach(closeable -> {
+          try {
+            closeable.close();
+          } catch (Exception e) {
+            LOG.warn("Failed to close closeable.", e);
+          }
+        });
+      }
+
+      @Override
+      public boolean hasNext() {
+        return iterator.hasNext();
+      }
+
+      @Override
+      public T next() {
+        return iterator.next();
+      }
+    };
+  }
+
+  /**
+   * Returns a closeable Iterator that has tabular subset records. The returned maps contain keys with entity/ancestor
+   * column names and variable column names mapping to their respective values.
+   *
+   * The keys returned use variable dot notation.
+   */
+  public static CloseableIterator<Map<String, String>> tabularSubsetIterator(Study study, Entity outputEntity,
+                                                                             List<VariableWithValues> outputVariables,
+                                                                             List<Filter> filters,
+                                                                             BinaryValuesStreamer binaryValuesStreamer,
+                                                                             boolean fileBasedEnabled, DataSource dataSource,
+                                                                             String appDbSchema) {
+    if (fileBasedEnabled) {
+      return fileTabularSubsetIterator(study, outputEntity, outputVariables, filters, binaryValuesStreamer);
+    } else {
+      return oracleTabularSubsetIterator(dataSource, appDbSchema, study, outputEntity, outputVariables, filters);
+    }
+  }
+
+  /**
+   * File-based implementation of tabular record iterator.
+   */
+  private static CloseableIterator<Map<String, String>> fileTabularSubsetIterator(Study study, Entity outputEntity,
+                                                                                  List<VariableWithValues> outputVariables, List<Filter> filters,
+                                                                                  BinaryValuesStreamer binaryValuesStreamer) {
+    final DataFlowTreeFactory dataFlowTreeFactory = new DataFlowTreeFactory();
+    final EntityIdIndexIteratorConverter idIndexEntityConverter = new EntityIdIndexIteratorConverter(binaryValuesStreamer);
+    final TreeNode<Entity> prunedEntityTree = pruneTree(study.getEntityTree(), filters, outputEntity);
+    final TreeNode<DataFlowNodeContents> dataFlowTree = dataFlowTreeFactory.create(
+        prunedEntityTree, outputEntity, filters, outputVariables, study);
+
+    List<String> outputColumns = getTabularOutputColumns(outputEntity, outputVariables);
+
+    final DataFlowTreeReducer driver = new DataFlowTreeReducer(idIndexEntityConverter, binaryValuesStreamer);
+    try {
+      // Retrieve stream of ID Indexes with all filters applied by traversing the map reduce data flow tree.
+      final CloseableIterator<Long> idIndexStream = driver.reduce(dataFlowTree);
+
+      // Open streams of output variables and ancestors identifiers used to decorate ID index stream to produce tabular records.
+      List<ValueStream<String>> outputVarStreams = new ArrayList<>();
+      for (Variable outputVar : outputVariables) {
+        VariableWithValues<?> varWithVals = (VariableWithValues<?>) outputVar;
+        TabularValueFormatter valFormatter = varWithVals.getIsMultiValued() ? new MultiValueFormatter() : new SingleValueFormatter();
+        // ValueStream should be UTF-8 byte arrays.
+        ValueStream<String> valStream = new ValueStream<>(
+            binaryValuesStreamer.streamUnformattedIdValueBinaryPairs(study, varWithVals), valFormatter);
+        outputVarStreams.add(valStream);
+      }
+
+      final CloseableIterator<VariableValueIdPair<List<String>>> idsMapStream = binaryValuesStreamer.streamIdMapAsStrings(outputEntity, study);
+
+      return new UnformattedTabularRecordStreamer(
+          outputVarStreams,
+          idIndexStream,
+          idsMapStream,
+          outputColumns
+      );
+    } catch (IOException e) {
+      throw new RuntimeException(e);
+    }
+  }
+
+  /**
+   * Oracle-based implementation of tabular record iterator.
+   */
+  private static CloseableIterator<Map<String, String>> oracleTabularSubsetIterator(DataSource dataSource, String appDbSchema, Study study, Entity outputEntity,
+                                                                                   List<VariableWithValues> outputVariables, List<Filter> filters) {
+    TreeNode<Entity> prunedEntityTree = pruneTree(study.getEntityTree(), filters, outputEntity);
+
+    String sql = generateTabularSqlForTallRows(appDbSchema, outputVariables, outputEntity, filters, prunedEntityTree);
+    LOG.debug("Generated the following tabular SQL: " + sql);
+
+    // gather the output columns; these will be used for the standard header and to look up DB column values
+    List<String> outputColumns = getTabularOutputColumns(outputEntity, outputVariables);
+
+    try {
+      Connection connection = dataSource.getConnection();
+      return new SQLRunner(connection, sql, "Produce tabular subset").setNotResponsibleForClosing().executeQuery(rs -> {
+        try {
+          return toCloseableIterator(
+              iteratorFromWideResult(
+                  convertTallRowsResultSet(rs, outputEntity), outputEntity, outputColumns), rs, connection);
+        }
+        catch (Exception e) {
+          LOG.warn("Exception, ", e);
+          throw new RuntimeException("Unable to write result", e);
+        }
+      }, FETCH_SIZE_FOR_TABULAR_QUERIES);
+    } catch (SQLException e) {
+      throw new RuntimeException(e);
+    }
+  }
+
   public static void produceTabularSubset(DataSource dataSource, String appDbSchema, Study study, Entity outputEntity,
                                           List<VariableWithValues> outputVariables, List<Filter> filters,
                                           TabularReportConfig reportConfig, ResultConsumer resultConsumer) {
@@ -119,6 +238,7 @@ public class FilteredResultFactory {
         // write header row
         resultConsumer.consumeRow(usePrettyHeader ? getTabularPrettyHeaders(outputEntity, outputVariables) : outputColumns);
 
+        LOG.info("Running SQL");
         if (reportConfig.requiresSorting())
           writeWideRowsFromWideResult(rs, resultConsumer, outputColumns, outputEntity, trimTimeFromDateVars);
         else
@@ -128,7 +248,7 @@ public class FilteredResultFactory {
         resultConsumer.end();
         return null;
       }
-      catch (IOException e) {
+      catch (Exception e) {
         throw new RuntimeException("Unable to write result", e);
       }
     }, FETCH_SIZE_FOR_TABULAR_QUERIES);
@@ -177,12 +297,12 @@ public class FilteredResultFactory {
       final CloseableIterator<Long> idIndexStream = driver.reduce(dataFlowTree);
 
       // Open streams of output variables and ancestors identifiers used to decorate ID index stream to produce tabular records.
-      List<FormattedTabularRecordStreamer.ValueStream<byte[]>> outputVarStreams = new ArrayList<>();
+      List<ValueStream<byte[]>> outputVarStreams = new ArrayList<>();
       for (Variable outputVar: outputVariables) {
         VariableWithValues<?> varWithVals = (VariableWithValues<?>) outputVar;
         TabularValueFormatter valFormatter = varWithVals.getIsMultiValued() ? new MultiValueFormatter() : new SingleValueFormatter();
         // ValueStream should be UTF-8 byte arrays.
-        FormattedTabularRecordStreamer.ValueStream<byte[]> valStream = new FormattedTabularRecordStreamer.ValueStream<>(
+        ValueStream<byte[]> valStream = new ValueStream<>(
             binaryValuesStreamer.streamIdValueBinaryPairs(study, varWithVals, reportConfig), valFormatter);
         outputVarStreams.add(valStream);
       }
@@ -224,11 +344,11 @@ public class FilteredResultFactory {
   }
 
   static <T extends Variable> List<String> getTabularOutputColumns(Entity outputEntity, List<T> outputVariables) {
-    return getTabularOutputColumns(outputEntity, outputVariables, Variable::getId);
+    return getTabularOutputColumns(outputEntity, outputVariables, var -> var.getEntityId() + "." + var.getId());
   }
 
   static <T extends Variable> List<String> getTabularOutputColumns(Entity outputEntity, List<T> outputVariables, Function<Variable, String> varMapper) {
-    return getColumns(outputEntity, outputVariables, Entity::getPKColName, varMapper);
+    return getColumns(outputEntity, outputVariables, e -> e.getId() + "." + e.getPKColName(), varMapper);
   }
 
 
@@ -261,6 +381,20 @@ public class FilteredResultFactory {
         .collect(Collectors.toList());
   }
 
+  static Iterator<Map<String, String>> iteratorFromWideResult(Iterator<Map<String, String>> tallRowsIterator,
+                                     Entity outputEntity, List<String> headers) {
+    // an iterator of lists of maps, each list being the rows of the tall table returned for a single entity id
+    String pkCol = outputEntity.getPKColName();
+    Iterator<List<Map<String, String>>> groupedTallRowsIterator = new GroupingIterator<>(
+        tallRowsIterator, (row1, row2) -> row1.get(pkCol).equals(row2.get(pkCol)));
+
+    // iterate through groups and format into strings to be written to stream
+    return IteratorUtil.transform(
+        groupedTallRowsIterator, group -> TallRowConversionUtils.getTallToWideFunction(outputEntity, headers,
+            Entity::getPKColDotNotation, Variable::getDotNotation).apply(group));
+  }
+
+
   static void writeWideRowsFromTallResult(Iterator<Map<String, String>> tallRowsIterator,
                                           ResultConsumer resultConsumer, List<String> outputColumns,
                                           Entity outputEntity, boolean trimTimeFromDateVars) throws IOException {
@@ -287,6 +421,7 @@ public class FilteredResultFactory {
         // add to row
         wideRow.add(value);
       }
+      LOG.info("Writing row.");
       resultConsumer.consumeRow(wideRow);
     }
   }
@@ -709,7 +844,7 @@ order by number_value desc;
               .map(pk -> outputEntity.getId() + "." + pk)
               .collect(Collectors.toList()));
     }
-    return "  SELECT distinct " + returnedCols.stream().collect(Collectors.joining(", "));
+    return "  SELECT distinct " + String.join(", ", returnedCols);
   }
 
   static String generateJoiningFromClause(TreeNode<Entity> prunedEntityTree) {

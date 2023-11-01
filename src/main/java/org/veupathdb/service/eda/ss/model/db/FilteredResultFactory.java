@@ -121,6 +121,8 @@ public class FilteredResultFactory {
   /**
    * Returns a closeable Iterator that has tabular subset records. The returned maps contain keys with entity/ancestor
    * column names and variable column names mapping to their respective values.
+   *
+   * The keys returned use variable dot notation.
    */
   public static CloseableIterator<Map<String, String>> tabularSubsetIterator(Study study, Entity outputEntity,
                                                                              List<VariableWithValues> outputVariables,
@@ -195,7 +197,9 @@ public class FilteredResultFactory {
       Connection connection = dataSource.getConnection();
       return new SQLRunner(connection, sql, "Produce tabular subset").setNotResponsibleForClosing().executeQuery(rs -> {
         try {
-          return toCloseableIterator(iteratorFromWideResult(convertTallRowsResultSet(rs, outputEntity), outputEntity, outputColumns), rs, connection);
+          return toCloseableIterator(
+              iteratorFromWideResult(
+                  convertTallRowsResultSet(rs, outputEntity), outputEntity, outputColumns), rs, connection);
         }
         catch (Exception e) {
           LOG.warn("Exception, ", e);

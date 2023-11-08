@@ -421,7 +421,6 @@ public class FilteredResultFactory {
         // add to row
         wideRow.add(value);
       }
-      LOG.info("Writing row.");
       resultConsumer.consumeRow(wideRow);
     }
   }

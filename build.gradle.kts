@@ -7,7 +7,7 @@
 
 // Project settings
 group   = "org.veupathdb.eda"
-version = "4.11.1-package-rename"
+version = "4.11.2-package-rename"
 
 plugins {
   `java-library`

@@ -1,5 +1,7 @@
 package org.veupathdb.service.eda.ss.model.db;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.gusdb.fgputil.db.runner.SQLRunner;
 import org.veupathdb.service.eda.ss.model.Entity;
 import org.veupathdb.service.eda.ss.model.distribution.DateDistributionConfig;
@@ -20,6 +22,8 @@ import static org.veupathdb.service.eda.ss.model.db.DB.Tables.AttributeGraph.Col
 import static org.veupathdb.service.eda.ss.model.db.ResultSetUtils.*;
 
 public class VariableFactory {
+
+  private static final Logger LOG = LogManager.getLogger(VariableFactory.class);
 
   private final DataSource _dataSource;
   private final String _appDbSchema;
@@ -84,8 +88,10 @@ public class VariableFactory {
         getRsOptionalString(rs, DEFINITION_COL_NAME, ""),
         parseJsonArrayOfString(rs, HIDE_FROM_COL_NAME));
     // Only set binary properties if binaryMetadataProvider is present.
+    LOG.info("Is binaryMetadataProvider present? " + binaryMetadataProvider.isPresent());
     Optional<BinaryProperties> binaryProperties = binaryMetadataProvider.flatMap(provider ->
         provider.getBinaryProperties(entity.getStudyAbbrev(), entity, varProps.id));
+    LOG.info("Could find binary properies for study " + entity.getStudyAbbrev() + ", entity " + entity.getId() + "? " + binaryProperties.isPresent());
     return getRsRequiredBoolean(rs, HAS_VALUES_COL_NAME)
         ? createValueVarFromResultSet(rs, varProps, binaryProperties.orElse(null))
         : new VariablesCategory(varProps);

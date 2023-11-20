@@ -2,15 +2,13 @@ package org.veupathdb.service.eda.ss.model.variable;
 
 import jakarta.ws.rs.BadRequestException;
 import org.gusdb.fgputil.FormatUtil;
-import org.veupathdb.service.eda.ss.Utils;
 import org.veupathdb.service.eda.ss.model.tabular.TabularReportConfig;
 import org.veupathdb.service.eda.ss.model.variable.binary.BinaryConverter;
 import org.veupathdb.service.eda.ss.model.variable.binary.ByteArrayConverter;
 import org.veupathdb.service.eda.ss.model.variable.binary.StringValueConverter;
 
-import java.util.Arrays;
-
 public class StringVariable extends VariableWithValues<byte[]> {
+
   private final StringBinaryProperties binaryProperties;
 
   public StringVariable(Variable.Properties varProperties,

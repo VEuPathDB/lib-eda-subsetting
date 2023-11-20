@@ -72,12 +72,14 @@ public class BinaryFilesManager {
   public boolean studyHasFiles(String studyAbbrev) {
     final Optional<Path> studyDir = getStudyDirIfExists(studyAbbrev);
     if (studyDir.isEmpty()) {
+      LOG.info("Looked for study dir for " + studyAbbrev + " but could not find it.");
       return false;
     }
     if (!getDoneFile(studyDir.get(), Operation.READ).toFile().exists()) {
       LOG.debug("Study directory for study {} exists but data is incomplete.", studyAbbrev);
       return false;
     }
+    LOG.info("Looked for study dir for " + studyAbbrev + " and found it. studyHasFiles() will return true");
     return true;
   }
 
@@ -300,6 +302,7 @@ public class BinaryFilesManager {
 
   private Optional<Path> getStudyDirIfExists(String studyAbbrev) {
     Path studyDir = studyFinder.findStudyPath(getStudyDirName(studyAbbrev));
+    LOG.info("Looking for study dir " + studyDir.toString());
     if (!Files.isDirectory(studyDir)) return Optional.empty();
     return Optional.of(studyDir);
   }

@@ -75,7 +75,7 @@ public class StudyFactory implements StudyProvider {
     CollectionFactory collectionFactory = new CollectionFactory(_dataSource, _dataSchema);
 
     for (Entity entity : entityIdMap.values()) {
-      entity.assignVariables(_variableFactory.loadVariables(studyId, entity));
+      entity.assignVariables(_variableFactory.loadVariables(overview.getInternalAbbrev(), entity));
       if (entity.hasCollections()) {
         LOG.info("Entity " + entity.getId() + " has collections.  Loading them...");
         entity.assignCollections(collectionFactory.loadCollections(entity));

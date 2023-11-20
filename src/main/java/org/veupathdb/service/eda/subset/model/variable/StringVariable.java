@@ -8,6 +8,7 @@ import org.veupathdb.service.eda.subset.model.variable.binary.ByteArrayConverter
 import org.veupathdb.service.eda.subset.model.variable.binary.StringValueConverter;
 
 public class StringVariable extends VariableWithValues<byte[]> {
+
   private final StringBinaryProperties binaryProperties;
 
   public StringVariable(Variable.Properties varProperties,

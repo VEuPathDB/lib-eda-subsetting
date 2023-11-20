@@ -1,5 +1,7 @@
 package org.veupathdb.service.eda.subset.model.db;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.gusdb.fgputil.db.runner.SQLRunner;
 import org.veupathdb.service.eda.subset.model.Entity;
 import org.veupathdb.service.eda.subset.model.distribution.DateDistributionConfig;
@@ -28,8 +30,12 @@ import java.util.Optional;
 import java.util.function.Function;
 
 import static org.gusdb.fgputil.FormatUtil.NL;
+import static org.veupathdb.service.eda.subset.model.db.DB.Tables.AttributeGraph.Columns.*;
+import static org.veupathdb.service.eda.subset.model.db.ResultSetUtils.*;
 
 public class VariableFactory {
+
+  private static final Logger LOG = LogManager.getLogger(VariableFactory.class);
 
   private final DataSource _dataSource;
   private final String _appDbSchema;
@@ -84,19 +90,21 @@ public class VariableFactory {
    */
   static Variable createVariableFromResultSet(ResultSet rs, Entity entity, Optional<BinaryMetadataProvider> binaryMetadataProvider) throws SQLException {
     Variable.Properties varProps = new Variable.Properties(
-        ResultSetUtils.getRsOptionalString(rs, DB.Tables.AttributeGraph.Columns.PROVIDER_LABEL_COL_NAME, "No Provider Label available"), // TODO remove hack when in db
-        ResultSetUtils.getRsRequiredString(rs, DB.Tables.AttributeGraph.Columns.VARIABLE_ID_COL_NAME),
+        getRsOptionalString(rs, PROVIDER_LABEL_COL_NAME, "No Provider Label available"), // TODO remove hack when in db
+        getRsRequiredString(rs, VARIABLE_ID_COL_NAME),
         entity,
-        VariableDisplayType.fromString(ResultSetUtils.getRsOptionalString(rs, DB.Tables.AttributeGraph.Columns.DISPLAY_TYPE_COL_NAME, VariableDisplayType.DEFAULT.getType())),
-        ResultSetUtils.getRsRequiredString(rs, DB.Tables.AttributeGraph.Columns.DISPLAY_NAME_COL_NAME),
-        ResultSetUtils.getRsOptionalLong(rs, DB.Tables.AttributeGraph.Columns.DISPLAY_ORDER_COL_NAME, null),
-        ResultSetUtils.getRsOptionalString(rs, DB.Tables.AttributeGraph.Columns.VARIABLE_PARENT_ID_COL_NAME, null),
-        ResultSetUtils.getRsOptionalString(rs, DB.Tables.AttributeGraph.Columns.DEFINITION_COL_NAME, ""),
-        ResultSetUtils.parseJsonArrayOfString(rs, DB.Tables.AttributeGraph.Columns.HIDE_FROM_COL_NAME));
+        VariableDisplayType.fromString(getRsOptionalString(rs, DISPLAY_TYPE_COL_NAME, VariableDisplayType.DEFAULT.getType())),
+        getRsRequiredString(rs, DISPLAY_NAME_COL_NAME),
+        getRsOptionalLong(rs, DISPLAY_ORDER_COL_NAME, null),
+        getRsOptionalString(rs, VARIABLE_PARENT_ID_COL_NAME, null),
+        getRsOptionalString(rs, DEFINITION_COL_NAME, ""),
+        parseJsonArrayOfString(rs, HIDE_FROM_COL_NAME));
     // Only set binary properties if binaryMetadataProvider is present.
+    LOG.info("Is binaryMetadataProvider present? " + binaryMetadataProvider.isPresent());
     Optional<BinaryProperties> binaryProperties = binaryMetadataProvider.flatMap(provider ->
         provider.getBinaryProperties(entity.getStudyAbbrev(), entity, varProps.id));
-    return ResultSetUtils.getRsRequiredBoolean(rs, DB.Tables.AttributeGraph.Columns.HAS_VALUES_COL_NAME)
+    LOG.info("Could find binary properies for study " + entity.getStudyAbbrev() + ", entity " + entity.getId() + "? " + binaryProperties.isPresent());
+    return getRsRequiredBoolean(rs, HAS_VALUES_COL_NAME)
         ? createValueVarFromResultSet(rs, varProps, binaryProperties.orElse(null))
         : new VariablesCategory(varProps);
   }
@@ -106,17 +114,17 @@ public class VariableFactory {
                                               BinaryProperties binaryProperties) {
     try {
       VariableWithValues.Properties valueProps = new VariableWithValues.Properties(
-          VariableType.fromString(ResultSetUtils.getRsRequiredString(rs, DB.Tables.AttributeGraph.Columns.VARIABLE_TYPE_COL_NAME)),
-          VariableDataShape.fromString(ResultSetUtils.getRsRequiredString(rs, DB.Tables.AttributeGraph.Columns.DATA_SHAPE_COL_NAME)),
-          ResultSetUtils.parseJsonArrayOfString(rs, DB.Tables.AttributeGraph.Columns.VOCABULARY_COL_NAME),
-          rs.getLong(DB.Tables.AttributeGraph.Columns.DISTINCT_VALUES_COUNT_COL_NAME),
-          rs.getBoolean(DB.Tables.AttributeGraph.Columns.IS_TEMPORAL_COL_NAME),
-          rs.getBoolean(DB.Tables.AttributeGraph.Columns.IS_FEATURED_COL_NAME),
-          rs.getBoolean(DB.Tables.AttributeGraph.Columns.IS_MERGE_KEY_COL_NAME),
-          rs.getBoolean(DB.Tables.AttributeGraph.Columns.IS_MULTI_VALUED_COL_NAME),
-          rs.getBoolean(DB.Tables.AttributeGraph.Columns.IMPUTE_ZERO),
-          rs.getBoolean(DB.Tables.AttributeGraph.Columns.HAS_STUDY_DEPENDENT_VOCABULARY),
-          rs.getString(DB.Tables.AttributeGraph.Columns.VARIABLE_SPEC_TO_IMPUTE_ZEROES_FOR));
+          VariableType.fromString(getRsRequiredString(rs, VARIABLE_TYPE_COL_NAME)),
+          VariableDataShape.fromString(getRsRequiredString(rs, DATA_SHAPE_COL_NAME)),
+          parseJsonArrayOfString(rs, VOCABULARY_COL_NAME),
+          rs.getLong(DISTINCT_VALUES_COUNT_COL_NAME),
+          rs.getBoolean(IS_TEMPORAL_COL_NAME),
+          rs.getBoolean(IS_FEATURED_COL_NAME),
+          rs.getBoolean(IS_MERGE_KEY_COL_NAME),
+          rs.getBoolean(IS_MULTI_VALUED_COL_NAME),
+          rs.getBoolean(IMPUTE_ZERO),
+          rs.getBoolean(HAS_STUDY_DEPENDENT_VOCABULARY),
+          rs.getString(VARIABLE_SPEC_TO_IMPUTE_ZEROES_FOR));
 
       switch(valueProps.type) {
 
@@ -125,7 +133,7 @@ public class VariableFactory {
 
         case LONGITUDE: return
             new LongitudeVariable(varProps, valueProps, new LongitudeVariable.Properties(
-                ResultSetUtils.getRsOptionalLong(rs, DB.Tables.AttributeGraph.Columns.PRECISION_COL_NAME, 1L)
+                getRsOptionalLong(rs, PRECISION_COL_NAME, 1L)
             ));
 
         case INTEGER: return
@@ -148,15 +156,15 @@ public class VariableFactory {
 
   public static IntegerVariable.Properties createIntegerProperties(ResultSet rs) throws SQLException {
     return new IntegerVariable.Properties(
-        ResultSetUtils.getRsOptionalString(rs, DB.Tables.AttributeGraph.Columns.UNITS_COL_NAME, "")
+        getRsOptionalString(rs, UNITS_COL_NAME, "")
     );
   }
 
   public static FloatingPointVariable.Properties createFloatProperties(ResultSet rs, boolean sqlContainsScale) throws SQLException {
     return new FloatingPointVariable.Properties(
-        ResultSetUtils.getRsOptionalString(rs, DB.Tables.AttributeGraph.Columns.UNITS_COL_NAME, ""),
-        ResultSetUtils.getRsOptionalLong(rs, DB.Tables.AttributeGraph.Columns.PRECISION_COL_NAME, 1L),
-        VariableScale.findByValue(sqlContainsScale ? ResultSetUtils.getRsOptionalString(rs, DB.Tables.AttributeGraph.Columns.SCALE_COL_NAME, null) : null)
+        getRsOptionalString(rs, UNITS_COL_NAME, ""),
+        getRsOptionalLong(rs, PRECISION_COL_NAME, 1L),
+        VariableScale.findByValue(sqlContainsScale ? getRsOptionalString(rs, SCALE_COL_NAME, null) : null)
     );
   }
 
@@ -164,37 +172,37 @@ public class VariableFactory {
       VariableDataShape dataShape, ResultSet rs, boolean includeBinInfo) throws SQLException {
     return new DateDistributionConfig(includeBinInfo,
         dataShape,
-        ResultSetUtils.getRsOptionalString(rs, DB.Tables.AttributeGraph.Columns.DISPLAY_RANGE_MIN_COL_NAME, null),
-        ResultSetUtils.getRsOptionalString(rs, DB.Tables.AttributeGraph.Columns.DISPLAY_RANGE_MAX_COL_NAME, null),
-        ResultSetUtils.getRsRequiredString(rs, DB.Tables.AttributeGraph.Columns.RANGE_MIN_COL_NAME),
-        ResultSetUtils.getRsRequiredString(rs, DB.Tables.AttributeGraph.Columns.RANGE_MAX_COL_NAME),
+        getRsOptionalString(rs, DISPLAY_RANGE_MIN_COL_NAME, null),
+        getRsOptionalString(rs, DISPLAY_RANGE_MAX_COL_NAME, null),
+        getRsRequiredString(rs, RANGE_MIN_COL_NAME),
+        getRsRequiredString(rs, RANGE_MAX_COL_NAME),
         1,
-        includeBinInfo ? ResultSetUtils.getRsRequiredString(rs, DB.Tables.AttributeGraph.Columns.BIN_WIDTH_COMPUTED_COL_NAME) : null,
-        includeBinInfo ? ResultSetUtils.getRsOptionalString(rs, DB.Tables.AttributeGraph.Columns.BIN_WIDTH_OVERRIDE_COL_NAME, null) : null
+        includeBinInfo ? getRsRequiredString(rs, BIN_WIDTH_COMPUTED_COL_NAME) : null,
+        includeBinInfo ? getRsOptionalString(rs, BIN_WIDTH_OVERRIDE_COL_NAME, null) : null
     );
   }
 
   public static NumberDistributionConfig<Double> createFloatDistributionConfig(
       ResultSet rs, boolean includeBinInfo) throws SQLException {
     return new NumberDistributionConfig<>(
-        ResultSetUtils.getDoubleFromString(rs, DB.Tables.AttributeGraph.Columns.DISPLAY_RANGE_MIN_COL_NAME, false),
-        ResultSetUtils.getDoubleFromString(rs, DB.Tables.AttributeGraph.Columns.DISPLAY_RANGE_MAX_COL_NAME, false),
-        ResultSetUtils.getDoubleFromString(rs, DB.Tables.AttributeGraph.Columns.RANGE_MIN_COL_NAME, true),
-        ResultSetUtils.getDoubleFromString(rs, DB.Tables.AttributeGraph.Columns.RANGE_MAX_COL_NAME, true),
-        includeBinInfo ? ResultSetUtils.getDoubleFromString(rs, DB.Tables.AttributeGraph.Columns.BIN_WIDTH_COMPUTED_COL_NAME, true) : null,
-        includeBinInfo ? ResultSetUtils.getDoubleFromString(rs, DB.Tables.AttributeGraph.Columns.BIN_WIDTH_OVERRIDE_COL_NAME, false) : null
+        getDoubleFromString(rs, DISPLAY_RANGE_MIN_COL_NAME, false),
+        getDoubleFromString(rs, DISPLAY_RANGE_MAX_COL_NAME, false),
+        getDoubleFromString(rs, RANGE_MIN_COL_NAME, true),
+        getDoubleFromString(rs, RANGE_MAX_COL_NAME, true),
+        includeBinInfo ? getDoubleFromString(rs, BIN_WIDTH_COMPUTED_COL_NAME, true) : null,
+        includeBinInfo ? getDoubleFromString(rs, BIN_WIDTH_OVERRIDE_COL_NAME, false) : null
     );
   }
 
   public static NumberDistributionConfig<Long> createIntegerDistributionConfig(
       ResultSet rs, boolean includeBinInfo) throws SQLException {
     return new NumberDistributionConfig<>(
-        ResultSetUtils.getIntegerFromString(rs, DB.Tables.AttributeGraph.Columns.DISPLAY_RANGE_MIN_COL_NAME, false),
-        ResultSetUtils.getIntegerFromString(rs, DB.Tables.AttributeGraph.Columns.DISPLAY_RANGE_MAX_COL_NAME, false),
-        ResultSetUtils.getIntegerFromString(rs, DB.Tables.AttributeGraph.Columns.RANGE_MIN_COL_NAME, true),
-        ResultSetUtils.getIntegerFromString(rs, DB.Tables.AttributeGraph.Columns.RANGE_MAX_COL_NAME, true),
-        includeBinInfo ? ResultSetUtils.getIntegerFromString(rs, DB.Tables.AttributeGraph.Columns.BIN_WIDTH_COMPUTED_COL_NAME, true) : null,
-        includeBinInfo ? ResultSetUtils.getIntegerFromString(rs, DB.Tables.AttributeGraph.Columns.BIN_WIDTH_OVERRIDE_COL_NAME, false) : null
+        getIntegerFromString(rs, DISPLAY_RANGE_MIN_COL_NAME, false),
+        getIntegerFromString(rs, DISPLAY_RANGE_MAX_COL_NAME, false),
+        getIntegerFromString(rs, RANGE_MIN_COL_NAME, true),
+        getIntegerFromString(rs, RANGE_MAX_COL_NAME, true),
+        includeBinInfo ? getIntegerFromString(rs, BIN_WIDTH_COMPUTED_COL_NAME, true) : null,
+        includeBinInfo ? getIntegerFromString(rs, BIN_WIDTH_OVERRIDE_COL_NAME, false) : null
     );
   }
 }

@@ -40,6 +40,8 @@ public class MetadataFileBinaryProvider implements BinaryMetadataProvider {
             LOG.error("Unable to find metadata object for study '" + studyAbbrev + "', entity '" + entity.getId() + "', and variable '" + variableId + "' in metadata file.");
             return Optional.empty();
         }
-        return Optional.of(varMetadata.get().getProperties());
+        BinaryProperties binaryProperties = varMetadata.get().getProperties();
+        LOG.info("Returning binary properties for  study '" + studyAbbrev + "', entity '" + entity.getId() + "', and variable '" + variableId + "': " + binaryProperties);
+        return Optional.of(binaryProperties);
     }
 }

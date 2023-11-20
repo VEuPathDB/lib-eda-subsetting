@@ -2,6 +2,7 @@ package org.veupathdb.service.eda.subset.model.db;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.gusdb.fgputil.FormatUtil;
 import org.gusdb.fgputil.db.runner.SQLRunner;
 import org.veupathdb.service.eda.subset.model.Entity;
 import org.veupathdb.service.eda.subset.model.distribution.DateDistributionConfig;
@@ -48,6 +49,10 @@ public class VariableFactory {
                          Function<String, Boolean> shouldAppendMetaForStudy) {
     _dataSource = dataSource;
     _appDbSchema = appDbSchema;
+    LOG.info("Is binaryMetadataProvider null? " + (binaryMetadataProvider == null));
+    if (binaryMetadataProvider == null) {
+      LOG.info("How??\n" + FormatUtil.getCurrentStackTrace());
+    }
     _binaryMetadataProvider = Optional.ofNullable(binaryMetadataProvider);
     _shouldAppendMetaForStudy = shouldAppendMetaForStudy;
   }
@@ -57,7 +62,12 @@ public class VariableFactory {
 
     String sql = generateStudyVariablesListSql(entity, _appDbSchema);
 
-    Optional<BinaryMetadataProvider> metadataProvider = _shouldAppendMetaForStudy.apply(studyAbbrev)
+    // this will be empty IFF
+    //   1. binaryMetadataProvider passed to the constructor above is null, or
+    //   2. _shouldAppendMetaForStudy returns false when called on the next line
+    boolean appendMetaForStudy = _shouldAppendMetaForStudy.apply(studyAbbrev);
+    LOG.info("Result of _shouldAppendMetaForStudy when called with " + studyAbbrev + "? " + appendMetaForStudy);
+    Optional<BinaryMetadataProvider> metadataProvider = appendMetaForStudy
         ? _binaryMetadataProvider
         : Optional.empty();
 

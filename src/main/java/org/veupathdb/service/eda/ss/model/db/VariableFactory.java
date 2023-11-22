@@ -1,8 +1,5 @@
 package org.veupathdb.service.eda.ss.model.db;
 
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
-import org.gusdb.fgputil.FormatUtil;
 import org.gusdb.fgputil.db.runner.SQLRunner;
 import org.veupathdb.service.eda.ss.model.Entity;
 import org.veupathdb.service.eda.ss.model.distribution.DateDistributionConfig;
@@ -24,8 +21,6 @@ import static org.veupathdb.service.eda.ss.model.db.ResultSetUtils.*;
 
 public class VariableFactory {
 
-  private static final Logger LOG = LogManager.getLogger(VariableFactory.class);
-
   private final DataSource _dataSource;
   private final String _appDbSchema;
   private final Optional<BinaryMetadataProvider> _binaryMetadataProvider;
@@ -37,10 +32,6 @@ public class VariableFactory {
                          Function<String, Boolean> shouldAppendMetaForStudy) {
     _dataSource = dataSource;
     _appDbSchema = appDbSchema;
-    LOG.info("Is binaryMetadataProvider null? " + (binaryMetadataProvider == null));
-    if (binaryMetadataProvider == null) {
-      LOG.info("How??\n" + FormatUtil.getCurrentStackTrace());
-    }
     _binaryMetadataProvider = Optional.ofNullable(binaryMetadataProvider);
     _shouldAppendMetaForStudy = shouldAppendMetaForStudy;
   }
@@ -50,11 +41,10 @@ public class VariableFactory {
 
     String sql = generateStudyVariablesListSql(entity, _appDbSchema);
 
-    // this will be empty IFF
+    // metadataProvider will be empty IFF
     //   1. binaryMetadataProvider passed to the constructor above is null, or
     //   2. _shouldAppendMetaForStudy returns false when called on the next line
     boolean appendMetaForStudy = _shouldAppendMetaForStudy.apply(studyAbbrev);
-    LOG.info("Result of _shouldAppendMetaForStudy when called with " + studyAbbrev + "? " + appendMetaForStudy);
     Optional<BinaryMetadataProvider> metadataProvider = appendMetaForStudy
         ? _binaryMetadataProvider
         : Optional.empty();
@@ -98,10 +88,8 @@ public class VariableFactory {
         getRsOptionalString(rs, DEFINITION_COL_NAME, ""),
         parseJsonArrayOfString(rs, HIDE_FROM_COL_NAME));
     // Only set binary properties if binaryMetadataProvider is present.
-    LOG.info("Is binaryMetadataProvider present? " + binaryMetadataProvider.isPresent());
     Optional<BinaryProperties> binaryProperties = binaryMetadataProvider.flatMap(provider ->
         provider.getBinaryProperties(entity.getStudyAbbrev(), entity, varProps.id));
-    LOG.info("Could find binary properies for study " + entity.getStudyAbbrev() + ", entity " + entity.getId() + "? " + binaryProperties.isPresent());
     return getRsRequiredBoolean(rs, HAS_VALUES_COL_NAME)
         ? createValueVarFromResultSet(rs, varProps, binaryProperties.orElse(null))
         : new VariablesCategory(varProps);

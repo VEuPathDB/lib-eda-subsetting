@@ -1,6 +1,7 @@
 package org.veupathdb.service.eda.ss.model.variable;
 
 import jakarta.ws.rs.BadRequestException;
+import org.veupathdb.service.eda.ss.Utils;
 import org.veupathdb.service.eda.ss.model.distribution.NumberDistributionConfig;
 import org.veupathdb.service.eda.ss.model.tabular.TabularReportConfig;
 import org.veupathdb.service.eda.ss.model.variable.binary.BinaryConverter;
@@ -64,16 +65,8 @@ public class FloatingPointVariable extends NumberVariable<Double> {
 
   @Override
   public BinaryConverter<String> getStringConverter() {
-    // Floating point values are greater than 1e7 are displayed in scientific notation. For this reason, the maximum
-    // size of our string is our precision + 3 bytes for the integer part of the decimal, the "e" in scientific notation
-    // and the integer part of our value. We also reserve 4 bytes for the size of the padded string.
-    int integerPartBytes = Integer.toString(_distributionConfig.getRangeMax().intValue()).getBytes(StandardCharsets.UTF_8).length;
-    int numBytesReservedForIntPart = Math.min(integerPartBytes, MAX_DIGITS_BEFORE_SCIENTIFIC_NOTATION); // After 7 digits, we start using scientific notation
-    int bytesReservedForIntegerPartOrScientificNotation = Math.max(numBytesReservedForIntPart, BYTE_COUNT_FOR_INTEGER_DECIMAL_AND_EXP_CHAR);
-    return new StringValueConverter(Integer.BYTES // Reserved for all padded strings
-        + bytesReservedForIntegerPartOrScientificNotation // Reserved for integer part and/or left part of scientific notation.
-        + getPrecision().intValue() // Plus space for decimal part.
-        + 1); // Plus one for decimal point.
+    int maxLengthOfIntegralPart = Math.max(Math.abs(_distributionConfig.getRangeMax().intValue()), Math.abs(_distributionConfig.getRangeMin().intValue()));
+    return Utils.getFloatingPointUtf8Converter(maxLengthOfIntegralPart, getPrecision().intValue());
   }
 
   @Override

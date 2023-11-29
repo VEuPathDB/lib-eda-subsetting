@@ -1,6 +1,7 @@
 package org.veupathdb.service.eda.ss.model.variable;
 
 import jakarta.ws.rs.BadRequestException;
+import org.veupathdb.service.eda.ss.Utils;
 import org.veupathdb.service.eda.ss.model.tabular.TabularReportConfig;
 import org.veupathdb.service.eda.ss.model.variable.binary.BinaryConverter;
 import org.veupathdb.service.eda.ss.model.variable.binary.DoubleValueConverter;
@@ -47,10 +48,7 @@ public class LongitudeVariable extends VariableWithValues<Double> {
 
   @Override
   public BinaryConverter<String> getStringConverter() {
-    // Floating point values are greater than 1e7 are displayed in scientific notation. For this reason, the maximum
-    // size of our string is our precision + 3 bytes for the integer part of the decimal, the "e" in scientific notation
-    // and the integer part of our value. We also reserve 4 bytes for the size of the padded string.
-    return new StringValueConverter(Integer.BYTES + BYTE_COUNT_FOR_INTEGER_DECIMAL_AND_EXP_CHAR + getPrecision().intValue());
+    return Utils.getFloatingPointUtf8Converter(180, getPrecision().intValue());
   }
 
   @Override

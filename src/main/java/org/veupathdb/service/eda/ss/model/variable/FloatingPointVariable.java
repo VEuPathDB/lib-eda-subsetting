@@ -13,8 +13,6 @@ import java.nio.charset.StandardCharsets;
 import java.util.Optional;
 
 public class FloatingPointVariable extends NumberVariable<Double> {
-  private static final int BYTE_COUNT_FOR_INTEGER_DECIMAL_AND_EXP_CHAR = 2;
-  private static final int MAX_DIGITS_BEFORE_SCIENTIFIC_NOTATION = 7;
 
   public static class Properties {
 

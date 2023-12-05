@@ -223,7 +223,7 @@ public class FilteredResultFactory {
     LOG.debug("Generated the following tabular SQL: " + sql);
 
     // gather the output columns; these will be used for the standard header and to look up DB column values
-    List<String> outputColumns = getTabularOutputColumns(outputEntity, outputVariables);
+    List<String> outputColumns = getColumns(outputEntity, outputVariables, Entity::getPKColName, Variable::getId);;
 
     // check if header should contain pretty display values
     boolean usePrettyHeader = reportConfig.getHeaderFormat() == TabularHeaderFormat.DISPLAY;
@@ -279,7 +279,7 @@ public class FilteredResultFactory {
     boolean usePrettyHeader = reportConfig.getHeaderFormat() == TabularHeaderFormat.DISPLAY;
 
     // gather the output columns; these will be used for the standard header and to look up DB column values
-    List<String> outputColumns = getTabularOutputColumns(outputEntity, outputVariables);
+    List<String> outputColumns = getColumns(outputEntity, outputVariables, Entity::getPKColName, Variable::getId);
 
     final DataFlowTreeReducer driver = new DataFlowTreeReducer(idIndexEntityConverter, binaryValuesStreamer);
     try (BufferedOutputStream bufferedOutputStream = new BufferedOutputStream(outputStream)) {

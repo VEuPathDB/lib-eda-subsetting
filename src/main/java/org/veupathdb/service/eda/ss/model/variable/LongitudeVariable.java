@@ -4,10 +4,7 @@ import jakarta.ws.rs.BadRequestException;
 import org.veupathdb.service.eda.ss.model.tabular.TabularReportConfig;
 import org.veupathdb.service.eda.ss.model.variable.binary.BinaryConverter;
 import org.veupathdb.service.eda.ss.model.variable.binary.DoubleValueConverter;
-import org.veupathdb.service.eda.ss.model.variable.binary.EmptyBinaryProperties;
 import org.veupathdb.service.eda.ss.model.variable.binary.StringValueConverter;
-
-import java.nio.charset.StandardCharsets;
 
 public class LongitudeVariable extends VariableWithValues<Double> {
   private static final int BYTE_COUNT_FOR_INTEGER_DECIMAL_AND_EXP_CHAR = 3;
@@ -22,11 +19,13 @@ public class LongitudeVariable extends VariableWithValues<Double> {
   }
 
   private final Properties _properties;
+  private final Utf8EncodingLengthProperties _binaryProperties;
 
-  public LongitudeVariable(Variable.Properties varProps, VariableWithValues.Properties valueProps, Properties properties) {
+  public LongitudeVariable(Variable.Properties varProps, VariableWithValues.Properties valueProps, Properties properties, Utf8EncodingLengthProperties binaryProperties) {
     super(varProps, valueProps);
     validateType(VariableType.LONGITUDE);
     _properties = properties;
+    _binaryProperties = binaryProperties;
   }
 
   // static version for use when we don't have an instance
@@ -36,7 +35,7 @@ public class LongitudeVariable extends VariableWithValues<Double> {
 
   @Override
   public BinaryProperties getBinaryProperties() {
-    return new EmptyBinaryProperties();
+    return _binaryProperties;
   }
 
   // instance method that provides typed return value
@@ -47,6 +46,10 @@ public class LongitudeVariable extends VariableWithValues<Double> {
 
   @Override
   public BinaryConverter<String> getStringConverter() {
+    if (_binaryProperties.getMaxLength() != null) {
+      return new StringValueConverter(_binaryProperties.getMaxLength());
+    }
+    // TODO: Remove this fallback once files are re-generated with new file dumper code.
     // Floating point values are greater than 1e7 are displayed in scientific notation. For this reason, the maximum
     // size of our string is our precision + 3 bytes for the integer part of the decimal, the "e" in scientific notation
     // and the integer part of our value. We also reserve 4 bytes for the size of the padded string.

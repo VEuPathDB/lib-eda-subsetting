@@ -176,7 +176,7 @@ public class TestDataProvider {
       return new StringVariable(
           constructGenericVarProps(entity, variableId),
           constructVarValuesProps(variableType, false),
-          new StringVariable.StringBinaryProperties(maxLength)
+          new Utf8EncodingLengthProperties(maxLength)
       );
     }
   }

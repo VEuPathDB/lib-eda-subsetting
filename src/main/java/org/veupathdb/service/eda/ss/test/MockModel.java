@@ -94,7 +94,7 @@ public class MockModel {
     return new StringVariable(
         new Variable.Properties(label, id, entity, VariableDisplayType.DEFAULT, label, null, null, "Their " + label, Collections.emptyList()),
         new VariableWithValues.Properties(VariableType.STRING, VariableDataShape.CATEGORICAL, vocab, distinctValuesCount, false, false, false, isMultiValued, false, false, null),
-        new StringVariable.StringBinaryProperties(100)
+        new Utf8EncodingLengthProperties(100)
     );
   }
 
@@ -103,7 +103,8 @@ public class MockModel {
         new Variable.Properties(label, id, entity, VariableDisplayType.DEFAULT, label, null, null, "Their " + label, Collections.emptyList()),
         new VariableWithValues.Properties(VariableType.NUMBER, shape, null, distinctValuesCount, false, false, false, isMultiValued, false, false, null),
         new NumberDistributionConfig<>(null, null, null, null, null, null),
-        new FloatingPointVariable.Properties("", 1L, null)
+        new FloatingPointVariable.Properties("", 1L, null),
+        new Utf8EncodingLengthProperties(100)
     );
   }
 

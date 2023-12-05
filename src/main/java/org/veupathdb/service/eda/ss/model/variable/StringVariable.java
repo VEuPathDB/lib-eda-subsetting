@@ -8,12 +8,11 @@ import org.veupathdb.service.eda.ss.model.variable.binary.ByteArrayConverter;
 import org.veupathdb.service.eda.ss.model.variable.binary.StringValueConverter;
 
 public class StringVariable extends VariableWithValues<byte[]> {
-
-  private final StringBinaryProperties binaryProperties;
+  private final Utf8EncodingLengthProperties binaryProperties;
 
   public StringVariable(Variable.Properties varProperties,
                         VariableWithValues.Properties valueProperties,
-                        StringBinaryProperties binaryProperties) {
+                        Utf8EncodingLengthProperties binaryProperties) {
     super(varProperties, valueProperties);
     validateType(VariableType.STRING);
     this.binaryProperties = binaryProperties;
@@ -21,7 +20,7 @@ public class StringVariable extends VariableWithValues<byte[]> {
   
   // static version for use when we don't have an instance
   public static BinaryConverter<byte[]> getGenericBinaryConverter(BinaryProperties binaryProperties) {
-    return new ByteArrayConverter(((StringBinaryProperties) binaryProperties).maxLength);
+    return new ByteArrayConverter(((Utf8EncodingLengthProperties) binaryProperties).getMaxLength());
   }
 
   @Override
@@ -47,7 +46,7 @@ public class StringVariable extends VariableWithValues<byte[]> {
 
   @Override
   public byte[] fromString(String s) {
-    return FormatUtil.stringToPaddedBinary(s, binaryProperties.maxLength);
+    return FormatUtil.stringToPaddedBinary(s, binaryProperties.getMaxLength());
   }
 
   @Override
@@ -61,22 +60,4 @@ public class StringVariable extends VariableWithValues<byte[]> {
         " of entity " + variable.getEntityId() + " is not a string variable.");
   }
 
-  public static class StringBinaryProperties extends BinaryProperties {
-    private int maxLength;
-
-    public StringBinaryProperties() {
-    }
-
-    public StringBinaryProperties(int maxLength) {
-      this.maxLength = maxLength;
-    }
-
-    public int getMaxLength() {
-      return maxLength;
-    }
-
-    public void setMaxLength(int maxLength) {
-      this.maxLength = maxLength;
-    }
-  }
 }

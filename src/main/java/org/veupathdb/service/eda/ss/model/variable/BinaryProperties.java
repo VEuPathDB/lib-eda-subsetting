@@ -8,7 +8,7 @@ import org.veupathdb.service.eda.ss.model.variable.binary.EmptyBinaryProperties;
 @JsonIgnoreProperties(ignoreUnknown = true)
 @JsonTypeInfo(use = JsonTypeInfo.Id.NAME, include = JsonTypeInfo.As.PROPERTY)
 @JsonSubTypes({
-        @JsonSubTypes.Type(value = StringVariable.StringBinaryProperties.class, name = "string"),
+        @JsonSubTypes.Type(value = Utf8EncodingLengthProperties.class, name = "string"),
         @JsonSubTypes.Type(value = EmptyBinaryProperties.class, name = "number"),
         @JsonSubTypes.Type(value = EmptyBinaryProperties.class, name = "date"),
         @JsonSubTypes.Type(value = EmptyBinaryProperties.class, name = "longitude"),

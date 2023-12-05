@@ -5,7 +5,6 @@ import org.veupathdb.service.eda.ss.model.distribution.NumberDistributionConfig;
 import org.veupathdb.service.eda.ss.model.tabular.TabularReportConfig;
 import org.veupathdb.service.eda.ss.model.variable.binary.BinaryConverter;
 import org.veupathdb.service.eda.ss.model.variable.binary.DoubleValueConverter;
-import org.veupathdb.service.eda.ss.model.variable.binary.EmptyBinaryProperties;
 import org.veupathdb.service.eda.ss.model.variable.binary.StringValueConverter;
 
 import java.nio.charset.StandardCharsets;
@@ -29,15 +28,18 @@ public class FloatingPointVariable extends NumberVariable<Double> {
   }
 
   private final Properties _properties;
+  private final Utf8EncodingLengthProperties _binaryProperties;
 
   public FloatingPointVariable(
       Variable.Properties varProperties,
       VariableWithValues.Properties valueProperties,
       NumberDistributionConfig<Double> distributionConfig,
-      Properties properties) {
+      Properties properties,
+      Utf8EncodingLengthProperties binaryProperties) {
 
     super(varProperties, valueProperties, distributionConfig);
     _properties = properties;
+    _binaryProperties = binaryProperties;
     validateType(VariableType.NUMBER);
 
     String errPrefix = "In entity " + varProperties.entity.getId() + " variable " + varProperties.id + " has a null ";
@@ -54,7 +56,7 @@ public class FloatingPointVariable extends NumberVariable<Double> {
 
   @Override
   public BinaryProperties getBinaryProperties() {
-    return new EmptyBinaryProperties();
+    return _binaryProperties;
   }
 
   @Override
@@ -64,6 +66,10 @@ public class FloatingPointVariable extends NumberVariable<Double> {
 
   @Override
   public BinaryConverter<String> getStringConverter() {
+    if (_binaryProperties != null) {
+      return new StringValueConverter(_binaryProperties.getMaxLength());
+    }
+    // TODO: Remove this fallback once files are re-generated with new file dumper code.
     // Floating point values are greater than 1e7 are displayed in scientific notation. For this reason, the maximum
     // size of our string is our precision + 3 bytes for the integer part of the decimal, the "e" in scientific notation
     // and the integer part of our value. We also reserve 4 bytes for the size of the padded string.

@@ -134,13 +134,13 @@ public class TallRowConversionUtils {
                                               Entity entity, Map<String, String> wideRow,
                                               String tallRowEntityId, String errPrefix, Function<Entity, String> idGetter) {
     // add entity PK to the wide row
-    wideRow.put(entity.getId() + "." + entity.getPKColName(), tallRowEntityId);
+    wideRow.put(idGetter.apply(entity), tallRowEntityId);
 
     // add ancestor PKs to wide row
     for (Entity ancestorEntity : entity.getAncestorEntities()) {
-      if (!firstTallRow.containsKey(ancestorEntity.getPKColName()))
+      if (!firstTallRow.containsKey(idGetter.apply(ancestorEntity)))
         throw new RuntimeException(errPrefix + " does not contain column " + ancestorEntity.getPKColName());
-      wideRow.put(idGetter.apply(ancestorEntity), firstTallRow.get(ancestorEntity.getPKColName()));
+      wideRow.put(idGetter.apply(ancestorEntity), firstTallRow.get(idGetter.apply(ancestorEntity)));
     }
   }
 

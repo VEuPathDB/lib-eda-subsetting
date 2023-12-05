@@ -9,6 +9,7 @@ import org.veupathdb.service.eda.subset.model.distribution.NumberDistributionCon
 import org.veupathdb.service.eda.subset.model.variable.DateVariable;
 import org.veupathdb.service.eda.subset.model.variable.IntegerVariable;
 import org.veupathdb.service.eda.subset.model.variable.StringVariable;
+import org.veupathdb.service.eda.subset.model.variable.Utf8EncodingLengthProperties;
 import org.veupathdb.service.eda.subset.model.variable.Variable;
 import org.veupathdb.service.eda.subset.model.variable.VariableDataShape;
 import org.veupathdb.service.eda.subset.model.variable.VariableType;
@@ -182,7 +183,7 @@ public class TestDataProvider {
       return new StringVariable(
           constructGenericVarProps(entity, variableId),
           constructVarValuesProps(variableType, false),
-          new StringVariable.StringBinaryProperties(maxLength)
+          new Utf8EncodingLengthProperties(maxLength)
       );
     }
   }

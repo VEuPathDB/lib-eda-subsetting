@@ -11,6 +11,7 @@ import org.veupathdb.service.eda.subset.model.variable.FloatingPointVariable;
 import org.veupathdb.service.eda.subset.model.variable.IntegerVariable;
 import org.veupathdb.service.eda.subset.model.variable.LongitudeVariable;
 import org.veupathdb.service.eda.subset.model.variable.StringVariable;
+import org.veupathdb.service.eda.subset.model.variable.Utf8EncodingLengthProperties;
 import org.veupathdb.service.eda.subset.model.variable.Variable;
 import org.veupathdb.service.eda.subset.model.variable.VariableDataShape;
 import org.veupathdb.service.eda.subset.model.variable.VariableDisplayType;
@@ -127,12 +128,12 @@ public class VariableFactory {
       switch(valueProps.type) {
 
         case NUMBER: return
-            new FloatingPointVariable(varProps, valueProps, createFloatDistributionConfig(rs, true), createFloatProperties(rs, true));
+            new FloatingPointVariable(varProps, valueProps, createFloatDistributionConfig(rs, true), createFloatProperties(rs, true),  (Utf8EncodingLengthProperties) binaryProperties);
 
         case LONGITUDE: return
             new LongitudeVariable(varProps, valueProps, new LongitudeVariable.Properties(
                 getRsOptionalLong(rs, PRECISION_COL_NAME, 1L)
-            ));
+            ), (Utf8EncodingLengthProperties) binaryProperties);
 
         case INTEGER: return
             new IntegerVariable(varProps, valueProps, createIntegerDistributionConfig(rs, true), createIntegerProperties(rs));
@@ -141,7 +142,7 @@ public class VariableFactory {
             new DateVariable(varProps, valueProps, createDateDistributionConfig(valueProps.dataShape, rs, true));
 
         case STRING:
-          return new StringVariable(varProps, valueProps, (StringVariable.StringBinaryProperties) binaryProperties);
+          return new StringVariable(varProps, valueProps, (Utf8EncodingLengthProperties) binaryProperties);
 
         default: throw new RuntimeException("Entity:  " + varProps.entity.getId() +
             " variable: " + varProps.id + " has unrecognized type " + valueProps.type);

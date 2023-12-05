@@ -66,7 +66,7 @@ public class FloatingPointVariable extends NumberVariable<Double> {
 
   @Override
   public BinaryConverter<String> getStringConverter() {
-    if (_binaryProperties != null) {
+    if (_binaryProperties.getMaxLength() != null) {
       return new StringValueConverter(_binaryProperties.getMaxLength());
     }
     // TODO: Remove this fallback once files are re-generated with new file dumper code.

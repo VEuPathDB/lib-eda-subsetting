@@ -1,20 +1,20 @@
 package org.veupathdb.service.eda.ss.model.variable;
 
 public class Utf8EncodingLengthProperties extends BinaryProperties {
-  private int maxLength;
+  private Integer maxLength;
 
   public Utf8EncodingLengthProperties() {
   }
 
-  public Utf8EncodingLengthProperties(int maxLength) {
+  public Utf8EncodingLengthProperties(Integer maxLength) {
     this.maxLength = maxLength;
   }
 
-  public int getMaxLength() {
+  public Integer getMaxLength() {
     return maxLength;
   }
 
-  public void setMaxLength(int maxLength) {
+  public void setMaxLength(Integer maxLength) {
     this.maxLength = maxLength;
   }
 }

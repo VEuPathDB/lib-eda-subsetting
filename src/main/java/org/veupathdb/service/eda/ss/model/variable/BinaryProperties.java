@@ -9,9 +9,9 @@ import org.veupathdb.service.eda.ss.model.variable.binary.EmptyBinaryProperties;
 @JsonTypeInfo(use = JsonTypeInfo.Id.NAME, include = JsonTypeInfo.As.PROPERTY)
 @JsonSubTypes({
         @JsonSubTypes.Type(value = Utf8EncodingLengthProperties.class, name = "string"),
-        @JsonSubTypes.Type(value = EmptyBinaryProperties.class, name = "number"),
+        @JsonSubTypes.Type(value = Utf8EncodingLengthProperties.class, name = "number"),
         @JsonSubTypes.Type(value = EmptyBinaryProperties.class, name = "date"),
-        @JsonSubTypes.Type(value = EmptyBinaryProperties.class, name = "longitude"),
+        @JsonSubTypes.Type(value = Utf8EncodingLengthProperties.class, name = "longitude"),
         @JsonSubTypes.Type(value = EmptyBinaryProperties.class, name = "integer") }
 )
 public abstract class BinaryProperties {

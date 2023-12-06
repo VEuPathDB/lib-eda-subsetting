@@ -13,6 +13,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+import org.gusdb.fgputil.json.JsonUtil;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -164,6 +165,16 @@ public class BinaryFilesManager {
     Path filepath = Path.of(directory.toString(), DONE_FILE_NAME);
     if (!Files.exists(filepath)) throw new RuntimeException("File '" + filepath + "' does not exist");
     return filepath;
+  }
+
+  public Long getDataVersionUsed(Study study) {
+    final Optional<Path> studyDir = getStudyDirIfExists(study.getInternalAbbrev());
+    try {
+      return JsonUtil.Jackson.readValue(getDoneFile(studyDir.orElseThrow(), Operation.READ).toFile(), DoneMetadata.class).getDataVersion();
+    } catch (IOException e) {
+      LOG.warn("Unable to find data version in DONE file, returning null.", e);
+      return null;
+    }
   }
 
   /**

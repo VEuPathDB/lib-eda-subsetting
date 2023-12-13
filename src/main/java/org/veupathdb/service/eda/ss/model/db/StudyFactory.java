@@ -11,9 +11,11 @@ import org.veupathdb.service.eda.ss.model.StudyOverview.StudySourceType;
 
 import javax.sql.DataSource;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
+import java.util.TimeZone;
 import java.util.stream.Collectors;
 
 import static org.veupathdb.service.eda.ss.model.db.DB.Tables.Study.Columns.STUDY_ABBREV_COL_NAME;
@@ -52,7 +54,7 @@ public class StudyFactory implements StudyProvider {
       while (rs.next()) {
         String id = rs.getString(1);
         String abbrev = rs.getString(2);
-        Date lastModified = rs.getDate(3);
+        Date lastModified = rs.getDate(3, Calendar.getInstance(TimeZone.getTimeZone("UTC")));
         StudyOverview study = new StudyOverview(id, abbrev, _sourceType, lastModified);
         studyOverviews.add(study);
       }

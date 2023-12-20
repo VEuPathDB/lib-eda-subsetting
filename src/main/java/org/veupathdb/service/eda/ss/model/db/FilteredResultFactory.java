@@ -624,7 +624,7 @@ public class FilteredResultFactory {
     return config.isEmpty() ? "" :
         indent + " order by " + config.stream()
             .map(entry -> entry.getKey() + " " + entry.getDirection())
-            .collect(Collectors.joining(", ")) + " NULLS LAST";
+            .collect(Collectors.joining(", "));
   }
 
   /*

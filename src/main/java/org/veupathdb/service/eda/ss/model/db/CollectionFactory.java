@@ -102,7 +102,9 @@ public class CollectionFactory {
         getRsRequiredBoolean(rs, IMPUTE_ZERO),
         getRsOptionalString(rs, NORMALIZATION_METHOD, null),
         getRsRequiredBoolean(rs, IS_COMPOSITIONAL),
-        getRsRequiredBoolean(rs, IS_PROPORTION)
+        getRsRequiredBoolean(rs, IS_PROPORTION),
+        getRsRequiredString(rs, MEMBER),
+        getRsRequiredString(rs, MEMBER_PLURAL)
         );
 
     // create typed collection, loading type-specific props

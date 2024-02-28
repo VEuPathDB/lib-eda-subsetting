@@ -29,11 +29,13 @@ public abstract class VarCollection<T, S extends VariableWithValues<T>> {
     public final String normalizationMethod;
     public final Boolean isCompositional;
     public final Boolean isProportion;
+    public final String member;
+    public final String memberPlural;
 
     public Properties(String id, String displayName,
                       CollectionType type, VariableDataShape dataShape,
                       Long numMembers, Boolean imputeZero, String normalizationMethod,
-                      Boolean isCompositional, Boolean isProportion) {
+                      Boolean isCompositional, Boolean isProportion, String member, String memberPlural) {
       this.id = id;
       this.displayName = displayName;
       this.type = type;
@@ -43,6 +45,8 @@ public abstract class VarCollection<T, S extends VariableWithValues<T>> {
       this.normalizationMethod = normalizationMethod;
       this.isCompositional = isCompositional;
       this.isProportion = isProportion;
+      this.member = member;
+      this.memberPlural = memberPlural;
     }
   }
 

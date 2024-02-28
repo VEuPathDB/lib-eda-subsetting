@@ -119,6 +119,8 @@ public interface DB {
         String PRECISION = "precision";
         String IS_PROPORTION = "is_proportion";
         String IS_COMPOSITIONAL = "is_compositional";
+        String MEMBER = "member";
+        String MEMBER_PLURAL = "member_plural";
         String NORMALIZATION_METHOD = "normalization_method";
         List<String> ALL = getAll(Columns.class);
       }

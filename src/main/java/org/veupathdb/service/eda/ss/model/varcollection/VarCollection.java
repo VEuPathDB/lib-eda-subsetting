@@ -162,6 +162,14 @@ public abstract class VarCollection<T, S extends VariableWithValues<T>> {
     return _properties.normalizationMethod;
   }
 
+  public String getMember() {
+    return _properties.member;
+  }
+
+  public String getMemberPlural() {
+    return _properties.memberPlural;
+  }
+
   public Long getDistinctValuesCount() {
     return _vocabulary == null ? null : Integer.valueOf(_vocabulary.size()).longValue();
   }

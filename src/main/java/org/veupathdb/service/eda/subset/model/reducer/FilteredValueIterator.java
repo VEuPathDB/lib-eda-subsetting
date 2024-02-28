@@ -31,6 +31,9 @@ public class FilteredValueIterator<V, T> implements CloseableIterator<T> {
   private T next;
   private boolean hasStarted;
 
+  // Store to print if exception is thrown.
+  private Path path;
+
   /**
    * Constructs an instance of a FilteredValueIterator.
    *
@@ -48,6 +51,7 @@ public class FilteredValueIterator<V, T> implements CloseableIterator<T> {
                                Function<VariableValueIdPair<V>, T> idValuePairMapper,
                                ExecutorService fileChannelThreadPool,
                                ExecutorService deserializerThreadPool) throws IOException {
+    this.path = path;
     this.filterPredicate = filterPredicate;
     this.reader = new DualBufferBinaryRecordReader<>(path,
         deserializer.numBytes(),
@@ -81,19 +85,23 @@ public class FilteredValueIterator<V, T> implements CloseableIterator<T> {
   }
 
   private void nextMatch() {
-    hasStarted = true;
-    do {
-      if (!reader.hasNext()) {
-        next = null;
-        return;
-      }
-      VariableValueIdPair<V> valuePair = reader.next();
-      if (filterPredicate.test(valuePair.getValue())) {
-        next = idValuePairMapper.apply(valuePair);
-      } else {
-        next = null;
-      }
-    } while (next == null);
+    try {
+      hasStarted = true;
+      do {
+        if (!reader.hasNext()) {
+          next = null;
+          return;
+        }
+        VariableValueIdPair<V> valuePair = reader.next();
+        if (filterPredicate.test(valuePair.getValue())) {
+          next = idValuePairMapper.apply(valuePair);
+        } else {
+          next = null;
+        }
+      } while (next == null);
+    } catch (Exception e) {
+      throw new RuntimeException("Failed to find next value from file " + path, e);
+    }
   }
 
   @Override

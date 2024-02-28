@@ -600,7 +600,7 @@ public class FilteredResultFactory {
     // final select -- quote the variable names for case sensitivity of var names in DIY studies.
     // Note that the quotes are a bit of a hack, it's possible we'd rather enforce case insensitivity at load time.
     //
-    List<String> outputCols = getTabularOutputColumns(outputEntity, outputVariables, var -> "\"" + var.getId() + "\"");
+    List<String> outputCols = getColumns(outputEntity, outputVariables, Entity::getPKColName, var -> "\"" + var.getId() + "\"");
     return withClauses + NL
         + "select " + String.join(", ", outputCols) + NL
         + "from " + wideTabularWithClauseName + NL

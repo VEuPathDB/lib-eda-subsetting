@@ -78,7 +78,7 @@ public class BinaryFilesManager {
       LOG.debug("Study directory for study {} exists but data is incomplete.", studyAbbrev);
       return false;
     }
-    LOG.info("Looked for study dir for study {} and found it. studyHasFiles() will return true.", studyAbbrev);
+    LOG.debug("Looked for study dir for study {} and found it. studyHasFiles() will return true.", studyAbbrev);
     return true;
   }
 

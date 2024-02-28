@@ -102,7 +102,9 @@ public class CollectionFactory {
         ResultSetUtils.getRsRequiredBoolean(rs, DB.Tables.Collection.Columns.IMPUTE_ZERO),
         ResultSetUtils.getRsOptionalString(rs, DB.Tables.Collection.Columns.NORMALIZATION_METHOD, null),
         ResultSetUtils.getRsRequiredBoolean(rs, DB.Tables.Collection.Columns.IS_COMPOSITIONAL),
-        ResultSetUtils.getRsRequiredBoolean(rs, DB.Tables.Collection.Columns.IS_PROPORTION)
+        ResultSetUtils.getRsRequiredBoolean(rs, DB.Tables.Collection.Columns.IS_PROPORTION),
+        ResultSetUtils.getRsRequiredString(rs, DB.Tables.Collection.Columns.MEMBER),
+        ResultSetUtils.getRsRequiredString(rs, DB.Tables.Collection.Columns.MEMBER_PLURAL)
         );
 
     // create typed collection, loading type-specific props

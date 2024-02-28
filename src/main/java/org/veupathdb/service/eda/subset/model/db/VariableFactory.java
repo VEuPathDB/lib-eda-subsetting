@@ -100,11 +100,9 @@ public class VariableFactory {
         getRsOptionalString(rs, VARIABLE_PARENT_ID_COL_NAME, null),
         getRsOptionalString(rs, DEFINITION_COL_NAME, ""),
         parseJsonArrayOfString(rs, HIDE_FROM_COL_NAME));
-    // Only set binary properties if binaryMetadataProvider is present.
-    Optional<BinaryProperties> binaryProperties = binaryMetadataProvider.flatMap(provider ->
-        provider.getBinaryProperties(entity.getStudyAbbrev(), entity, varProps.id));
     return getRsRequiredBoolean(rs, HAS_VALUES_COL_NAME)
-        ? createValueVarFromResultSet(rs, varProps, binaryProperties.orElse(null))
+        ? createValueVarFromResultSet(rs, varProps, binaryMetadataProvider
+        .flatMap(provider -> provider.getBinaryProperties(entity.getStudyAbbrev(), entity, varProps.id)).orElse(null))
         : new VariablesCategory(varProps);
   }
 

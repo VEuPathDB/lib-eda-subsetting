@@ -40,7 +40,7 @@ public enum VariableDataShape {
     }
     if (collectionShape == BINARY) {
       // Binary collections can have CATEGORICAL vars if they have 0, 1 or 2 distinct values.
-      return variableVocab.size() <= 2;
+      return variableVocab != null && variableVocab.size() <= 2;
     }
     // Otherwise, collection type should be the same as variable type.
     return collectionShape._name.equals(this._name);

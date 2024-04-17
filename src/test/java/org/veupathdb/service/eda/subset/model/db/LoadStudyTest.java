@@ -52,10 +52,12 @@ public class LoadStudyTest {
     
     String sql = EntityFactory.generateEntityTreeSql(STUDY_ID, StubDb.APP_DB_SCHEMA, true);
 
+    System.out.println(sql);
+
     // get the alphabetically first entity
     Entity entity = new SQLRunner(datasource, sql).executeQuery(rs -> {
       rs.next();
-      return EntityFactory.createEntityFromResultSet(rs);
+      return EntityFactory.createEntityFromResultSet(rs, true);
     });
 
     assertEquals("GEMS_House", entity.getId());

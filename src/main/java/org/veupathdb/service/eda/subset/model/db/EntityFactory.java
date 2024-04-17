@@ -44,7 +44,7 @@ public class EntityFactory {
     Entity rootEntity = new SQLRunner(_dataSource, sql, "Get entity tree").executeQuery(rs -> {
       Entity root = null;
       while (rs.next()) {
-        Entity entity = createEntityFromResultSet(rs);
+        Entity entity = createEntityFromResultSet(rs, _orderEntities);
         String parentId = rs.getString(DB.Tables.EntityTypeGraph.Columns.ENTITY_PARENT_ID_COL_NAME);
         if (parentId == null) {
           if (root != null) throw new RuntimeException("In Study " + studyId +
@@ -104,7 +104,7 @@ public class EntityFactory {
         sqlOrderByClause;
   }
 
-  static Entity createEntityFromResultSet(ResultSet rs) {
+  static Entity createEntityFromResultSet(ResultSet rs, boolean orderEntities) {
     try {
       String name = getRsRequiredString(rs, DB.Tables.EntityTypeGraph.Columns.DISPLAY_NAME_COL_NAME);
       // TODO remove this hack when db has plurals
@@ -113,7 +113,9 @@ public class EntityFactory {
       String studyAbbrev = getRsRequiredString(rs, STDY_ABBRV_COL_NM);
       String descrip = getRsOptionalString(rs, DB.Tables.EntityTypeGraph.Columns.DESCRIP_COL_NAME, "No Entity Description available");
       String abbrev = getRsRequiredString(rs, DB.Tables.EntityTypeGraph.Columns.ENTITY_ABBREV_COL_NAME);
-      long loadOrder = getIntegerFromString(rs, DB.Tables.EntityTypeGraph.Columns.ENTITY_LOAD_ORDER_ID, true);
+      long loadOrder = orderEntities
+          ? getIntegerFromString(rs, DB.Tables.EntityTypeGraph.Columns.ENTITY_LOAD_ORDER_ID, true)
+          : -1L;
       boolean hasCollections = getRsRequiredBoolean(rs, DB.Tables.EntityTypeGraph.Columns.ENTITY_HAS_ATTRIBUTE_COLLECTIONS);
 
       boolean isManyToOneWithParent = getRsOptionalBoolean(rs, DB.Tables.EntityTypeGraph.Columns.ENTITY_IS_MANY_TO_ONE_WITH_PARENT, true);

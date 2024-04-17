@@ -39,7 +39,7 @@ public class EntityResultSetUtilsTest {
     Mockito.when(_binaryMetadataProvider.getBinaryProperties(Mockito.anyString(), Mockito.any(Entity.class), Mockito.anyString()))
             .thenReturn(Optional.empty());
     Study study = new StudyFactory(StubDb.getDataSource(), StubDb.APP_DB_SCHEMA, StubDb.USER_STUDIES_FLAG,
-        new VariableFactory(StubDb.getDataSource(), StubDb.APP_DB_SCHEMA, _binaryMetadataProvider, studyId -> false)).getStudyById(LoadStudyTest.STUDY_ID);
+        new VariableFactory(StubDb.getDataSource(), StubDb.APP_DB_SCHEMA, _binaryMetadataProvider, studyId -> false), true).getStudyById(LoadStudyTest.STUDY_ID);
     new MockFilters(study);
   }
 

@@ -37,7 +37,7 @@ public class StudiesTest {
     _binaryFilesManager = Mockito.mock(BinaryFilesManager.class);
     Mockito.when(_binaryFilesManager.studyHasFiles(Mockito.anyString())).thenReturn(false);
     _variableFactory = new VariableFactory(_dataSource, StubDb.APP_DB_SCHEMA, new EmptyBinaryMetadataProvider(), studyId -> false);
-    Study study = new StudyFactory(_dataSource, StubDb.APP_DB_SCHEMA, StubDb.USER_STUDIES_FLAG, _variableFactory).getStudyById("DS-2324");
+    Study study = new StudyFactory(_dataSource, StubDb.APP_DB_SCHEMA, StubDb.USER_STUDIES_FLAG, _variableFactory, true).getStudyById("DS-2324");
     _filtersForTesting = new MockFilters(study);
   }
 
@@ -45,7 +45,7 @@ public class StudiesTest {
   @Test
   @DisplayName("Test variable distribution - no filters")
   void testVariableDistributionNoFilters() {
-    Study study = new StudyFactory(_dataSource, StubDb.APP_DB_SCHEMA, StubDb.USER_STUDIES_FLAG, _variableFactory).getStudyById("DS-2324");
+    Study study = new StudyFactory(_dataSource, StubDb.APP_DB_SCHEMA, StubDb.USER_STUDIES_FLAG, _variableFactory, true).getStudyById("DS-2324");
 
     String entityId = "GEMS_Part";
     Entity entity = study.getEntity(entityId).orElseThrow();
@@ -69,7 +69,7 @@ public class StudiesTest {
   @Test
   @DisplayName("Test variable distribution - with filters")
   void testVariableDistribution() {
-    Study study = new StudyFactory(_dataSource, StubDb.APP_DB_SCHEMA, StubDb.USER_STUDIES_FLAG, _variableFactory).getStudyById("DS-2324");
+    Study study = new StudyFactory(_dataSource, StubDb.APP_DB_SCHEMA, StubDb.USER_STUDIES_FLAG, _variableFactory, true).getStudyById("DS-2324");
 
     String entityId = "GEMS_Part";
     Entity entity = study.getEntity(entityId).orElseThrow();

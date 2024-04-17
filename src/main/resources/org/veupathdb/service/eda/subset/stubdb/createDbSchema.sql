@@ -39,6 +39,11 @@ alter table EntityTypeGraph add unique (display_name, study_stable_id, stable_id
 ALTER TABLE EntityTypeGraph
    ADD FOREIGN KEY (study_stable_id) REFERENCES Study (stable_id);
 
+CREATE TABLE EntityType (
+  entity_type_id integer,
+  isa_type varchar(20)
+);
+
 --------------------------------------------------------------------------------------------------
 -- the following tables are per-study.  Their name is formed using the study ID, in this case ds2324.
 -- Each entity type gets two tables:

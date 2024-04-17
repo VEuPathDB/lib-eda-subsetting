@@ -26,15 +26,17 @@ public class EntityFactory {
 
   private final DataSource _dataSource;
   private final String _appDbSchema;
+  private final boolean _orderEntities;
 
-  public EntityFactory(DataSource dataSource, String appDbSchema) {
+  public EntityFactory(DataSource dataSource, String appDbSchema, boolean orderEntities) {
     _dataSource = dataSource;
     _appDbSchema = appDbSchema;
+    _orderEntities = orderEntities;
   }
 
   public TreeNode<Entity> getStudyEntityTree(String studyId) {
 
-    String sql = generateEntityTreeSql(studyId, _appDbSchema);
+    String sql = generateEntityTreeSql(studyId, _appDbSchema, _orderEntities);
 
     // entityID -> list of child entities
     Map<String, List<Entity>> childrenMap = new HashMap<>();
@@ -80,9 +82,17 @@ public class EntityFactory {
     return rootNode;
   }
 
-  static String generateEntityTreeSql(String studyId, String appDbSchema) {
+  static String generateEntityTreeSql(String studyId, String appDbSchema, boolean orderEntities) {
+    final String sqlOrderByClause = orderEntities
+        ? " ORDER BY e." + DB.Tables.EntityTypeGraph.Columns.ENTITY_LOAD_ORDER_ID + " ASC"
+        : "";
+    final List<String> columns = orderEntities
+        ? DB.Tables.EntityTypeGraph.Columns.ALL
+        : DB.Tables.EntityTypeGraph.Columns.ALL.stream()
+        .filter(c -> !c.equals(DB.Tables.EntityTypeGraph.Columns.ENTITY_LOAD_ORDER_ID))
+        .collect(Collectors.toList());
     return "SELECT " +
-        "e." + String.join(", e.", DB.Tables.EntityTypeGraph.Columns.ALL) + ", " +
+        "e." + String.join(", e.", columns) + ", " +
         "s." + DB.Tables.Study.Columns.STUDY_ABBREV_COL_NAME + " as " + STDY_ABBRV_COL_NM + NL +
         "FROM " +
         appDbSchema + DB.Tables.EntityTypeGraph.NAME + " e, " +
@@ -91,7 +101,7 @@ public class EntityFactory {
         "AND e." + DB.Tables.EntityTypeGraph.Columns.ENTITY_STUDY_ID_COL_NAME + " = s." + DB.Tables.Study.Columns.STUDY_ID_COL_NAME + NL +
         // This ordering ensures the produced tree is displayed in load order;
         //   also stable ordering supports unit testing
-        "ORDER BY e." + DB.Tables.EntityTypeGraph.Columns.ENTITY_LOAD_ORDER_ID + " ASC";
+        sqlOrderByClause;
   }
 
   static Entity createEntityFromResultSet(ResultSet rs) {

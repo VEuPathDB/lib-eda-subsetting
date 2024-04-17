@@ -50,7 +50,7 @@ public class LoadStudyTest {
   @DisplayName("Test reading of entity table") 
   void testReadEntityTable() {
     
-    String sql = EntityFactory.generateEntityTreeSql(STUDY_ID, StubDb.APP_DB_SCHEMA);
+    String sql = EntityFactory.generateEntityTreeSql(STUDY_ID, StubDb.APP_DB_SCHEMA, true);
 
     // get the alphabetically first entity
     Entity entity = new SQLRunner(datasource, sql).executeQuery(rs -> {
@@ -68,7 +68,7 @@ public class LoadStudyTest {
   @Test
   @DisplayName("Test creating entity tree") 
   void testCreateEntityTree() {
-    TreeNode<Entity> entityTree = new EntityFactory(datasource, StubDb.APP_DB_SCHEMA).getStudyEntityTree(STUDY_ID);
+    TreeNode<Entity> entityTree = new EntityFactory(datasource, StubDb.APP_DB_SCHEMA, true).getStudyEntityTree(STUDY_ID);
     
     List<String> entityIds = entityTree.flatten().stream().map(Entity::getId).collect(Collectors.toList());
 
@@ -82,7 +82,7 @@ public class LoadStudyTest {
   @DisplayName("Test reading of variable table") 
   void testReadVariableTable() {
 
-    TreeNode<Entity> entityTree = new EntityFactory(datasource, StubDb.APP_DB_SCHEMA).getStudyEntityTree(STUDY_ID);
+    TreeNode<Entity> entityTree = new EntityFactory(datasource, StubDb.APP_DB_SCHEMA, true).getStudyEntityTree(STUDY_ID);
     
     Map<String, Entity> entityIdMap = entityTree.flatten().stream().collect(Collectors.toMap(Entity::getId, e -> e));
 
@@ -119,7 +119,7 @@ public class LoadStudyTest {
   @DisplayName("Test reading all participant variables")
   void testReadAllVariables() {
 
-    TreeNode<Entity> entityTree = new EntityFactory(datasource, StubDb.APP_DB_SCHEMA).getStudyEntityTree(STUDY_ID);
+    TreeNode<Entity> entityTree = new EntityFactory(datasource, StubDb.APP_DB_SCHEMA,true).getStudyEntityTree(STUDY_ID);
     
     Map<String, Entity> entityIdMap = entityTree.flatten().stream().collect(Collectors.toMap(Entity::getId, e -> e));
 
@@ -135,7 +135,7 @@ public class LoadStudyTest {
   @DisplayName("Load study test") 
   void testLoadStudy() {
     VariableFactory variableFactory = new VariableFactory(datasource, StubDb.APP_DB_SCHEMA, binaryMetadataProvider, studyId -> false);
-    Study study = new StudyFactory(datasource, StubDb.APP_DB_SCHEMA, StubDb.USER_STUDIES_FLAG, variableFactory).getStudyById(STUDY_ID);
+    Study study = new StudyFactory(datasource, StubDb.APP_DB_SCHEMA, StubDb.USER_STUDIES_FLAG, variableFactory, true).getStudyById(STUDY_ID);
     assertNotNull(study);
   }
 }

@@ -136,14 +136,6 @@ public interface DB {
       }
     }
 
-    interface EntityType {
-      String NAME = "EntityType";
-      interface Columns extends ColumnCollection {
-        String ENTITY_TYPE_ID = "entity_type_id";
-        String ISA_TYPE = "isa_type";
-      }
-    }
-
     interface EntityTypeGraph {
       String NAME = "EntityTypeGraph";
       interface Columns extends ColumnCollection {

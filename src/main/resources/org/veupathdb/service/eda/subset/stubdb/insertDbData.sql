@@ -22,13 +22,6 @@ insert into entityTypeGraph values ('GEMS_PartObs', 'DS-2324', 'GEMS_Part', 'Prt
 insert into entityTypeGraph values ('GEMS_Sample', 'DS-2324', 'GEMS_PartObs', 'Smpl', 'Sample', 'Samples', 'Sample',5,0,0);
 insert into entityTypeGraph values ('GEMS_Treat', 'DS-2324', 'GEMS_PartObs', 'Trtmnt', 'Treatment', 'Treatments', 'Treatment',6,0,0);
 
-insert into EntityType values (1,'household');
-insert into EntityType values (2,'household-obs');
-insert into EntityType values (3,'participant');
-insert into EntityType values (4,'part-obs');
-insert into EntityType values (5,'sample');
-insert into EntityType values (6,'treatment');
-
 ------------------------------------------------------------
 -- STUDY DATA TABLES
 ------------------------------------------------------------

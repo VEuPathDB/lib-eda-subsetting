@@ -82,16 +82,13 @@ public class EntityFactory {
 
   static String generateEntityTreeSql(String studyId, String appDbSchema) {
     return "SELECT " +
-        "e2." + DB.Tables.EntityType.Columns.ISA_TYPE + ", " +
         "e." + String.join(", e.", DB.Tables.EntityTypeGraph.Columns.ALL) + ", " +
         "s." + DB.Tables.Study.Columns.STUDY_ABBREV_COL_NAME + " as " + STDY_ABBRV_COL_NM + NL +
         "FROM " +
         appDbSchema + DB.Tables.EntityTypeGraph.NAME + " e, " +
-        appDbSchema + DB.Tables.Study.NAME + " s, " +
-        appDbSchema + DB.Tables.EntityType.NAME + " e2 " + NL +
+        appDbSchema + DB.Tables.Study.NAME + " s " +
         "WHERE s." + DB.Tables.Study.Columns.STUDY_ID_COL_NAME + " = '" + studyId + "'" + NL +
         "AND e." + DB.Tables.EntityTypeGraph.Columns.ENTITY_STUDY_ID_COL_NAME + " = s." + DB.Tables.Study.Columns.STUDY_ID_COL_NAME + NL +
-        "AND e." + DB.Tables.EntityTypeGraph.Columns.ENTITY_LOAD_ORDER_ID + " = e2." + DB.Tables.EntityType.Columns.ENTITY_TYPE_ID + NL +
         // This ordering ensures the produced tree is displayed in load order;
         //   also stable ordering supports unit testing
         "ORDER BY e." + DB.Tables.EntityTypeGraph.Columns.ENTITY_LOAD_ORDER_ID + " ASC";

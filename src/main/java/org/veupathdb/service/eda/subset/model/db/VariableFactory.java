@@ -73,8 +73,7 @@ public class VariableFactory {
 
   static String generateStudyVariablesListSql(Entity entity, String appDbSchema) {
     // This SQL safe from injection because entities declare their own table names (no parameters)
-    // TODO: remove hack distinct
-    return "SELECT distinct " + String.join(", ", DB.Tables.AttributeGraph.Columns.ALL) + NL
+    return "SELECT " + String.join(", ", DB.Tables.AttributeGraph.Columns.ALL) + NL
         + "FROM " + appDbSchema + DB.Tables.AttributeGraph.NAME(entity) + NL
         + "ORDER BY " + DB.Tables.AttributeGraph.Columns.VARIABLE_ID_COL_NAME;  // stable ordering supports unit testing
   }

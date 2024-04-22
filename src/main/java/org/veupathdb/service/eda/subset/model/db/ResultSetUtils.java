@@ -99,7 +99,7 @@ public class ResultSetUtils {
           : Arrays.asList(JsonUtil.Jackson.readValue(jsonArrayOfString, String[].class));
     }
     catch (IOException e) {
-      throw new RuntimeException("Value in column " + columnName + " cannot be parsed into json array of strings: " + jsonArrayOfString);
+      throw new RuntimeException("Value in column " + jsonArrayOfString + " cannot be parsed into json array of strings: " + jsonArrayOfString, e);
     }
   }
 }

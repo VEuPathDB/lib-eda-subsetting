@@ -4,7 +4,6 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 
 import java.io.IOException;
 import java.math.BigDecimal;
-import java.sql.Clob;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.Arrays;
@@ -94,17 +93,13 @@ public class ResultSetUtils {
    * Parses a string containing a json array of strings into a List
    */
   public static List<String> parseJsonArrayOfString(ResultSet resultSet, String columnName) throws SQLException {
-    Object jsonArrayAsStringOrClob = resultSet.getObject(columnName);
-    if (jsonArrayAsStringOrClob == null) {
-      return null;
-    }
+    String jsonArrayOfString = resultSet.getString(columnName);
     try {
-      return jsonArrayAsStringOrClob instanceof String ?
-          Arrays.asList(JsonUtil.Jackson.readValue((String) jsonArrayAsStringOrClob, String[].class))
-          : Arrays.asList(JsonUtil.Jackson.readValue(((Clob) jsonArrayAsStringOrClob).getCharacterStream(), String[].class));
+      return jsonArrayOfString == null || jsonArrayOfString.isEmpty() ? null
+          : Arrays.asList(JsonUtil.Jackson.readValue(jsonArrayOfString, String[].class));
     }
     catch (IOException e) {
-      throw new RuntimeException("Value in column " + jsonArrayAsStringOrClob + " cannot be parsed into json array of strings: " + jsonArrayAsStringOrClob, e);
+      throw new RuntimeException("Value in column " + jsonArrayOfString + " cannot be parsed into json array of strings: " + jsonArrayOfString, e);
     }
   }
 }

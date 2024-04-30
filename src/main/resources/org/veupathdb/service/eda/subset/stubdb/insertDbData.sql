@@ -12,6 +12,8 @@
 --(stable_id, display_nme, internal_abbrev)
 insert into study values ('DS-2324', 'GEMS', 'ds2324', '2023-01-01');
 
+insert into all_objects values ('attributes_ds2324_Hshld')
+
 insert into StudyIdDatasetId values('DS-2324', 'datasetid_2222');
 
 --(stable_id, study_stable_id, parent_stable_id, internal_abbrev, display_name, display_name_plural, description, entity_type_id)

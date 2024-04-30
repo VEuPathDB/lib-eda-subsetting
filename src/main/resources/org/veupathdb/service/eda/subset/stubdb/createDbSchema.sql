@@ -2,6 +2,10 @@
 -- use oracle syntax throughout execution
 SET DATABASE SQL SYNTAX ORA TRUE;
 
+CREATE TABLE IF NOT EXISTS all_objects (
+    object_name varchar(50) not null
+)
+
 -- the EDA service doesn't need to know much about the Study, because the WDK will serve that data
 -- the abbrev would be used in the name of the tall and ancestors tables
 -- the study_id is a stable ID

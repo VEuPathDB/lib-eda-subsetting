@@ -6,6 +6,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -45,6 +46,8 @@ public class EntityFactory {
       Entity root = null;
       while (rs.next()) {
         Entity entity = createEntityFromResultSet(rs, _orderEntities);
+        boolean attributesTableExists = attributesTableExists(entity);
+        entity.setAttributesTableExists(attributesTableExists);
         String parentId = rs.getString(DB.Tables.EntityTypeGraph.Columns.ENTITY_PARENT_ID_COL_NAME);
         if (parentId == null) {
           if (root != null) throw new RuntimeException("In Study " + studyId +
@@ -63,6 +66,17 @@ public class EntityFactory {
       throw new RuntimeException("Found no entities for study: " + studyId);
 
     return generateEntityTree(rootEntity, childrenMap);
+  }
+
+  /**
+   * Checks if the ATTRIBUTES table exists for a given entity. This "wide" table contains rows with every variable
+   * value. This table's structure is required for pagination/sorting of the data. The existence of this indicates
+   * to clients whether certain functionality (e.g. previewing downloads) is available for this entity.
+   */
+  private boolean attributesTableExists(Entity entity) {
+    String wideTable = DB.Tables.Attributes.NAME(entity).toUpperCase(Locale.ROOT);
+    String tableExistsSql = String.format("SELECT object_name FROM all_objects WHERE object_name = '%s'", wideTable);
+    return new SQLRunner(_dataSource, tableExistsSql).executeQuery(ResultSet::next);
   }
 
   private static TreeNode<Entity> generateEntityTree(Entity rootEntity, Map<String, List<Entity>> childrenMap) {

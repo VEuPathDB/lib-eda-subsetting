@@ -37,6 +37,7 @@ public class Entity {
   private List<String> ancestorPkColNames;
   private List<String> ancestorFullPkColNames; // entityName.pkColName
   private Integer tallRowSize; // number of columns in a tall table row
+  private boolean attributesTableExists;
   private final Long loadOrder;
   private final boolean hasCollections;
   private final boolean isManyToOneWithParent;
@@ -147,7 +148,15 @@ public class Entity {
   public List<String> getAncestorFullPkColNames() {
     return Collections.unmodifiableList(ancestorFullPkColNames);
   }
-  
+
+  public void setAttributesTableExists(boolean attributesTableExists) {
+    this.attributesTableExists = attributesTableExists;
+  }
+
+  public boolean isAttributesTableExists() {
+    return attributesTableExists;
+  }
+
   public void setAncestorEntities(List<Entity> ancestorEntities) {
     this.ancestorEntities = new ArrayList<>(ancestorEntities);
     this.ancestorPkColNames = 

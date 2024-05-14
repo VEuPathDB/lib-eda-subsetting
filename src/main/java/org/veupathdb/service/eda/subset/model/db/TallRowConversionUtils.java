@@ -94,6 +94,7 @@ public class TallRowConversionUtils {
       Map<String, List<String>> multiValues = null;  // this map only contains variables that have multiple values
       Map<String, VariableWithValues> variablesMap = new HashMap<>(); // ID -> VariableWithValues
 
+
       addPrimaryKeysToWideRow(firstTallRow, entity, wideRow, tallRowEntityId, errPrefix, entityKeyNameFn);
 
       // loop through all tall rows and add vars to wide row, validating along the way
@@ -138,9 +139,9 @@ public class TallRowConversionUtils {
 
     // add ancestor PKs to wide row
     for (Entity ancestorEntity : entity.getAncestorEntities()) {
-      if (!firstTallRow.containsKey(idGetter.apply(ancestorEntity)))
-        throw new RuntimeException(errPrefix + " does not contain column " + ancestorEntity.getPKColName());
-      wideRow.put(idGetter.apply(ancestorEntity), firstTallRow.get(idGetter.apply(ancestorEntity)));
+      if (!firstTallRow.containsKey(ancestorEntity.getPKColName()))
+        throw new RuntimeException(errPrefix + " does not contain column " + idGetter.apply(ancestorEntity) + ". First tall row: " + firstTallRow);
+      wideRow.put(idGetter.apply(ancestorEntity), firstTallRow.get(ancestorEntity.getPKColName()));
     }
   }
 

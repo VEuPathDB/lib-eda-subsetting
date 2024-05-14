@@ -64,8 +64,21 @@ public class BinaryFilesManager {
     this.studyFinder = studyFinder;
   }
 
-  public boolean studyHasFiles(Study study) {
-    return studyHasFiles(study.getInternalAbbrev());
+  public boolean studyHasCompatibleFiles(Study study) {
+    if (!studyHasFiles(study.getInternalAbbrev())) {
+      return false;
+    }
+    final Long dataVersion = this.getDataVersionUsed(study);
+    if (dataVersion == null) {
+      LOG.info("No data version found, falling back to database");
+      return false;
+    }
+    if (dataVersion != study.getLastModified().getTime()) {
+      LOG.info("Data version does not match last modified time of study. Data version: " + dataVersion + ". Study last modified "
+          + study.getLastModified().getTime());
+      return false;
+    }
+    return true;
   }
 
   public boolean studyHasFiles(String studyAbbrev) {
@@ -78,7 +91,7 @@ public class BinaryFilesManager {
       LOG.debug("Study directory for study {} exists but data is incomplete.", studyAbbrev);
       return false;
     }
-    LOG.debug("Looked for study dir for study {} and found it. studyHasFiles() will return true.", studyAbbrev);
+    LOG.trace("Looked for study dir for study {} and found it. studyHasFiles() will return true.", studyAbbrev);
     return true;
   }
 

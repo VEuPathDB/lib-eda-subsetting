@@ -4,6 +4,7 @@ import org.veupathdb.service.eda.subset.Utils;
 import org.veupathdb.service.eda.subset.model.tabular.TabularReportConfig;
 import org.veupathdb.service.eda.subset.model.variable.binary.BinaryConverter;
 
+import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.function.Function;
 
@@ -127,5 +128,11 @@ public abstract class VariableWithValues<T> extends Variable {
    */
   public Function<byte[], byte[]> getRawUtf8BinaryFormatter(TabularReportConfig tabularReportConfig) {
     return getIsMultiValued() ? Utils::quotePaddedBinary : Utils::trimPaddedBinary;
+  }
+
+  public Function<byte[], String> getRawUtf8StringFormatter(TabularReportConfig tabularReportConfig) {
+    return getIsMultiValued()
+        ? byteArr -> new String(Utils.quotePaddedBinary(byteArr), StandardCharsets.UTF_8)
+        : Utils::decodePaddedUtf8Binary;
   }
 }

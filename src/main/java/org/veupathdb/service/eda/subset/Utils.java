@@ -1,5 +1,6 @@
 package org.veupathdb.service.eda.subset;
 
+import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 
 public class Utils {
@@ -13,21 +14,27 @@ public class Utils {
   }
 
   public static int getPaddedUtf8StringLength(byte[] utf8Bytes) {
-    int length = 0;
-    for (int i = 0; i < Integer.BYTES; i++) {
-      length <<= 8; // Shift one byte, 8 bits.
-      length |= (utf8Bytes[i] & BIT_MASK);
-    }
+    int length = getLengthFromPaddedString(utf8Bytes);
     return length;
   }
 
   public static byte[] trimPaddedBinary(byte[] paddedUtf8Bytes) {
+    int length = getLengthFromPaddedString(paddedUtf8Bytes);
+    return Arrays.copyOfRange(paddedUtf8Bytes, Integer.BYTES, Integer.BYTES + length);
+  }
+
+  public static String decodePaddedUtf8Binary(byte[] paddedUtf8Bytes) {
+    int length = getLengthFromPaddedString(paddedUtf8Bytes);
+    return new String(paddedUtf8Bytes, 4, length, StandardCharsets.UTF_8);
+  }
+
+  private static int getLengthFromPaddedString(byte[] paddedUtf8Bytes) {
     int length = 0;
     for (int i = 0; i < Integer.BYTES; i++) {
       length <<= 8; // Shift one byte, 8 bits.
       length |= (paddedUtf8Bytes[i] & BIT_MASK);
     }
-    return Arrays.copyOfRange(paddedUtf8Bytes, Integer.BYTES, Integer.BYTES + length);
+    return length;
   }
 
   public static byte[] quotePaddedBinary(byte[] paddedUtf8Bytes) {

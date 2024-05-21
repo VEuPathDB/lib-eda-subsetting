@@ -106,6 +106,7 @@ public class FilteredValueIterator<V, T> implements CloseableIterator<T> {
 
   @Override
   public void close() {
+
     LOG.info("Total time spent awaiting disk reads: {}", Duration.ofMillis(reader.getTimeAwaitingFill()));
     reader.close();
   }

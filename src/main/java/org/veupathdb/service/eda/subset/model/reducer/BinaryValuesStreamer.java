@@ -105,9 +105,9 @@ public class BinaryValuesStreamer {
   public <V> FilteredValueIterator<byte[], VariableValueIdPair<String>> streamUnformattedIdValueBinaryPairs(
       Study study,
       VariableWithValues<V> variable) throws IOException {
+    final TabularReportConfig tabularReportConfig = new TabularReportConfig();
     BinaryConverter<byte[]> serializer = new ByteArrayConverter(variable.getStringConverter().numBytes());
     final BinaryDeserializer<VariableValueIdPair<byte[]>> deserializer = new ValueWithIdDeserializer<>(serializer);
-    TabularReportConfig reportConfig = new TabularReportConfig();
     return new FilteredValueIterator<>(
         binaryFilesManager.getUtf8VariableFile(study,
             variable.getEntity(),
@@ -115,7 +115,8 @@ public class BinaryValuesStreamer {
             BinaryFilesManager.Operation.READ),
         x -> true, // Always return true, extract all ID index pairs and variable values.
         deserializer,
-        pair -> new VariableValueIdPair<>(pair.getIdIndex(), new String(variable.getRawUtf8BinaryFormatter(reportConfig).apply(pair.getValue()), StandardCharsets.UTF_8)),
+        pair -> new VariableValueIdPair<>(pair.getIdIndex(),
+            variable.getRawUtf8StringFormatter(tabularReportConfig).apply(pair.getValue())),
         fileChannelExecutorService,
         deserializerExecutorService); // Provide a stream of entire VariableValueIdPair objects.
   }

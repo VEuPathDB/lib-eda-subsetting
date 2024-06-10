@@ -324,7 +324,6 @@ public class BinaryFilesManager {
 
   private Optional<Path> getStudyDirIfExists(String studyAbbrev) {
     Path studyDir = studyFinder.findStudyPath(getStudyDirName(studyAbbrev));
-    LOG.debug("Looking for study dir " + studyDir.toString());
     if (!Files.isDirectory(studyDir)) return Optional.empty();
     return Optional.of(studyDir);
   }

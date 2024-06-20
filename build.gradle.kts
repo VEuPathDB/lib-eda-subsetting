@@ -7,7 +7,7 @@
 
 // Project settings
 group   = "org.veupathdb.eda"
-version = "4.15.2"
+version = "4.16.0"
 
 plugins {
   `java-library`
@@ -20,6 +20,7 @@ java {
   withSourcesJar()
   withJavadocJar()
 }
+
 tasks.withType<Jar> {
   duplicatesStrategy = DuplicatesStrategy.INCLUDE
 }

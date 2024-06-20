@@ -49,7 +49,7 @@ public class EntityFactory {
         boolean attributesTableExists = attributesTableExists(entity);
         entity.setAttributesTableExists(attributesTableExists);
         String parentId = rs.getString(DB.Tables.EntityTypeGraph.Columns.ENTITY_PARENT_ID_COL_NAME);
-        if (parentId == null) {
+        if (parentId == null || parentId.isEmpty()) {
           if (root != null) throw new RuntimeException("In Study " + studyId +
               " found more than one root entity (" + root.getId() + ", " + entity.getId() + ")");
           root = entity;
@@ -74,7 +74,17 @@ public class EntityFactory {
    * to clients whether certain functionality (e.g. previewing downloads) is available for this entity.
    */
   private boolean attributesTableExists(Entity entity) {
+    PlatformUtils.DBPlatform platform = PlatformUtils.fromDataSource(_dataSource);
     String wideTable = DB.Tables.Attributes.NAME(entity).toUpperCase(Locale.ROOT);
+    if (platform == PlatformUtils.DBPlatform.PostgresDB) {
+      String postgresTableExists = String.format("SELECT EXISTS (\n" +
+          "   SELECT 1\n" +
+          "   FROM information_schema.tables\n" +
+          "   WHERE table_schema = '%s'\n" +
+          "   AND table_name = '%s'\n" +
+          ");", _appDbSchema, wideTable);
+      return new SQLRunner(_dataSource, postgresTableExists).executeQuery(ResultSet::next);
+    }
     String tableExistsSql = String.format("SELECT object_name FROM all_objects WHERE object_name = '%s'", wideTable);
     return new SQLRunner(_dataSource, tableExistsSql).executeQuery(ResultSet::next);
   }

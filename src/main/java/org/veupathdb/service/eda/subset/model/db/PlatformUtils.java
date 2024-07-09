@@ -1,6 +1,7 @@
 package org.veupathdb.service.eda.subset.model.db;
 
 import javax.sql.DataSource;
+import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.Arrays;
 
@@ -23,8 +24,8 @@ public class PlatformUtils {
   }
 
   public static DBPlatform fromDataSource(DataSource dataSource) {
-    try {
-      final String productName = dataSource.getConnection().getMetaData().getDatabaseProductName();
+    try (Connection c = dataSource.getConnection()) {
+      final String productName = c.getMetaData().getDatabaseProductName();
       return Arrays.stream(DBPlatform.values())
           .filter(platform -> platform.getProductName().equals(productName))
           .findAny()

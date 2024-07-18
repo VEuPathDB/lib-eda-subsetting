@@ -597,10 +597,10 @@ public class FilteredResultFactory {
     String withClauses = joinWithClauses(withClausesList);
 
     //
-    // final select -- quote the variable names for case sensitivity of var names in DIY studies.
+    // final select -- quote the variable names for case sensitivity of var names in studies.
     // Note that the quotes are a bit of a hack, it's possible we'd rather enforce case insensitivity at load time.
     //
-    List<String> outputCols = getColumns(outputEntity, outputVariables, Entity::getPKColName, var -> "\"" + var.getId() + "\"");
+    List<String> outputCols = getColumns(outputEntity, outputVariables, Entity::getPKColName, var -> quote(var.getId()));
     return withClauses + NL
         + "select " + String.join(", ", outputCols) + NL
         + "from " + wideTabularWithClauseName + NL
@@ -882,11 +882,18 @@ order by number_value desc;
     outputEntity.getAncestorPkColNames().stream().forEach(a -> cols.add(0, a));
     // add output entity last
     cols.add(outputEntity.getPKColName());
-    return "ORDER BY " + String.join(", ", cols);
+    List<String> quotedCols = cols.stream()
+        .map(FilteredResultFactory::quote)
+        .collect(Collectors.toList());
+    return "ORDER BY " + String.join(", ", quotedCols);
   }
 
   static String generateDistributionGroupByClause(VariableWithValues outputVariable) {
     return "GROUP BY " + outputVariable.getType().getTallTableColumnName();
+  }
+
+  private static String quote(String s) {
+      return "\"" + s + "\"";
   }
 
 

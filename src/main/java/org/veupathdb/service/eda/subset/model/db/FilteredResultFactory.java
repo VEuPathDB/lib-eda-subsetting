@@ -625,6 +625,7 @@ public class FilteredResultFactory {
     return config.isEmpty() ? "" :
         indent + " order by " + config.stream()
             .map(entry -> entry.getKey() + " " + entry.getDirection())
+            .map(FilteredResultFactory::quote)
             .collect(Collectors.joining(", ")) + " ";
   }
 
@@ -882,10 +883,7 @@ order by number_value desc;
     outputEntity.getAncestorPkColNames().stream().forEach(a -> cols.add(0, a));
     // add output entity last
     cols.add(outputEntity.getPKColName());
-    List<String> quotedCols = cols.stream()
-        .map(FilteredResultFactory::quote)
-        .collect(Collectors.toList());
-    return "ORDER BY " + String.join(", ", quotedCols);
+    return "ORDER BY " + String.join(", ", cols);
   }
 
   static String generateDistributionGroupByClause(VariableWithValues outputVariable) {

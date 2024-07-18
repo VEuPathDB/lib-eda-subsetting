@@ -75,6 +75,7 @@ public class EntityFactory {
    */
   private boolean attributesTableExists(Entity entity) {
     PlatformUtils.DBPlatform platform = PlatformUtils.fromDataSource(_dataSource);
+    LOG.info("Found DB platform: " + platform);
     String wideTable = DB.Tables.Attributes.NAME(entity).toUpperCase(Locale.ROOT);
     if (platform == PlatformUtils.DBPlatform.PostgresDB) {
       String postgresTableExists = String.format("SELECT EXISTS (\n" +

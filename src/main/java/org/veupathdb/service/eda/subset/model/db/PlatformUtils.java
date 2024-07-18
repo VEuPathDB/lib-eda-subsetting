@@ -30,7 +30,7 @@ public class PlatformUtils {
   public static DBPlatform fromDataSource(DataSource dataSource) {
     try (Connection c = dataSource.getConnection()) {
       final String productName = c.getMetaData().getDatabaseProductName();
-      LOG.info("Found product name: " + productName)
+      LOG.info("Found product name: " + productName);
       return Arrays.stream(DBPlatform.values())
           .filter(platform -> platform.getProductName().equals(productName))
           .findAny()

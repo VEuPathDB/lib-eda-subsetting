@@ -624,8 +624,7 @@ public class FilteredResultFactory {
   static String reportConfigOrderByClause(List<SortSpecEntry> config, String indent) {
     return config.isEmpty() ? "" :
         indent + " order by " + config.stream()
-            .map(entry -> entry.getKey() + " " + entry.getDirection())
-            .map(FilteredResultFactory::quote)
+            .map(entry -> quote(entry.getKey()) + " " + entry.getDirection())
             .collect(Collectors.joining(", ")) + " ";
   }
 

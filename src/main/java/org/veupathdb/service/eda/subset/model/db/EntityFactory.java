@@ -29,6 +29,9 @@ public class EntityFactory {
   private final String _appDbSchema;
   private final boolean _orderEntities;
 
+  // Cache the DB platform, it is set at startup and will never change.
+  private PlatformUtils.DBPlatform _dbPlatform = null;
+
   public EntityFactory(DataSource dataSource, String appDbSchema, boolean orderEntities) {
     _dataSource = dataSource;
     _appDbSchema = appDbSchema;
@@ -74,10 +77,11 @@ public class EntityFactory {
    * to clients whether certain functionality (e.g. previewing downloads) is available for this entity.
    */
   private boolean attributesTableExists(Entity entity) {
-    PlatformUtils.DBPlatform platform = PlatformUtils.fromDataSource(_dataSource);
-    LOG.info("Found DB platform: {}", platform);
+    if (_dbPlatform == null) {
+      _dbPlatform = PlatformUtils.fromDataSource(_dataSource);
+    }
     String wideTable = DB.Tables.Attributes.NAME(entity).toUpperCase(Locale.ROOT);
-    if (platform == PlatformUtils.DBPlatform.PostgresDB) {
+    if (_dbPlatform == PlatformUtils.DBPlatform.PostgresDB) {
       String postgresTableExists = String.format("SELECT EXISTS (\n" +
           "   SELECT 1\n" +
           "   FROM information_schema.tables\n" +

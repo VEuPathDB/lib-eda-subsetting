@@ -30,7 +30,7 @@ public class EntityFactory {
   private final boolean _orderEntities;
 
   // Cache the DB platform, it is set at startup and will never change.
-  private PlatformUtils.DBPlatform _dbPlatform = null;
+  private static PlatformUtils.DBPlatform _dbPlatform = null;
 
   public EntityFactory(DataSource dataSource, String appDbSchema, boolean orderEntities) {
     _dataSource = dataSource;

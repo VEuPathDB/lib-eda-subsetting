@@ -185,11 +185,11 @@ public class FilteredResultFactory {
    * Oracle-based implementation of tabular record iterator.
    */
   private static CloseableIterator<Map<String, String>> oracleTabularSubsetIterator(DataSource dataSource, String appDbSchema, Study study, Entity outputEntity,
-                                                                                   List<VariableWithValues> outputVariables, List<Filter> filters) {
+                                                                                    List<VariableWithValues> outputVariables, List<Filter> filters) {
     TreeNode<Entity> prunedEntityTree = pruneTree(study.getEntityTree(), filters, outputEntity);
 
     String sql = generateTabularSqlForTallRows(appDbSchema, outputVariables, outputEntity, filters, prunedEntityTree);
-    LOG.debug("Generated the following tabular SQL: " + sql);
+    LOG.debug("Generated the following tabular SQL: {} with schema {}.", sql, appDbSchema);
 
     // gather the output columns; these will be used for the standard header and to look up DB column values
     List<String> outputColumns = getTabularOutputColumns(outputEntity, outputVariables);
@@ -204,6 +204,10 @@ public class FilteredResultFactory {
         }
         catch (Exception e) {
           LOG.warn("Exception, ", e);
+
+          // Close the connection if we throw an exception initializing the stream.
+          // It's not in a try-with-resources, because in the happy-path, the upstream caller is responsible for closing resources.
+          connection.close();
           throw new RuntimeException("Unable to write result", e);
         }
       }, FETCH_SIZE_FOR_TABULAR_QUERIES);
@@ -239,7 +243,6 @@ public class FilteredResultFactory {
         // write header row
         resultConsumer.consumeRow(usePrettyHeader ? getTabularPrettyHeaders(outputEntity, outputVariables) : outputColumns);
 
-        LOG.info("Running SQL");
         if (reportConfig.requiresSorting())
           writeWideRowsFromWideResult(rs, resultConsumer, outputColumns, outputEntity, trimTimeFromDateVars);
         else

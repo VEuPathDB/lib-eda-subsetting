@@ -782,10 +782,11 @@ order by number_value desc;
 
     String tallTblAbbrev = "tall";
     String ancestorTblAbbrev = "subset";
+    String distTblAbbrev = "dist";
     return
         // with clauses create an entity-named filtered result for each relevant entity
         generateFilterWithClauses(appDbSchema, prunedEntityTree, filters) + NL +
-            generateDistributionSelectClause(distributionVariable) + NL +
+            generateDistributionSelectClause(distributionVariable, distTblAbbrev) + NL +
             " FROM ( " + NL +
             generateTabularSelectClause(outputEntity, ancestorTblAbbrev) + NL +
             generateTabularFromClause(outputEntity, prunedEntityTree, ancestorTblAbbrev) + NL +
@@ -793,15 +794,15 @@ order by number_value desc;
             //   record, even if no data exists for requested vars (or no vars requested).
             // null rows will be handled in the tall-to-wide rows conversion
             generateLeftJoin(appDbSchema, outputEntity, ListBuilder.asList(distributionVariable), ancestorTblAbbrev, tallTblAbbrev) + NL +
-            " ) " + NL +
-            generateDistributionGroupByClause(distributionVariable) + NL +
-            "ORDER BY " + distributionVariable.getType().getTallTableColumnName() + " ASC";
+            " ) dist" + NL +
+            generateDistributionGroupByClause(distributionVariable, distTblAbbrev) + NL +
+            "ORDER BY " + distTblAbbrev + "." + distributionVariable.getType().getTallTableColumnName() + " ASC";
   }
 
-  static String generateDistributionSelectClause(VariableWithValues distributionVariable) {
+  static String generateDistributionSelectClause(VariableWithValues distributionVariable, String tableAbbrev) {
     return "SELECT " +
-        distributionVariable.getType().getTallTableColumnName() +
-        ", count(" + distributionVariable.getEntity().getPKColName() + ") as " + COUNT_COLUMN_NAME;
+        tableAbbrev + "." + distributionVariable.getType().getTallTableColumnName() +
+        ", count(" + tableAbbrev + "." + distributionVariable.getEntity().getPKColName() + ") as " + COUNT_COLUMN_NAME;
   }
 
   static String generateDistributionFromClause(String appDbSchema, Entity outputEntity) {
@@ -888,8 +889,8 @@ order by number_value desc;
     return "ORDER BY " + String.join(", ", cols);
   }
 
-  static String generateDistributionGroupByClause(VariableWithValues outputVariable) {
-    return "GROUP BY " + outputVariable.getType().getTallTableColumnName();
+  static String generateDistributionGroupByClause(VariableWithValues outputVariable, String tableAbbrev) {
+    return "GROUP BY " + tableAbbrev + "." + outputVariable.getType().getTallTableColumnName();
   }
 
   private static String quote(String s) {

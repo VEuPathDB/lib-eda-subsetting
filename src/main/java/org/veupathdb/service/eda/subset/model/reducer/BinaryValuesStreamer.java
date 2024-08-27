@@ -55,7 +55,7 @@ public class BinaryValuesStreamer {
    * @param <T>    Type of value associated with {@link V}
    * @throws IOException if there is a failure to open the binary file.
    */
-  public <V, T extends VariableWithValues<V>> FilteredValueIterator<V, Long> streamFilteredEntityIdIndexes(
+  public <V, T extends VariableWithValues<V>> CloseableIterator<Long> streamFilteredEntityIdIndexes(
       SingleValueFilter<V, T> filter, Study study) throws IOException {
     BinaryConverter<V> serializer = filter.getVariable().getBinaryConverter();
     return new FilteredValueIterator<>(
@@ -94,7 +94,7 @@ public class BinaryValuesStreamer {
     }
   }
 
-  public <V> FilteredValueIterator<byte[], VariableValueIdPair<byte[]>> streamIdValueBinaryPairs(
+  public <V> CloseableIterator<VariableValueIdPair<byte[]>> streamIdValueBinaryPairs(
       Study study,
       VariableWithValues<V> variable,
       TabularReportConfig reportConfig) throws IOException {
@@ -102,7 +102,7 @@ public class BinaryValuesStreamer {
     return streamIdValueBinaryPairs(study, variable, reportConfig, binaryFormatter);
   }
 
-  public <V> FilteredValueIterator<byte[], VariableValueIdPair<String>> streamUnformattedIdValueBinaryPairs(
+  public <V> CloseableIterator<VariableValueIdPair<String>> streamUnformattedIdValueBinaryPairs(
       Study study,
       VariableWithValues<V> variable) throws IOException {
     final TabularReportConfig tabularReportConfig = new TabularReportConfig();

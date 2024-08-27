@@ -37,7 +37,7 @@ public class JoinNodePerformanceTest {
     files = new ArrayList<>();
     final File studyDir = new File(directory, TestDataProvider.STUDY_ID);
     studyDir.mkdir();
-    final File entityDir = new File(studyDir.getAbsolutePath(), TestDataProvider.ENTITY_ID);
+    final File entityDir = new File(studyDir.getAbsolutePath(), TestDataProvider.getNextEntityId());
     entityDir.mkdir();
     final int numFiles = Integer.parseInt(System.getProperty("numFiles", "10"));
     final int recordCount = Integer.parseInt(System.getProperty("recordCount", "2000000"));

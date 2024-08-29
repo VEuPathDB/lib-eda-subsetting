@@ -1,5 +1,6 @@
 package org.veupathdb.service.eda.subset.model.reducer;
 
+import org.gusdb.fgputil.iterator.CloseableIterator;
 import org.veupathdb.service.eda.subset.model.reducer.formatter.TabularValueFormatter;
 import org.veupathdb.service.eda.subset.model.variable.VariableValueIdPair;
 
@@ -10,7 +11,7 @@ public class ValueStream<T> implements Iterator<VariableValueIdPair<T>> {
   private final Iterator<VariableValueIdPair<T>> stream;
   private final TabularValueFormatter valueFormatter;
 
-  public ValueStream(Iterator<VariableValueIdPair<T>> stream, TabularValueFormatter valueFormatter) {
+  public ValueStream(CloseableIterator<VariableValueIdPair<T>> stream, TabularValueFormatter valueFormatter) {
     this.stream = stream;
     this.valueFormatter = valueFormatter;
     if (stream.hasNext()) {

@@ -19,15 +19,21 @@ import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicInteger;
 
 public class TestDataProvider {
-  public static final String ENTITY_ID = "EUPA_1024";
+  private static final AtomicInteger ID_COUNT = new AtomicInteger(1024);
+  private static final AtomicInteger VAR_COUNT = new AtomicInteger(1111);
+
   public static final String STUDY_ID = "GEMS1A";
-  public static final String VARIABLE_ID = "EUPA_1111";
+
+  public static String getNextEntityId() {
+    return "EUPA_" + ID_COUNT.get();
+  }
 
   public static Entity constructEntity() {
     return new Entity(
-        ENTITY_ID,
+        "EUPA_" + ID_COUNT.getAndIncrement(),
         STUDY_ID,
         "My Study",
         "My Studies",
@@ -40,7 +46,7 @@ public class TestDataProvider {
 
   public static IntegerVariable constructIntVariable(Entity entity) {
     return new IntegerVariable(
-        constructGenericVarProps(entity, VARIABLE_ID),
+        constructGenericVarProps(entity, "EUPA_" + VAR_COUNT.getAndIncrement()),
         constructVarValuesProps(VariableType.INTEGER, false),
         new NumberDistributionConfig<>(0L, 10L, 0L, 10L, 2L, 2L),
         new IntegerVariable.Properties("bleep bloops")
@@ -49,7 +55,7 @@ public class TestDataProvider {
 
   public static DateVariable constructDateVariable(Entity entity) {
     return new DateVariable(
-        constructGenericVarProps(entity, VARIABLE_ID),
+        constructGenericVarProps(entity, "EUPA_" + VAR_COUNT.getAndIncrement()),
         constructVarValuesProps(VariableType.DATE, false),
         new DateDistributionConfig(false, VariableDataShape.CONTINUOUS, null, null, "min", "max", 10, "days", null)
     );

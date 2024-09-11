@@ -8,8 +8,13 @@ import org.veupathdb.service.eda.subset.model.distribution.NumberDistributionCon
  */
 public abstract class NumberVariable<T extends Number & Comparable<T>> extends VariableWithValues<T> {
 
-  public abstract T toNumberSubtype(Number number);
-  public abstract T validateBinWidth(Number binWidth);
+  public enum InclusiveRangeBoundary {
+    MIN, MAX
+  }
+
+  public abstract T getValidatedSubtype(Number value);
+  public abstract T getValidatedSubtypeForInclusiveRangeBoundary(Number number, InclusiveRangeBoundary boundary);
+  public abstract T getValidatedSubtypeForBinWidth(Number binWidth);
   public abstract String getUnits();
 
   protected final NumberDistributionConfig<T> _distributionConfig;

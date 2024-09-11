@@ -22,8 +22,8 @@ public class NumberRangeFilter<T extends Number & Comparable<T>> extends SingleV
     super(appDbSchema, entity, variable);
     _min = min;
     _max = max;
-    _typedMin = variable.toNumberSubtype(min);
-    _typedMax = variable.toNumberSubtype(max);
+    _typedMin = variable.getValidatedSubtypeForInclusiveRangeBoundary(min, NumberVariable.InclusiveRangeBoundary.MIN);
+    _typedMax = variable.getValidatedSubtypeForInclusiveRangeBoundary(max, NumberVariable.InclusiveRangeBoundary.MAX);
   }
 
   // safe from SQL injection since input classes are Number

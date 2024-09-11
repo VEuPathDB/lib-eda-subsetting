@@ -77,15 +77,32 @@ public class IntegerVariable extends NumberVariable<Long> {
   }
 
   @Override
-  public Long toNumberSubtype(Number number) {
-    return number.longValue();
+  public Long getValidatedSubtype(Number value) {
+    return getValidatedSubtype(value, "Passed value '" + value + "' must be an integer but is not.");
+  }
+
+  private static Long getValidatedSubtype(Number value, String errorMessage) {
+    if (value.doubleValue() != Math.floor(value.doubleValue())) {
+      throw new BadRequestException(errorMessage);
+    }
+    // passed number was an integer so truncation is fine here
+    return value.longValue();
   }
 
   @Override
-  public Long validateBinWidth(Number binWidth) {
-    long longValue = toNumberSubtype(binWidth);
+  public Long getValidatedSubtypeForInclusiveRangeBoundary(Number number, InclusiveRangeBoundary boundary) {
+    Double d = number.doubleValue();
+    // This conversion depends on range filters using inclusive boundaries!
+    d = boundary == InclusiveRangeBoundary.MIN ? Math.ceil(d) : Math.floor(d);
+    return d.longValue();
+  }
+
+  @Override
+  public Long getValidatedSubtypeForBinWidth(Number binWidth) {
+    String errorMessage = "binWidth must be a positive integer for integer variable distributions";
+    long longValue = getValidatedSubtype(binWidth, errorMessage);
     if (longValue <= 0) {
-      throw new BadRequestException("binWidth must be a positive integer for integer variable distributions");
+      throw new BadRequestException(errorMessage);
     }
     return longValue;
   }

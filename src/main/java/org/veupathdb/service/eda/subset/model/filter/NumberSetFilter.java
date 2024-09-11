@@ -21,7 +21,7 @@ public class NumberSetFilter<T extends Number & Comparable<T>> extends SingleVal
     super(appDbSchema, entity, variable);
     _numberSet = numberSet;
     _typedNumberSet = _numberSet.stream()
-        .map(_variable::toNumberSubtype)
+        .map(_variable::getValidatedSubtype)
         .collect(Collectors.toList());
   }
 

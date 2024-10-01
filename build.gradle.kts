@@ -7,7 +7,7 @@
 
 // Project settings
 group   = "org.veupathdb.eda"
-version = "5.0.0"
+version = "5.0.1"
 
 plugins {
   `java-library`
@@ -24,10 +24,6 @@ java {
 tasks.withType<Jar> {
   duplicatesStrategy = DuplicatesStrategy.INCLUDE
 }
-
-//tasks.named("jar") {
-//  duplicatesStrategy =
-//}
 
 val test by tasks.getting(Test::class) {
   // use junit platform for unit tests

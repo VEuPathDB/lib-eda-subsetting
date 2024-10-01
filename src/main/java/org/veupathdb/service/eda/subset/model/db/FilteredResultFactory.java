@@ -189,7 +189,6 @@ public class FilteredResultFactory {
     TreeNode<Entity> prunedEntityTree = pruneTree(study.getEntityTree(), filters, outputEntity);
 
     String sql = generateTabularSqlForTallRows(appDbSchema, outputVariables, outputEntity, filters, prunedEntityTree);
-    LOG.debug("Generated the following tabular SQL: {} with schema {}.", sql, appDbSchema);
 
     // gather the output columns; these will be used for the standard header and to look up DB column values
     List<String> outputColumns = getTabularOutputColumns(outputEntity, outputVariables);
@@ -225,7 +224,6 @@ public class FilteredResultFactory {
     String sql = reportConfig.requiresSorting()
         ? generateTabularSqlForWideRows(appDbSchema, outputVariables, outputEntity, filters, reportConfig, prunedEntityTree)
         : generateTabularSqlForTallRows(appDbSchema, outputVariables, outputEntity, filters, prunedEntityTree);
-    LOG.debug("Generated the following tabular SQL: " + sql);
 
     // gather the output columns; these will be used for the standard header and to look up DB column values
     List<String> outputColumns = getColumns(outputEntity, outputVariables, Entity::getPKColName, Variable::getId);;
@@ -464,7 +462,6 @@ public class FilteredResultFactory {
       DataSource datasource, String appDbSchema, TreeNode<Entity> prunedEntityTree, Entity outputEntity,
       VariableWithValues distributionVariable, List<Filter> filters) {
     String sql = generateDistributionSql(appDbSchema, outputEntity, distributionVariable, filters, prunedEntityTree);
-    LOG.info("Generated the following distribution SQL: " + NL + sql + NL);
     return ResultSets.openStream(datasource, sql, "Produce variable distribution", row -> Optional.of(
         new TwoTuple<>(distributionVariable.getType().convertRowValueToStringValue(row), row.getLong(COUNT_COLUMN_NAME))));
   }
@@ -530,8 +527,6 @@ public class FilteredResultFactory {
    */
   static String generateTabularSqlForTallRows(String appDbSchema, List<VariableWithValues> outputVariables, Entity outputEntity, List<Filter> filters, TreeNode<Entity> prunedEntityTree) {
 
-    LOG.debug("--------------------- generateTabularSql ------------------");
-
     String tallTblAbbrev = "tall";
     String ancestorTblAbbrev = "subset";
     return
@@ -579,8 +574,6 @@ public class FilteredResultFactory {
    */
   static String generateTabularSqlForWideRows(String appDbSchema, List<VariableWithValues> outputVariables, Entity outputEntity, List<Filter> filters,
                                               TabularReportConfig reportConfig, TreeNode<Entity> prunedEntityTree) {
-    LOG.debug("--------------------- generateTabularSql paging sorting ------------------");
-
     String wideTabularWithClauseName = "wide_tabular";
     String subsetWithClauseName = "subset";
     String rowColName = "r";

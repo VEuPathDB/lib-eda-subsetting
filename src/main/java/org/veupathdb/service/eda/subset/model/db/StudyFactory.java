@@ -82,7 +82,7 @@ public class StudyFactory implements StudyProvider {
     for (Entity entity : entityIdMap.values()) {
       entity.assignVariables(_variableFactory.loadVariables(overview.getInternalAbbrev(), entity));
       if (entity.hasCollections()) {
-        LOG.info("Entity " + entity.getId() + " has collections.  Loading them...");
+        LOG.info("Entity {} has collections.  Loading them...", entity.getId());
         entity.assignCollections(collectionFactory.loadCollections(entity));
       }
     }

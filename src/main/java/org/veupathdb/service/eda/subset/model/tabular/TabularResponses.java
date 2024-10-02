@@ -48,7 +48,7 @@ public class TabularResponses {
 
     public static Type fromAcceptHeader(ContainerRequestContext request) {
       String header = request.getHeaders().getFirst(HttpHeaders.ACCEPT);
-      return header == null || !JSON.getMediaType().equals(header)
+      return !JSON.getMediaType().equals(header)
           ? TABULAR : JSON;
     }
   }

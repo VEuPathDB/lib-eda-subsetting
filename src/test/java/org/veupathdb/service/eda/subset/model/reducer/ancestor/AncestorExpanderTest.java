@@ -14,64 +14,64 @@ public class AncestorExpanderTest {
   @Test
   public void testFirstAndLastAncestorIncluded() {
     List<VariableValueIdPair<Long>> descendantStream = List.of(
-        new VariableValueIdPair<>(1L, 1L),
-        new VariableValueIdPair<>(2L, 1L),
-        new VariableValueIdPair<>(3L, 1L),
-        new VariableValueIdPair<>(4L, 2L),
-        new VariableValueIdPair<>(5L, 2L),
-        new VariableValueIdPair<>(6L, 2L),
-        new VariableValueIdPair<>(7L, 2L),
-        new VariableValueIdPair<>(8L, 4L),
-        new VariableValueIdPair<>(9L, 4L),
-        new VariableValueIdPair<>(10L, 4L)
+      new VariableValueIdPair<>(1L, 1L),
+      new VariableValueIdPair<>(2L, 1L),
+      new VariableValueIdPair<>(3L, 1L),
+      new VariableValueIdPair<>(4L, 2L),
+      new VariableValueIdPair<>(5L, 2L),
+      new VariableValueIdPair<>(6L, 2L),
+      new VariableValueIdPair<>(7L, 2L),
+      new VariableValueIdPair<>(8L, 4L),
+      new VariableValueIdPair<>(9L, 4L),
+      new VariableValueIdPair<>(10L, 4L)
     );
     List<Long> entityStream = List.of(1L, 4L);
     MatcherAssert.assertThat(() -> constructExpander(descendantStream, entityStream),
-        Matchers.contains(1L, 2L, 3L, 8L, 9L, 10L));
+      Matchers.contains(1L, 2L, 3L, 8L, 9L, 10L));
   }
 
   @Test
   public void testFirstIdMissingFromDescendantStream() {
     List<VariableValueIdPair<Long>> descendantStream = List.of(
-        new VariableValueIdPair<>(1L, 2L),
-        new VariableValueIdPair<>(2L, 2L),
-        new VariableValueIdPair<>(3L, 2L),
-        new VariableValueIdPair<>(4L, 2L),
-        new VariableValueIdPair<>(5L, 2L),
-        new VariableValueIdPair<>(6L, 2L),
-        new VariableValueIdPair<>(7L, 2L),
-        new VariableValueIdPair<>(8L, 4L),
-        new VariableValueIdPair<>(9L, 4L),
-        new VariableValueIdPair<>(10L, 4L)
+      new VariableValueIdPair<>(1L, 2L),
+      new VariableValueIdPair<>(2L, 2L),
+      new VariableValueIdPair<>(3L, 2L),
+      new VariableValueIdPair<>(4L, 2L),
+      new VariableValueIdPair<>(5L, 2L),
+      new VariableValueIdPair<>(6L, 2L),
+      new VariableValueIdPair<>(7L, 2L),
+      new VariableValueIdPair<>(8L, 4L),
+      new VariableValueIdPair<>(9L, 4L),
+      new VariableValueIdPair<>(10L, 4L)
     );
     List<Long> entityStream = List.of(
-        1L,
-        4L
+      1L,
+      4L
     );
     MatcherAssert.assertThat(() -> constructExpander(descendantStream, entityStream),
-        Matchers.contains(8L, 9L, 10L));
+      Matchers.contains(8L, 9L, 10L));
   }
 
   @Test
   public void testFirstIdMissingFromEntityStream() {
     List<VariableValueIdPair<Long>> descendantStream = List.of(
-        new VariableValueIdPair<>(1L, 1L),
-        new VariableValueIdPair<>(2L, 1L),
-        new VariableValueIdPair<>(3L, 2L),
-        new VariableValueIdPair<>(4L, 2L),
-        new VariableValueIdPair<>(5L, 2L),
-        new VariableValueIdPair<>(6L, 2L),
-        new VariableValueIdPair<>(7L, 2L),
-        new VariableValueIdPair<>(8L, 4L),
-        new VariableValueIdPair<>(9L, 4L),
-        new VariableValueIdPair<>(10L, 4L)
+      new VariableValueIdPair<>(1L, 1L),
+      new VariableValueIdPair<>(2L, 1L),
+      new VariableValueIdPair<>(3L, 2L),
+      new VariableValueIdPair<>(4L, 2L),
+      new VariableValueIdPair<>(5L, 2L),
+      new VariableValueIdPair<>(6L, 2L),
+      new VariableValueIdPair<>(7L, 2L),
+      new VariableValueIdPair<>(8L, 4L),
+      new VariableValueIdPair<>(9L, 4L),
+      new VariableValueIdPair<>(10L, 4L)
     );
     List<Long> entityStream = List.of(
-        2L,
-        4L
+      2L,
+      4L
     );
     MatcherAssert.assertThat(() -> constructExpander(descendantStream, entityStream),
-        Matchers.contains(3L, 4L, 5L, 6L, 7L, 8L, 9L, 10L));
+      Matchers.contains(3L, 4L, 5L, 6L, 7L, 8L, 9L, 10L));
   }
 
 
@@ -84,65 +84,65 @@ public class AncestorExpanderTest {
   @Test
   public void testSecondToLastIncluded() {
     List<VariableValueIdPair<Long>> descendantStream = List.of(
-        new VariableValueIdPair<>(1L, 1L),
-        new VariableValueIdPair<>(2L, 1L),
-        new VariableValueIdPair<>(3L, 2L),
-        new VariableValueIdPair<>(4L, 2L),
-        new VariableValueIdPair<>(5L, 3L),
-        new VariableValueIdPair<>(6L, 3L),
-        new VariableValueIdPair<>(7L, 3L),
-        new VariableValueIdPair<>(8L, 4L),
-        new VariableValueIdPair<>(9L, 4L),
-        new VariableValueIdPair<>(10L, 4L)
+      new VariableValueIdPair<>(1L, 1L),
+      new VariableValueIdPair<>(2L, 1L),
+      new VariableValueIdPair<>(3L, 2L),
+      new VariableValueIdPair<>(4L, 2L),
+      new VariableValueIdPair<>(5L, 3L),
+      new VariableValueIdPair<>(6L, 3L),
+      new VariableValueIdPair<>(7L, 3L),
+      new VariableValueIdPair<>(8L, 4L),
+      new VariableValueIdPair<>(9L, 4L),
+      new VariableValueIdPair<>(10L, 4L)
     );
     List<Long> entityStream = List.of(
-        2L, 3L
+      2L, 3L
     );
     MatcherAssert.assertThat(() -> constructExpander(descendantStream, entityStream),
-        Matchers.contains(3L, 4L, 5L, 6L, 7L));
+      Matchers.contains(3L, 4L, 5L, 6L, 7L));
 
   }
 
   @Test
   public void testSecondToLastEntityIncluded() {
     List<VariableValueIdPair<Long>> descendantStream = List.of(
-        new VariableValueIdPair<>(1L, 1L),
-        new VariableValueIdPair<>(2L, 1L),
-        new VariableValueIdPair<>(3L, 2L),
-        new VariableValueIdPair<>(4L, 2L),
-        new VariableValueIdPair<>(5L, 3L),
-        new VariableValueIdPair<>(6L, 3L),
-        new VariableValueIdPair<>(7L, 3L),
-        new VariableValueIdPair<>(8L, 4L),
-        new VariableValueIdPair<>(9L, 4L),
-        new VariableValueIdPair<>(10L, 4L),
-        new VariableValueIdPair<>(11L, 5L),
-        new VariableValueIdPair<>(12L, 5L)
+      new VariableValueIdPair<>(1L, 1L),
+      new VariableValueIdPair<>(2L, 1L),
+      new VariableValueIdPair<>(3L, 2L),
+      new VariableValueIdPair<>(4L, 2L),
+      new VariableValueIdPair<>(5L, 3L),
+      new VariableValueIdPair<>(6L, 3L),
+      new VariableValueIdPair<>(7L, 3L),
+      new VariableValueIdPair<>(8L, 4L),
+      new VariableValueIdPair<>(9L, 4L),
+      new VariableValueIdPair<>(10L, 4L),
+      new VariableValueIdPair<>(11L, 5L),
+      new VariableValueIdPair<>(12L, 5L)
     );
     List<Long> entityStream = List.of(
-        2L, 3L, 4L
+      2L, 3L, 4L
     );
     constructExpander(descendantStream, entityStream).forEachRemaining(System.out::println);
     MatcherAssert.assertThat(() -> constructExpander(descendantStream, entityStream),
-        Matchers.contains(3L, 4L, 5L, 6L, 7L, 8L, 9L, 10L));
+      Matchers.contains(3L, 4L, 5L, 6L, 7L, 8L, 9L, 10L));
 
   }
 
   @Test
   public void testEmptyEntityStream() {
     List<VariableValueIdPair<Long>> descendantStream = List.of(
-        new VariableValueIdPair<>(1L, 1L),
-        new VariableValueIdPair<>(2L, 1L),
-        new VariableValueIdPair<>(3L, 2L),
-        new VariableValueIdPair<>(4L, 2L),
-        new VariableValueIdPair<>(5L, 3L),
-        new VariableValueIdPair<>(6L, 3L),
-        new VariableValueIdPair<>(7L, 3L),
-        new VariableValueIdPair<>(8L, 4L),
-        new VariableValueIdPair<>(9L, 4L),
-        new VariableValueIdPair<>(10L, 4L),
-        new VariableValueIdPair<>(11L, 5L),
-        new VariableValueIdPair<>(12L, 5L)
+      new VariableValueIdPair<>(1L, 1L),
+      new VariableValueIdPair<>(2L, 1L),
+      new VariableValueIdPair<>(3L, 2L),
+      new VariableValueIdPair<>(4L, 2L),
+      new VariableValueIdPair<>(5L, 3L),
+      new VariableValueIdPair<>(6L, 3L),
+      new VariableValueIdPair<>(7L, 3L),
+      new VariableValueIdPair<>(8L, 4L),
+      new VariableValueIdPair<>(9L, 4L),
+      new VariableValueIdPair<>(10L, 4L),
+      new VariableValueIdPair<>(11L, 5L),
+      new VariableValueIdPair<>(12L, 5L)
     );
     List<Long> entityStream = List.of();
     Iterable<Long> outputStream = () -> constructExpander(descendantStream, entityStream);

@@ -45,7 +45,7 @@ public class TallRowsConversionPerformanceTest {
   }
 
   private static final SupplierWithException<OutputStream> OUTPUT_STREAM_PROVIDER =
-      () -> OUTPUT_FILE_LOCATION == null
+    () -> OUTPUT_FILE_LOCATION == null
 
       // write to nowhere for general performance testing
       ? new OutputStream() { @Override public void write(int b) { } }

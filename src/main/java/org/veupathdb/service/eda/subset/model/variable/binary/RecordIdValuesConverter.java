@@ -6,17 +6,16 @@ import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
 
 public class RecordIdValuesConverter implements BinarySerializer<RecordIdValues>, BinaryDeserializer<RecordIdValues> {
-  private LongValueConverter idIndexConverter;
-  private StringValueConverter idConverter;
-  private List<StringValueConverter> ancestorConverters;
+  private final LongValueConverter idIndexConverter;
+  private final StringValueConverter idConverter;
+  private final List<StringValueConverter> ancestorConverters;
 
   public RecordIdValuesConverter(Entity entity, Map<String, Integer> bytesReservedByEntityId) {
     this(
-        entity.getAncestorEntities().stream().map(e -> bytesReservedByEntityId.get(e.getId())).collect(Collectors.toList()),
-        bytesReservedByEntityId.get(entity.getId())
+      entity.getAncestorEntities().stream().map(e -> bytesReservedByEntityId.get(e.getId())).toList(),
+      bytesReservedByEntityId.get(entity.getId())
     );
   }
 
@@ -24,8 +23,8 @@ public class RecordIdValuesConverter implements BinarySerializer<RecordIdValues>
     this.idIndexConverter = new LongValueConverter();
     this.idConverter = new StringValueConverter(bytesReservedForId);
     this.ancestorConverters = bytesReservedPerAncestor.stream()
-        .map(ancestorNumBytes -> new StringValueConverter(ancestorNumBytes))
-        .collect(Collectors.toList());
+      .map(StringValueConverter::new)
+      .toList();
   }
 
   @Override
@@ -45,7 +44,7 @@ public class RecordIdValuesConverter implements BinarySerializer<RecordIdValues>
 
   @Override
   public int numBytes() {
-    int numAncestorBytes = ancestorConverters.stream().collect(Collectors.summingInt(StringValueConverter::numBytes));
+    int numAncestorBytes = ancestorConverters.stream().mapToInt(StringValueConverter::numBytes).sum();
     int numEntityIdBytes = idConverter.numBytes();
     // idIndex + id_string + ancestor_id_strings
     return Long.BYTES + numAncestorBytes + numEntityIdBytes;
@@ -73,7 +72,7 @@ public class RecordIdValuesConverter implements BinarySerializer<RecordIdValues>
 
   @Override
   public RecordIdValues fromBytes(ByteBuffer bytes) {
-    Long idIndex = bytes.getLong();
+    long idIndex = bytes.getLong();
     String entityId = idConverter.fromBytes(bytes);
     List<String> ancestors = new ArrayList<>();
     for (StringValueConverter ancestorConverter: ancestorConverters) {

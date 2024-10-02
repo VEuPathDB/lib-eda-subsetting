@@ -2,11 +2,8 @@ package org.veupathdb.service.eda.subset.model.reducer;
 
 import org.gusdb.fgputil.iterator.CloseableIterator;
 
-import java.util.Iterator;
-import java.util.List;
-
 public class StreamDeduper implements CloseableIterator<Long> {
-  private CloseableIterator<Long> stream;
+  private final CloseableIterator<Long> stream;
   private Long previous;
 
   public StreamDeduper(CloseableIterator<Long> stream) {

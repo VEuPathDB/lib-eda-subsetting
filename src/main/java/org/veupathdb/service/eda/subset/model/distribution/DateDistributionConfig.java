@@ -27,7 +27,7 @@ public class DateDistributionConfig {
         this.binUnits = BinUnits.valueOf(binUnits.toUpperCase());
       }
       this.binUnitsOverride = binUnitsOverride == null ? null :
-          BinUnits.valueOf(binUnitsOverride.toUpperCase());
+        BinUnits.valueOf(binUnitsOverride.toUpperCase());
       this.binSize = binSize;
     }
     else {

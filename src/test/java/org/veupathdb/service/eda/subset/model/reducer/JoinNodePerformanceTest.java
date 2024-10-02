@@ -43,11 +43,11 @@ public class JoinNodePerformanceTest {
     final int recordCount = Integer.parseInt(System.getProperty("recordCount", "2000000"));
     final boolean cached = Boolean.parseBoolean(System.getProperty("cached", "true"));
     IntStream.range(0, numFiles)
-        .forEach(i -> {
-            Path path = Path.of(directory, "var-file-" + i);
-            files.add(path);
-            BinaryFileGenerator.generate(path, recordCount, cached);
-        });
+      .forEach(i -> {
+        Path path = Path.of(directory, "var-file-" + i);
+        files.add(path);
+        BinaryFileGenerator.generate(path, recordCount, cached);
+      });
   }
 
   @AfterAll
@@ -59,10 +59,10 @@ public class JoinNodePerformanceTest {
   @Test
   public void run() throws Exception {
     List<CloseableIterator<Long>> filteredValueFiles = new ArrayList<>();
-    final ValueWithIdDeserializer<Long> serializer = new ValueWithIdDeserializer(new LongValueConverter());
+    final ValueWithIdDeserializer<Long> serializer = new ValueWithIdDeserializer<>(new LongValueConverter());
     for (Path path : files) {
       filteredValueFiles.add(
-          new FilteredValueIterator<>(path, i -> true, serializer, VariableValueIdPair::getIdIndex, threadPool, threadPool));
+        new FilteredValueIterator<>(path, i -> true, serializer, VariableValueIdPair::getIdIndex, threadPool, threadPool));
     }
     CloseableIterator<Long> merger = new StreamIntersectMerger(filteredValueFiles);
     Instant start = Instant.now();
@@ -71,8 +71,7 @@ public class JoinNodePerformanceTest {
     }
     Duration duration = Duration.between(start, Instant.now());
     long totalSize = files.stream()
-        .map(file -> file.toFile().length())
-        .collect(Collectors.summingLong(l -> l));
+      .map(file -> file.toFile().length()).mapToLong(l -> l).sum();
 
     System.out.println("TOTAL DURATION: " + duration.toMillis());
     System.out.println("TOTAL SIZE OF FILES (MB): " + (totalSize / 1024 / 1024));

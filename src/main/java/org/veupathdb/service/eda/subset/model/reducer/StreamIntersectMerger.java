@@ -38,8 +38,8 @@ public class StreamIntersectMerger implements CloseableIterator<Long> {
     }
     // Convert iterators into peekable iterators.
     this.peekableIdIndexStreams = sortedStreams.stream()
-        .map(PeekableIterator::new)
-        .toArray(PeekableIterator[]::new);
+      .map(PeekableIterator::new)
+      .toArray(PeekableIterator[]::new);
     this.streamRing = new RingLinkedList(peekableIdIndexStreams);
     this.currentIdIndexStream = streamRing.cursor.currentStream;
     this.initialized = false;
@@ -83,7 +83,7 @@ public class StreamIntersectMerger implements CloseableIterator<Long> {
       return;
     }
     // value not null; counts as first concurring stream
-     int numConcurringStreams = 1;
+    int numConcurringStreams = 1;
 
     // continual loop, trying to match all iterators to the same value
     while (numConcurringStreams < streamRing.size()) {
@@ -116,27 +116,27 @@ public class StreamIntersectMerger implements CloseableIterator<Long> {
   }
 
   @Override
-  public void close() throws Exception {
+  public void close() {
     if (peekableIdIndexStreams != null) {
       Arrays.stream(peekableIdIndexStreams)
-          .forEach(stream -> {
-            try {
-              stream.close();
-            } catch (Exception e) {
-              LOG.warn("Unable to close stream.", e);
-            }
-          });
+        .forEach(stream -> {
+          try {
+            stream.close();
+          } catch (Exception e) {
+            LOG.warn("Unable to close stream.", e);
+          }
+        });
     }
   }
 
   /**
-  /**
+   /**
    * Utility class which stores a linked list of PeekableIterators. The elements are linked in a ring-like structure
    * such that the last element points to the first to allow for natural traversal of streams.
    */
   private static class RingLinkedList {
     private Node cursor;
-    private int size;
+    private final int size;
 
     public RingLinkedList(PeekableIterator[] iterators) {
       this.size = iterators.length;

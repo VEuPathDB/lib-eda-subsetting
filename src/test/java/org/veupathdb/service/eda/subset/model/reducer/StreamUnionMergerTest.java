@@ -14,7 +14,7 @@ public class StreamUnionMergerTest {
     List<Long> stream1 = List.of(1L, 3L, 4L, 6L, 12L);
     List<Long> stream2 = List.of(1L, 2L, 4L, 4L, 8L);
     Iterable<Long> merger = () -> new StreamUnionMerger(List.of(CloseableIterator.of(stream1.iterator()),
-        CloseableIterator.of(stream2.iterator())));
+      CloseableIterator.of(stream2.iterator())));
     MatcherAssert.assertThat(merger, Matchers.contains(1L, 2L, 3L, 4L, 6L, 8L, 12L));
   }
 
@@ -25,7 +25,7 @@ public class StreamUnionMergerTest {
     List<Long> stream3 = List.of(1L, 2L, 7L, 8L);
 
     Iterable<Long> merger = () -> new StreamUnionMerger(List.of(CloseableIterator.of(stream1.iterator()),
-        CloseableIterator.of(stream2.iterator()), CloseableIterator.of(stream3.iterator())));
+      CloseableIterator.of(stream2.iterator()), CloseableIterator.of(stream3.iterator())));
     MatcherAssert.assertThat(merger, Matchers.contains(1L, 2L, 3L, 4L, 6L, 7L, 8L, 12L));
   }
 }

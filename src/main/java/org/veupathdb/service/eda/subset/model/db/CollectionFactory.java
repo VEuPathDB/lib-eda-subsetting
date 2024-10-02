@@ -38,23 +38,23 @@ public class CollectionFactory {
     _appDbSchema = appDbSchema;
   }
 
-  public List<VarCollection> loadCollections(Entity entity) {
+  public List<VarCollection<?, ?>> loadCollections(Entity entity) {
 
     // load base collection metadata (does not include member vars)
-    Map<String, VarCollection> collectionMap = loadCollectionMap(entity);
+    Map<String, VarCollection<?, ?>> collectionMap = loadCollectionMap(entity);
 
     // populate with member vars
     assignMemberVariables(entity, collectionMap);
 
     // complete processing for each collection
-    collectionMap.values().stream().forEach(c -> c.buildAndValidate(entity));
+    collectionMap.values().forEach(c -> c.buildAndValidate(entity));
 
     // convert to returnable list
     return new ArrayList<>(collectionMap.values());
 
   }
 
-  private void assignMemberVariables(Entity entity, Map<String, VarCollection> collectionMap) {
+  private void assignMemberVariables(Entity entity, Map<String, VarCollection<?, ?>> collectionMap) {
     String sql =
         "select " + String.join(", ", DB.Tables.CollectionAttribute.Columns.ALL) +
         " from " + _appDbSchema + DB.Tables.CollectionAttribute.NAME(entity);
@@ -69,23 +69,23 @@ public class CollectionFactory {
     });
   }
 
-  private Map<String, VarCollection> loadCollectionMap(Entity entity) {
+  private Map<String, VarCollection<?, ?>> loadCollectionMap(Entity entity) {
     String sql =
         "select " + String.join(", ", DB.Tables.Collection.Columns.ALL) +
         " from " + _appDbSchema + DB.Tables.Collection.NAME(entity);
     return new SQLRunner(_dataSource, sql, "select-collection").executeQuery(rs -> {
       // build map of collections for this entity
-      Map<String, VarCollection> map = new HashMap<>();
+      Map<String, VarCollection<?, ?>> map = new HashMap<>();
       while (rs.next()) {
-        VarCollection collection = loadCollection(rs);
+        VarCollection<?, ?> collection = loadCollection(rs);
         map.put(collection.getId(), collection);
       }
-      LOG.info("Loaded metadata for " + map.size() + " collections on entity " + entity.getId());
+      LOG.info("Loaded metadata for {} collections on entity {}", map.size(), entity.getId());
       return map;
     });
   }
 
-  private static VarCollection loadCollection(ResultSet rs) throws SQLException {
+  private static VarCollection<?, ?> loadCollection(ResultSet rs) throws SQLException {
 
     // find data type of this collection
     CollectionType type = Functions.mapException(() ->
@@ -108,12 +108,11 @@ public class CollectionFactory {
         );
 
     // create typed collection, loading type-specific props
-    switch (type) {
-      case DATE: return new DateVarCollection(properties, createDateDistributionConfig(properties.dataShape, rs, false));
-      case INTEGER: return new IntegerVarCollection(properties, createIntegerProperties(rs), createIntegerDistributionConfig(rs, false));
-      case NUMBER: return new FloatingPointVarCollection(properties, createFloatProperties(rs, false), createFloatDistributionConfig(rs, false));
-      case STRING: return new StringVarCollection(properties);
-      default: throw new IllegalArgumentException();
-    }
+    return switch (type) {
+      case DATE -> new DateVarCollection(properties, createDateDistributionConfig(properties.dataShape, rs, false));
+      case INTEGER -> new IntegerVarCollection(properties, createIntegerProperties(rs), createIntegerDistributionConfig(rs, false));
+      case NUMBER -> new FloatingPointVarCollection<Double>(properties, createFloatProperties(rs, false), createFloatDistributionConfig(rs, false));
+      case STRING -> new StringVarCollection(properties);
+    };
   }
 }

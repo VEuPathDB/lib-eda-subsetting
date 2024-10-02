@@ -18,7 +18,7 @@ public class EntityIdIndexIteratorConverter {
 
   private static final LongValueConverter LONG_VALUE_CONVERTER = new LongValueConverter();
 
-  private BinaryValuesStreamer binaryValuesStreamer;
+  private final BinaryValuesStreamer binaryValuesStreamer;
 
   public EntityIdIndexIteratorConverter(BinaryValuesStreamer binaryValuesStreamer) {
     this.binaryValuesStreamer = binaryValuesStreamer;
@@ -32,7 +32,7 @@ public class EntityIdIndexIteratorConverter {
    * @return a stream of idIndexes corresponding to {@code Entity}
    */
   public CloseableIterator<Long> fromEntity(CloseableIterator<Long> idStream, Study study, Entity from, Entity to) {
-    LOG.info("Mapping IDs from " + from.getDisplayName() + " to " + to.getDisplayName());
+    LOG.info("Mapping IDs from {} to {}", from.getDisplayName(), to.getDisplayName());
     // Check who is an ancestor of whom, this determines how we will convert the input idStream.
     if (from.getAncestorEntities().contains(to)) {
       try {

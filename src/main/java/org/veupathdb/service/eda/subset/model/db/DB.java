@@ -51,10 +51,6 @@ public interface DB {
         String RANGE_MAX_COL_NAME = "range_max";
         String BIN_WIDTH_OVERRIDE_COL_NAME = "bin_width_override";
         String BIN_WIDTH_COMPUTED_COL_NAME = "bin_width_computed";
-        //String MEAN = "mean";
-        //String MEDIAN = "median";
-        //String LOWER_QUARTILE = "lower_quartile";
-        //String UPPER_QUARTILE = "upper_quartile";
         String IS_TEMPORAL_COL_NAME = "is_temporal";
         String IS_FEATURED_COL_NAME = "is_featured";
         String IS_MERGE_KEY_COL_NAME = "is_merge_key";

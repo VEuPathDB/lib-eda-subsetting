@@ -29,88 +29,88 @@ public class IndiaICEMRStudy {
     final String participantEntityId = "EUPATH_0000096";
     final String sampleEntityId = "EUPATH_0000609";
     householdEntity = new TestDataProvider.EntityBuilder()
-        .withEntityId(householdEntityId)
-        .withInternalStudyAbbrev(studyAbbrev)
-        .build();
+      .withEntityId(householdEntityId)
+      .withInternalStudyAbbrev(studyAbbrev)
+      .build();
 
     householdMosquitoRepellent = new TestDataProvider.StringVariableBuilder()
-        .withEntity(householdEntity)
-        .withVariableType(VariableType.STRING)
-        .withVariableId("EUPATH_0021242")
-        .build();
+      .withEntity(householdEntity)
+      .withVariableType(VariableType.STRING)
+      .withVariableId("EUPATH_0021242")
+      .build();
     householdMosquitoRepellentCoils = new TestDataProvider.StringVariableBuilder()
-        .withEntity(householdEntity)
-        .withVariableType(VariableType.STRING)
-        .withVariableId("EUPATH_0021243")
-        .withMaxLength(7)
-        .build();
+      .withEntity(householdEntity)
+      .withVariableType(VariableType.STRING)
+      .withVariableId("EUPATH_0021243")
+      .withMaxLength(7)
+      .build();
     householdMosquitoRepellentMats = new TestDataProvider.StringVariableBuilder()
-        .withEntity(householdEntity)
-        .withVariableType(VariableType.STRING)
-        .withVariableId("EUPATH_0021246")
-        .withMaxLength(7)
-        .build();
+      .withEntity(householdEntity)
+      .withVariableType(VariableType.STRING)
+      .withVariableId("EUPATH_0021246")
+      .withMaxLength(7)
+      .build();
 
     personsInHousehold =  new TestDataProvider.IntegerVariableBuilder()
-        .withVariableId("EUPATH_0000019")
-        .withEntity(householdEntity)
-        .withVariableType(VariableType.INTEGER)
-        .withMin(1)
-        .withMax(50)
-        .build();
+      .withVariableId("EUPATH_0000019")
+      .withEntity(householdEntity)
+      .withVariableType(VariableType.INTEGER)
+      .withMin(1)
+      .withMax(50)
+      .build();
     householdEntity.addVariable(personsInHousehold);
     householdEntity.addVariable(householdMosquitoRepellent);
     householdEntity.addVariable(householdMosquitoRepellentCoils);
     householdEntity.addVariable(householdMosquitoRepellentMats);
     healthFacilityDist = new TestDataProvider.IntegerVariableBuilder()
-        .withVariableId("EUPATH_0020213")
-        .withEntity(householdEntity)
-        .withVariableType(VariableType.INTEGER)
-        .withMin(1)
-        .withMax(13)
-        .build();
+      .withVariableId("EUPATH_0020213")
+      .withEntity(householdEntity)
+      .withVariableType(VariableType.INTEGER)
+      .withMin(1)
+      .withMax(13)
+      .build();
     householdEntity.addVariable(healthFacilityDist);
     participantEntity = new TestDataProvider.EntityBuilder()
-        .withEntityId(participantEntityId)
-        .withInternalStudyAbbrev(studyAbbrev)
-        .build();
+      .withEntityId(participantEntityId)
+      .withInternalStudyAbbrev(studyAbbrev)
+      .build();
     observationDate = new TestDataProvider.DateVariableBuilder()
-        .withVariableType(VariableType.DATE)
-        .withEntity(participantEntity)
-        .withVariableId("EUPATH_0004991")
-        .build();
+      .withVariableType(VariableType.DATE)
+      .withEntity(participantEntity)
+      .withVariableId("EUPATH_0004991")
+      .build();
     timeSinceLastMalaria = new TestDataProvider.IntegerVariableBuilder()
-        .withVariableId("EUPATH_0000427")
-        .withEntity(participantEntity)
-        .withVariableType(VariableType.INTEGER)
-        .withMin(1)
-        .withMax(360)
-        .build();
+      .withVariableId("EUPATH_0000427")
+      .withEntity(participantEntity)
+      .withVariableType(VariableType.INTEGER)
+      .withMin(1)
+      .withMax(360)
+      .build();
     participantEntity.addVariable(timeSinceLastMalaria);
     sampleEntity = new TestDataProvider.EntityBuilder()
-        .withEntityId(sampleEntityId)
-        .withInternalStudyAbbrev(studyAbbrev)
-        .build();
+      .withEntityId(sampleEntityId)
+      .withInternalStudyAbbrev(studyAbbrev)
+      .build();
     plasmoFalcGametocytes = new TestDataProvider.IntegerVariableBuilder()
-        .withVariableId("EUPATH_0000546")
-        .withEntity(sampleEntity)
-        .withVariableType(VariableType.INTEGER)
-        .withMin(0)
-        .withMax(200)
-        .build();
+      .withVariableId("EUPATH_0000546")
+      .withEntity(sampleEntity)
+      .withVariableType(VariableType.INTEGER)
+      .withMin(0)
+      .withMax(200)
+      .build();
     sampleEntity.addVariable(plasmoFalcGametocytes);
     symptoms = new TestDataProvider.StringVariableBuilder()
-        .withEntity(participantEntity)
-        .withVariableId("EUPATH_0021002")
-        .withVariableType(VariableType.STRING)
-        .withMaxLength(30)
-        .build();
+      .withEntity(participantEntity)
+      .withVariableId("EUPATH_0021002")
+      .withVariableType(VariableType.STRING)
+      .withMaxLength(30)
+      .build();
     participantEntity.addVariable(symptoms);
     this.study = new TestDataProvider.StudyBuilder(studyAbbrev, studyAbbrev)
-        .withRoot(householdEntity)
-        .addEntity(participantEntity, householdEntity.getId())
-        .addEntity(sampleEntity, participantEntity.getId())
-        .build();
+      .withRoot(householdEntity)
+      .addEntity(participantEntity, householdEntity.getId())
+      .addEntity(sampleEntity, participantEntity.getId())
+      .build();
   }
 
   public Study getStudy() {

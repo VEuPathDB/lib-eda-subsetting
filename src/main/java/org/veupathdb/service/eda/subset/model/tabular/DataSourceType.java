@@ -7,7 +7,7 @@ public enum DataSourceType {
   DATABASE("database"),
   UNSPECIFIED(null);
 
-  private String value;
+  private final String value;
 
   DataSourceType(String value) {
     this.value = value;
@@ -18,8 +18,8 @@ public enum DataSourceType {
       return UNSPECIFIED;
     }
     return Arrays.stream(values())
-        .filter(enumInstance -> enumInstance.value.equals(s))
-        .findFirst()
-        .orElseThrow();
+      .filter(enumInstance -> enumInstance.value.equals(s))
+      .findFirst()
+      .orElseThrow();
   }
 }

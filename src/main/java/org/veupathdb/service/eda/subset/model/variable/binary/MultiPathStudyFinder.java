@@ -15,9 +15,9 @@ import java.util.Optional;
  * root directory.
  */
 public class MultiPathStudyFinder implements StudyFinder {
-  private List<String> availablePaths;
-  private Path root;
-  private Map<String, Path> studyIdToLocationCache;
+  private final List<String> availablePaths;
+  private final Path root;
+  private final Map<String, Path> studyIdToLocationCache;
 
   /**
    * Constructs an instance of a MultiPathStudyFinder.
@@ -43,7 +43,7 @@ public class MultiPathStudyFinder implements StudyFinder {
   @Override
   public Path findStudyPath(String studyDir) {
     Optional<Path> cachedStudyDir = lookupStudyDir(studyDir)
-        .filter(path -> path.toFile().exists());
+      .filter(path -> path.toFile().exists());
     if (cachedStudyDir.isPresent()) {
       return cachedStudyDir.get();
     }
@@ -62,8 +62,8 @@ public class MultiPathStudyFinder implements StudyFinder {
     try {
       List<Path> paths = IoUtil.findDirsFromAbsoluteDirWithWildcards(absolutePattern);
       return paths.stream()
-          .filter(path -> Files.exists(path))
-          .findFirst();
+        .filter(Files::exists)
+        .findFirst();
     } catch (IOException e) {
       throw new RuntimeException(e);
     }

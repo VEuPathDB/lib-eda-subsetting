@@ -18,8 +18,8 @@ import java.util.List;
 public class DataFlowTreeReducer {
   private static final Logger LOG = LogManager.getLogger(DataFlowTreeReducer.class);
 
-  private EntityIdIndexIteratorConverter entityIdIndexIteratorConverter;
-  private BinaryValuesStreamer binaryValuesStreamer;
+  private final EntityIdIndexIteratorConverter entityIdIndexIteratorConverter;
+  private final BinaryValuesStreamer binaryValuesStreamer;
 
   public DataFlowTreeReducer(EntityIdIndexIteratorConverter entityIdIndexIteratorConverter,
                              BinaryValuesStreamer binaryValuesStreamer) {
@@ -55,7 +55,7 @@ public class DataFlowTreeReducer {
     if (allStreams.size() == 1) {
       // If there is one stream, returned it but ensure that if an entity ID index appears multiple times, it is only
       // returned once in the resulting stream to account for multi-value variables.
-      return new StreamDeduper(allStreams.get(0));
+      return new StreamDeduper(allStreams.getFirst());
     }
     return new StreamIntersectMerger(allStreams);
   }

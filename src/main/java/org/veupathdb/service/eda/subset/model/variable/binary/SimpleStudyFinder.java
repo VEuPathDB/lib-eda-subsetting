@@ -3,7 +3,7 @@ package org.veupathdb.service.eda.subset.model.variable.binary;
 import java.nio.file.Path;
 
 public class SimpleStudyFinder implements StudyFinder {
-  private String root;
+  private final String root;
 
   public SimpleStudyFinder(String root) {
     this.root = root;

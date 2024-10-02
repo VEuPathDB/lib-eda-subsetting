@@ -1,3 +1,6 @@
+import org.gradle.api.internal.tasks.testing.logging.StackTraceFilter
+import org.gradle.api.tasks.testing.logging.TestLogEvent
+import org.gradle.api.tasks.testing.logging.TestStackTraceFilter
 
 // // // // // // // // // // // // // // // // // // // // // // // // // //
 //
@@ -15,8 +18,10 @@ plugins {
 }
 
 java {
-  targetCompatibility = JavaVersion.VERSION_11
-  sourceCompatibility = JavaVersion.VERSION_11
+  toolchain {
+    languageVersion = JavaLanguageVersion.of(21)
+    vendor = JvmVendorSpec.AMAZON
+  }
   withSourcesJar()
   withJavadocJar()
 }
@@ -25,10 +30,22 @@ tasks.withType<Jar> {
   duplicatesStrategy = DuplicatesStrategy.INCLUDE
 }
 
+tasks.withType<Test> {
+  useJUnitPlatform {
+    excludeTags = setOf("Performance")
+  }
+}
+
 val test by tasks.getting(Test::class) {
   // use junit platform for unit tests
   useJUnitPlatform {
     excludeTags = setOf("Performance")
+  }
+
+  testLogging {
+    showExceptions = true
+    showStackTraces = true
+    showCauses = true
   }
 }
 
@@ -119,7 +136,8 @@ dependencies {
   implementation("org.hsqldb:hsqldb:2.7.1")
 
   // Unit Testing
-  testImplementation("org.junit.jupiter:junit-jupiter:5.9.2")
-  testImplementation("org.mockito:mockito-core:5.2.0")
+  testImplementation("org.junit.jupiter:junit-jupiter:5.11.1")
+  testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:5.11.1")
+  testImplementation("org.mockito:mockito-core:5.14.0")
   testImplementation("org.hamcrest:hamcrest:2.2")
 }

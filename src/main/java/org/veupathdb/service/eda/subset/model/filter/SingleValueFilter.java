@@ -33,7 +33,7 @@ public abstract class SingleValueFilter<U, T extends VariableWithValues<U>> exte
     return _variable;
   }
 
-  public List<VariableWithValues> getAllVariables() {
+  public List<VariableWithValues<?>> getAllVariables() {
     return List.of(_variable);
   }
 

@@ -2,13 +2,7 @@ package org.veupathdb.service.eda.subset.model.variable.binary;
 
 import java.nio.ByteBuffer;
 
-public class ByteArrayConverter implements BinaryConverter<byte[]> {
-  private int numBytes;
-
-  public ByteArrayConverter(int numBytes) {
-    this.numBytes = numBytes;
-  }
-
+public record ByteArrayConverter(int numBytes) implements BinaryConverter<byte[]> {
   @Override
   public byte[] fromBytes(byte[] bytes) {
     return bytes;
@@ -29,10 +23,5 @@ public class ByteArrayConverter implements BinaryConverter<byte[]> {
   @Override
   public byte[] toBytes(byte[] varValue) {
     return varValue;
-  }
-
-  @Override
-  public int numBytes() {
-    return numBytes;
   }
 }

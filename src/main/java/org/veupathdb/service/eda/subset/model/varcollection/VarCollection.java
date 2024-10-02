@@ -102,6 +102,7 @@ public abstract class VarCollection<T, S extends VariableWithValues<T>> {
       }
 
       // add to list for bin values assignment
+      @SuppressWarnings("unchecked")
       S valueVar = (S)var.get(); // need unchecked cast since we are looking up var by name, then checking compatibility
       valueVars.add(valueVar);
 
@@ -111,7 +112,7 @@ public abstract class VarCollection<T, S extends VariableWithValues<T>> {
       } else {
         // do not declare a vocabulary unless all member vars have a vocabulary
         if (useVocabulary) // only log once per collection
-          LOG.warn("At least one variable in collection " + _properties.id + " does not have a vocabulary, so collection will not either.");
+          LOG.warn("At least one variable in collection {} does not have a vocabulary, so collection will not either.", _properties.id);
         useVocabulary = false;
       }
 

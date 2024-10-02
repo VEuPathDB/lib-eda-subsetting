@@ -19,29 +19,29 @@ public class EdaNumberBinSpec implements NumberBinSpec {
 
   @Override
   public Object getDisplayRangeMin() {
-    return _binSpec.map(spec -> spec.getDisplayRangeMin())
-        .orElse(_variable.getDistributionConfig().getDisplayRangeMin());
+    return _binSpec.map(BinSpecWithRange::getDisplayRangeMin)
+      .orElse(_variable.getDistributionConfig().getDisplayRangeMin());
   }
 
   @Override
   public Object getDisplayRangeMax() {
     return _binSpec
-        .map(spec -> spec.getDisplayRangeMax())
-        .orElse(_variable.getDistributionConfig().getDisplayRangeMax());
+      .map(BinSpecWithRange::getDisplayRangeMax)
+      .orElse(_variable.getDistributionConfig().getDisplayRangeMax());
   }
 
   @Override
   public Object getBinSize() {
     return _binSpec
-        .map(spec -> spec.getBinWidth())
-        .orElse(_variable.getDistributionConfig().getDefaultBinWidth());
+      .map(BinSpecWithRange::getBinWidth)
+      .orElse(_variable.getDistributionConfig().getDefaultBinWidth());
   }
 
   // don't allow binUnits to be submitted to a number distribution even though schema allows it
   private void checkBinUnits(Optional<BinSpecWithRange> binSpec) {
-    Optional<BinUnits> units = binSpec.map(spec -> spec.getBinUnits());
+    Optional<BinUnits> units = binSpec.map(BinSpecWithRange::getBinUnits);
     units.ifPresent(u -> Functions.doThrow(() -> new BadRequestException(
-        "For number and integer variables, only binWidth should be submitted (not binUnits).")));
+      "For number and integer variables, only binWidth should be submitted (not binUnits).")));
   }
 
 }

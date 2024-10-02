@@ -9,7 +9,7 @@ import java.util.*;
 /**
  * Merges two or more sorted streams of ID indexes, outputting a sorted stream of sorted ID indexes which represents
  * a union of the input streams.
- *
+ * <p>
  * This is done by maintaining a min heap containing the next element from each input iterator. After removing an
  * element from the heap, we add the next element from that stream.
  */
@@ -17,8 +17,8 @@ public class StreamUnionMerger implements CloseableIterator<Long> {
   private static final Logger LOG = LogManager.getLogger(StreamUnionMerger.class);
 
   // A possible optimization is to use a slimmed-down min-heap as opposed to a PriorityQueue (implemented as a heap).
-  private PriorityQueue<HeapElement> minHeap;
-  private List<CloseableIterator<Long>> streams;
+  private final PriorityQueue<HeapElement> minHeap;
+  private final List<CloseableIterator<Long>> streams;
   private long lastIdIndex;
   private boolean first;
   private Long next;
@@ -83,7 +83,7 @@ public class StreamUnionMerger implements CloseableIterator<Long> {
   }
 
   @Override
-  public void close() throws Exception {
+  public void close() {
     streams.forEach(stream -> {
       try {
         stream.close();
@@ -93,13 +93,5 @@ public class StreamUnionMerger implements CloseableIterator<Long> {
     });
   }
 
-  private static class HeapElement {
-    private Iterator<Long> stream;
-    private Long idIndex;
-
-    public HeapElement(Iterator<Long> stream, Long idIndex) {
-      this.stream = stream;
-      this.idIndex = idIndex;
-    }
-  }
+  private record HeapElement(Iterator<Long> stream, Long idIndex) {}
 }

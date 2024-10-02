@@ -1,6 +1,5 @@
 package org.veupathdb.service.eda.subset.model.filter;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -31,11 +30,11 @@ public class MultiFilter extends Filter {
     String getOperation() {return operation;}
 
     public static MultiFilterOperation fromString(String operation) {
-      switch (operation) {
-        case "intersect": return INTERSECT;
-        case "union": return UNION;
-        default: throw new RuntimeException("Unrecognized multi-filter operation: " + operation);
-      }
+      return switch (operation) {
+        case "intersect" -> INTERSECT;
+        case "union" -> UNION;
+        default -> throw new RuntimeException("Unrecognized multi-filter operation: " + operation);
+      };
     }
   }
 
@@ -49,28 +48,24 @@ public class MultiFilter extends Filter {
 
   @Override
   public String getSql() {
-    List<String> subFiltersSqlList = new ArrayList<String>();
+    List<String> subFiltersSqlList = new ArrayList<>();
     for (MultiFilterSubFilter subFilter : subFilters) subFiltersSqlList.add(getSingleFilterSql(subFilter));
     String subFiltersSql = String.join("  " + operation.getOperation() + NL, subFiltersSqlList);
     return "  select * from ( -- START OF MULTIFILTER" + NL
-        + subFiltersSql + NL
-        + "  ) -- END OF MULTIFILTER" + NL;
+      + subFiltersSql + NL
+      + "  ) -- END OF MULTIFILTER" + NL;
   }
 
   @Override
   public CloseableIterator<Long> streamFilteredIds(BinaryValuesStreamer binaryValuesStreamer, Study study) {
-    try {
-      return binaryValuesStreamer.streamMultiFilteredEntityIdIndexes(this, study);
-    } catch (IOException e) {
-      throw new RuntimeException("IO operation failed while trying to stream filtered IDs.", e);
-    }
+    return binaryValuesStreamer.streamMultiFilteredEntityIdIndexes(this, study);
   }
 
   @Override
-  public List<VariableWithValues> getAllVariables() {
+  public List<VariableWithValues<?>> getAllVariables() {
     return subFilters.stream()
-        .map(MultiFilterSubFilter::getVariable)
-        .collect(Collectors.toList());
+      .map(MultiFilterSubFilter::getVariable)
+      .collect(Collectors.toList());
   }
 
   public MultiFilter(String appDbSchema, Entity entity, List<MultiFilterSubFilter> subFilters, MultiFilterOperation operation) {

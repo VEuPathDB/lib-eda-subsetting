@@ -9,8 +9,8 @@ import java.nio.ByteBuffer;
  * ancestors. Rather than returning all ancestors, it only returns a single ancestor indicated by {@link AncestorDeserializer#ancestorColumn}
  */
 public class AncestorDeserializer implements BinaryDeserializer<VariableValueIdPair<Long>> {
-  private ArrayConverter<Long> listConverter;
-  private int ancestorColumn;
+  private final ArrayConverter<Long> listConverter;
+  private final int ancestorColumn;
 
   /**
    * Creates a new instance to deserialize ancestor files, extracting only the entity ID and the ID of the ancestor

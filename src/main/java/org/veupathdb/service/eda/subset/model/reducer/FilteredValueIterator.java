@@ -32,7 +32,7 @@ public class FilteredValueIterator<V, T> implements CloseableIterator<T> {
   private boolean hasStarted;
 
   // Store to print if exception is thrown.
-  private Path path;
+  private final Path path;
 
   /**
    * Constructs an instance of a FilteredValueIterator.

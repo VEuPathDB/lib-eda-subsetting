@@ -10,8 +10,7 @@ import java.util.List;
 public class MultiValueFormatter implements TabularValueFormatter {
 
   @Override
-  public byte[] format(ValueStream<byte[]> stream,
-                       long idIndex) {
+  public byte[] format(ValueStream<byte[]> stream, long idIndex) {
     List<byte[]> allRecords = new ArrayList<>();
     while (stream.hasNext() && stream.peek().getIdIndex() == idIndex) {
       allRecords.add(stream.next().getValue());

@@ -4,7 +4,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 
 public class Utils {
-  private static final long BIT_MASK = 0xFF;
+  private static final int BIT_MASK = 0xFF;
 
   // TODO: remove once the client is fixed to not send in trailing 'Z'
   public static String standardizeLocalDateTime(String dateTimeString) {
@@ -14,8 +14,7 @@ public class Utils {
   }
 
   public static int getPaddedUtf8StringLength(byte[] utf8Bytes) {
-    int length = getLengthFromPaddedString(utf8Bytes);
-    return length;
+    return getLengthFromPaddedString(utf8Bytes);
   }
 
   public static byte[] trimPaddedBinary(byte[] paddedUtf8Bytes) {

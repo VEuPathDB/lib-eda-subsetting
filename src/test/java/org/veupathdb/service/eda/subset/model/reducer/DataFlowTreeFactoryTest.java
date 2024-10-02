@@ -16,14 +16,14 @@ public class DataFlowTreeFactoryTest {
   public void testLeafOutputNode() {
     DataFlowTreeFactory factory = new DataFlowTreeFactory();
     TreeNode<Entity> root = new TreeNode<>(new TestDataProvider.EntityBuilder()
-        .withEntityId("Root")
-        .build());
+      .withEntityId("Root")
+      .build());
     TreeNode<Entity> middle = new TreeNode<>(new TestDataProvider.EntityBuilder()
-        .withEntityId("Middle")
-        .build());
+      .withEntityId("Middle")
+      .build());
     TreeNode<Entity> leaf = new TreeNode<>(new TestDataProvider.EntityBuilder()
-        .withEntityId("Leaf")
-        .build());
+      .withEntityId("Leaf")
+      .build());
     root.addChildNode(middle);
     middle.addChildNode(leaf);
     TreeNode<DataFlowNodeContents> newRoot = factory.create(root, leaf.getContents(), Collections.emptyList(), Collections.emptyList(), null);

@@ -16,12 +16,11 @@ import java.util.Objects;
  */
 public class UnformattedTabularRecordStreamer implements CloseableIterator<Map<String, String>> {
   // These value streams need to have associated with them the variable
-  private List<ValueStream<String>> valuePairStreams;
-  private CloseableIterator<VariableValueIdPair<List<String>>> idMapStream;
-  private CloseableIterator<Long> idIndexStream;
+  private final List<ValueStream<String>> valuePairStreams;
+  private final CloseableIterator<VariableValueIdPair<List<String>>> idMapStream;
+  private final CloseableIterator<Long> idIndexStream;
   private Long currentIdIndex;
-  private String[] outputColumns;
-  private InitialSizeStringMap.Builder outputColBuilder;
+  private final InitialSizeStringMap.Builder outputColBuilder;
 
   /**
    * Constructs an instance, which provides a stream of string-formatted records. The stream is composed of all IDs
@@ -31,7 +30,6 @@ public class UnformattedTabularRecordStreamer implements CloseableIterator<Map<S
    * @param valuePairStreams Streams of pairs containing entity ID indexes and corresponding values for their respective
    *                         variables.
    * @param idIndexStream    Stream of ID indexes, indicating which entity records to output.
-   * @param idMapStream
    */
   public UnformattedTabularRecordStreamer(List<ValueStream<String>> valuePairStreams,
                                           CloseableIterator<Long> idIndexStream,
@@ -43,8 +41,7 @@ public class UnformattedTabularRecordStreamer implements CloseableIterator<Map<S
       currentIdIndex = idIndexStream.next();
     }
     this.idMapStream = idMapStream;
-    this.outputColumns = outputColumns.toArray(String[]::new);
-    this.outputColBuilder = new InitialSizeStringMap.Builder(this.outputColumns);
+    this.outputColBuilder = new InitialSizeStringMap.Builder(outputColumns.toArray(String[]::new));
   }
 
   @Override

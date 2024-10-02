@@ -19,7 +19,7 @@ public class DescendantCollapser implements CloseableIterator<Long> {
   private Long matchedAncestor;
 
   public DescendantCollapser(CloseableIterator<VariableValueIdPair<Long>> ancestorStream,
-                             CloseableIterator<Long> currentEntityStream) throws IOException {
+                             CloseableIterator<Long> currentEntityStream) {
     this.ancestorStream = ancestorStream;
     this.currentEntityStream = currentEntityStream;
   }

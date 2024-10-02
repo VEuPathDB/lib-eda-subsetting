@@ -38,16 +38,16 @@ public class Entity {
   private List<String> ancestorFullPkColNames; // entityName.pkColName
   private Integer tallRowSize; // number of columns in a tall table row
   private boolean attributesTableExists;
-  private final Long loadOrder;
+  private final Long loadOrder;  // TODO: this is both completely unused and a boxed type for some reason, is that intentional?
   private final boolean hasCollections;
   private final boolean isManyToOneWithParent;
 
-  private final List<VarCollection> collections = new ArrayList<>();
+  private final List<VarCollection<?, ?>> collections = new ArrayList<>();
 
   // a map from ID of multifilter ancestor ID to multifilter leaf IDs
   // used to validate multifilter requests
-  private final Map<String, Set<String>> _multiFilterMap = new HashMap<String, Set<String>>();
-  
+  private final Map<String, Set<String>> _multiFilterMap = new HashMap<>();
+
   public Entity(String entityId, String studyAbbrev, String displayName, String displayNamePlural, String description, String abbreviation, long loadOrder, boolean hasCollections, boolean isManyToOneWithParent) {
     this.id = entityId;
     this.studyAbbrev = studyAbbrev;
@@ -95,12 +95,12 @@ public class Entity {
     return hasCollections;
   }
 
-  public void assignCollections(List<VarCollection> collections) {
+  public void assignCollections(List<VarCollection<?, ?>> collections) {
     this.collections.clear();
     this.collections.addAll(collections);
   }
 
-  public List<VarCollection> getCollections() {
+  public List<VarCollection<?, ?>> getCollections() {
     return collections;
   }
 
@@ -123,7 +123,7 @@ public class Entity {
   public String getWithClauseName() {
     return id;
   }
-  
+
   public Map<String, Set<String>> getMultiFilterMap() {
     return Collections.unmodifiableMap(_multiFilterMap);
   }
@@ -135,7 +135,7 @@ public class Entity {
   public List<String> getAncestorPkColNames() {
     return Collections.unmodifiableList(ancestorPkColNames);
   }
-  
+
   public Optional<Variable> getVariable(String variableId) {
     return Optional.ofNullable(variablesMap.get(variableId));
   }
@@ -159,20 +159,20 @@ public class Entity {
 
   public void setAncestorEntities(List<Entity> ancestorEntities) {
     this.ancestorEntities = new ArrayList<>(ancestorEntities);
-    this.ancestorPkColNames = 
+    this.ancestorPkColNames =
         ancestorEntities.stream().map(Entity::getPKColName).collect(Collectors.toList());
-    this.ancestorFullPkColNames = 
+    this.ancestorFullPkColNames =
         ancestorEntities.stream().map(Entity::getFullPKColName).collect(Collectors.toList());
   }
 
   public List<Entity> getAncestorEntities() {
     return Collections.unmodifiableList(ancestorEntities);
   }
-  
+
   public String toString() {
     return "id: " + getId() + " name: " + getDisplayName() + " (" + super.toString() + ")";
   }
-  
+
   public String getAllPksSelectList(String ancestorTableName) {
     List<String> selectColsList = new ArrayList<>();
     selectColsList.add(ancestorTableName + "." + getPKColName());
@@ -180,7 +180,7 @@ public class Entity {
       selectColsList.add(ancestorTableName + "." + name);
     return String.join(", ", selectColsList);
   }
-  
+
   // ancestor PKs, pk, variable_id, value
   public Integer getTallRowSize() {
     if (tallRowSize == null) tallRowSize = ancestorEntities.size() + 3;
@@ -190,11 +190,11 @@ public class Entity {
   public boolean hasGeographicData() {
     return variablesList.stream().anyMatch(Variable::hasGeographicData);
   }
-  
+
   public List<Variable> getVariables() {
     return Collections.unmodifiableList(variablesList);
   }
- 
+
   public void addVariable(Variable var) {
     if (variablesMap.containsKey(var.getId()))
       throw new RuntimeException("In Entity '" + getId() + "', trying to add duplicate variable: " + var.getId());
@@ -203,7 +203,7 @@ public class Entity {
   }
 
   public void assignVariables(List<Variable> variables) {
-    
+
     // create temporary map of parent IDs to child variables
     // use it  populate a concise map of multifilter ancestor IDs to leaf variables IDs
     Map<String, Set<Variable>> parentIdToKids = new HashMap<>();
@@ -212,37 +212,37 @@ public class Entity {
       addVariable(var);
       addToParentIdMap(parentIdToKids, var);
     }
-    
+
     populateMultiFilterMap(parentIdToKids, _multiFilterMap);
   }
 
   private void addToParentIdMap(Map<String, Set<Variable>> parentIdToKids, Variable var) {
     String parentId = var.getParentId();
     if (parentId != null) {
-      if (!parentIdToKids.containsKey(parentId)) parentIdToKids.put(parentId, new HashSet<Variable>());
+      if (!parentIdToKids.containsKey(parentId)) parentIdToKids.put(parentId, new HashSet<>());
       parentIdToKids.get(parentId).add(var);
     }
   }
-  
-  /** 
+
+  /**
    * populate a map of multifilter ancestor IDs to leaf variables IDs
    * @param parentIdToKids -- map of variable ID to that variable's children
    */
   void populateMultiFilterMap(Map<String, Set<Variable>> parentIdToKids,
       Map<String, Set<String>> multiFilterMap) {
-    
+
     // for any IDs that are multifilter, add to the multifilter map
     for (String parentId : parentIdToKids.keySet()) {
       if (!variablesMap.containsKey(parentId)) continue;  // if parent is of different entity
-     
+
       if (variablesMap.get(parentId).getDisplayType() == VariableDisplayType.MULTIFILTER) {
-        multiFilterMap.put(parentId, new HashSet<String>());
+        multiFilterMap.put(parentId, new HashSet<>());
         addToMultiFilterMap(parentId, parentId, parentIdToKids, multiFilterMap);
       }
     }
   }
-  
-  /** 
+
+  /**
    * recursively add value-carrying variables to their multifilter ancestor
    * @param multiFilterId - the ID of the variable tagged as 'multifilter'
    * @param nodeId - a descendant of the multifilter variable
@@ -251,9 +251,9 @@ public class Entity {
    */
   void addToMultiFilterMap(String multiFilterId, String nodeId, Map<String,
       Set<Variable>> parentIdToKids, Map<String, Set<String>> multiFilterMap) {
-    
+
     if (!parentIdToKids.containsKey(nodeId)) return;  // if node is not a parent, done with recursion
-    
+
     for (Variable kid : parentIdToKids.get(nodeId)) {
       if (kid.hasValues()) multiFilterMap.get(multiFilterId).add(kid.getId());
       addToMultiFilterMap(multiFilterId, kid.getId(), parentIdToKids, multiFilterMap);

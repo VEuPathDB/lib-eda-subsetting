@@ -3,7 +3,7 @@ package org.veupathdb.service.eda.subset.model.variable.binary;
 import java.nio.ByteBuffer;
 
 public class DoubleValueConverter implements BinaryConverter<Double> {
-  private LongValueConverter longValueConverter;
+  private final LongValueConverter longValueConverter;
 
   public DoubleValueConverter() {
     this.longValueConverter = new LongValueConverter();

@@ -1,7 +1,3 @@
-import org.gradle.api.internal.tasks.testing.logging.StackTraceFilter
-import org.gradle.api.tasks.testing.logging.TestLogEvent
-import org.gradle.api.tasks.testing.logging.TestStackTraceFilter
-
 // // // // // // // // // // // // // // // // // // // // // // // // // //
 //
 // Project Configuration
@@ -10,7 +6,7 @@ import org.gradle.api.tasks.testing.logging.TestStackTraceFilter
 
 // Project settings
 group   = "org.veupathdb.eda"
-version = "5.0.1"
+version = "5.0.2"
 
 plugins {
   `java-library`

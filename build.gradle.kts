@@ -5,8 +5,8 @@
 // // // // // // // // // // // // // // // // // // // // // // // // // //
 
 // Project settings
-group   = "org.veupathdb.eda"
-version = "5.0.2"
+group   = "org.veupathdb.lib"
+version = "6.0.0"
 
 plugins {
   `java-library`
@@ -66,7 +66,7 @@ publishing {
   repositories {
     maven {
       name = "GitHub"
-      url  = uri("https://maven.pkg.github.com/veupathdb/maven-packages")
+      url  = uri("https://maven.pkg.github.com/veupathdb/lib-eda-subsetting")
       credentials {
         username = project.findProperty("gpr.user") as String? ?: System.getenv("USERNAME")
         password = project.findProperty("gpr.key") as String? ?: System.getenv("TOKEN")

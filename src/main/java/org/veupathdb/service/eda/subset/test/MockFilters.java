@@ -56,7 +56,7 @@ public class MockFilters {
     obsWeightFilter = new NumberRangeFilter<>(StubDb.APP_DB_SCHEMA, observation, weight, 10, 20);
 
     List<Number> favNums = Arrays.asList(new Number[]{5,7,9});
-    obsFavNumberFilter = new NumberSetFilter<Double>(StubDb.APP_DB_SCHEMA, observation, favNumber, favNums);
+    obsFavNumberFilter = new NumberSetFilter<>(StubDb.APP_DB_SCHEMA, observation, favNumber, favNums);
 
     obsBirthDateFilter = new DateRangeFilter(StubDb.APP_DB_SCHEMA, observation, startDate,
         LocalDateTime.of(2019, Month.MARCH, 21, 0, 0),

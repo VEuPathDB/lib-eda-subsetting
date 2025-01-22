@@ -9,8 +9,8 @@ import java.util.List;
  * @param <T> Type stored in list to serialize.
  */
 public class ListConverter<T> implements BinaryConverter<List<T>> {
-  private BinaryConverter<T> converter;
-  private int size;
+  private final BinaryConverter<T> converter;
+  private final int size;
 
   public ListConverter(BinaryConverter<T> converter, int size) {
     this.converter = converter;

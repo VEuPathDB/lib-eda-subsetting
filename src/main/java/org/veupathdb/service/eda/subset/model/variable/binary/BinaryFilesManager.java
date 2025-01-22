@@ -38,7 +38,7 @@ public class BinaryFilesManager {
 
   static final String DONE_FILE_NAME = "DONE";
 
-  public enum Operation { READ, WRITE };
+  public enum Operation { READ, WRITE }
 
   private static final Logger LOG = LogManager.getLogger(BinaryFilesManager.class);
 
@@ -74,8 +74,7 @@ public class BinaryFilesManager {
       return false;
     }
     if (dataVersion != study.getLastModified().getTime()) {
-      LOG.info("Data version does not match last modified time of study. Data version: " + dataVersion + ". Study last modified "
-          + study.getLastModified().getTime());
+      LOG.info("Data version does not match last modified time of study. Data version: {}. Study last modified {}", dataVersion, study.getLastModified().getTime());
       return false;
     }
     return true;
@@ -224,9 +223,6 @@ public class BinaryFilesManager {
 
   /**
    * Returns empty if files are not available in this environment.
-   * @param studyAbbrev
-   * @param entity
-   * @return
    */
   public Optional<Metadata> readMetadata(String studyAbbrev, Entity entity) {
     try {
@@ -262,8 +258,7 @@ public class BinaryFilesManager {
     if (!metajsonFile.toFile().exists()) throw new RuntimeException("metajson file '" + metajsonFile + "' does not exist");
     try {
       String jsonString = Files.readString(metajsonFile);
-      JSONObject json = new JSONObject(jsonString);
-      return json;
+      return new JSONObject(jsonString);
     } catch (IOException | JSONException e) {
       throw new RuntimeException("Failed reading meta json file", e);
     }
@@ -273,7 +268,7 @@ public class BinaryFilesManager {
 
     Path entityDir = getEntityDir(studyAbbrev, entity);
     Path filepath = Path.of(entityDir.toString(), filename);
-    LOG.info("Creating file: " + filepath);
+    LOG.info("Creating file: {}", filepath);
     try {
       Files.createFile(filepath);
     } catch (FileAlreadyExistsException e) {
@@ -300,7 +295,7 @@ public class BinaryFilesManager {
 
 
   private void createDir(Path dir) {
-    LOG.info("Creating dir: " + dir);
+    LOG.info("Creating dir: {}", dir);
     try {
       Files.createDirectory(dir);
     } catch (FileAlreadyExistsException e) {
@@ -312,14 +307,14 @@ public class BinaryFilesManager {
 
   private Path getEntityDir(String studyAbbrev, Entity entity) {
     Path entityDir = Path.of(mustGetExistingStudyDir(studyAbbrev).toString(),
-        getEntityDirName(entity));
+      getEntityDirName(entity));
     if (!Files.isDirectory(entityDir)) throw new RuntimeException("Entity directory '" + entityDir + "' does not exist");
     return entityDir;
   }
 
   private Path mustGetExistingStudyDir(String studyAbbrev) {
     return getStudyDirIfExists(studyAbbrev)
-        .orElseThrow(() -> new RuntimeException("Study directory '" + studyFinder.findStudyPath(getStudyDirName(studyAbbrev)) + "' does not exist"));
+      .orElseThrow(() -> new RuntimeException("Study directory '" + studyFinder.findStudyPath(getStudyDirName(studyAbbrev)) + "' does not exist"));
   }
 
   private Optional<Path> getStudyDirIfExists(String studyAbbrev) {
@@ -330,7 +325,7 @@ public class BinaryFilesManager {
 
   private Path createDoneFile(Path directory) {
     Path filepath = Path.of(directory.toString(), DONE_FILE_NAME);
-    LOG.info("Creating file: " + filepath);
+    LOG.info("Creating file: {}", filepath);
     try {
       Files.createFile(filepath);
     } catch (FileAlreadyExistsException e) {

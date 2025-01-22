@@ -59,8 +59,8 @@ public class VariableFactory {
     //   2. _shouldAppendMetaForStudy returns false when called on the next line
     boolean appendMetaForStudy = _shouldAppendMetaForStudy.apply(studyAbbrev);
     Optional<BinaryMetadataProvider> metadataProvider = appendMetaForStudy
-        ? _binaryMetadataProvider
-        : Optional.empty();
+      ? _binaryMetadataProvider
+      : Optional.empty();
 
     return new SQLRunner(_dataSource, sql, "Get entity variables metadata for: '" + entity.getDisplayName() + "'").executeQuery(rs -> {
       List<Variable> variables = new ArrayList<>();
@@ -74,12 +74,12 @@ public class VariableFactory {
   static String generateStudyVariablesListSql(Entity entity, String appDbSchema) {
     // This SQL safe from injection because entities declare their own table names (no parameters)
     return "SELECT " + String.join(", ", DB.Tables.AttributeGraph.Columns.ALL) + NL
-        + "FROM " + appDbSchema + DB.Tables.AttributeGraph.NAME(entity) + NL
-        + "ORDER BY " + DB.Tables.AttributeGraph.Columns.VARIABLE_ID_COL_NAME;  // stable ordering supports unit testing
+      + "FROM " + appDbSchema + DB.Tables.AttributeGraph.NAME(entity) + NL
+      + "ORDER BY " + DB.Tables.AttributeGraph.Columns.VARIABLE_ID_COL_NAME;  // stable ordering supports unit testing
   }
 
   /**
-   * 
+   *
    * @param rs Database result set containing variable metadata.
    * @param entity Entity associated with variable.
    * @param binaryMetadataProvider Optional metadata provider to decorate variables with metadata describing how the
@@ -90,19 +90,19 @@ public class VariableFactory {
    */
   static Variable createVariableFromResultSet(ResultSet rs, Entity entity, Optional<BinaryMetadataProvider> binaryMetadataProvider) throws SQLException {
     Variable.Properties varProps = new Variable.Properties(
-        getRsOptionalString(rs, PROVIDER_LABEL_COL_NAME, "No Provider Label available"), // TODO remove hack when in db
-        getRsRequiredString(rs, VARIABLE_ID_COL_NAME),
-        entity,
-        VariableDisplayType.fromString(getRsOptionalString(rs, DISPLAY_TYPE_COL_NAME, VariableDisplayType.DEFAULT.getType())),
-        getRsRequiredString(rs, DISPLAY_NAME_COL_NAME),
-        getRsOptionalLong(rs, DISPLAY_ORDER_COL_NAME, null),
-        getRsOptionalString(rs, VARIABLE_PARENT_ID_COL_NAME, null),
-        getRsOptionalString(rs, DEFINITION_COL_NAME, ""),
-        parseJsonArrayOfString(rs, HIDE_FROM_COL_NAME));
+      getRsOptionalString(rs, PROVIDER_LABEL_COL_NAME, "No Provider Label available"), // TODO remove hack when in db
+      getRsRequiredString(rs, VARIABLE_ID_COL_NAME),
+      entity,
+      VariableDisplayType.fromString(getRsOptionalString(rs, DISPLAY_TYPE_COL_NAME, VariableDisplayType.DEFAULT.getType())),
+      getRsRequiredString(rs, DISPLAY_NAME_COL_NAME),
+      getRsOptionalLong(rs, DISPLAY_ORDER_COL_NAME, null),
+      getRsOptionalString(rs, VARIABLE_PARENT_ID_COL_NAME, null),
+      getRsOptionalString(rs, DEFINITION_COL_NAME, ""),
+      parseJsonArrayOfString(rs, HIDE_FROM_COL_NAME));
     return getRsRequiredBoolean(rs, HAS_VALUES_COL_NAME)
-        ? createValueVarFromResultSet(rs, varProps, binaryMetadataProvider
+      ? createValueVarFromResultSet(rs, varProps, binaryMetadataProvider
         .flatMap(provider -> provider.getBinaryProperties(entity.getStudyAbbrev(), entity, varProps.id)).orElse(null))
-        : new VariablesCategory(varProps);
+      : new VariablesCategory(varProps);
   }
 
   static Variable createValueVarFromResultSet(ResultSet rs,
@@ -110,40 +110,25 @@ public class VariableFactory {
                                               BinaryProperties binaryProperties) {
     try {
       VariableWithValues.Properties valueProps = new VariableWithValues.Properties(
-          VariableType.fromString(getRsRequiredString(rs, VARIABLE_TYPE_COL_NAME)),
-          VariableDataShape.fromString(getRsRequiredString(rs, DATA_SHAPE_COL_NAME)),
-          parseJsonArrayOfString(rs, VOCABULARY_COL_NAME),
-          rs.getLong(DISTINCT_VALUES_COUNT_COL_NAME),
-          rs.getBoolean(IS_TEMPORAL_COL_NAME),
-          rs.getBoolean(IS_FEATURED_COL_NAME),
-          rs.getBoolean(IS_MERGE_KEY_COL_NAME),
-          rs.getBoolean(IS_MULTI_VALUED_COL_NAME),
-          rs.getBoolean(IMPUTE_ZERO),
-          rs.getBoolean(HAS_STUDY_DEPENDENT_VOCABULARY),
-          rs.getString(VARIABLE_SPEC_TO_IMPUTE_ZEROES_FOR));
+        VariableType.fromString(getRsRequiredString(rs, VARIABLE_TYPE_COL_NAME)),
+        VariableDataShape.fromString(getRsRequiredString(rs, DATA_SHAPE_COL_NAME)),
+        parseJsonArrayOfString(rs, VOCABULARY_COL_NAME),
+        rs.getLong(DISTINCT_VALUES_COUNT_COL_NAME),
+        rs.getBoolean(IS_TEMPORAL_COL_NAME),
+        rs.getBoolean(IS_FEATURED_COL_NAME),
+        rs.getBoolean(IS_MERGE_KEY_COL_NAME),
+        rs.getBoolean(IS_MULTI_VALUED_COL_NAME),
+        rs.getBoolean(IMPUTE_ZERO),
+        rs.getBoolean(HAS_STUDY_DEPENDENT_VOCABULARY),
+        rs.getString(VARIABLE_SPEC_TO_IMPUTE_ZEROES_FOR));
 
-      switch(valueProps.type) {
-
-        case NUMBER: return
-            new FloatingPointVariable(varProps, valueProps, createFloatDistributionConfig(rs, true), createFloatProperties(rs, true),  (Utf8EncodingLengthProperties) binaryProperties);
-
-        case LONGITUDE: return
-            new LongitudeVariable(varProps, valueProps, new LongitudeVariable.Properties(
-                getRsOptionalLong(rs, PRECISION_COL_NAME, 1L)
-            ), (Utf8EncodingLengthProperties) binaryProperties);
-
-        case INTEGER: return
-            new IntegerVariable(varProps, valueProps, createIntegerDistributionConfig(rs, true), createIntegerProperties(rs));
-
-        case DATE: return
-            new DateVariable(varProps, valueProps, createDateDistributionConfig(valueProps.dataShape, rs, true));
-
-        case STRING:
-          return new StringVariable(varProps, valueProps, (Utf8EncodingLengthProperties) binaryProperties);
-
-        default: throw new RuntimeException("Entity:  " + varProps.entity.getId() +
-            " variable: " + varProps.id + " has unrecognized type " + valueProps.type);
-      }
+      return switch (valueProps.type) {
+        case NUMBER -> new FloatingPointVariable(varProps, valueProps, createFloatDistributionConfig(rs, true), createFloatProperties(rs, true), (Utf8EncodingLengthProperties) binaryProperties);
+        case LONGITUDE -> new LongitudeVariable(varProps, valueProps, new LongitudeVariable.Properties(getRsOptionalLong(rs, PRECISION_COL_NAME, 1L)), (Utf8EncodingLengthProperties) binaryProperties);
+        case INTEGER -> new IntegerVariable(varProps, valueProps, createIntegerDistributionConfig(rs, true), createIntegerProperties(rs));
+        case DATE -> new DateVariable(varProps, valueProps, createDateDistributionConfig(valueProps.dataShape, rs, true));
+        case STRING -> new StringVariable(varProps, valueProps, (Utf8EncodingLengthProperties) binaryProperties);
+      };
     }
     catch (SQLException e) {
       throw new RuntimeException("Entity:  " + varProps.entity.getId() + " variable: " + varProps.id, e);
@@ -152,53 +137,53 @@ public class VariableFactory {
 
   public static IntegerVariable.Properties createIntegerProperties(ResultSet rs) throws SQLException {
     return new IntegerVariable.Properties(
-        getRsOptionalString(rs, UNITS_COL_NAME, "")
+      getRsOptionalString(rs, UNITS_COL_NAME, "")
     );
   }
 
   public static FloatingPointVariable.Properties createFloatProperties(ResultSet rs, boolean sqlContainsScale) throws SQLException {
     return new FloatingPointVariable.Properties(
-        getRsOptionalString(rs, UNITS_COL_NAME, ""),
-        getRsOptionalLong(rs, PRECISION_COL_NAME, 1L),
-        VariableScale.findByValue(sqlContainsScale ? getRsOptionalString(rs, SCALE_COL_NAME, null) : null)
+      getRsOptionalString(rs, UNITS_COL_NAME, ""),
+      getRsOptionalLong(rs, PRECISION_COL_NAME, 1L),
+      VariableScale.findByValue(sqlContainsScale ? getRsOptionalString(rs, SCALE_COL_NAME, null) : null)
     );
   }
 
   public static DateDistributionConfig createDateDistributionConfig(
-      VariableDataShape dataShape, ResultSet rs, boolean includeBinInfo) throws SQLException {
+    VariableDataShape dataShape, ResultSet rs, boolean includeBinInfo) throws SQLException {
     return new DateDistributionConfig(includeBinInfo,
-        dataShape,
-        getRsOptionalString(rs, DISPLAY_RANGE_MIN_COL_NAME, null),
-        getRsOptionalString(rs, DISPLAY_RANGE_MAX_COL_NAME, null),
-        getRsRequiredString(rs, RANGE_MIN_COL_NAME),
-        getRsRequiredString(rs, RANGE_MAX_COL_NAME),
-        1,
-        includeBinInfo ? getRsRequiredString(rs, BIN_WIDTH_COMPUTED_COL_NAME) : null,
-        includeBinInfo ? getRsOptionalString(rs, BIN_WIDTH_OVERRIDE_COL_NAME, null) : null
+      dataShape,
+      getRsOptionalString(rs, DISPLAY_RANGE_MIN_COL_NAME, null),
+      getRsOptionalString(rs, DISPLAY_RANGE_MAX_COL_NAME, null),
+      getRsRequiredString(rs, RANGE_MIN_COL_NAME),
+      getRsRequiredString(rs, RANGE_MAX_COL_NAME),
+      1,
+      includeBinInfo ? getRsRequiredString(rs, BIN_WIDTH_COMPUTED_COL_NAME) : null,
+      includeBinInfo ? getRsOptionalString(rs, BIN_WIDTH_OVERRIDE_COL_NAME, null) : null
     );
   }
 
   public static NumberDistributionConfig<Double> createFloatDistributionConfig(
-      ResultSet rs, boolean includeBinInfo) throws SQLException {
+    ResultSet rs, boolean includeBinInfo) throws SQLException {
     return new NumberDistributionConfig<>(
-        getDoubleFromString(rs, DISPLAY_RANGE_MIN_COL_NAME, false),
-        getDoubleFromString(rs, DISPLAY_RANGE_MAX_COL_NAME, false),
-        getDoubleFromString(rs, RANGE_MIN_COL_NAME, true),
-        getDoubleFromString(rs, RANGE_MAX_COL_NAME, true),
-        includeBinInfo ? getDoubleFromString(rs, BIN_WIDTH_COMPUTED_COL_NAME, true) : null,
-        includeBinInfo ? getDoubleFromString(rs, BIN_WIDTH_OVERRIDE_COL_NAME, false) : null
+      getDoubleFromString(rs, DISPLAY_RANGE_MIN_COL_NAME, false),
+      getDoubleFromString(rs, DISPLAY_RANGE_MAX_COL_NAME, false),
+      getDoubleFromString(rs, RANGE_MIN_COL_NAME, true),
+      getDoubleFromString(rs, RANGE_MAX_COL_NAME, true),
+      includeBinInfo ? getDoubleFromString(rs, BIN_WIDTH_COMPUTED_COL_NAME, true) : null,
+      includeBinInfo ? getDoubleFromString(rs, BIN_WIDTH_OVERRIDE_COL_NAME, false) : null
     );
   }
 
   public static NumberDistributionConfig<Long> createIntegerDistributionConfig(
-      ResultSet rs, boolean includeBinInfo) throws SQLException {
+    ResultSet rs, boolean includeBinInfo) throws SQLException {
     return new NumberDistributionConfig<>(
-        getIntegerFromString(rs, DISPLAY_RANGE_MIN_COL_NAME, false),
-        getIntegerFromString(rs, DISPLAY_RANGE_MAX_COL_NAME, false),
-        getIntegerFromString(rs, RANGE_MIN_COL_NAME, true),
-        getIntegerFromString(rs, RANGE_MAX_COL_NAME, true),
-        includeBinInfo ? getIntegerFromString(rs, BIN_WIDTH_COMPUTED_COL_NAME, true) : null,
-        includeBinInfo ? getIntegerFromString(rs, BIN_WIDTH_OVERRIDE_COL_NAME, false) : null
+      getIntegerFromString(rs, DISPLAY_RANGE_MIN_COL_NAME, false),
+      getIntegerFromString(rs, DISPLAY_RANGE_MAX_COL_NAME, false),
+      getIntegerFromString(rs, RANGE_MIN_COL_NAME, true),
+      getIntegerFromString(rs, RANGE_MAX_COL_NAME, true),
+      includeBinInfo ? getIntegerFromString(rs, BIN_WIDTH_COMPUTED_COL_NAME, true) : null,
+      includeBinInfo ? getIntegerFromString(rs, BIN_WIDTH_OVERRIDE_COL_NAME, false) : null
     );
   }
 }

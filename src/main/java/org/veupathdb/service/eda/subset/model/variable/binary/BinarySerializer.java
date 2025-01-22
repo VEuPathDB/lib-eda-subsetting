@@ -6,7 +6,6 @@ package org.veupathdb.service.eda.subset.model.variable.binary;
  *
  * @param <T> Type of value to convert to binary.
  */
-
 public interface BinarySerializer<T> {
   byte[] toBytes(T varValue);
 

@@ -26,45 +26,44 @@ public class EdaDateBinSpec implements DateBinSpec {
 
   public ChronoUnit getBinUnits() {
     return convertToChrono(_binSpec
-        .map(spec -> spec.getBinUnits())
-        .orElse(_variable.getDistributionConfig().getDefaultBinUnits()));
+      .map(BinSpecWithRange::getBinUnits)
+      .orElse(_variable.getDistributionConfig().getDefaultBinUnits()));
   }
 
   @Override
   public int getBinSize() {
     return _binSpec
-        .map(spec -> spec.getBinWidth().intValue())
-        .orElse(_variable.getDistributionConfig().binSize);
+      .map(spec -> spec.getBinWidth().intValue())
+      .orElse(_variable.getDistributionConfig().binSize);
   }
 
   @Override
   public String getDisplayRangeMin() {
     return _binSpec
-        .map(spec -> Utils.standardizeLocalDateTime(castToString(spec.getDisplayRangeMin())))
-        .orElse(_variable.getDistributionConfig().displayRangeMin);
+      .map(spec -> Utils.standardizeLocalDateTime(castToString(spec.getDisplayRangeMin())))
+      .orElse(_variable.getDistributionConfig().displayRangeMin);
   }
 
   @Override
   public String getDisplayRangeMax() {
     return _binSpec
-        .map(spec -> Utils.standardizeLocalDateTime(castToString(spec.getDisplayRangeMax())))
-        .orElse(_variable.getDistributionConfig().displayRangeMax);
+      .map(spec -> Utils.standardizeLocalDateTime(castToString(spec.getDisplayRangeMax())))
+      .orElse(_variable.getDistributionConfig().displayRangeMax);
   }
 
   private static String castToString(Object rangeBoundary) {
     return (rangeBoundary == null || rangeBoundary instanceof String)
-        ? (String)rangeBoundary : doThrow(() -> new BadRequestException(
-            "Date range boundary must be a date-formatted string value."));
+      ? (String)rangeBoundary : doThrow(() -> new BadRequestException(
+      "Date range boundary must be a date-formatted string value."));
   }
 
   private static ChronoUnit convertToChrono(BinUnits binUnits) {
     // convert to ChronoUnit for use in adjusting min/max and bin sizes
-    switch(binUnits) {
-      case DAY: return ChronoUnit.DAYS;
-      case WEEK: return ChronoUnit.WEEKS;
-      case MONTH: return ChronoUnit.MONTHS;
-      case YEAR: return ChronoUnit.YEARS;
-      default: throw new IllegalArgumentException();
-    }
+    return switch (binUnits) {
+      case DAY -> ChronoUnit.DAYS;
+      case WEEK -> ChronoUnit.WEEKS;
+      case MONTH -> ChronoUnit.MONTHS;
+      case YEAR -> ChronoUnit.YEARS;
+    };
   }
 }

@@ -8,65 +8,65 @@ import org.veupathdb.service.eda.subset.model.variable.StringVariable;
 import org.veupathdb.service.eda.subset.model.variable.VariableType;
 
 public class UMSPStudy {
-  private Entity healthCenterEntity;
-  private Entity clinicVisitEntity;
-  private Entity sample;
-  private String studyAbbrev = "UMSP_1";
+  private final Entity healthCenterEntity;
+  private final Entity clinicVisitEntity;
+  private final Entity sample;
+  private final String studyAbbrev = "UMSP_1";
 
-  private NumberVariable age;
-  private StringVariable nonMalarial;
-  private DateVariable observationDate;
-  private StringVariable plasmodium;
-  private StringVariable country;
+  private final NumberVariable<?> age;
+  private final StringVariable nonMalarial;
+  private final DateVariable observationDate;
+  private final StringVariable plasmodium;
+  private final StringVariable country;
 
-  private Study study;
+  private final Study study;
 
   public UMSPStudy() {
     final String healthCenterEntityId = "PCO_0000024";
     final String clinicVisitEntityId = "EUPATH_0000096";
     final String sampleId = "EUPATH_0000609";
     sample = new TestDataProvider.EntityBuilder()
-        .withEntityId(sampleId)
-        .withInternalStudyAbbrev(studyAbbrev)
-        .build();
+      .withEntityId(sampleId)
+      .withInternalStudyAbbrev(studyAbbrev)
+      .build();
     healthCenterEntity = new TestDataProvider.EntityBuilder()
-        .withEntityId(healthCenterEntityId)
-        .withInternalStudyAbbrev(studyAbbrev)
-        .build();
+      .withEntityId(healthCenterEntityId)
+      .withInternalStudyAbbrev(studyAbbrev)
+      .build();
     clinicVisitEntity = new TestDataProvider.EntityBuilder()
-        .withEntityId(clinicVisitEntityId)
-        .withInternalStudyAbbrev(studyAbbrev)
-        .build();
+      .withEntityId(clinicVisitEntityId)
+      .withInternalStudyAbbrev(studyAbbrev)
+      .build();
 
     age = new TestDataProvider.IntegerVariableBuilder()
-        .withEntity(this.clinicVisitEntity)
-        .withVariableId("OBI_0001169")
-        .withVariableType(VariableType.INTEGER)
-        .build();
+      .withEntity(this.clinicVisitEntity)
+      .withVariableId("OBI_0001169")
+      .withVariableType(VariableType.INTEGER)
+      .build();
     nonMalarial = new TestDataProvider.StringVariableBuilder()
-        .withEntity(this.clinicVisitEntity)
-        .withVariableId("EUPATH_0000059")
-        .withVariableType(VariableType.STRING)
-        .withMaxLength(164)
-        .build();
+      .withEntity(this.clinicVisitEntity)
+      .withVariableId("EUPATH_0000059")
+      .withVariableType(VariableType.STRING)
+      .withMaxLength(164)
+      .build();
 
     observationDate = new TestDataProvider.DateVariableBuilder()
-        .withEntity(this.clinicVisitEntity)
-        .withVariableId("EUPATH_0004991")
-        .withVariableType(VariableType.DATE)
-        .build();
+      .withEntity(this.clinicVisitEntity)
+      .withVariableId("EUPATH_0004991")
+      .withVariableType(VariableType.DATE)
+      .build();
     plasmodium = new TestDataProvider.StringVariableBuilder()
-        .withEntity(sample)
-        .withVariableId("EUPATH_0033244")
-        .withVariableType(VariableType.STRING)
-        .withMaxLength(18)
-        .build();
+      .withEntity(sample)
+      .withVariableId("EUPATH_0033244")
+      .withVariableType(VariableType.STRING)
+      .withMaxLength(18)
+      .build();
     country = new TestDataProvider.StringVariableBuilder()
-        .withEntity(healthCenterEntity)
-        .withVariableId("ENVO_00000009")
-        .withVariableType(VariableType.STRING)
-        .withMaxLength(10)
-        .build();
+      .withEntity(healthCenterEntity)
+      .withVariableId("ENVO_00000009")
+      .withVariableType(VariableType.STRING)
+      .withMaxLength(10)
+      .build();
     clinicVisitEntity.addVariable(age);
     clinicVisitEntity.addVariable(observationDate);
     clinicVisitEntity.addVariable(nonMalarial);
@@ -74,10 +74,10 @@ public class UMSPStudy {
     healthCenterEntity.addVariable(country);
 
     study = new TestDataProvider.StudyBuilder(studyAbbrev, studyAbbrev)
-        .withRoot(healthCenterEntity)
-        .addEntity(clinicVisitEntity, healthCenterEntityId)
-        .addEntity(sample, clinicVisitEntityId)
-        .build();
+      .withRoot(healthCenterEntity)
+      .addEntity(clinicVisitEntity, healthCenterEntityId)
+      .addEntity(sample, clinicVisitEntityId)
+      .build();
   }
 
   public Entity getHealthCenterEntity() {

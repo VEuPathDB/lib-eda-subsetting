@@ -33,31 +33,31 @@ public class TestDataProvider {
 
   public static Entity constructEntity() {
     return new Entity(
-        "EUPA_" + ID_COUNT.getAndIncrement(),
-        STUDY_ID,
-        "My Study",
-        "My Studies",
-        "My favority study",
-        "Mine",
-        0L,
-        false,
-        false);
+      "EUPA_" + ID_COUNT.getAndIncrement(),
+      STUDY_ID,
+      "My Study",
+      "My Studies",
+      "My favority study",
+      "Mine",
+      0L,
+      false,
+      false);
   }
 
   public static IntegerVariable constructIntVariable(Entity entity) {
     return new IntegerVariable(
-        constructGenericVarProps(entity, "EUPA_" + VAR_COUNT.getAndIncrement()),
-        constructVarValuesProps(VariableType.INTEGER, false),
-        new NumberDistributionConfig<>(0L, 10L, 0L, 10L, 2L, 2L),
-        new IntegerVariable.Properties("bleep bloops")
+      constructGenericVarProps(entity, "EUPA_" + VAR_COUNT.getAndIncrement()),
+      constructVarValuesProps(VariableType.INTEGER, false),
+      new NumberDistributionConfig<>(0L, 10L, 0L, 10L, 2L, 2L),
+      new IntegerVariable.Properties("bleep bloops")
     );
   }
 
   public static DateVariable constructDateVariable(Entity entity) {
     return new DateVariable(
-        constructGenericVarProps(entity, "EUPA_" + VAR_COUNT.getAndIncrement()),
-        constructVarValuesProps(VariableType.DATE, false),
-        new DateDistributionConfig(false, VariableDataShape.CONTINUOUS, null, null, "min", "max", 10, "days", null)
+      constructGenericVarProps(entity, "EUPA_" + VAR_COUNT.getAndIncrement()),
+      constructVarValuesProps(VariableType.DATE, false),
+      new DateDistributionConfig(false, VariableDataShape.CONTINUOUS, null, null, "min", "max", 10, "days", null)
     );
   }
 
@@ -117,15 +117,15 @@ public class TestDataProvider {
 
     public Entity build() {
       return new Entity(
-          entityId,
-          internalStudyAbbrev,
-          displayName,
-          displayName + "s",
-          description,
-          "Mine",
-          0L,
-          false,
-          true);
+        entityId,
+        internalStudyAbbrev,
+        displayName,
+        displayName + "s",
+        description,
+        "Mine",
+        0L,
+        false,
+        true);
 
     }
   }
@@ -152,9 +152,9 @@ public class TestDataProvider {
 
     public DateVariable build() {
       return new DateVariable(
-          constructGenericVarProps(entity, variableId),
-          constructVarValuesProps(variableType, false),
-          new DateDistributionConfig(false, VariableDataShape.CONTINUOUS, "", "", "", "", 5, "day", "day")
+        constructGenericVarProps(entity, variableId),
+        constructVarValuesProps(variableType, false),
+        new DateDistributionConfig(false, VariableDataShape.CONTINUOUS, "", "", "", "", 5, "day", "day")
       );
     }
   }
@@ -187,9 +187,9 @@ public class TestDataProvider {
 
     public StringVariable build() {
       return new StringVariable(
-          constructGenericVarProps(entity, variableId),
-          constructVarValuesProps(variableType, false),
-          new Utf8EncodingLengthProperties(maxLength)
+        constructGenericVarProps(entity, variableId),
+        constructVarValuesProps(variableType, false),
+        new Utf8EncodingLengthProperties(maxLength)
       );
     }
   }
@@ -204,7 +204,7 @@ public class TestDataProvider {
 
     public IntegerVariableBuilder withVariableId(String variableId) {
       this.variableId = variableId;
-       return this;
+      return this;
     }
 
     public IntegerVariableBuilder withEntity(Entity entity) {
@@ -234,40 +234,40 @@ public class TestDataProvider {
 
     public IntegerVariable build() {
       return new IntegerVariable(
-          constructGenericVarProps(entity, variableId),
-          constructVarValuesProps(variableType, multiValued),
-          new NumberDistributionConfig<>(min, max, min, max, 2L, 2L),
-          new IntegerVariable.Properties("bleep bloops")
+        constructGenericVarProps(entity, variableId),
+        constructVarValuesProps(variableType, multiValued),
+        new NumberDistributionConfig<>(min, max, min, max, 2L, 2L),
+        new IntegerVariable.Properties("bleep bloops")
       );
     }
   }
 
   private static Variable.Properties constructGenericVarProps(Entity entity, String variableId) {
     return new Variable.Properties(
-        "label",
-        variableId,
-        entity,
-        null,
-        null,
-        0L,
-        "50",
-        null,
-        null
+      "label",
+      variableId,
+      entity,
+      null,
+      null,
+      0L,
+      "50",
+      null,
+      null
     );
   }
 
   private static VariableWithValues.Properties constructVarValuesProps(VariableType variableType, boolean multiValued) {
     return new VariableWithValues.Properties(
-        variableType,
-        null,
-        Collections.emptyList(),
-        0L,
-        false,
-        false,
-        false,
-        multiValued,
-        false,
-        false,
-        null);
+      variableType,
+      null,
+      Collections.emptyList(),
+      0L,
+      false,
+      false,
+      false,
+      multiValued,
+      false,
+      false,
+      null);
   }
 }

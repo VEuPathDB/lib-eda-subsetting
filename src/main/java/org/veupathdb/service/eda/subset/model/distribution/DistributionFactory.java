@@ -21,7 +21,7 @@ import java.util.stream.Stream;
 
 public class DistributionFactory {
 
-  private static class EdaDistributionStreamProvider<T extends VariableWithValues> implements DistributionStreamProvider {
+  private static class EdaDistributionStreamProvider<T extends VariableWithValues<?>> implements DistributionStreamProvider {
 
     // used to produce the stream of distribution tuples
     private final DataSource _ds;
@@ -64,7 +64,7 @@ public class DistributionFactory {
 
   public static DistributionResult processDistributionRequest(
       DataSource ds, String appDbSchema, Study study, Entity targetEntity,
-      VariableWithValues var, List<Filter> filters,
+      VariableWithValues<?> var, List<Filter> filters,
       ValueSpec apiValueSpec, Optional<BinSpecWithRange> incomingBinSpec) {
     try {
       AbstractDistribution.ValueSpec valueSpec = convertValueSpec(apiValueSpec);
@@ -72,26 +72,23 @@ public class DistributionFactory {
       // inspect requested variable and select appropriate distribution
       AbstractDistribution distribution;
       if (var.getDataShape() == VariableDataShape.CONTINUOUS) {
-        switch(var.getType()) {
-          case INTEGER:
-            distribution = new IntegerBinDistribution(
-              new EdaDistributionStreamProvider<>(ds, appDbSchema, study, targetEntity, (IntegerVariable)var, filters),
-              valueSpec, new EdaNumberBinSpec((IntegerVariable)var, incomingBinSpec));
-            break;
-          case NUMBER:
-            distribution = new FloatingPointBinDistribution(
-              new EdaDistributionStreamProvider<>(ds, appDbSchema, study, targetEntity, (FloatingPointVariable)var, filters),
-              valueSpec, new EdaNumberBinSpec((FloatingPointVariable)var, incomingBinSpec));
-            break;
-          case DATE:
-            distribution = new DateBinDistribution(
-              new EdaDistributionStreamProvider<>(ds, appDbSchema, study, targetEntity, (DateVariable)var, filters),
-              valueSpec, new EdaDateBinSpec((DateVariable)var, incomingBinSpec));
-            break;
-          default: throw new BadRequestException("Among continuous variables, " +
-              "distribution endpoint supports only date, integer, and number types; " +
-              "requested variable '" + var.getId() + "' is type " + var.getType());
-        }
+        distribution = switch (var.getType()) {
+          case INTEGER -> new IntegerBinDistribution(
+            new EdaDistributionStreamProvider<>(ds, appDbSchema, study, targetEntity, (IntegerVariable) var, filters),
+            valueSpec, new EdaNumberBinSpec((IntegerVariable) var, incomingBinSpec)
+          );
+          case NUMBER -> new FloatingPointBinDistribution(
+            new EdaDistributionStreamProvider<>(ds, appDbSchema, study, targetEntity, (FloatingPointVariable) var, filters),
+            valueSpec, new EdaNumberBinSpec((FloatingPointVariable) var, incomingBinSpec)
+          );
+          case DATE -> new DateBinDistribution(
+            new EdaDistributionStreamProvider<>(ds, appDbSchema, study, targetEntity, (DateVariable) var, filters),
+            valueSpec, new EdaDateBinSpec((DateVariable) var, incomingBinSpec)
+          );
+          default -> throw new BadRequestException("Among continuous variables, " +
+            "distribution endpoint supports only date, integer, and number types; " +
+            "requested variable '" + var.getId() + "' is type " + var.getType());
+        };
       }
       else {
         if (incomingBinSpec.isPresent()) {
@@ -111,10 +108,9 @@ public class DistributionFactory {
   }
 
   private static AbstractDistribution.ValueSpec convertValueSpec(ValueSpec apiValueSpec) {
-    switch(apiValueSpec) {
-      case COUNT: return AbstractDistribution.ValueSpec.COUNT;
-      case PROPORTION: return AbstractDistribution.ValueSpec.PROPORTION;
-      default: throw new IllegalArgumentException();
-    }
+    return switch (apiValueSpec) {
+      case COUNT -> AbstractDistribution.ValueSpec.COUNT;
+      case PROPORTION -> AbstractDistribution.ValueSpec.PROPORTION;
+    };
   }
 }

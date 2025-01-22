@@ -51,7 +51,7 @@ public class StudiesTest {
     Entity entity = study.getEntity(entityId).orElseThrow();
 
     String varId = "var_p4";
-    VariableWithValues var = (VariableWithValues)entity.getVariable(varId).orElseThrow();
+    VariableWithValues<?> var = (VariableWithValues<?>)entity.getVariable(varId).orElseThrow();
 
     List<Filter> filters = Collections.emptyList();
 
@@ -75,7 +75,7 @@ public class StudiesTest {
     Entity entity = study.getEntity(entityId).orElseThrow();
 
     String varId = "var_p4";
-    VariableWithValues var = (VariableWithValues)entity.getVariable(varId).orElseThrow();
+    VariableWithValues<?> var = (VariableWithValues<?>)entity.getVariable(varId).orElseThrow();
 
     List<Filter> filters = new ArrayList<>();
     filters.add(_filtersForTesting.houseCityFilter);
@@ -91,7 +91,7 @@ public class StudiesTest {
     testDistributionResponse(study, entity, var, filters, expectedVariableCount, expectedDistribution);
   }
 
-  private void testDistributionResponse(Study study, Entity entity, VariableWithValues var,
+  private void testDistributionResponse(Study study, Entity entity, VariableWithValues<?> var,
       List<Filter> filters, int expectedVariableCount, Map<String, Integer> expectedDistribution) {
 
     DistributionResult result = DistributionFactory.processDistributionRequest(

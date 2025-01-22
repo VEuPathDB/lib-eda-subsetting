@@ -27,7 +27,7 @@ public abstract class Filter {
 
   public abstract CloseableIterator<Long> streamFilteredIds(BinaryValuesStreamer binaryValuesStreamer, Study study);
 
-  public abstract List<VariableWithValues> getAllVariables();
+  public abstract List<VariableWithValues<?>> getAllVariables();
 
   /*
    * Get SQL to perform the filter. Include ancestor IDs.
@@ -37,22 +37,22 @@ public abstract class Filter {
     // join to ancestors table to get ancestor ID
 
     return "  SELECT " + _entity.getAllPksSelectList("a") + NL
-        + "  FROM " + _appDbSchema + DB.Tables.AttributeValue.NAME(_entity) + " t, " + _appDbSchema + DB.Tables.Ancestors.NAME(_entity) + " a" + NL
-        + "  WHERE t." + _entity.getPKColName() + " = a." + _entity.getPKColName();
+      + "  FROM " + _appDbSchema + DB.Tables.AttributeValue.NAME(_entity) + " t, " + _appDbSchema + DB.Tables.Ancestors.NAME(_entity) + " a" + NL
+      + "  WHERE t." + _entity.getPKColName() + " = a." + _entity.getPKColName();
   }
 
   protected String getSingleFilterCommonSqlNoAncestors() {
 
     return "  SELECT " + _entity.getPKColName() + NL
-        + "  FROM " + _appDbSchema + DB.Tables.AttributeValue.NAME(_entity) + NL
-        + "  WHERE 1 = 1 --no-op where clause for code generation simplicity";
+      + "  FROM " + _appDbSchema + DB.Tables.AttributeValue.NAME(_entity) + NL
+      + "  WHERE 1 = 1 --no-op where clause for code generation simplicity";
   }
 
   public Entity getEntity() {
     return _entity;
   }
 
-  public boolean filtersOnVariable(VariableWithValues variable) {
+  public boolean filtersOnVariable(VariableWithValues<?> variable) {
     if (!_entity.getId().equals(variable.getEntity().getId())) {
       return false;
     }

@@ -16,13 +16,13 @@ public class NumberSetFilter<T extends Number & Comparable<T>> extends SingleVal
 
   // also convert to more specific Number types up front for performance in file filtering
   private final List<T> _typedNumberSet;
-  
+
   public NumberSetFilter(String appDbSchema, Entity entity, NumberVariable<T> variable, List<Number> numberSet) {
     super(appDbSchema, entity, variable);
     _numberSet = numberSet;
     _typedNumberSet = _numberSet.stream()
-        .map(_variable::getValidatedSubtype)
-        .collect(Collectors.toList());
+      .map(_variable::getValidatedSubtype)
+      .collect(Collectors.toList());
   }
 
   // safe from SQL injection since input classes are Number
@@ -38,8 +38,8 @@ public class NumberSetFilter<T extends Number & Comparable<T>> extends SingleVal
 
   private String createSqlInExpression() {
     return _numberSet.stream()
-        .map(String::valueOf)
-        .collect(Collectors.joining(", "));
+      .map(String::valueOf)
+      .collect(Collectors.joining(", "));
   }
 
 }

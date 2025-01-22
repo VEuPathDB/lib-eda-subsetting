@@ -46,10 +46,10 @@ public class TallRowConversionUtils {
 
       // add variable value to map (skip if ID is null)
       if (variableId != null) {
-        VariableWithValues var = entity.getVariable(variableId)
-            .map(v -> (VariableWithValues)v)
-            .orElseThrow(() -> new RuntimeException(
-                "Metadata does not have variable found in tall table result set: " + variableId));
+        VariableWithValues<?> var = entity.getVariable(variableId)
+          .map(v -> (VariableWithValues<?>)v)
+          .orElseThrow(() -> new RuntimeException(
+            "Metadata does not have variable found in tall table result set: " + variableId));
 
         tallRow.put(VARIABLE_VALUE_COL_NAME, var.getType().convertRowValueToStringValue(rs));
       }
@@ -88,11 +88,11 @@ public class TallRowConversionUtils {
 
     return tallRows -> {
 
-      Map<String, String> firstTallRow = tallRows.get(0);
+      Map<String, String> firstTallRow = tallRows.getFirst();
       Map<String, String> wideRow = new HashMap<>();
       String tallRowEntityId = firstTallRow.get(entity.getPKColName());
       Map<String, List<String>> multiValues = null;  // this map only contains variables that have multiple values
-      Map<String, VariableWithValues> variablesMap = new HashMap<>(); // ID -> VariableWithValues
+      Map<String, VariableWithValues<?>> variablesMap = new HashMap<>(); // ID -> VariableWithValues
 
 
       addPrimaryKeysToWideRow(firstTallRow, entity, wideRow, tallRowEntityId, errPrefix, entityKeyNameFn);
@@ -167,21 +167,21 @@ public class TallRowConversionUtils {
     return multiValuesMap;
   }
 
-  // for those variables that have multi-values, transform the list of string values to 
+  // for those variables that have multi-values, transform the list of string values to
   // appropriate json array, and put that array into the wide row
   protected static void putMultiValuesAsJsonIntoWideRow(Map<String, List<String>> multiValues,
                                                         Map<String, String> wideRow,
-                                                        Map<String, VariableWithValues> variablesMap) {
+                                                        Map<String, VariableWithValues<?>> variablesMap) {
 
     for (String multiValVarId : multiValues.keySet()) {
-      VariableWithValues vwv = variablesMap.get(multiValVarId);
+      VariableWithValues<?> vwv = variablesMap.get(multiValVarId);
       JSONArray jsonArray = vwv.getType().convertStringListToJsonArray(multiValues.get(multiValVarId));
       wideRow.put(multiValVarId, jsonArray.toString());
     }
   }
 
   private static void validateTallRow(Entity entity, Map<String, String> tallRow, String errPrefix,
-                                      String tallRowEnityId, String variableId, Map<String, VariableWithValues> variablesMap) {
+                                      String tallRowEnityId, String variableId, Map<String, VariableWithValues<?>> variablesMap) {
     // do some simple validation
     if (tallRow.size() != entity.getTallRowSize())
       throw new RuntimeException(errPrefix + " has an unexpected number of columns: (" + tallRow.size() + "): " + tallRow.keySet());
@@ -194,12 +194,12 @@ public class TallRowConversionUtils {
 
     if (!variablesMap.containsKey(variableId)) {
       Variable var = entity.getVariable(variableId)
-          .orElseThrow(() -> new RuntimeException(errPrefix + " has an invalid variableId: " + variableId));
+        .orElseThrow(() -> new RuntimeException(errPrefix + " has an invalid variableId: " + variableId));
 
       if (!(var instanceof VariableWithValues))
         throw new RuntimeException("Variable in tall result does not have values: " + variableId);
 
-      variablesMap.put(variableId, (VariableWithValues)var);
+      variablesMap.put(variableId, (VariableWithValues<?>)var);
     }
   }
 

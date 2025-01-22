@@ -119,7 +119,7 @@ public abstract class VariableWithValues<T> extends Variable {
    * Method that returns a function which transforms length-padded UTF-8 bytes into a formatted result. For some
    * variables this may be dependent on the tabularReportConfig variable. The default behavior is to remove the padding
    * on the string and wrap it in quotes for multi-val variables.
-   *
+   * <p>
    * Note that we are returning a function here to avoid branching in the low-level code that gets executed per
    * variable value.
    *

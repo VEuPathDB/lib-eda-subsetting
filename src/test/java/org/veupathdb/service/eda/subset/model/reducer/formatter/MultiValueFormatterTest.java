@@ -14,10 +14,10 @@ public class MultiValueFormatterTest {
   @Test
   public void testMultiFormatter() {
     List<VariableValueIdPair<byte[]>> utf8Strings = List.of(
-        new VariableValueIdPair<>(0, "0-first".getBytes(StandardCharsets.UTF_8)),
-        new VariableValueIdPair<>(0, "0-second".getBytes(StandardCharsets.UTF_8)),
-        new VariableValueIdPair<>(1, "1".getBytes(StandardCharsets.UTF_8)),
-        new VariableValueIdPair<>(3, "3".getBytes(StandardCharsets.UTF_8))
+      new VariableValueIdPair<>(0, "0-first".getBytes(StandardCharsets.UTF_8)),
+      new VariableValueIdPair<>(0, "0-second".getBytes(StandardCharsets.UTF_8)),
+      new VariableValueIdPair<>(1, "1".getBytes(StandardCharsets.UTF_8)),
+      new VariableValueIdPair<>(3, "3".getBytes(StandardCharsets.UTF_8))
     );
     MultiValueFormatter formatter = new MultiValueFormatter();
     ValueStream<byte[]> valueStream = new ValueStream<>(CloseableIterator.of(utf8Strings.iterator()), formatter);

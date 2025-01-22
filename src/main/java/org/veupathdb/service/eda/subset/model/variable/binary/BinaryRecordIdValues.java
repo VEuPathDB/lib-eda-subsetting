@@ -2,17 +2,15 @@ package org.veupathdb.service.eda.subset.model.variable.binary;
 import org.veupathdb.service.eda.subset.model.variable.VariableValueIdPair;
 
 import java.util.Arrays;
-import java.util.Objects;
 
 /**
  * Record containing an idIndex, its entity_id and its ancestor's entity_ids
  * @author sfischer
- *
  */
 public class BinaryRecordIdValues extends VariableValueIdPair<byte[][]> {
-  private long idIndex;
-  private byte[] entityId;
-  private byte[][] ancestorIds;
+  private final long idIndex;
+  private final byte[] entityId;
+  private final byte[][] ancestorIds;
 
   public BinaryRecordIdValues(long idIndex, byte[] entityId, byte[][] ancestorIds) {
     super(idIndex, constructList(entityId, ancestorIds));
@@ -44,16 +42,15 @@ public class BinaryRecordIdValues extends VariableValueIdPair<byte[][]> {
 
   @Override
   public boolean equals(Object object) {
-    if (!(object instanceof BinaryRecordIdValues)) return false;
-    BinaryRecordIdValues recordIdValues = (BinaryRecordIdValues)object;
+    if (!(object instanceof BinaryRecordIdValues recordIdValues)) return false;
     return (recordIdValues.idIndex == idIndex
-        && recordIdValues.entityId.equals(entityId)
-        && Objects.equals(recordIdValues.ancestorIds, ancestorIds));
+      && Arrays.equals(recordIdValues.entityId, entityId)
+      && Arrays.deepEquals(recordIdValues.ancestorIds, ancestorIds));
   }
-  
+
   @Override
   public String toString() {
     return "idIndex: " + idIndex + " entityId: " + entityId + " ancestorIds: ";
   }
-  
+
 }

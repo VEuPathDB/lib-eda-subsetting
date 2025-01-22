@@ -8,9 +8,9 @@ import java.nio.ByteBuffer;
  * @param <T> Type stored in list to serialize.
  */
 public class ArrayConverter<T> implements BinaryConverter<T[]> {
-  private BinaryConverter<T> converter;
-  private int size;
-  private Class<T> clazz;
+  private final BinaryConverter<T> converter;
+  private final int size;
+  private final Class<T> clazz;
 
   public ArrayConverter(BinaryConverter<T> converter, int size, Class<T> clazz) {
     this.converter = converter;
@@ -48,6 +48,7 @@ public class ArrayConverter<T> implements BinaryConverter<T[]> {
   }
 
   @Override
+  @SuppressWarnings("unchecked")
   public T[] fromBytes(ByteBuffer buffer) {
     final T[] tuple = (T[]) Array.newInstance(clazz, size);
     for (int i = 0; i < size; i++) {

@@ -15,13 +15,13 @@ public class StringSetFilter extends SingleValueFilter<byte[], StringVariable> {
 
   private final List<String> _stringSet;
   private final List<byte[]> _stringSetByteArrays;
-  
+
   public StringSetFilter(String appDbSchema, Entity entity, StringVariable variable, List<String> stringSet) {
     super(appDbSchema, entity, variable);
     _stringSet = stringSet;
     _stringSetByteArrays = stringSet.stream()
-        .map(s -> s.getBytes(StandardCharsets.UTF_8))
-        .collect(Collectors.toList());
+      .map(s -> s.getBytes(StandardCharsets.UTF_8))
+      .collect(Collectors.toList());
   }
 
   @Override
@@ -73,12 +73,12 @@ public class StringSetFilter extends SingleValueFilter<byte[], StringVariable> {
 
     // process the validated list
     return _stringSet.stream()
-        // replace single quotes with two single quotes (sql escape)
-        .map(s -> s.replaceAll("'", "''"))
-        // wrap in quotes
-        .map(s -> "'" + s + "'")
-        // join with commas
-        .collect(Collectors.joining(", "));
+      // replace single quotes with two single quotes (sql escape)
+      .map(s -> s.replaceAll("'", "''"))
+      // wrap in quotes
+      .map(s -> "'" + s + "'")
+      // join with commas
+      .collect(Collectors.joining(", "));
   }
 
 }

@@ -36,15 +36,15 @@ public class RootVocabHandler {
   public void queryStudyVocab(String schema,
                               DataSource dataSource,
                               Entity studyEntity,
-                              VariableWithValues vocabularyVariable,
+                              VariableWithValues<?> vocabularyVariable,
                               TabularResponses.ResultConsumer resultConsumer,
                               List<Filter> filters) {
     // Limit to filters that explicitly apply to vocabulary variable. This vocabulary should be "filter-sensitive"
     // as opposed to the usual "subset-sensitivity". Vocab values that are incidentally filtered out by filters that
     // apply to other variables will not be taken into account.
     List<Filter> vocabFilters = filters.stream()
-        .filter(filter -> filter.filtersOnVariable(vocabularyVariable))
-        .collect(Collectors.toList());
+      .filter(filter -> filter.filtersOnVariable(vocabularyVariable))
+      .collect(Collectors.toList());
     new SQLRunner(dataSource, getSqlForVocabQuery(schema, vocabularyVariable.getEntity(), studyEntity, vocabularyVariable, vocabFilters)).executeQuery(rs -> {
       try {
         resultConsumer.begin();
@@ -68,7 +68,7 @@ public class RootVocabHandler {
   private String getSqlForVocabQuery(String appDbSchema,
                                      Entity outputEntity,
                                      Entity studyEntity,
-                                     VariableWithValues vocabVar,
+                                     VariableWithValues<?> vocabVar,
                                      List<Filter> filters) {
     final String attributeValTable = appDbSchema + DB.Tables.AttributeValue.NAME(outputEntity);
     List<String> selectColsList = new ArrayList<>(outputEntity.getAncestorPkColNames());
@@ -81,8 +81,7 @@ public class RootVocabHandler {
     if (!filters.isEmpty()) {
       withBody = filters.stream().map(Filter::getSql).collect(Collectors.joining("INTERSECT"));
     }
-    return "" +
-        " WITH subset AS ( " + withBody + ")" + "\n" +
+    return " WITH subset AS ( " + withBody + ")" + "\n" +
         " SELECT DISTINCT ancestors." + studyEntity.getPKColName() + ", value.string_value, value.number_value, value.date_value FROM " + attributeValTable + " value \n" +
         " JOIN " + appDbSchema + DB.Tables.Ancestors.NAME(outputEntity) + " ancestors \n" +
         " ON ancestors." + outputEntity.getPKColName() + " = value." + outputEntity.getPKColName() + " \n " +

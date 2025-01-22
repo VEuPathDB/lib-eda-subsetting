@@ -21,7 +21,7 @@ public class StubDb {
   // tests run against non-user studies
   public static final StudyOverview.StudySourceType USER_STUDIES_FLAG = StudyOverview.StudySourceType.CURATED;
 
-  private static DataSource _ds;
+  private static volatile DataSource _ds;
 
   public static DataSource getDataSource() {
     if (_ds == null) {

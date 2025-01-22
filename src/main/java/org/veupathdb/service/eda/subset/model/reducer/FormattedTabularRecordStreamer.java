@@ -15,9 +15,9 @@ public class FormattedTabularRecordStreamer implements CloseableIterator<byte[][
   private static final byte[] EMPTY_BYTE_ARRAY = new byte[0];
 
   // These value streams need to have associated with them the variable
-  private List<ValueStream<byte[]>> valuePairStreams;
-  private CloseableIterator<VariableValueIdPair<byte[][]>> idMapStream;
-  private CloseableIterator<Long> idIndexStream;
+  private final List<ValueStream<byte[]>> valuePairStreams;
+  private final CloseableIterator<VariableValueIdPair<byte[][]>> idMapStream;
+  private final CloseableIterator<Long> idIndexStream;
   private Long currentIdIndex;
 
   /**
@@ -28,7 +28,6 @@ public class FormattedTabularRecordStreamer implements CloseableIterator<byte[][
    * @param valuePairStreams Streams of pairs containing entity ID indexes and corresponding values for their respective
    *                         variables.
    * @param idIndexStream    Stream of ID indexes, indicating which entity records to output.
-   * @param idMapStream
    */
   public FormattedTabularRecordStreamer(List<ValueStream<byte[]>> valuePairStreams,
                                         CloseableIterator<Long> idIndexStream,

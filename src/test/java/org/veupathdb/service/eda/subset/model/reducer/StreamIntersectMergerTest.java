@@ -8,7 +8,6 @@ import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 
 import java.util.*;
-import java.util.stream.Collectors;
 import java.util.stream.LongStream;
 
 @Nested
@@ -17,24 +16,24 @@ public class StreamIntersectMergerTest {
   @Nested
   public class WhenThereAreNoDuplicates {
     private final List<Long> oneToOneHundred = LongStream.rangeClosed(1, 100)
-        .boxed()
-        .collect(Collectors.toList());
+      .boxed()
+      .toList();
     private final List<Long> evenNumbers = LongStream.rangeClosed(1, 100)
-        .filter(i -> i % 2 == 0)
-        .boxed()
-        .collect(Collectors.toList());
+      .filter(i -> i % 2 == 0)
+      .boxed()
+      .toList();
     private final List<Long> oddNumbers = LongStream.rangeClosed(1, 100)
-        .filter(i -> i % 2 != 0)
-        .boxed()
-        .collect(Collectors.toList());
+      .filter(i -> i % 2 != 0)
+      .boxed()
+      .toList();
     private final List<Long> threeFactors = LongStream.rangeClosed(1, 100)
-        .filter(i -> i % 3 == 0)
-        .boxed()
-        .collect(Collectors.toList());
+      .filter(i -> i % 3 == 0)
+      .boxed()
+      .toList();
     private final List<Long> fiveFactors = LongStream.rangeClosed(1, 100)
-        .filter(i -> i % 5 == 0)
-        .boxed()
-        .collect(Collectors.toList());
+      .filter(i -> i % 5 == 0)
+      .boxed()
+      .toList();
 
     @Test
     public void testOneStream() {
@@ -47,8 +46,8 @@ public class StreamIntersectMergerTest {
       final List<Long> stream1 = new ArrayList<>(oneToOneHundred);
       final List<Long> stream2 = new ArrayList<>(oneToOneHundred);
       Iterable<Long> iterable = () -> new StreamIntersectMerger(List.of(
-          CloseableIterator.of(stream1.iterator()),
-          CloseableIterator.of(stream2.iterator())));
+        CloseableIterator.of(stream1.iterator()),
+        CloseableIterator.of(stream2.iterator())));
       MatcherAssert.assertThat(iterable, Matchers.iterableWithSize(100));
     }
 
@@ -57,8 +56,8 @@ public class StreamIntersectMergerTest {
       final List<Long> stream1 = new ArrayList<>(evenNumbers);
       final List<Long> stream2 = new ArrayList<>(oddNumbers);
       Iterable<Long> iterable = () -> new StreamIntersectMerger(List.of(
-          CloseableIterator.of(stream1.iterator()),
-          CloseableIterator.of(stream2.iterator())));
+        CloseableIterator.of(stream1.iterator()),
+        CloseableIterator.of(stream2.iterator())));
       MatcherAssert.assertThat(iterable, Matchers.emptyIterable());
     }
 
@@ -68,9 +67,9 @@ public class StreamIntersectMergerTest {
       final List<Long> stream2 = new ArrayList<>(threeFactors);
       final List<Long> stream3 = new ArrayList<>(fiveFactors);
       Iterable<Long> result = () -> new StreamIntersectMerger(List.of(
-          CloseableIterator.of(stream1.iterator()),
-          CloseableIterator.of(stream2.iterator()),
-          CloseableIterator.of(stream3.iterator())));
+        CloseableIterator.of(stream1.iterator()),
+        CloseableIterator.of(stream2.iterator()),
+        CloseableIterator.of(stream3.iterator())));
       // Common multiples of 2, 3, and 5 between 1 and 100 are 30, 60 and 90.
       MatcherAssert.assertThat(result, Matchers.contains(30L, 60L, 90L));
     }
@@ -81,9 +80,9 @@ public class StreamIntersectMergerTest {
       final List<Long> stream2 = new ArrayList<>(fiveFactors);
       final List<Long> stream3 = new ArrayList<>(threeFactors);
       Iterable<Long> result = () -> new StreamIntersectMerger(List.of(
-          CloseableIterator.of(stream1.iterator()),
-          CloseableIterator.of(stream2.iterator()),
-          CloseableIterator.of(stream3.iterator())));
+        CloseableIterator.of(stream1.iterator()),
+        CloseableIterator.of(stream2.iterator()),
+        CloseableIterator.of(stream3.iterator())));
       // Common multiples of 2, 3, and 5 between 1 and 100 are 30, 60 and 90.
       MatcherAssert.assertThat(result, Matchers.contains(15L, 30L, 45L, 60L, 75L, 90L));
     }
@@ -97,8 +96,8 @@ public class StreamIntersectMergerTest {
     @Test
     public void testDupes1() {
       Iterable<Long> result = () -> new StreamIntersectMerger(List.of(
-          CloseableIterator.of(stream1.iterator()),
-              CloseableIterator.of(stream2.iterator())));
+        CloseableIterator.of(stream1.iterator()),
+        CloseableIterator.of(stream2.iterator())));
       MatcherAssert.assertThat(result, Matchers.contains(1L, 2L, 4L, 8L));
     }
 
@@ -107,8 +106,8 @@ public class StreamIntersectMergerTest {
       final List<Long> s1 = List.of(1L, 2L, 3L, 4L, 5L, 10L);
       final List<Long> s2 = List.of(2L, 5L, 6L, 10L);
       Iterable<Long> result = () -> new StreamIntersectMerger(List.of(
-          CloseableIterator.of(s1.iterator()),
-              CloseableIterator.of(s2.iterator())));
+        CloseableIterator.of(s1.iterator()),
+        CloseableIterator.of(s2.iterator())));
       MatcherAssert.assertThat(result, Matchers.contains(2L, 5L, 10L));
     }
 
@@ -117,8 +116,8 @@ public class StreamIntersectMergerTest {
       final List<Long> s1 = List.of(1L, 2L, 3L, 4L, 5L, 9L, 10L);
       final List<Long> s2 = List.of(2L, 5L, 6L, 9L, 10L);
       Iterable<Long> result = () -> new StreamIntersectMerger(List.of(
-          CloseableIterator.of(s1.iterator()),
-          CloseableIterator.of(s2.iterator())));
+        CloseableIterator.of(s1.iterator()),
+        CloseableIterator.of(s2.iterator())));
       MatcherAssert.assertThat(result, Matchers.contains(2L, 5L, 9L, 10L));
     }
 
@@ -133,8 +132,8 @@ public class StreamIntersectMergerTest {
   @Nested
   public class WhenSomeStreamsAreEmpty {
     private final List<Long> oneToOneHundred = LongStream.rangeClosed(1, 100)
-        .boxed()
-        .collect(Collectors.toList());
+      .boxed()
+      .toList();
     private final List<Long> emptyStream = Collections.emptyList();
 
     @Test
@@ -146,8 +145,8 @@ public class StreamIntersectMergerTest {
     @Test
     public void testOneEmptyStream() {
       Iterable<Long> result = () -> new StreamIntersectMerger(List.of(
-          CloseableIterator.of(oneToOneHundred.iterator()),
-          CloseableIterator.of(emptyStream.iterator())));
+        CloseableIterator.of(oneToOneHundred.iterator()),
+        CloseableIterator.of(emptyStream.iterator())));
       MatcherAssert.assertThat(result, Matchers.emptyIterable());
     }
   }

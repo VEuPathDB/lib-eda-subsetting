@@ -9,7 +9,6 @@ import org.veupathdb.service.eda.subset.model.filter.SingleValueFilter;
 import org.veupathdb.service.eda.subset.model.tabular.TabularReportConfig;
 import org.veupathdb.service.eda.subset.model.variable.VariableValueIdPair;
 import org.veupathdb.service.eda.subset.model.variable.VariableWithValues;
-import org.veupathdb.service.eda.subset.model.variable.binary.*;
 import org.veupathdb.service.eda.subset.model.variable.binary.AncestorDeserializer;
 import org.veupathdb.service.eda.subset.model.variable.binary.ArrayConverter;
 import org.veupathdb.service.eda.subset.model.variable.binary.BinaryConverter;
@@ -23,7 +22,6 @@ import org.veupathdb.service.eda.subset.model.variable.binary.RecordIdValuesConv
 import org.veupathdb.service.eda.subset.model.variable.binary.ValueWithIdDeserializer;
 
 import java.io.IOException;
-import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
@@ -76,16 +74,13 @@ public class BinaryValuesStreamer {
    *
    * @param filter Filter to apply to variable values.
    * @param study  Study that the request is applicable to.
-   * @return
-   * @throws IOException
    */
-  public CloseableIterator<Long> streamMultiFilteredEntityIdIndexes(
-      MultiFilter filter, Study study) throws IOException {
+  public CloseableIterator<Long> streamMultiFilteredEntityIdIndexes(MultiFilter filter, Study study) {
     List<CloseableIterator<Long>> idStreams = filter.getSubFilters().stream()
-        .map(Functions.fSwallow(subFilter -> streamFilteredEntityIdIndexes(filter.getFilter(subFilter), study)))
-        .collect(Collectors.toList());
+      .map(Functions.fSwallow(subFilter -> streamFilteredEntityIdIndexes(filter.getFilter(subFilter), study)))
+      .toList();
     if (idStreams.size() == 1) {
-      return new StreamDeduper(idStreams.get(0));
+      return new StreamDeduper(idStreams.getFirst());
     }
     if (filter.getOperation() == MultiFilter.MultiFilterOperation.UNION) {
       return new StreamUnionMerger(idStreams);
@@ -162,7 +157,6 @@ public class BinaryValuesStreamer {
    * @param descendant Entity for which to retrieve ancestors stream.
    * @param study      Study the entity belongs to.
    * @return Stream of ancestor IDs.
-   * @throws IOException
    */
   public CloseableIterator<VariableValueIdPair<List<Long>>> streamAncestorIds(Entity descendant,
                                                                               Study study) throws IOException {
@@ -181,7 +175,6 @@ public class BinaryValuesStreamer {
    * @param descendant Entity for which to retrieve ancestors stream.
    * @param study      Study the entity belongs to.
    * @return Stream of ancestor IDs.
-   * @throws IOException
    */
   public CloseableIterator<VariableValueIdPair<Long>> streamAncestorIds(Entity descendant,
                                                                         Study study,
@@ -195,7 +188,6 @@ public class BinaryValuesStreamer {
         fileChannelExecutorService,
         deserializerExecutorService);
   }
-
 
   /**
    * As an iterator, provide a stream of tuples containing:

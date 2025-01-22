@@ -12,8 +12,6 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 import javax.sql.DataSource;
 
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 import org.gusdb.fgputil.db.runner.SQLRunner;
 import org.gusdb.fgputil.functional.TreeNode;
 import org.veupathdb.service.eda.subset.model.Entity;
@@ -22,7 +20,6 @@ import static org.gusdb.fgputil.FormatUtil.NL;
 import static org.veupathdb.service.eda.subset.model.db.ResultSetUtils.*;
 
 public class EntityFactory {
-  private static final Logger LOG = LogManager.getLogger(EntityFactory.class);
   private final static String STDY_ABBRV_COL_NM = "study_abbrev"; // for private queries
 
   private final DataSource _dataSource;
@@ -82,12 +79,13 @@ public class EntityFactory {
     }
     String wideTable = DB.Tables.Attributes.NAME(entity).toUpperCase(Locale.ROOT);
     if (_dbPlatform == PlatformUtils.DBPlatform.PostgresDB) {
-      String postgresTableExists = String.format("SELECT EXISTS (\n" +
-          "   SELECT 1\n" +
-          "   FROM information_schema.tables\n" +
-          "   WHERE table_schema = '%s'\n" +
-          "   AND table_name = '%s'\n" +
-          ");", _appDbSchema, wideTable);
+      String postgresTableExists = String.format("""
+        SELECT EXISTS (
+           SELECT 1
+           FROM information_schema.tables
+           WHERE table_schema = '%s'
+           AND table_name = '%s'
+        );""", _appDbSchema, wideTable);
       return new SQLRunner(_dataSource, postgresTableExists).executeQuery(ResultSet::next);
     }
     String tableExistsSql = String.format("SELECT object_name FROM all_objects WHERE object_name = '%s'", wideTable);

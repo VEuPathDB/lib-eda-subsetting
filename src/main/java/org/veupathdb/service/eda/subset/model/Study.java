@@ -51,7 +51,7 @@ public class Study extends StudyOverview {
   private static void populateEntityAncestors(TreeNode<Entity> entityNode, List<Entity> ancestorEntities) {
     Entity entity = entityNode.getContents();
     entity.setAncestorEntities(ancestorEntities);
-    ancestorEntities.add(0, entity);
+    ancestorEntities.addFirst(entity);
     for (TreeNode<Entity> childNode : entityNode.getChildNodes()) {
       populateEntityAncestors(childNode, new ArrayList<>(ancestorEntities));
     }

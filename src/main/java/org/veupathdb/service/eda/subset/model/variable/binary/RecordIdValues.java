@@ -8,13 +8,12 @@ import java.util.Objects;
 /**
  * Record containing an idIndex, its entity_id and its ancestor's entity_ids
  * @author sfischer
- *
  */
 public class RecordIdValues extends VariableValueIdPair<List<String>> {
-  private long idIndex;
-  private String entityId;
-  private List<String> ancestorIds;
-  
+  private final long idIndex;
+  private final String entityId;
+  private final List<String> ancestorIds;
+
   public RecordIdValues(long idIndex, String entityId, List<String> ancestorIds) {
     super(idIndex, new ListBuilder<>(entityId).addAll(ancestorIds).toList());
     this.idIndex = idIndex;
@@ -36,16 +35,15 @@ public class RecordIdValues extends VariableValueIdPair<List<String>> {
 
   @Override
   public boolean equals(Object object) {
-    if (!(object instanceof RecordIdValues)) return false;
-    RecordIdValues recordIdValues = (RecordIdValues)object;
+    if (!(object instanceof RecordIdValues recordIdValues)) return false;
     return (recordIdValues.idIndex == idIndex
-        && recordIdValues.entityId.equals(entityId)
-        && Objects.equals(recordIdValues.ancestorIds, ancestorIds));
+      && recordIdValues.entityId.equals(entityId)
+      && Objects.equals(recordIdValues.ancestorIds, ancestorIds));
   }
-  
+
   @Override
   public String toString() {
     return "idIndex: " + idIndex + " entityId: " + entityId + " ancestorIds: " + String.join(", ", ancestorIds);
   }
-  
+
 }

@@ -5,7 +5,6 @@ import java.time.ZoneOffset;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Predicate;
-import java.util.stream.Collectors;
 
 import org.veupathdb.service.eda.subset.model.Entity;
 import org.veupathdb.service.eda.subset.model.variable.DateVariable;
@@ -22,8 +21,8 @@ public class DateSetFilter extends SingleValueFilter<Long, DateVariable> {
     super(appDbSchema, entity, variable);
     _dateSet = dateSet;
     _dateSetMillisSinceEpoch = dateSet.stream()
-        .map(date -> date.toInstant(ZoneOffset.UTC).toEpochMilli())
-        .collect(Collectors.toList());
+      .map(date -> date.toInstant(ZoneOffset.UTC).toEpochMilli())
+      .toList();
   }
 
   // safe from SQL injection since input classes are LocalDateTime
@@ -36,7 +35,7 @@ public class DateSetFilter extends SingleValueFilter<Long, DateVariable> {
 
   @Override
   public Predicate<Long> getPredicate() {
-    return dateEpochMillis -> _dateSetMillisSinceEpoch.contains(dateEpochMillis);
+    return _dateSetMillisSinceEpoch::contains;
   }
 
 }

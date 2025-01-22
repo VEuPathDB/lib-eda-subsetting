@@ -1,4 +1,3 @@
-
 // // // // // // // // // // // // // // // // // // // // // // // // // //
 //
 // Project Configuration
@@ -6,7 +5,7 @@
 // // // // // // // // // // // // // // // // // // // // // // // // // //
 
 // Project settings
-group   = "org.veupathdb.eda"
+group   = "org.veupathdb.lib"
 version = "6.1.0"
 
 plugins {
@@ -15,8 +14,10 @@ plugins {
 }
 
 java {
-  targetCompatibility = JavaVersion.VERSION_11
-  sourceCompatibility = JavaVersion.VERSION_11
+  toolchain {
+    languageVersion = JavaLanguageVersion.of(21)
+    vendor = JvmVendorSpec.AMAZON
+  }
   withSourcesJar()
   withJavadocJar()
 }
@@ -25,14 +26,22 @@ tasks.withType<Jar> {
   duplicatesStrategy = DuplicatesStrategy.INCLUDE
 }
 
-//tasks.named("jar") {
-//  duplicatesStrategy =
-//}
+tasks.withType<Test> {
+  useJUnitPlatform {
+    excludeTags = setOf("Performance")
+  }
+}
 
 val test by tasks.getting(Test::class) {
   // use junit platform for unit tests
   useJUnitPlatform {
     excludeTags = setOf("Performance")
+  }
+
+  testLogging {
+    showExceptions = true
+    showStackTraces = true
+    showCauses = true
   }
 }
 
@@ -57,7 +66,7 @@ publishing {
   repositories {
     maven {
       name = "GitHub"
-      url  = uri("https://maven.pkg.github.com/veupathdb/maven-packages")
+      url  = uri("https://maven.pkg.github.com/veupathdb/lib-eda-subsetting")
       credentials {
         username = project.findProperty("gpr.user") as String? ?: System.getenv("USERNAME")
         password = project.findProperty("gpr.key") as String? ?: System.getenv("TOKEN")
@@ -123,7 +132,8 @@ dependencies {
   implementation("org.hsqldb:hsqldb:2.7.1")
 
   // Unit Testing
-  testImplementation("org.junit.jupiter:junit-jupiter:5.9.2")
-  testImplementation("org.mockito:mockito-core:5.2.0")
+  testImplementation("org.junit.jupiter:junit-jupiter:5.11.1")
+  testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:5.11.1")
+  testImplementation("org.mockito:mockito-core:5.14.0")
   testImplementation("org.hamcrest:hamcrest:2.2")
 }

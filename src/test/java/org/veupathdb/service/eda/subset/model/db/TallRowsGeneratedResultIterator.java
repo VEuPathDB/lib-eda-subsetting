@@ -53,7 +53,7 @@ public class TallRowsGeneratedResultIterator implements Iterator<Map<String,Stri
   private Record getNextRecord() {
     Record baseRecord = _baseRecordSupplier.get();
     Record newRecord = new Record();
-    baseRecord.stream().forEach(baseRow -> {
+    baseRecord.forEach(baseRow -> {
       Map<String,String> row = new HashMap<>(baseRow);
       row.put(_entityPkColName, "record" + _deliveredRecordCount);
       newRecord.add(row);
@@ -95,7 +95,7 @@ public class TallRowsGeneratedResultIterator implements Iterator<Map<String,Stri
       record.add(new MapBuilder<String,String>()
         .putAll(idMap)
         .put(DB.Tables.AttributeValue.Columns.TT_VARIABLE_ID_COL_NAME, var.getId())
-        .putIf(var.hasValues(), TallRowConversionUtils.VARIABLE_VALUE_COL_NAME, getDefaultVarValue(((VariableWithValues)var).getType()))
+        .putIf(var.hasValues(), TallRowConversionUtils.VARIABLE_VALUE_COL_NAME, getDefaultVarValue(((VariableWithValues<?>)var).getType()))
         .toMap());
     }
 
@@ -104,13 +104,12 @@ public class TallRowsGeneratedResultIterator implements Iterator<Map<String,Stri
   }
 
   private static String getDefaultVarValue(VariableType type) {
-    switch(type) {
-      case DATE: return FormatUtil.formatDateTimeNoTimezone(new Date(1613328166541L));
-      case NUMBER: return String.valueOf(123.4567);
-      case STRING: return "some fun string";
-      case LONGITUDE: return String.valueOf(160.00000);
-      case INTEGER: return String.valueOf(98);
-      default: throw new IllegalArgumentException();
-    }
+    return switch (type) {
+      case DATE -> FormatUtil.formatDateTimeNoTimezone(new Date(1613328166541L));
+      case NUMBER -> String.valueOf(123.4567);
+      case STRING -> "some fun string";
+      case LONGITUDE -> String.valueOf(160.00000);
+      case INTEGER -> String.valueOf(98);
+    };
   }
 }

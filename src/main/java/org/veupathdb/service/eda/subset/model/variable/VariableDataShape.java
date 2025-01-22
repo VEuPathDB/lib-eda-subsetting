@@ -27,7 +27,7 @@ public enum VariableDataShape {
   /**
    * Check if this data shape instance is allowed to be a member of a collection with the given collectionShape
    * and collection vocabulary.
-   *
+   * <p>
    * If the shapes are the same, they should always be compatible. Binary variables are compatible with a binary
    * collection if they have 2 or fewer vocab values.
    */

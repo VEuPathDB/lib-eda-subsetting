@@ -26,7 +26,7 @@ public class MockModel {
 
   // reusable study objects
   public final Study study;
-  
+
   public Entity household;
   public Entity householdObs;
   public Entity participant;
@@ -46,14 +46,14 @@ public class MockModel {
   public FloatingPointVariable networth;
   public StringVariable earsize;
   public StringVariable waterSupply;
-  
+
   public MockModel() {
     createTestEntities();
     StudyOverview overview = new StudyOverview("GEMS", "ds2324", StudyOverview.StudySourceType.CURATED, new Date());
     study = new Study(overview, constructEntityTree(), createIdMap());
     constructVariables();
   }
-  
+
   private void createTestEntities() {
     household = new Entity("GEMS_House", "ds2324", "Household", "Households", "descrip", "Hshld", false, false);
     householdObs = new Entity("GEMS_HouseObs", "ds2324", "Household Observation", "Household Observations", "descrip", "HshldObsvtn", false, true);
@@ -62,7 +62,7 @@ public class MockModel {
     sample = new Entity("GEMS_Sample", "ds2324", "Sample", "Samples", "descrip", "Smpl", false, true);
     treatment = new Entity("GEMS_Treat", "ds2324", "Treatment", "Treatments", "descrip", "Trtmnt", false, true);
   }
-  
+
   private Map<String, Entity> createIdMap() {
     Map<String, Entity> idMap = new HashMap<>();
     idMap.put("GEMS_House", household);
@@ -88,13 +88,13 @@ public class MockModel {
 
     TreeNode<Entity> observationNode = new TreeNode<>(observation);
     participantNode.addChildNode(observationNode);
-    
+
     TreeNode<Entity> sampleNode = new TreeNode<>(sample);
     observationNode.addChildNode(sampleNode);
-    
+
     TreeNode<Entity> treatmentNode = new TreeNode<>(treatment);
     observationNode.addChildNode(treatmentNode);
-    
+
     return householdNode;
   }
 
@@ -126,18 +126,18 @@ public class MockModel {
 
   private void constructVariables() {
 
-    /**************** String Variables ****************/
+    /* *************** String Variables *************** */
 
     city = getMockStringVar("city", "var_h1", household, 10, false, Arrays.asList("Boston", "Miami"));
     household.addVariable(city);
 
     roof = getMockStringVar("roof", "var_h2", household, 12, false, Arrays.asList("metal", "tile"));
     household.addVariable(roof);
-    
+
     // multi-valued string var
     haircolor = getMockStringVar("haircolor", "var_p4", participant, 21, true, Arrays.asList("blond", "brown", "silver"));
     participant.addVariable(haircolor);
-    
+
     mood = getMockStringVar("mood", "var_o5", observation, 96, false, Arrays.asList("happy", "jolly", "giddy"));
     observation.addVariable(mood);
 
@@ -147,7 +147,7 @@ public class MockModel {
     earsize = getMockStringVar("earsize", "var_p5", participant, 87, false, Arrays.asList("small", "medium", "large"));
     participant.addVariable(earsize);
 
-    /**************** Float/Number Variables ****************/
+    /* *************** Float/Number Variables *************** */
 
     // multi-valued number var (what can i say... left and right feet are different!)
     shoesize = getMockFloatVar("shoesize", "var_p2", participant, VariableDataShape.CATEGORICAL, 47, true);
@@ -162,11 +162,11 @@ public class MockModel {
     favNumber = getMockFloatVar("favNumber", "var_o2", observation, VariableDataShape.CATEGORICAL, 312, false);
     observation.addVariable(favNumber);
 
-    /**************** Date Variables ****************/
+    /* *************** Date Variables *************** */
 
     visitDate = getMockDateVar("visitDate", "var_o4", observation, VariableDataShape.CONTINUOUS, 13);
     observation.addVariable(visitDate);
-    
+
     startDate = getMockDateVar("startDate", "var_o3", observation, VariableDataShape.CATEGORICAL, 74);
     observation.addVariable(startDate);
 

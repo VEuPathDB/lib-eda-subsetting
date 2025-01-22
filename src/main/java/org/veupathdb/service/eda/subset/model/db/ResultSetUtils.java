@@ -1,7 +1,5 @@
 package org.veupathdb.service.eda.subset.model.db;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-
 import java.io.IOException;
 import java.math.BigDecimal;
 import java.sql.ResultSet;
@@ -29,8 +27,7 @@ public class ResultSetUtils {
 
   public static Long getRsRequiredLong(ResultSet rs, String columnName) throws SQLException {
     long val = rs.getLong(columnName);
-    return !rs.wasNull() ? val : doThrow(() -> new RuntimeException(
-        "Column " + columnName + " is required but returned null."));
+    return !rs.wasNull() ? val : doThrow(() -> new RuntimeException("Column " + columnName + " is required but returned null."));
   }
 
   public static Boolean getRsRequiredBoolean(ResultSet rs, String columnName) throws SQLException {
@@ -75,7 +72,7 @@ public class ResultSetUtils {
       return value == null ? null : converter.apply(value);
     }
     catch (ArithmeticException e) {
-      throw new RuntimeException("For variable '" + variableId + "', the metadata property '" + columnName + "' returned '" + value + 
+      throw new RuntimeException("For variable '" + variableId + "', the metadata property '" + columnName + "' returned '" + value +
                                  "' which is not convertible to this variable's datatype, which is '" + typeDisplay + "'");
     }
   }

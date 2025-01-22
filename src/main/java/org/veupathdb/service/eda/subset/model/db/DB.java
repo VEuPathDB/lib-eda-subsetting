@@ -144,7 +144,6 @@ public interface DB {
         String ENTITY_STUDY_ID_COL_NAME = "study_stable_id";
         String ENTITY_PARENT_ID_COL_NAME = "parent_stable_id";
         String ENTITY_ABBREV_COL_NAME = "internal_abbrev";
-        String ENTITY_LOAD_ORDER_ID = "entity_type_id";
         String DESCRIP_COL_NAME = "description";
         String DISPLAY_NAME_COL_NAME = "display_name";
         String DISPLAY_NAME_PLURAL_COL_NAME = "display_name_plural";

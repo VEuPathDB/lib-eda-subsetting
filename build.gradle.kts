@@ -6,7 +6,7 @@
 
 // Project settings
 group   = "org.veupathdb.lib"
-version = "6.0.0"
+version = "6.1.0"
 
 plugins {
   `java-library`
@@ -16,7 +16,6 @@ plugins {
 java {
   toolchain {
     languageVersion = JavaLanguageVersion.of(21)
-    vendor = JvmVendorSpec.AMAZON
   }
   withSourcesJar()
   withJavadocJar()
@@ -134,6 +133,7 @@ dependencies {
   // Unit Testing
   testImplementation("org.junit.jupiter:junit-jupiter:5.11.1")
   testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:5.11.1")
+  testRuntimeOnly("org.junit.platform:junit-platform-launcher")
   testImplementation("org.mockito:mockito-core:5.14.0")
   testImplementation("org.hamcrest:hamcrest:2.2")
 }

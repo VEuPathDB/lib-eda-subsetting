@@ -106,13 +106,18 @@ public class FloatingPointVariable extends NumberVariable<Double> {
   }
 
   @Override
-  public Double toNumberSubtype(Number number) {
-    return number.doubleValue();
+  public Double getValidatedSubtype(Number value) {
+    return value.doubleValue();
   }
 
   @Override
-  public Double validateBinWidth(Number binWidth) {
-    double doubleValue = toNumberSubtype(binWidth);
+  public Double getValidatedSubtypeForInclusiveRangeBoundary(Number number, InclusiveRangeBoundary boundary) {
+    return getValidatedSubtype(number);
+  }
+
+  @Override
+  public Double getValidatedSubtypeForBinWidth(Number binWidth) {
+    double doubleValue = getValidatedSubtype(binWidth);
     if (doubleValue <= 0) {
       throw new BadRequestException("binWidth must be a positive number for number variable distributions");
     }

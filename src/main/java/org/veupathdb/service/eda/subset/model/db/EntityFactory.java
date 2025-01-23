@@ -111,15 +111,10 @@ public class EntityFactory {
 
   static String generateEntityTreeSql(String studyId, String appDbSchema, boolean orderEntities) {
     final String sqlOrderByClause = orderEntities
-        ? " ORDER BY e." + DB.Tables.EntityTypeGraph.Columns.ENTITY_LOAD_ORDER_ID + " ASC"
+        ? " ORDER BY e." + DB.Tables.EntityTypeGraph.Columns.DISPLAY_NAME_COL_NAME + " ASC"
         : "";
-    final List<String> columns = orderEntities
-        ? DB.Tables.EntityTypeGraph.Columns.ALL
-        : DB.Tables.EntityTypeGraph.Columns.ALL.stream()
-        .filter(c -> !c.equals(DB.Tables.EntityTypeGraph.Columns.ENTITY_LOAD_ORDER_ID))
-        .collect(Collectors.toList());
     return "SELECT " +
-        "e." + String.join(", e.", columns) + ", " +
+        "e." + String.join(", e.", DB.Tables.EntityTypeGraph.Columns.ALL) + ", " +
         "s." + DB.Tables.Study.Columns.STUDY_ABBREV_COL_NAME + " as " + STDY_ABBRV_COL_NM + NL +
         "FROM " +
         appDbSchema + DB.Tables.EntityTypeGraph.NAME + " e, " +
@@ -140,14 +135,9 @@ public class EntityFactory {
       String studyAbbrev = getRsRequiredString(rs, STDY_ABBRV_COL_NM);
       String descrip = getRsOptionalString(rs, DB.Tables.EntityTypeGraph.Columns.DESCRIP_COL_NAME, "No Entity Description available");
       String abbrev = getRsRequiredString(rs, DB.Tables.EntityTypeGraph.Columns.ENTITY_ABBREV_COL_NAME);
-      long loadOrder = orderEntities
-          ? getIntegerFromString(rs, DB.Tables.EntityTypeGraph.Columns.ENTITY_LOAD_ORDER_ID, true)
-          : -1L;
       boolean hasCollections = getRsRequiredBoolean(rs, DB.Tables.EntityTypeGraph.Columns.ENTITY_HAS_ATTRIBUTE_COLLECTIONS);
-
       boolean isManyToOneWithParent = getRsOptionalBoolean(rs, DB.Tables.EntityTypeGraph.Columns.ENTITY_IS_MANY_TO_ONE_WITH_PARENT, true);
-
-      return new Entity(id, studyAbbrev, name, namePlural, descrip, abbrev, loadOrder, hasCollections, isManyToOneWithParent);
+      return new Entity(id, studyAbbrev, name, namePlural, descrip, abbrev, hasCollections, isManyToOneWithParent);
     }
     catch (SQLException e) {
       throw new RuntimeException(e);

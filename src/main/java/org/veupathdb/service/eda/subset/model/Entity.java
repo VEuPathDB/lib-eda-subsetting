@@ -38,7 +38,6 @@ public class Entity {
   private List<String> ancestorFullPkColNames; // entityName.pkColName
   private Integer tallRowSize; // number of columns in a tall table row
   private boolean attributesTableExists;
-  private final Long loadOrder;  // TODO: this is both completely unused and a boxed type for some reason, is that intentional?
   private final boolean hasCollections;
   private final boolean isManyToOneWithParent;
 
@@ -48,14 +47,13 @@ public class Entity {
   // used to validate multifilter requests
   private final Map<String, Set<String>> _multiFilterMap = new HashMap<>();
 
-  public Entity(String entityId, String studyAbbrev, String displayName, String displayNamePlural, String description, String abbreviation, long loadOrder, boolean hasCollections, boolean isManyToOneWithParent) {
+  public Entity(String entityId, String studyAbbrev, String displayName, String displayNamePlural, String description, String abbreviation, boolean hasCollections, boolean isManyToOneWithParent) {
     this.id = entityId;
     this.studyAbbrev = studyAbbrev;
     this.displayName = displayName;
     this.displayNamePlural = displayNamePlural;
     this.description = description;
     this.abbreviation = abbreviation;
-    this.loadOrder = loadOrder;
     this.hasCollections = hasCollections;
     this.isManyToOneWithParent = isManyToOneWithParent;
   }

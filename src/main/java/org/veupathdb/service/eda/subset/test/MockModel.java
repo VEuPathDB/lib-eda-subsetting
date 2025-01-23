@@ -55,12 +55,12 @@ public class MockModel {
   }
 
   private void createTestEntities() {
-    household = new Entity("GEMS_House", "ds2324", "Household", "Households", "descrip", "Hshld", 1, false, false);
-    householdObs = new Entity("GEMS_HouseObs", "ds2324", "Household Observation", "Household Observations", "descrip", "HshldObsvtn", 2, false, true);
-    participant = new Entity("GEMS_Part", "ds2324", "Participant", "Participants", "descrip", "Prtcpnt", 3, false, true);
-    observation = new Entity("GEMS_PartObs", "ds2324", "Observation", "Observations", "descrip", "PrtcpntObsrvtn", 4, false, true);
-    sample = new Entity("GEMS_Sample", "ds2324", "Sample", "Samples", "descrip", "Smpl", 5, false, true);
-    treatment = new Entity("GEMS_Treat", "ds2324", "Treatment", "Treatments", "descrip", "Trtmnt", 6, false, true);
+    household = new Entity("GEMS_House", "ds2324", "Household", "Households", "descrip", "Hshld", false, false);
+    householdObs = new Entity("GEMS_HouseObs", "ds2324", "Household Observation", "Household Observations", "descrip", "HshldObsvtn", false, true);
+    participant = new Entity("GEMS_Part", "ds2324", "Participant", "Participants", "descrip", "Prtcpnt", false, true);
+    observation = new Entity("GEMS_PartObs", "ds2324", "Observation", "Observations", "descrip", "PrtcpntObsrvtn", false, true);
+    sample = new Entity("GEMS_Sample", "ds2324", "Sample", "Samples", "descrip", "Smpl", false, true);
+    treatment = new Entity("GEMS_Treat", "ds2324", "Treatment", "Treatments", "descrip", "Trtmnt", false, true);
   }
 
   private Map<String, Entity> createIdMap() {

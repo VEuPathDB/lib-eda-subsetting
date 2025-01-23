@@ -39,7 +39,6 @@ public class TestDataProvider {
       "My Studies",
       "My favority study",
       "Mine",
-      0L,
       false,
       false);
   }
@@ -123,7 +122,6 @@ public class TestDataProvider {
         displayName + "s",
         description,
         "Mine",
-        0L,
         false,
         true);
 

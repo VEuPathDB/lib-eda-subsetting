@@ -133,6 +133,7 @@ dependencies {
   // Unit Testing
   testImplementation("org.junit.jupiter:junit-jupiter:5.11.1")
   testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:5.11.1")
+  testRuntimeOnly("org.junit.platform:junit-platform-launcher")
   testImplementation("org.mockito:mockito-core:5.14.0")
   testImplementation("org.hamcrest:hamcrest:2.2")
 }

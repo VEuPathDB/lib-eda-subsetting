@@ -18,6 +18,8 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.gusdb.fgputil.ListBuilder;
 import org.gusdb.fgputil.Tuples.TwoTuple;
+import org.gusdb.fgputil.db.platform.DBPlatform;
+import org.gusdb.fgputil.db.pool.DatabaseInstance;
 import org.gusdb.fgputil.db.runner.SQLRunner;
 import org.gusdb.fgputil.db.runner.SingleLongResultSetHandler;
 import org.gusdb.fgputil.db.stream.ResultSetIterator;
@@ -71,7 +73,7 @@ public class FilteredResultFactory {
    * responseType (JSON string[][] vs true tabular). Each row is a record containing
    * the primary key columns and requested variables of the specified entity.
    *
-   * @param dataSource      DB to run against
+   * @param dbInstance      DB to run against
    * @param study           study context
    * @param outputEntity    entity type to return
    * @param outputVariables variables requested
@@ -80,13 +82,14 @@ public class FilteredResultFactory {
    * @param formatter       object that will write response
    * @param outputStream    stream to which report should be written
    */
-  public static void produceTabularSubset(DataSource dataSource, String appDbSchema, Study study, Entity outputEntity,
+  public static void produceTabularSubset(DatabaseInstance dbInstance, String appDbSchema, Study study, Entity outputEntity,
                                           List<VariableWithValues<?>> outputVariables, List<Filter> filters,
                                           TabularReportConfig reportConfig, FormatterFactory formatter,
                                           OutputStream outputStream) {
+
     // produce output; result consumer will format result and write to passed output stream
     try (BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(outputStream))) {
-      produceTabularSubset(dataSource, appDbSchema, study, outputEntity, outputVariables, filters, reportConfig, formatter.getFormatter(writer));
+      produceTabularSubset(dbInstance, appDbSchema, study, outputEntity, outputVariables, filters, reportConfig, formatter.getFormatter(writer));
       writer.flush();
     }
     catch (IOException e) {
@@ -129,12 +132,12 @@ public class FilteredResultFactory {
                                                                              List<VariableWithValues<?>> outputVariables,
                                                                              List<Filter> filters,
                                                                              BinaryValuesStreamer binaryValuesStreamer,
-                                                                             boolean fileBasedEnabled, DataSource dataSource,
+                                                                             boolean fileBasedEnabled, DatabaseInstance dbInstance,
                                                                              String appDbSchema) {
     if (fileBasedEnabled) {
       return fileTabularSubsetIterator(study, outputEntity, outputVariables, filters, binaryValuesStreamer);
     } else {
-      return oracleTabularSubsetIterator(dataSource, appDbSchema, study, outputEntity, outputVariables, filters);
+      return sqlTabularSubsetIterator(dbInstance, appDbSchema, study, outputEntity, outputVariables, filters);
     }
   }
 
@@ -183,17 +186,17 @@ public class FilteredResultFactory {
   /**
    * Oracle-based implementation of tabular record iterator.
    */
-  private static CloseableIterator<Map<String, String>> oracleTabularSubsetIterator(DataSource dataSource, String appDbSchema, Study study, Entity outputEntity,
-                                                                                    List<VariableWithValues<?>> outputVariables, List<Filter> filters) {
+  private static CloseableIterator<Map<String, String>> sqlTabularSubsetIterator(DatabaseInstance dbInstance, String appDbSchema, Study study, Entity outputEntity,
+                                                                                 List<VariableWithValues<?>> outputVariables, List<Filter> filters) {
     TreeNode<Entity> prunedEntityTree = pruneTree(study.getEntityTree(), filters, outputEntity);
 
-    String sql = generateTabularSqlForTallRows(appDbSchema, outputVariables, outputEntity, filters, prunedEntityTree);
+    String sql = generateTabularSqlForTallRows(dbInstance.getPlatform(), appDbSchema, outputVariables, outputEntity, filters, prunedEntityTree);
 
     // gather the output columns; these will be used for the standard header and to look up DB column values
     List<String> outputColumns = getTabularOutputColumns(outputEntity, outputVariables);
 
     try {
-      Connection connection = dataSource.getConnection();
+      Connection connection = dbInstance.getDataSource().getConnection();
       return new SQLRunner(connection, sql, "Produce tabular subset").setNotResponsibleForClosing().executeQuery(rs -> {
         try {
           return toCloseableIterator(
@@ -214,15 +217,15 @@ public class FilteredResultFactory {
     }
   }
 
-  public static void produceTabularSubset(DataSource dataSource, String appDbSchema, Study study, Entity outputEntity,
+  public static void produceTabularSubset(DatabaseInstance dbInstance, String appDbSchema, Study study, Entity outputEntity,
                                           List<VariableWithValues<?>> outputVariables, List<Filter> filters,
                                           TabularReportConfig reportConfig, ResultConsumer resultConsumer) {
 
     TreeNode<Entity> prunedEntityTree = pruneTree(study.getEntityTree(), filters, outputEntity);
 
     String sql = reportConfig.requiresSorting()
-      ? generateTabularSqlForWideRows(appDbSchema, outputVariables, outputEntity, filters, reportConfig, prunedEntityTree)
-      : generateTabularSqlForTallRows(appDbSchema, outputVariables, outputEntity, filters, prunedEntityTree);
+      ? generateTabularSqlForWideRows(dbInstance.getPlatform(), appDbSchema, outputVariables, outputEntity, filters, reportConfig, prunedEntityTree)
+      : generateTabularSqlForTallRows(dbInstance.getPlatform(), appDbSchema, outputVariables, outputEntity, filters, prunedEntityTree);
 
     // gather the output columns; these will be used for the standard header and to look up DB column values
     List<String> outputColumns = getColumns(outputEntity, outputVariables, Entity::getPKColName, Variable::getId);
@@ -233,7 +236,7 @@ public class FilteredResultFactory {
     // create a date formatter based on config
     boolean trimTimeFromDateVars = reportConfig.getTrimTimeFromDateVars();
 
-    new SQLRunner(dataSource, sql, "Produce tabular subset").executeQuery(rs -> {
+    new SQLRunner(dbInstance.getDataSource(), sql, "Produce tabular subset").executeQuery(rs -> {
       try {
         resultConsumer.begin();
 
@@ -457,10 +460,10 @@ public class FilteredResultFactory {
    * @return stream of distribution tuples
    */
   public static Stream<TwoTuple<String, Long>> produceVariableDistribution(
-    DataSource datasource, String appDbSchema, TreeNode<Entity> prunedEntityTree, Entity outputEntity,
+    DatabaseInstance dbInstance, String appDbSchema, TreeNode<Entity> prunedEntityTree, Entity outputEntity,
     VariableWithValues<?> distributionVariable, List<Filter> filters) {
-    String sql = generateDistributionSql(appDbSchema, outputEntity, distributionVariable, filters, prunedEntityTree);
-    return ResultSets.openStream(datasource, sql, "Produce variable distribution", row -> Optional.of(
+    String sql = generateDistributionSql(dbInstance.getPlatform(), appDbSchema, outputEntity, distributionVariable, filters, prunedEntityTree);
+    return ResultSets.openStream(dbInstance.getDataSource(), sql, "Produce variable distribution", row -> Optional.of(
       new TwoTuple<>(distributionVariable.getType().convertRowValueToStringValue(row), row.getLong(COUNT_COLUMN_NAME))));
   }
 
@@ -523,7 +526,7 @@ public class FilteredResultFactory {
   /**
    * Generate SQL to produce a tall stream of Entity ID, ancestry IDs, variable ID and values.
    */
-  static String generateTabularSqlForTallRows(String appDbSchema, List<VariableWithValues<?>> outputVariables, Entity outputEntity, List<Filter> filters, TreeNode<Entity> prunedEntityTree) {
+  static String generateTabularSqlForTallRows(DBPlatform dbPlatform, String appDbSchema, List<VariableWithValues<?>> outputVariables, Entity outputEntity, List<Filter> filters, TreeNode<Entity> prunedEntityTree) {
 
     String tallTblAbbrev = "tall";
     String ancestorTblAbbrev = "subset";
@@ -536,7 +539,7 @@ public class FilteredResultFactory {
         // left join to attributes table so we always get at least one row per subset
         //   record, even if no data exists for requested vars (or no vars requested).
         // null rows will be handled in the tall-to-wide rows conversion
-        generateLeftJoin(appDbSchema, outputEntity, outputVariables, ancestorTblAbbrev, tallTblAbbrev) + NL +
+        generateLeftJoin(dbPlatform, appDbSchema, outputEntity, outputVariables, ancestorTblAbbrev, tallTblAbbrev) + NL +
         generateTabularOrderByClause(outputEntity) + NL;
   }
 
@@ -570,7 +573,7 @@ public class FilteredResultFactory {
    * order by Sample_stable_id;
    * </pre>
    */
-  static String generateTabularSqlForWideRows(String appDbSchema, List<VariableWithValues<?>> outputVariables, Entity outputEntity, List<Filter> filters,
+  static String generateTabularSqlForWideRows(DBPlatform dbPlatform, String appDbSchema, List<VariableWithValues<?>> outputVariables, Entity outputEntity, List<Filter> filters,
                                               TabularReportConfig reportConfig, TreeNode<Entity> prunedEntityTree) {
     String wideTabularWithClauseName = "wide_tabular";
     String subsetWithClauseName = "subset";
@@ -580,7 +583,7 @@ public class FilteredResultFactory {
     // build up WITH clauses
     //
     String wideTabularInnerStmt = generateRawWideTabularInnerStmt(appDbSchema, outputEntity, outputVariables, subsetWithClauseName, reportConfig);
-    String wideTabularStmt = generateRawWideTabularOuterStmt(wideTabularInnerStmt);
+    String wideTabularStmt = generateRawWideTabularOuterStmt(wideTabularInnerStmt, dbPlatform);
     String subsetSelectClause = generateSubsetSelectClause(prunedEntityTree, outputEntity, false);
 
     List<String> withClausesList = prunedEntityTree.flatten().stream()
@@ -649,26 +652,27 @@ public class FilteredResultFactory {
         reportConfigOrderByClause(reportConfig.getSorting(), "    ");
   }
 
-  static String generateRawWideTabularOuterStmt(String innerStmt) {
-    return "  select rownum as r, wt.*" + NL +
-      "  from (" + NL +
-      innerStmt + NL +
-      "  ) wt";
+    // PG FIX
+  static String generateRawWideTabularOuterStmt(String innerStmt, DBPlatform dbPlatform) {
+    return "select " + dbPlatform.getRowNumberColumn() + " as r, wt.*" + NL +
+            "  from (" + NL +
+            innerStmt + NL +
+            "  ) wt";
   }
-
 
   static String jsonQuery(String oracleQuery, String postgresQuery) {
     return oracleQuery != null ? oracleQuery : postgresQuery;
   }
 
-  private static String generateLeftJoin(String appDbSchema, Entity outputEntity, List<VariableWithValues<?>> outputVariables, String ancestorTblAbbrev, String tallTblAbbrev) {
+    // PG FIX
+  private static String generateLeftJoin(DBPlatform dbPlatform, String appDbSchema, Entity outputEntity, List<VariableWithValues<?>> outputVariables, String ancestorTblAbbrev, String tallTblAbbrev) {
     if (outputVariables.isEmpty()) {
       return " LEFT JOIN ( SELECT " +
         "null as " + DB.Tables.AttributeValue.Columns.TT_VARIABLE_ID_COL_NAME + ", " +
         "null as " + DB.Tables.AttributeValue.Columns.STRING_VALUE_COL_NAME + ", " +
         "null as " + DB.Tables.AttributeValue.Columns.DATE_VALUE_COL_NAME + ", " +
         "null as " + DB.Tables.AttributeValue.Columns.NUMBER_VALUE_COL_NAME +
-        " FROM DUAL ) ON 1 = 1 ";
+        dbPlatform.getDummyTable() + " ) ON 1 = 1 ";
     }
     String pkColName = outputEntity.getPKColName();
     return " LEFT JOIN (" + NL
@@ -769,7 +773,7 @@ on tall.Participant_stable_id = subset.Participant_stable_id
 group by number_value
 order by number_value desc;
    */
-  static String generateDistributionSql(String appDbSchema, Entity outputEntity, VariableWithValues<?> distributionVariable, List<Filter> filters, TreeNode<Entity> prunedEntityTree) {
+  static String generateDistributionSql(DBPlatform dbPlatform, String appDbSchema, Entity outputEntity, VariableWithValues<?> distributionVariable, List<Filter> filters, TreeNode<Entity> prunedEntityTree) {
 
     String tallTblAbbrev = "tall";
     String ancestorTblAbbrev = "subset";
@@ -784,7 +788,7 @@ order by number_value desc;
         // left join to attributes table so we always get at least one row per subset
         //   record, even if no data exists for requested vars (or no vars requested).
         // null rows will be handled in the tall-to-wide rows conversion
-        generateLeftJoin(appDbSchema, outputEntity, List.of(distributionVariable), ancestorTblAbbrev, tallTblAbbrev) + NL +
+        generateLeftJoin(dbPlatform, appDbSchema, outputEntity, List.of(distributionVariable), ancestorTblAbbrev, tallTblAbbrev) + NL +
         " ) dist" + NL +
         generateDistributionGroupByClause(distributionVariable, distTblAbbrev) + NL +
         "ORDER BY " + distTblAbbrev + "." + distributionVariable.getType().getTallTableColumnName() + " ASC";

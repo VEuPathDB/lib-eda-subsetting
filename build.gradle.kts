@@ -117,23 +117,23 @@ repositories {
 dependencies {
 
   // FgpUtil Dependencies
-  val fgputil = "2.12.16-jakarta"
+  val fgputil = "2.16.1-jakarta"
   implementation("org.gusdb:fgputil-core:${fgputil}")
   implementation("org.gusdb:fgputil-db:${fgputil}")
   implementation("org.gusdb:fgputil-json:${fgputil}")
   implementation("org.gusdb:fgputil-web:${fgputil}")
 
   // Log4J
-  implementation("org.apache.logging.log4j:log4j-api:2.20.0")
-  implementation("org.apache.logging.log4j:log4j-core:2.20.0")
+  implementation("org.apache.logging.log4j:log4j-api:2.24.3")
+  implementation("org.apache.logging.log4j:log4j-core:2.24.3")
 
   // Stub database (included in distribution since StubDB is used in EdaSubsettingService unit tests)
-  implementation("org.hsqldb:hsqldb:2.7.1")
+  implementation("org.hsqldb:hsqldb:2.7.4")
 
   // Unit Testing
-  testImplementation("org.junit.jupiter:junit-jupiter:5.11.1")
-  testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:5.11.1")
-  testRuntimeOnly("org.junit.platform:junit-platform-launcher")
-  testImplementation("org.mockito:mockito-core:5.14.0")
-  testImplementation("org.hamcrest:hamcrest:2.2")
+  testImplementation("org.junit.jupiter:junit-jupiter:5.12.0")
+  testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:5.12.0")
+  testRuntimeOnly("org.junit.platform:junit-platform-launcher:1.12.0")
+  testImplementation("org.mockito:mockito-core:5.15.2")
+  testImplementation("org.hamcrest:hamcrest:3.0")
 }

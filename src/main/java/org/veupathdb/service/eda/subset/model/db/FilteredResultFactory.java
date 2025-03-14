@@ -672,7 +672,7 @@ public class FilteredResultFactory {
         "null as " + DB.Tables.AttributeValue.Columns.STRING_VALUE_COL_NAME + ", " +
         "null as " + DB.Tables.AttributeValue.Columns.DATE_VALUE_COL_NAME + ", " +
         "null as " + DB.Tables.AttributeValue.Columns.NUMBER_VALUE_COL_NAME +
-        dbPlatform.getDummyTable() + " ) ON 1 = 1 ";
+        " " + dbPlatform.getDummyTable() + " ) ON 1 = 1 ";
     }
     String pkColName = outputEntity.getPKColName();
     return " LEFT JOIN (" + NL

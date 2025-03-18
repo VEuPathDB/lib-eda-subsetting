@@ -1,5 +1,6 @@
 package org.veupathdb.service.eda.subset.model.db;
 
+import org.gusdb.fgputil.db.pool.DatabaseInstance;
 import org.gusdb.fgputil.iterator.CloseableIterator;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
@@ -15,19 +16,18 @@ import org.veupathdb.service.eda.subset.model.variable.VariableValueIdPair;
 import org.veupathdb.service.eda.subset.model.variable.VariableWithValues;
 import org.veupathdb.service.eda.subset.testutil.TestDataProvider;
 
-import javax.sql.DataSource;
 import java.util.List;
 import java.util.Map;
 
 public class FilteredResultFactoryTest {
 
   private BinaryValuesStreamer valuesStreamer;
-  private DataSource ds;
+  private DatabaseInstance db;
 
   @BeforeEach
   public void before() {
     this.valuesStreamer = Mockito.mock(BinaryValuesStreamer.class);
-    this.ds = Mockito.mock(DataSource.class);
+    this.db = Mockito.mock(DatabaseInstance.class);
   }
 
   @Test
@@ -73,7 +73,7 @@ public class FilteredResultFactoryTest {
       List.of(),
       valuesStreamer,
       true,
-      ds,
+      db,
       "fake-schema"
     )) {
       Assertions.assertEquals("100", out.next().get(var.getDotNotation()));
@@ -178,7 +178,7 @@ public class FilteredResultFactoryTest {
       List.of(wayTooBigFilter),
       valuesStreamer,
       true,
-      ds,
+      db,
       "fake-schema"
     )) {
 

@@ -2,6 +2,7 @@ package org.veupathdb.service.eda.subset.model.distribution;
 
 import jakarta.ws.rs.BadRequestException;
 import org.gusdb.fgputil.Tuples;
+import org.gusdb.fgputil.db.pool.DatabaseInstance;
 import org.gusdb.fgputil.distribution.*;
 import org.gusdb.fgputil.functional.TreeNode;
 import org.veupathdb.service.eda.subset.model.Entity;
@@ -14,7 +15,6 @@ import org.veupathdb.service.eda.subset.model.variable.IntegerVariable;
 import org.veupathdb.service.eda.subset.model.variable.VariableDataShape;
 import org.veupathdb.service.eda.subset.model.variable.VariableWithValues;
 
-import javax.sql.DataSource;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Stream;
@@ -24,7 +24,7 @@ public class DistributionFactory {
   private static class EdaDistributionStreamProvider<T extends VariableWithValues<?>> implements DistributionStreamProvider {
 
     // used to produce the stream of distribution tuples
-    private final DataSource _ds;
+    private final DatabaseInstance _db;
     private final String _appDbSchema;
     private final Entity _targetEntity;
     protected final T _variable;
@@ -34,8 +34,8 @@ public class DistributionFactory {
     private final long _subsetEntityCount;
 
     public EdaDistributionStreamProvider(
-        DataSource ds, String appDbSchema, Study study, Entity targetEntity, T variable, List<Filter> filters) {
-      _ds = ds;
+        DatabaseInstance db, String appDbSchema, Study study, Entity targetEntity, T variable, List<Filter> filters) {
+      _db = db;
       _appDbSchema = appDbSchema;
       _targetEntity = targetEntity;
       _variable = variable;
@@ -47,13 +47,13 @@ public class DistributionFactory {
 
       // get the number of entities in the subset
       _subsetEntityCount = FilteredResultFactory.getEntityCount(
-          _ds, _appDbSchema, _prunedEntityTree, _targetEntity, _filters);
+          _db.getDataSource(), _appDbSchema, _prunedEntityTree, _targetEntity, _filters);
     }
 
     @Override
     public Stream<Tuples.TwoTuple<String, Long>> getDistributionStream() {
       return FilteredResultFactory.produceVariableDistribution(
-          _ds, _appDbSchema, _prunedEntityTree, _targetEntity, _variable, _filters);
+          _db, _appDbSchema, _prunedEntityTree, _targetEntity, _variable, _filters);
     }
 
     @Override
@@ -63,7 +63,7 @@ public class DistributionFactory {
   }
 
   public static DistributionResult processDistributionRequest(
-      DataSource ds, String appDbSchema, Study study, Entity targetEntity,
+      DatabaseInstance db, String appDbSchema, Study study, Entity targetEntity,
       VariableWithValues<?> var, List<Filter> filters,
       ValueSpec apiValueSpec, Optional<BinSpecWithRange> incomingBinSpec) {
     try {
@@ -74,15 +74,15 @@ public class DistributionFactory {
       if (var.getDataShape() == VariableDataShape.CONTINUOUS) {
         distribution = switch (var.getType()) {
           case INTEGER -> new IntegerBinDistribution(
-            new EdaDistributionStreamProvider<>(ds, appDbSchema, study, targetEntity, (IntegerVariable) var, filters),
+            new EdaDistributionStreamProvider<>(db, appDbSchema, study, targetEntity, (IntegerVariable) var, filters),
             valueSpec, new EdaNumberBinSpec((IntegerVariable) var, incomingBinSpec)
           );
           case NUMBER -> new FloatingPointBinDistribution(
-            new EdaDistributionStreamProvider<>(ds, appDbSchema, study, targetEntity, (FloatingPointVariable) var, filters),
+            new EdaDistributionStreamProvider<>(db, appDbSchema, study, targetEntity, (FloatingPointVariable) var, filters),
             valueSpec, new EdaNumberBinSpec((FloatingPointVariable) var, incomingBinSpec)
           );
           case DATE -> new DateBinDistribution(
-            new EdaDistributionStreamProvider<>(ds, appDbSchema, study, targetEntity, (DateVariable) var, filters),
+            new EdaDistributionStreamProvider<>(db, appDbSchema, study, targetEntity, (DateVariable) var, filters),
             valueSpec, new EdaDateBinSpec((DateVariable) var, incomingBinSpec)
           );
           default -> throw new BadRequestException("Among continuous variables, " +
@@ -96,7 +96,7 @@ public class DistributionFactory {
         }
         distribution = new DiscreteDistribution(
             new EdaDistributionStreamProvider<>(
-                ds, appDbSchema, study, targetEntity, var, filters), valueSpec);
+                db, appDbSchema, study, targetEntity, var, filters), valueSpec);
       }
 
       return distribution.generateDistribution();

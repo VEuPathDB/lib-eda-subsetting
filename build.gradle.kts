@@ -134,6 +134,6 @@ dependencies {
   testImplementation("org.junit.jupiter:junit-jupiter:5.12.0")
   testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:5.12.0")
   testRuntimeOnly("org.junit.platform:junit-platform-launcher:1.12.0")
-  testImplementation("org.mockito:mockito-core:5.15.2")
+  implementation("org.mockito:mockito-core:5.15.2")
   testImplementation("org.hamcrest:hamcrest:3.0")
 }

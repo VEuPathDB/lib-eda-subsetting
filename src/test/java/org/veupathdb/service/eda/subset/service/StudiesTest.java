@@ -1,5 +1,6 @@
 package org.veupathdb.service.eda.subset.service;
 
+import org.gusdb.fgputil.db.pool.DatabaseInstance;
 import org.gusdb.fgputil.distribution.DistributionResult;
 import org.gusdb.fgputil.distribution.HistogramBin;
 import org.junit.jupiter.api.BeforeAll;
@@ -19,25 +20,24 @@ import org.veupathdb.service.eda.subset.model.filter.Filter;
 import org.veupathdb.service.eda.subset.model.variable.VariableWithValues;
 import org.veupathdb.service.eda.subset.test.StubDb;
 
-import javax.sql.DataSource;
 import java.util.*;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 public class StudiesTest {
 
-  private static DataSource _dataSource;
+  private static DatabaseInstance _db;
   private static MockFilters _filtersForTesting;
   private static VariableFactory _variableFactory;
   private static BinaryFilesManager _binaryFilesManager;
 
   @BeforeAll
   public static void setUp() {
-    _dataSource = StubDb.getDatabaseInstance().getDataSource();
+    _db = StubDb.getDatabaseInstance();
     _binaryFilesManager = Mockito.mock(BinaryFilesManager.class);
     Mockito.when(_binaryFilesManager.studyHasFiles(Mockito.anyString())).thenReturn(false);
-    _variableFactory = new VariableFactory(_dataSource, StubDb.APP_DB_SCHEMA, new EmptyBinaryMetadataProvider(), studyId -> false);
-    Study study = new StudyFactory(_dataSource, StubDb.APP_DB_SCHEMA, StubDb.USER_STUDIES_FLAG, _variableFactory, true).getStudyById("DS-2324");
+    _variableFactory = new VariableFactory(_db.getDataSource(), StubDb.APP_DB_SCHEMA, new EmptyBinaryMetadataProvider(), studyId -> false);
+    Study study = new StudyFactory(_db.getDataSource(), StubDb.APP_DB_SCHEMA, StubDb.USER_STUDIES_FLAG, _variableFactory, true).getStudyById("DS-2324");
     _filtersForTesting = new MockFilters(study);
   }
 
@@ -45,7 +45,7 @@ public class StudiesTest {
   @Test
   @DisplayName("Test variable distribution - no filters")
   void testVariableDistributionNoFilters() {
-    Study study = new StudyFactory(_dataSource, StubDb.APP_DB_SCHEMA, StubDb.USER_STUDIES_FLAG, _variableFactory, true).getStudyById("DS-2324");
+    Study study = new StudyFactory(_db.getDataSource(), StubDb.APP_DB_SCHEMA, StubDb.USER_STUDIES_FLAG, _variableFactory, true).getStudyById("DS-2324");
 
     String entityId = "GEMS_Part";
     Entity entity = study.getEntity(entityId).orElseThrow();
@@ -69,7 +69,7 @@ public class StudiesTest {
   @Test
   @DisplayName("Test variable distribution - with filters")
   void testVariableDistribution() {
-    Study study = new StudyFactory(_dataSource, StubDb.APP_DB_SCHEMA, StubDb.USER_STUDIES_FLAG, _variableFactory, true).getStudyById("DS-2324");
+    Study study = new StudyFactory(_db.getDataSource(), StubDb.APP_DB_SCHEMA, StubDb.USER_STUDIES_FLAG, _variableFactory, true).getStudyById("DS-2324");
 
     String entityId = "GEMS_Part";
     Entity entity = study.getEntity(entityId).orElseThrow();
@@ -95,7 +95,7 @@ public class StudiesTest {
       List<Filter> filters, int expectedVariableCount, Map<String, Integer> expectedDistribution) {
 
     DistributionResult result = DistributionFactory.processDistributionRequest(
-        _dataSource, StubDb.APP_DB_SCHEMA, study, entity, var, filters, ValueSpec.COUNT, Optional.empty());
+        _db, StubDb.APP_DB_SCHEMA, study, entity, var, filters, ValueSpec.COUNT, Optional.empty());
 
     // check variable count
     assertEquals(expectedVariableCount, result.getStatistics().getNumDistinctEntityRecords());

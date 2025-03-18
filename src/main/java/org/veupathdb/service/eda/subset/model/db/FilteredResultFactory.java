@@ -652,7 +652,6 @@ public class FilteredResultFactory {
         reportConfigOrderByClause(reportConfig.getSorting(), "    ");
   }
 
-    // PG FIX
   static String generateRawWideTabularOuterStmt(String innerStmt, DBPlatform dbPlatform) {
     return "select " + dbPlatform.getRowNumberColumn() + " as r, wt.*" + NL +
             "  from (" + NL +
@@ -664,7 +663,6 @@ public class FilteredResultFactory {
     return oracleQuery != null ? oracleQuery : postgresQuery;
   }
 
-    // PG FIX
   private static String generateLeftJoin(DBPlatform dbPlatform, String appDbSchema, Entity outputEntity, List<VariableWithValues<?>> outputVariables, String ancestorTblAbbrev, String tallTblAbbrev) {
     if (outputVariables.isEmpty()) {
       return " LEFT JOIN ( SELECT " +

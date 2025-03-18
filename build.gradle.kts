@@ -6,7 +6,7 @@
 
 // Project settings
 group   = "org.veupathdb.lib"
-version = "7.0.0-alpha1"
+version = "7.0.0"
 
 plugins {
   `java-library`
@@ -20,8 +20,6 @@ java {
   withSourcesJar()
   withJavadocJar()
 }
-
-
 
 tasks.withType<Jar> {
   duplicatesStrategy = DuplicatesStrategy.INCLUDE
@@ -118,7 +116,6 @@ repositories {
     }
   }
 }
-
 
 dependencies {
 

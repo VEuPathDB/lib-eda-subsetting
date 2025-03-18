@@ -38,7 +38,7 @@ public class LoadStudyTest {
 
   @BeforeAll
   public static void setUp() {
-    datasource = StubDb.getDataSource();
+    datasource = StubDb.getDatabaseInstance().getDataSource();
     binaryMetadataProvider = Mockito.mock(BinaryMetadataProvider.class);
     Mockito.when(binaryMetadataProvider.getBinaryProperties(Mockito.anyString(), Mockito.any(Entity.class), Mockito.anyString()))
       .thenReturn(Optional.empty());

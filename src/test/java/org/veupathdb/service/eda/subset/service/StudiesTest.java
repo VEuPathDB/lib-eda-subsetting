@@ -33,7 +33,7 @@ public class StudiesTest {
 
   @BeforeAll
   public static void setUp() {
-    _dataSource = StubDb.getDataSource();
+    _dataSource = StubDb.getDatabaseInstance().getDataSource();
     _binaryFilesManager = Mockito.mock(BinaryFilesManager.class);
     Mockito.when(_binaryFilesManager.studyHasFiles(Mockito.anyString())).thenReturn(false);
     _variableFactory = new VariableFactory(_dataSource, StubDb.APP_DB_SCHEMA, new EmptyBinaryMetadataProvider(), studyId -> false);

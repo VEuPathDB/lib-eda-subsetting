@@ -6,7 +6,7 @@
 
 // Project settings
 group   = "org.veupathdb.lib"
-version = "6.1.0"
+version = "6.2.0"
 
 plugins {
   `java-library`
@@ -21,6 +21,8 @@ java {
   withJavadocJar()
 }
 
+
+
 tasks.withType<Jar> {
   duplicatesStrategy = DuplicatesStrategy.INCLUDE
 }
@@ -29,6 +31,10 @@ tasks.withType<Test> {
   useJUnitPlatform {
     excludeTags = setOf("Performance")
   }
+}
+
+tasks.withType<JavaCompile> {
+  options.compilerArgs.add("-Xlint:deprecation")
 }
 
 val test by tasks.getting(Test::class) {
@@ -134,6 +140,6 @@ dependencies {
   testImplementation("org.junit.jupiter:junit-jupiter:5.12.0")
   testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:5.12.0")
   testRuntimeOnly("org.junit.platform:junit-platform-launcher:1.12.0")
-  testImplementation("org.mockito:mockito-core:5.15.2")
+  implementation("org.mockito:mockito-core:5.15.2")
   testImplementation("org.hamcrest:hamcrest:3.0")
 }

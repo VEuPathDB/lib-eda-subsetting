@@ -32,8 +32,8 @@ public class BinaryFileGenerator {
     Path cachedPath = Path.of(path.toString() + "-cached");
     generateCachedFile(cachedPath, recordCount);
     try {
-      Process createFileProc = Runtime.getRuntime().exec(String.format(
-          "dd if=%s of=%s bs=1M oflag=direct", cachedPath, path));
+      Process createFileProc = Runtime.getRuntime().exec(new String[] { String.format(
+          "dd if=%s of=%s bs=1M oflag=direct", cachedPath, path) });
       createFileProc.waitFor();
       new File(cachedPath.toString()).deleteOnExit();
     } catch (Exception e) {

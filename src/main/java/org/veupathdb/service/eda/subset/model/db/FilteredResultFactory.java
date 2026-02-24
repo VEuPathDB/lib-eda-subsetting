@@ -20,8 +20,9 @@ import org.gusdb.fgputil.ListBuilder;
 import org.gusdb.fgputil.Tuples.TwoTuple;
 import org.gusdb.fgputil.db.platform.DBPlatform;
 import org.gusdb.fgputil.db.pool.DatabaseInstance;
+import org.gusdb.fgputil.db.runner.QueryFlags;
 import org.gusdb.fgputil.db.runner.SQLRunner;
-import org.gusdb.fgputil.db.runner.SingleLongResultSetHandler;
+import org.gusdb.fgputil.db.runner.handler.SingleLongResultSetHandler;
 import org.gusdb.fgputil.db.stream.ResultSetIterator;
 import org.gusdb.fgputil.db.stream.ResultSets;
 import org.gusdb.fgputil.functional.TreeNode;
@@ -197,7 +198,10 @@ public class FilteredResultFactory {
 
     try {
       Connection connection = dbInstance.getDataSource().getConnection();
-      return new SQLRunner(connection, sql, "Produce tabular subset").setNotResponsibleForClosing().executeQuery(rs -> {
+      return new SQLRunner(connection, sql, "Produce tabular subset").executeQuery(new QueryFlags()
+          .setCommitAndCloseFlag(QueryFlags.CommitAndClose.CALLER_IS_RESPONSIBLE)
+          .setFetchSize(FETCH_SIZE_FOR_TABULAR_QUERIES),
+          rs -> {
         try {
           return toCloseableIterator(
             iteratorFromWideResult(
@@ -211,7 +215,7 @@ public class FilteredResultFactory {
           connection.close();
           throw new RuntimeException("Unable to write result", e);
         }
-      }, FETCH_SIZE_FOR_TABULAR_QUERIES);
+      });
     } catch (SQLException e) {
       throw new RuntimeException(e);
     }
@@ -236,7 +240,8 @@ public class FilteredResultFactory {
     // create a date formatter based on config
     boolean trimTimeFromDateVars = reportConfig.getTrimTimeFromDateVars();
 
-    new SQLRunner(dbInstance.getDataSource(), sql, "Produce tabular subset").executeQuery(rs -> {
+    new SQLRunner(dbInstance.getDataSource(), sql, "Produce tabular subset").executeQuery(
+        new QueryFlags().setFetchSize(FETCH_SIZE_FOR_TABULAR_QUERIES), rs -> {
       try {
         resultConsumer.begin();
 
@@ -255,7 +260,7 @@ public class FilteredResultFactory {
       catch (Exception e) {
         throw new RuntimeException("Unable to write result", e);
       }
-    }, FETCH_SIZE_FOR_TABULAR_QUERIES);
+    });
   }
 
   /**

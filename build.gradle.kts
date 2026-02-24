@@ -6,7 +6,7 @@
 
 // Project settings
 group   = "org.veupathdb.lib"
-version = "7.0.0"
+version = "7.0.1"
 
 plugins {
   `java-library`
@@ -120,15 +120,15 @@ repositories {
 dependencies {
 
   // FgpUtil Dependencies
-  val fgputil = "2.16.1-jakarta"
+  val fgputil = "3.1.0-jakarta"
   implementation("org.gusdb:fgputil-core:${fgputil}")
   implementation("org.gusdb:fgputil-db:${fgputil}")
   implementation("org.gusdb:fgputil-json:${fgputil}")
   implementation("org.gusdb:fgputil-web:${fgputil}")
 
   // Log4J
-  implementation("org.apache.logging.log4j:log4j-api:2.24.3")
-  implementation("org.apache.logging.log4j:log4j-core:2.24.3")
+  implementation("org.apache.logging.log4j:log4j-api:2.25.3")
+  implementation("org.apache.logging.log4j:log4j-core:2.25.3")
 
   // Stub database (included in distribution since StubDB is used in EdaSubsettingService unit tests)
   implementation("org.hsqldb:hsqldb:2.7.4")

@@ -20,8 +20,6 @@ import org.gusdb.fgputil.ListBuilder;
 import org.gusdb.fgputil.Tuples.TwoTuple;
 import org.gusdb.fgputil.db.platform.DBPlatform;
 import org.gusdb.fgputil.db.pool.DatabaseInstance;
-import org.gusdb.fgputil.db.runner.QueryFlags;
-import org.gusdb.fgputil.db.runner.QueryFlags.CommitAndClose;
 import org.gusdb.fgputil.db.runner.SQLRunner;
 import org.gusdb.fgputil.db.runner.SingleLongResultSetHandler;
 import org.gusdb.fgputil.db.stream.ResultSetIterator;
@@ -470,13 +468,10 @@ public class FilteredResultFactory {
     // this creates server-side cursors (portals) that are closed when the transaction ends.
     // Distribution queries return aggregated data (one row per distinct value) so fetching all
     // rows at once is safe, and avoids the "portal does not exist" error on result sets > 200 rows.
-    return new SQLRunner(dbInstance.getDataSource(), sql, "Produce variable distribution").executeQuery(
-        new QueryFlags()
-            .setCommitAndCloseFlag(CommitAndClose.CALLER_IS_RESPONSIBLE)
-            .setFetchSize(0),
-        new Object[]{}, new Integer[]{},
-        rs -> new ResultSetStream<>(rs, row -> Optional.of(
-            new TwoTuple<>(distributionVariable.getType().convertRowValueToStringValue(row), row.getLong(COUNT_COLUMN_NAME)))));
+    return new SQLRunner(dbInstance.getDataSource(), sql, "Produce variable distribution")
+        .setNotResponsibleForClosing()
+        .executeQuery(rs -> new ResultSetStream<>(rs, row -> Optional.of(
+            new TwoTuple<>(distributionVariable.getType().convertRowValueToStringValue(row), row.getLong(COUNT_COLUMN_NAME)))), 0);
   }
 
   public static long getVariableCount(

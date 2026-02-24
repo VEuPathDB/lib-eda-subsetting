@@ -20,10 +20,12 @@ import org.gusdb.fgputil.ListBuilder;
 import org.gusdb.fgputil.Tuples.TwoTuple;
 import org.gusdb.fgputil.db.platform.DBPlatform;
 import org.gusdb.fgputil.db.pool.DatabaseInstance;
+import org.gusdb.fgputil.db.runner.QueryFlags;
+import org.gusdb.fgputil.db.runner.QueryFlags.CommitAndClose;
 import org.gusdb.fgputil.db.runner.SQLRunner;
 import org.gusdb.fgputil.db.runner.SingleLongResultSetHandler;
 import org.gusdb.fgputil.db.stream.ResultSetIterator;
-import org.gusdb.fgputil.db.stream.ResultSets;
+import org.gusdb.fgputil.db.stream.ResultSetStream;
 import org.gusdb.fgputil.functional.TreeNode;
 import org.gusdb.fgputil.iterator.CloseableIterator;
 import org.gusdb.fgputil.iterator.GroupingIterator;
@@ -463,8 +465,18 @@ public class FilteredResultFactory {
     DatabaseInstance dbInstance, String appDbSchema, TreeNode<Entity> prunedEntityTree, Entity outputEntity,
     VariableWithValues<?> distributionVariable, List<Filter> filters) {
     String sql = generateDistributionSql(dbInstance.getPlatform(), appDbSchema, outputEntity, distributionVariable, filters, prunedEntityTree);
-    return ResultSets.openStream(dbInstance.getDataSource(), sql, "Produce variable distribution", row -> Optional.of(
-      new TwoTuple<>(distributionVariable.getType().convertRowValueToStringValue(row), row.getLong(COUNT_COLUMN_NAME))));
+    // Use fetchSize=0 to disable PostgreSQL server-side cursors for distribution queries.
+    // ConnectionWrapper applies a default fetchSize=200 to all statements, but with autocommit=false
+    // this creates server-side cursors (portals) that are closed when the transaction ends.
+    // Distribution queries return aggregated data (one row per distinct value) so fetching all
+    // rows at once is safe, and avoids the "portal does not exist" error on result sets > 200 rows.
+    return new SQLRunner(dbInstance.getDataSource(), sql, "Produce variable distribution").executeQuery(
+        new QueryFlags()
+            .setCommitAndCloseFlag(CommitAndClose.CALLER_IS_RESPONSIBLE)
+            .setFetchSize(0),
+        new Object[]{}, new Integer[]{},
+        rs -> new ResultSetStream<>(rs, row -> Optional.of(
+            new TwoTuple<>(distributionVariable.getType().convertRowValueToStringValue(row), row.getLong(COUNT_COLUMN_NAME)))));
   }
 
   public static long getVariableCount(

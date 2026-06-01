@@ -42,7 +42,8 @@ public class ResultSetUtils {
   }
 
   public static String getRsOptionalString(ResultSet rs, String columnName, String defaultVal) throws SQLException {
-    return Optional.ofNullable(rs.getString(columnName)).orElse(defaultVal);
+    String val = rs.getString(columnName);
+    return (val == null || val.isEmpty()) ? defaultVal : val;
   }
 
   public static String getRsRequiredString(ResultSet rs, String columnName) throws SQLException {
@@ -79,9 +80,9 @@ public class ResultSetUtils {
 
   private static String getRsString(ResultSet rs, String columnName, boolean requireNonNull, String typeDisplay) throws SQLException {
     String value = rs.getString(columnName);
-    if (rs.wasNull() && requireNonNull) {
+    if ((rs.wasNull() || value.isEmpty()) && requireNonNull) {
       String typeAnnot = typeDisplay == null ? "" : " (" + typeDisplay + ")";
-      throw new RuntimeException("Column " + columnName + " returned a null value but is required" + typeAnnot + ".");
+      throw new RuntimeException("Column " + columnName + " returned a null or empty value but is required" + typeAnnot + ".");
     }
     return value;
   }

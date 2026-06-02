@@ -130,7 +130,7 @@ public class EntityFactory {
     try {
       String name = getRsRequiredString(rs, DB.Tables.EntityTypeGraph.Columns.DISPLAY_NAME_COL_NAME);
       // TODO remove this hack when db has plurals
-      String namePlural = getRsOptionalString(rs, DB.Tables.EntityTypeGraph.Columns.DISPLAY_NAME_PLURAL_COL_NAME, name + "s");
+      String namePlural = getRsOptionalString(rs, DB.Tables.EntityTypeGraph.Columns.DISPLAY_NAME_PLURAL_COL_NAME, name.endsWith("s")? name : name + "s");
       String id = getRsRequiredString(rs, DB.Tables.EntityTypeGraph.Columns.ENTITY_ID_COL_NAME);
       String studyAbbrev = getRsRequiredString(rs, STDY_ABBRV_COL_NM);
       String descrip = getRsOptionalString(rs, DB.Tables.EntityTypeGraph.Columns.DESCRIP_COL_NAME, "No Entity Description available");

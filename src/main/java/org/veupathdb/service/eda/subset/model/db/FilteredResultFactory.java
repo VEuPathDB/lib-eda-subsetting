@@ -227,7 +227,7 @@ public class FilteredResultFactory {
 
     TreeNode<Entity> prunedEntityTree = pruneTree(study.getEntityTree(), filters, outputEntity);
 
-    String sql = reportConfig.requiresSorting()
+    String sql = reportConfig.requiresWideTables()
       ? generateTabularSqlForWideRows(dbInstance.getPlatform(), appDbSchema, outputVariables, outputEntity, filters, reportConfig, prunedEntityTree)
       : generateTabularSqlForTallRows(dbInstance.getPlatform(), appDbSchema, outputVariables, outputEntity, filters, prunedEntityTree);
 
@@ -248,10 +248,10 @@ public class FilteredResultFactory {
         // write header row
         resultConsumer.consumeRow(usePrettyHeader ? getTabularPrettyHeaders(outputEntity, outputVariables) : outputColumns);
 
-        if (reportConfig.requiresSorting())
+        if (reportConfig.requiresWideTables())
           writeWideRowsFromWideResult(rs, resultConsumer, outputColumns, outputEntity, trimTimeFromDateVars);
         else
-          writeWideRowsFromTallResult(convertTallRowsResultSet(rs, outputEntity), resultConsumer, outputColumns, outputEntity, trimTimeFromDateVars);
+          writeWideRowsFromTallResult(convertTallRowsResultSet(rs, outputEntity), resultConsumer, outputColumns, outputEntity, trimTimeFromDateVars, reportConfig.getOffset(), reportConfig.getNumRows());
 
         // close out the response and flush
         resultConsumer.end();
@@ -405,7 +405,7 @@ public class FilteredResultFactory {
 
   static void writeWideRowsFromTallResult(Iterator<Map<String, String>> tallRowsIterator,
                                           ResultConsumer resultConsumer, List<String> outputColumns,
-                                          Entity outputEntity, boolean trimTimeFromDateVars) throws IOException {
+                                          Entity outputEntity, boolean trimTimeFromDateVars, long offset, Optional<Long> rowLimit) throws IOException {
 
     // an iterator of lists of maps, each list being the rows of the tall table returned for a single entity id
     String pkCol = outputEntity.getPKColName();
@@ -413,8 +413,20 @@ public class FilteredResultFactory {
       tallRowsIterator, (row1, row2) -> row1.get(pkCol).equals(row2.get(pkCol)));
 
     // iterate through groups and format into strings to be written to stream
+    int recordsSkipped = 0;
+    int recordsWritten = 0;
     List<String> dateVars = getDateVarNames(outputEntity, outputColumns);
     for (List<Map<String, String>> group : toIterable(groupedTallRowsIterator)) {
+      if (offset > recordsSkipped) {
+        // skip this record
+        recordsSkipped++;
+        continue;
+      }
+      if (rowLimit.isPresent() && recordsWritten >= rowLimit.get()) {
+        // record limit reached
+        return;
+      }
+
       Map<String, String> wideRowMap = TallRowConversionUtils.getTallToWideFunction(outputEntity).apply(group);
 
       // build list of row values
@@ -430,6 +442,7 @@ public class FilteredResultFactory {
         wideRow.add(value);
       }
       resultConsumer.consumeRow(wideRow);
+      recordsWritten++;
     }
   }
 

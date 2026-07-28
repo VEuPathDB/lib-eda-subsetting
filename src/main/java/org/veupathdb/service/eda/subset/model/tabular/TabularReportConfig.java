@@ -21,8 +21,8 @@ public class TabularReportConfig {
    *
    * @return true if paging or sorting config is not the default, else false
    */
-  public boolean requiresSorting() {
-    return !_sorting.isEmpty() || _numRows.isPresent() || _offset != 0L;
+  public boolean requiresWideTables() {
+    return !_sorting.isEmpty();
   }
 
   public List<SortSpecEntry> getSorting() {
